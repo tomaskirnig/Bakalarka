@@ -1,9 +1,40 @@
+:root {
+    --root-background-color: #F0EDEE;
+    --color1: #90DDF0; 
+    --color2: #2C666E;
+    --color3: #07393C;
+    --text-color: #0A090C;
+    --primary-color: #0d6efd;
+}
+ 
+
+#root{
+    height: 100vh;
+    color: var(--text-color);
+}
+
 .div-content {
     width: 90%;
     margin: 0 auto;
     text-align: center;
     padding-top: 50px;
 }
+
+/* Navigation */
+.nav-link{
+    color: var(--text-color);
+}
+
+.nav-link:hover{
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+.active{
+    /* color: var(--color1) !important; */
+    text-decoration: underline;
+    color: var(--primary-color);
+}
+  
 
 /* Input type data selection */
 .tabs {
@@ -17,11 +48,23 @@
     font-size: 16px;
     cursor: pointer;
     border: none;
-    background-color: lightgray;
+    color: #FFF;
+    background-color: var(--color3);
     transition: background-color 0.3s ease;
 }
 
 .tab-button.active {
     font-weight: bold;
     border-bottom: 2px solid black;
+}
+
+.inputWindow {
+    color: var(--root-background-color);
+    background-color: var(--color3);
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+}
+.inputWindow label, input{
+    margin: 10px;
 }
