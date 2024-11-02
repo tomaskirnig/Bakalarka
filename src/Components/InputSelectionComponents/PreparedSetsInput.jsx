@@ -1,3 +1,5 @@
+import FileLoader from './FileLoader';
+
 export function PreparedSetsInput() {
     return (
       <div className="inputWindow">
@@ -7,7 +9,7 @@ export function PreparedSetsInput() {
           {/* Add more options here */}
         </select>
         <div className="confirmInputDiv">
-            <button type="button"  class="btn btn-outline-primary">Potvrdit</button>
+            <button type="button" className="btn btn-outline-primary">Potvrdit</button>
         </div>
       </div>
     );

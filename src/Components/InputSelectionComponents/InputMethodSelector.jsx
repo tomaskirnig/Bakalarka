@@ -41,7 +41,7 @@ export function InputMethodSelector() {
             id="btnradio1"
             autoComplete="off"
             checked={selectedOption === 'manual'}
-            onClick={() => handleOptionSelect('manual')}
+            onChange={() => handleOptionSelect('manual')}
           />
           <label className="btn btn-outline-primary" htmlFor="btnradio1">Manuálně</label>
 
@@ -52,7 +52,7 @@ export function InputMethodSelector() {
             id="btnradio2"
             autoComplete="off"
             checked={selectedOption === 'generate'}
-            onClick={() => handleOptionSelect('generate')}
+            onChange={() => handleOptionSelect('generate')}
           />
           <label className="btn btn-outline-primary" htmlFor="btnradio2">Generovat</label>
 
@@ -63,7 +63,7 @@ export function InputMethodSelector() {
             id="btnradio3"
             autoComplete="off"
             checked={selectedOption === 'sets'}
-            onClick={() => handleOptionSelect('sets')}
+            onChange={() => handleOptionSelect('sets')}
           />
           <label className="btn btn-outline-primary" htmlFor="btnradio3">Načíst ze sady</label>
        </div>
