@@ -4,7 +4,7 @@
     --color2: #2C666E;
     --color3: #07393C;
     --text-color: #0A090C;
-    --primary-color: #0d6efd;
+    --primary-color: #07393C;
 }
  
 
@@ -64,7 +64,69 @@
     padding: 20px;
     border-radius: 10px;
     margin-bottom: 10px;
+    max-width: 600px;
+    margin: auto;
+    margin-bottom: 30px;
+    
 }
-.inputWindow label, input{
-    margin: 10px;
+.inputWindow label, input, select{
+    margin: auto;
+    margin-top: 10px;
+    margin-bottom: 10px; 
+}
+
+/* RenderTree function */
+.treeNodeStyle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+}
+
+.nodeStyle {
+    padding: 10px;
+    border-radius: 50%;
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    position: relative;
+}
+
+.childrenContainerStyle {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+    position: relative;
+}
+
+.branchConnector {
+    position: absolute;
+    top: -10px;
+    width: 2px;
+    height: 20px;
+    background-color: #4CAF50;
+}
+
+.branchConnectorLeft {
+    left: -20px;
+    border-left: 2px solid #4CAF50;
+    height: 20px;
+    width: 50%;
+}
+
+.branchConnectorRight {
+    right: -20px;
+    border-right: 2px solid #4CAF50;
+    height: 20px;
+    width: 50%;
+}
+
+.lineHorizontal {
+    position: absolute;
+    top: -10px;
+    height: 2px;
+    width: 100%;
+    background-color: #4CAF50;
 }

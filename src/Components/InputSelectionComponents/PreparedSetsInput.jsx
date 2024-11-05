@@ -1,15 +1,15 @@
-import FileLoader from './FileLoader';
+// import FileLoader from './FileLoader';
 
-export function PreparedSetsInput() {
+export function PreparedSetsInput( {onTreeUpdate} ) {
     return (
       <div className="inputWindow">
         <label>Vybrat sadu:</label>
-        <select>
+        <select className="form-select">
           <option value="">Vybrat sadu</option>
           {/* Add more options here */}
         </select>
         <div className="confirmInputDiv">
-            <button type="button" className="btn btn-outline-primary">Potvrdit</button>
+            <button className='btn btn-primary' type="button">Potvrdit</button>
         </div>
       </div>
     );

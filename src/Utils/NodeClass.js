@@ -7,3 +7,4 @@ export class Node {
     this.varValue = varValue;  // For variable nodes, store the value inside []
   }
 }
+

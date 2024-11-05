@@ -1,6 +1,4 @@
 import { useState } from 'react'
-import 'bootstrap/dist/css/bootstrap.min.css';
-import './style.css'
 import { Navigation } from './Components/Navigation'
 import { HomePage } from './Components/HomePage';
 import { MCVP } from './Components/MCVP';

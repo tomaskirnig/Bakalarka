@@ -4,13 +4,14 @@ import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
 // import './style.css'; // Include your CSS here
 
-export function InputMethodSelector() {
+export function InputMethodSelector( {onTreeUpdate} ) {
   // State to track the selected option
   const [selectedOption, setSelectedOption] = useState('manual');
 
   // Function to handle tab selection
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
+    onTreeUpdate(null); // Reset the tree when the option is changed
   };
 
   return (
@@ -67,11 +68,12 @@ export function InputMethodSelector() {
           />
           <label className="btn btn-outline-primary" htmlFor="btnradio3">Načíst ze sady</label>
        </div>
+
        {/* Conditionally render the selected block */}
       <div className="input-block">
-        {selectedOption === 'manual' && <ManualInput />}
-        {selectedOption === 'generate' && <GenerateInput />}
-        {selectedOption === 'sets' && <PreparedSetsInput />}
+        {selectedOption === 'manual' && <ManualInput onTreeUpdate={onTreeUpdate}/>}
+        {selectedOption === 'generate' && <GenerateInput onTreeUpdate={onTreeUpdate}/>}
+        {selectedOption === 'sets' && <PreparedSetsInput onTreeUpdate={onTreeUpdate}/>}
       </div>
     </>
     
