@@ -52,9 +52,7 @@ export function TreeSVG({ tree }) {
                 width="800"
                 height="600"
                 style={{
-                    // backgroundColor: "#07393C",
                     borderRadius: "10px",
-                    // border: "1px solid #333",
                     margin: "20px auto",
                 }}
             >

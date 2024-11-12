@@ -13,7 +13,7 @@ function createGateNode(left, right) {
   return new Node(operator, left, right); // Create an operator node
 }
 
-// Function to generate the tree structure based on the number of gates and variables
+// Function to generate the tree  
 export function generateTree(numGates, numVariables) {
   const nodes = [];
 

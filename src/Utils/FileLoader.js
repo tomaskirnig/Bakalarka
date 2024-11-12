@@ -1,3 +1,11 @@
-const data = require('../../Sady/Sady.json');
+import data from '../../Sady/Sady.json';
 
-console.log(data);
+export function getData() {
+    return data;
+}
+
+export function printData() {
+    console.log(data);
+}
+
+
