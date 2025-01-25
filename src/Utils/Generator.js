@@ -8,8 +8,14 @@ function createVariableNode(varIndex) {
 }
 
 // Helper function to create a random operator node (A = AND, O = OR)
-function createGateNode(left, right) {
+function createGateNode(left, right = null) {
   const operator = Math.random() < 0.5 ? 'A' : 'O'; // Randomly choose between AND (A) and OR (O)
+
+  // If the right child is missing, duplicate the left child
+  // if (!right) {
+  //     right = left;
+  // }
+
   return new Node(operator, left, right); // Create an operator node
 }
 
@@ -19,27 +25,29 @@ export function generateTree(numGates, numVariables) {
 
   // Create variable nodes
   for (let i = 1; i <= numVariables; i++) {
-    nodes.push(createVariableNode(i));
+      nodes.push(createVariableNode(i));
   }
 
   // Create gates and combine nodes
   for (let i = 0; i < numGates; i++) {
-    if (nodes.length < 2) {
-      throw new Error("Not enough nodes to combine!");
-    }
+      if (nodes.length < 1) {
+          throw new Error("Not enough nodes to combine!");
+      }
 
-    // Randomly pick two nodes and remove them from the available nodes list
-    const left = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
-    const right = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
+      // Pick one or two nodes randomly
+      const left = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
+      const right = nodes.length > 0 
+          ? nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0] 
+          : null;
 
-    // Create a gate (AND or OR) and push the new node back into the list
-    const gateNode = createGateNode(left, right);
-    nodes.push(gateNode);
+      // Create a gate (AND or OR) and push the new node back into the list
+      const gateNode = createGateNode(left, right);
+      nodes.push(gateNode);
   }
 
   // The last remaining node is the root of the tree
   if (nodes.length !== 1) {
-    throw new Error("Tree generation failed, wrong number of nodes left.");
+      throw new Error("Tree generation failed, wrong number of nodes left.");
   }
 
   return nodes[0]; // Return the root of the tree

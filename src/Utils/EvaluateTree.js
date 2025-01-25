@@ -1,6 +1,7 @@
 import { Node } from "./NodeClass";
 
 export function evaluateTree(node) {
+    console.log("Evaluating tree");
     if (!node) {
         throw new Error("Node cannot be null");
     }
@@ -10,17 +11,17 @@ export function evaluateTree(node) {
         return node.varValue;
     }
 
-    // Evaluate the left and right subtrees
-    const leftValue = evaluateTree(node.left);
-    const rightValue = evaluateTree(node.right);
+    // Handle cases where the node has only one child
+    const leftValue = node.left ? evaluateTree(node.left) : null;
+    const rightValue = node.right ? evaluateTree(node.right) : leftValue; // Use left value if right is null
 
     // Apply the operator at this node
     if (node.value === 'A') {
         // AND operation
-        return leftValue && rightValue;
+        return (Boolean)(leftValue && rightValue); // Ensure boolean evaluation
     } else if (node.value === 'O') {
         // OR operation
-        return leftValue || rightValue;
+        return (Boolean)(leftValue || rightValue); // Ensure boolean evaluation
     } else {
         throw new Error(`Unknown operator: ${node.value}`);
     }

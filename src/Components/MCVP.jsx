@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelector';
 import { renderTree } from '../Utils/TreeRender';
+import { TreeCanvas } from '../Utils/TreeRenderCanvas';
 import { TreeSVG } from '../Utils/TreeRenderSVG';
 import { evaluateTree } from '../Utils/EvaluateTree';
 import { Modal } from './Modal';
@@ -29,7 +30,7 @@ export function MCVP() {
             {tree && <p>Result: {evaluateTree(tree) ? 'True' : 'False'}</p>}
 
             {/* Render the tree if it exists */}
-            {tree && <TreeSVG tree={tree} />}
+            {tree && <TreeCanvas tree={tree} />}
 
             <button className='btn btn-primary' onClick={() => handleExplainToggle(true)}> Vysvětlit</button>
 
