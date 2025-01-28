@@ -30,6 +30,7 @@ function tokenize(s) {
       tokens.push([match.kind, match.value]);
       pos += match.value.length;
     } else {
+      alert('Neočekávaný znak ' + s[pos] + ' na pozici ' + pos);
       throw new SyntaxError(`Unexpected character ${s[pos]} at position ${pos}`);
     }
   }
@@ -46,6 +47,7 @@ class Parser {
   parse() {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
+      alert('Chybná syntaxe vstupu!');
       throw new SyntaxError('Unexpected tokens at end of input');
     }
     return node;

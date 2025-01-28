@@ -3,11 +3,28 @@ import { Node } from "../../Utils/NodeClass";
 
 const nodeRadius = 20;
 
+const printTree = (node, depth = 0) => {
+  if (!node) return;
+
+  // Indent based on the depth of the node
+  const indentation = ' '.repeat(depth * 2);
+  console.log(`${indentation}- ${node.value} ${node.varValue} (x: ${node.x}, y: ${node.y})`);
+
+  // Recursively print left and right children
+  if (node.left) {
+    printTree(node.left, depth + 1);
+  }
+  if (node.right) {
+    printTree(node.right, depth + 1);
+  }
+};
+
 export function TreeBuilderCanvas() {
   const canvasRef = useRef(null);
+  const [rootNode, setRootNode] = useState(null);
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
-  const [selectedNode, setSelectedNode] = useState(null);
+  const [addingNode, setAddingNode] = useState(null);
   const [editingNode, setEditingNode] = useState(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
@@ -15,6 +32,20 @@ export function TreeBuilderCanvas() {
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
   const [usedVariableIndices, setUsedVariableIndices] = useState(new Set()); // Track used variable indices
+  
+  // Set the root node when the nodes change
+  useEffect(() => {
+    const foundRoot = nodes.find((n) => n.parent === null);
+    setRootNode(foundRoot || null);
+    console.log("New root Node:", foundRoot);
+  }, [nodes]);
+
+  // Log the updated tree whenever nodes change
+  useEffect(() => {
+    console.log("--- Current Tree ---");
+    console.log("Root Node:", rootNode);
+    printTree(rootNode);
+  }, [nodes, scale]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -35,7 +66,7 @@ export function TreeBuilderCanvas() {
         ctx.moveTo(from.x, from.y);
 
         // Double line for single child
-        if (from.right === null || from.left === null) {
+        if (from.right === null ^ from.left === null) {
           ctx.lineTo(to.x - 3, to.y);
           ctx.stroke();
           ctx.beginPath();
@@ -75,8 +106,8 @@ export function TreeBuilderCanvas() {
       ctx.textBaseline = "middle";
       ctx.fillText(
         node.type === "variable"
-          ? `${node.label}[${node.value}]`
-          : node.label,
+          ? `${node.value}[${node.varValue}]`
+          : node.value,
         node.x,
         node.y
       );
@@ -137,13 +168,15 @@ export function TreeBuilderCanvas() {
       const isRightPlus = Math.abs(node.x + nodeRadius + 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
 
       if (isParentPlus || isLeftPlus || isRightPlus) {
-        setSelectedNode({ node, type: isParentPlus ? "parent" : isLeftPlus ? "left" : "right" });
+        setAddingNode({ node, type: isParentPlus ? "parent" : isLeftPlus ? "left" : "right" });
+        setEditingNode(null);
         return true;
       }
 
       const isWithinNode = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) <= nodeRadius;
       if (isWithinNode) {
         setEditingNode(node);
+        setAddingNode(null);
         return true;
       }
       return false;
@@ -154,8 +187,12 @@ export function TreeBuilderCanvas() {
       const rootNode = new Node("operation", null, null, null);
       rootNode.x = x;
       rootNode.y = y;
-      rootNode.label = "+";
+      rootNode.value = "+";
       setNodes([rootNode]);
+      setRootNode(rootNode);
+    }else if (!clickedNode && nodes.length > 0) {
+      setAddingNode(null);
+      setEditingNode(null);
     }
   };
 
@@ -199,39 +236,97 @@ export function TreeBuilderCanvas() {
     setScale(1); // Reset scale to default
   };
 
-  const updateNode = (type, value = null) => {
+  // const updateNode = (type, varValue = null) => {
+  //   if (!editingNode) return;
+  
+  //   // Prevent changing a parent node with children to a variable
+  //   if (
+  //     type === "variable" &&
+  //     (nodes.some((node) => node.parent === editingNode) || editingNode.left || editingNode.right)
+  //   ) {
+  //     alert("Cannot change a parent node to a variable.");
+  //     return;
+  //   }
+  
+  //   const updatedNodes = nodes.map((node) => {
+  //     if (node === editingNode) {
+  //       // Create a new node object with updated properties
+  //       const updatedNode = {
+  //         ...node,
+  //         // type,
+  //         value: type === "variable" ? node.value : type, // Keep or set label
+  //         varValue: type === "variable" ? varValue : null, // Update value only for variables
+  //       };
+    
+  //       if (type === "variable" && node.value === "+") {
+  //         updatedNode.value = getNextVariableName();
+  //       }
+    
+  //       return updatedNode; // Return the updated node
+  //     }
+    
+  //     return node; // Return the unchanged node for other cases
+  //   });    
+  
+  //   setNodes(updatedNodes);
+  //   setEditingNode(null);
+  // };
+
+  const updateNode = (type, varValue = null) => {
     if (!editingNode) return;
   
     // Prevent changing a parent node with children to a variable
+    // (this check is presumably still valid for your case)
     if (
       type === "variable" &&
-      (nodes.some((node) => node.parent === editingNode) || editingNode.left || editingNode.right)
+      (nodes.some((node) => node.parent === editingNode) ||
+       editingNode.left ||
+       editingNode.right)
     ) {
       alert("Cannot change a parent node to a variable.");
       return;
     }
   
-    const updatedNodes = nodes.map((node) =>
-      node === editingNode
-        ? {
-            ...node,
-            type,
-            label: type === "variable" ? node.label : type, // Keep the label for variables
-            value: type === "variable" ? value : null, // Update value only for variables
+    const updatedNodes = nodes.map((node) => {
+      if (node === editingNode) {
+        const wasVariable = node.type === "variable";
+        const isVariable = type === "variable";
+  
+        // Create a new node object
+        const updatedNode = {
+          ...node,
+          type, // always update the type
+          varValue: isVariable ? varValue : null, // if we're now a variable, keep varValue
+        };
+  
+        if (isVariable) {
+          // If old type was not variable, assign a new name
+          if (!wasVariable) {
+            updatedNode.value = getNextVariableName();
+          } 
+          // If old type was already variable, keep the same name
+          else {
+            updatedNode.value = node.value;
           }
-        : node
-    );
+        } else {
+          // For an operator node, just use the type as the label, e.g. "OR"
+          updatedNode.value = type;
+        }
+  
+        return updatedNode;
+      }
+      return node;
+    });
   
     setNodes(updatedNodes);
     setEditingNode(null);
   };
   
   
-
-  const addNode = (type, value = null) => {
-    if (!selectedNode) return;
+  const addNode = (type, varValue = null) => {
+    if (!addingNode) return;
   
-    const { node, type: position } = selectedNode;
+    const { node, type: position } = addingNode;
   
     // Ensure variables cannot have children
     if (node.type === "variable" && position !== "parent") {
@@ -244,18 +339,22 @@ export function TreeBuilderCanvas() {
       return;
     }
   
-    const newNode = new Node(type, null, null, value);
+    const newNode = new Node(type, null, null, varValue, null);
     newNode.x = position === "left" ? node.x - 60 : position === "right" ? node.x + 60 : node.x;
     newNode.y = position === "parent" ? node.y - 100 : node.y + 100;
   
     if (type === "variable") {
-      newNode.label = getNextVariableName(); // Get next available variable name
+      newNode.value = getNextVariableName(); // Get next available variable name
+      newNode.varValue = varValue;
     } else {
-      newNode.label = type;
+      newNode.value = type;
     }
   
     if (position === "parent") {
       node.parent = newNode;
+      newNode.left = node;
+      setRootNode(newNode);
+      console.log("New root node:", newNode);
     } else {
       if (position === "left") node.left = newNode;
       if (position === "right") node.right = newNode;
@@ -263,7 +362,7 @@ export function TreeBuilderCanvas() {
   
     setEdges([...edges, { from: node, to: newNode }]);
     setNodes([...nodes, newNode]);
-    setSelectedNode(null);
+    setAddingNode(null);
   };
 
   const deleteNode = (nodeToDelete) => {
@@ -272,14 +371,14 @@ export function TreeBuilderCanvas() {
     const deleteRecursive = (node) => {
       // Release variable name if the node is a variable
       if (node.type === "variable") {
-        releaseVariableName(node.label);
+        releaseVariableName(node.value);
       }
       
       // Remove references from parent node
-    if (node.parent) {
-      if (node.parent.left === node) node.parent.left = null;
-      if (node.parent.right === node) node.parent.right = null;
-    }
+      if (node.parent) {
+        if (node.parent.left === node) node.parent.left = null;
+        if (node.parent.right === node) node.parent.right = null;
+      }
 
       // Delete children recursively
       if (node.left) deleteRecursive(node.left);
@@ -296,12 +395,16 @@ export function TreeBuilderCanvas() {
   
     deleteRecursive(nodeToDelete);
   
+    // If the node being deleted is the root, clear the root reference
+    if (nodeToDelete === rootNode) {
+      setRootNode(null);
+    }
+
     // Clear editing state if the node being deleted is currently being edited
     if (editingNode === nodeToDelete) {
       setEditingNode(null);
     }
   };
-  
 
   return (
     <div>
@@ -328,7 +431,7 @@ export function TreeBuilderCanvas() {
       ></canvas>
       {editingNode && (
         <div style={{ textAlign: "center", margin: "10px" }}>
-          <p>Editing Node: {editingNode.label}</p>
+          <p>Editing Node: {editingNode.value}</p>
           <button className="btn btn-primary mx-1" onClick={() => updateNode("AND")}>Change to AND</button>
           <button className="btn btn-primary mx-1" onClick={() => updateNode("OR")}>Change to OR</button>
           <button className="btn btn-primary mx-1" onClick={() => updateNode("variable", 0)}>Change to Variable (0)</button>
@@ -336,7 +439,7 @@ export function TreeBuilderCanvas() {
           <button className="btn btn-danger mx-1" onClick={() => deleteNode(editingNode)}>Delete Node</button>
         </div>
       )}
-      {selectedNode && (
+      {addingNode && (
         <div style={{ textAlign: "center", margin: "10px" }}>
           <button className="btn btn-primary mx-1" onClick={() => addNode("AND")}>Add AND</button>
           <button className="btn btn-primary mx-1" onClick={() => addNode("OR")}>Add OR</button>
