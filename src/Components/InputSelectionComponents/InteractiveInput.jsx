@@ -1,16 +1,15 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Node } from "../../Utils/NodeClass";
 
-const nodeRadius = 20;
+const nodeRadius = 25;
 
+// Debug print of the tree structure
 const printTree = (node, depth = 0) => {
   if (!node) return;
 
-  // Indent based on the depth of the node
   const indentation = ' '.repeat(depth * 2);
   console.log(`${indentation}- ${node.value} ${node.varValue} (x: ${node.x}, y: ${node.y})`);
 
-  // Recursively print left and right children
   if (node.left) {
     printTree(node.left, depth + 1);
   }
@@ -18,6 +17,51 @@ const printTree = (node, depth = 0) => {
     printTree(node.right, depth + 1);
   }
 };
+
+// For node layout
+const assignNodePositions = (root) => {
+  if (!root) return;
+
+  // We will do a BFS assigning each node an 'index' and 'level'
+  const queue = [{ node: root, level: 0, index: 1 }];
+  const levels = [];
+
+  while (queue.length > 0) {
+    const { node, level, index } = queue.shift();
+    if (!levels[level]) levels[level] = [];
+    levels[level].push({ node, index });
+
+    if (node.left) {
+      queue.push({ node: node.left, level: level + 1, index: index * 2 });
+    }
+    if (node.right) {
+      queue.push({ node: node.right, level: level + 1, index: index * 2 + 1 });
+    }
+  }
+
+  // Spacing constants — adjust as desired
+  const nodeSpacing = 120; // Horizontal space between nodes
+  const levelHeight = 100; // Vertical space between levels
+
+  // For each level, sort by 'index' and then position them
+  levels.forEach((levelNodes, levelIndex) => {
+    // Sort by index so they appear from left (smallest index) to right (largest index)
+    levelNodes.sort((a, b) => a.index - b.index);
+
+    const minIndex = levelNodes[0].index;
+    const maxIndex = levelNodes[levelNodes.length - 1].index;
+    const totalWidth = (maxIndex - minIndex) * nodeSpacing;
+
+    // Assign each node's x by how far its index is from minIndex
+    levelNodes.forEach(({ node, index }) => {
+      const offsetFromLeft = index - minIndex;
+      node.x = offsetFromLeft * nodeSpacing - totalWidth / 2; 
+      node.y = levelIndex * levelHeight;
+    });
+  });
+};
+
+// -----------------------------------------------------------------------------------------------
 
 export function TreeBuilderCanvas() {
   const canvasRef = useRef(null);
@@ -31,21 +75,23 @@ export function TreeBuilderCanvas() {
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
+
+  const usedVariableIndicesRef = useRef(new Set());
   const [usedVariableIndices, setUsedVariableIndices] = useState(new Set()); // Track used variable indices
   
   // Set the root node when the nodes change
   useEffect(() => {
     const foundRoot = nodes.find((n) => n.parent === null);
     setRootNode(foundRoot || null);
-    console.log("New root Node:", foundRoot);
+    // console.log("New root Node:", foundRoot);
   }, [nodes]);
 
   // Log the updated tree whenever nodes change
-  useEffect(() => {
-    console.log("--- Current Tree ---");
-    console.log("Root Node:", rootNode);
-    printTree(rootNode);
-  }, [nodes, scale]);
+  // useEffect(() => {
+  //   console.log("--- Current Tree ---");
+  //   // console.log("Root Node:", rootNode);
+  //   printTree(rootNode);
+  // }, [nodes, scale]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -66,7 +112,7 @@ export function TreeBuilderCanvas() {
         ctx.moveTo(from.x, from.y);
 
         // Double line for single child
-        if (from.right === null ^ from.left === null) {
+        if ((from.left === null) !== (from.right === null)) {
           ctx.lineTo(to.x - 3, to.y);
           ctx.stroke();
           ctx.beginPath();
@@ -104,13 +150,21 @@ export function TreeBuilderCanvas() {
       ctx.font = "14px Arial";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
-      ctx.fillText(
-        node.type === "variable"
-          ? `${node.value}[${node.varValue}]`
-          : node.value,
-        node.x,
-        node.y
-      );
+      if (node.value !== "+"){
+        ctx.fillText(
+          node.value === "OR" || node.value === "AND" ? node.value : `${node.value}[${node.varValue}]`,
+          node.x,
+          node.y
+        );
+      }else{
+        ctx.fillText(
+          node.value,
+          node.x,
+          node.y
+        );
+      }
+    
+      // console.log(`value: ${node.value}, varValue: ${node.varValue}`);
 
       // Draw "plus" signs
       if (node.type !== "variable" && node.left === null) {
@@ -127,27 +181,55 @@ export function TreeBuilderCanvas() {
     ctx.restore();
   }, [nodes, edges, editingNode, offset, scale]);
 
-  const getNextVariableName = () => {
-    let index = 1; // Start searching from x1
-    while (usedVariableIndices.has(index)) {
-      index++; // Increment until a free index is found
-    }
-    setUsedVariableIndices((prev) => new Set(prev).add(index)); // Mark index as used
-    return `x${index}`;
-  };  
+  // const getNextVariableName = () => {
+  //   let index = 1; // Start searching from x1
+  //   while (usedVariableIndices.has(index)) {
+  //     index++; // Increment until a free index is found
+  //   }
+  //   setUsedVariableIndices((prev) => new Set(prev).add(index)); // Mark index as used
+  //   return `x${index}`;
+  // };  
 
+  const getNextVariableName = () => {
+    let availableIndices = Array.from(usedVariableIndicesRef.current).sort((a, b) => a - b);
+    
+    let index = 1;
+    for (let i = 0; i < availableIndices.length; i++) {
+        if (availableIndices[i] !== index) break;
+        index++;
+    }
+
+    // Update both ref & state (ensures real-time updates)
+    usedVariableIndicesRef.current.add(index);
+    setUsedVariableIndices(new Set(usedVariableIndicesRef.current));
+
+    return `x${index}`;
+  };
+
+  // const releaseVariableName = (label) => {
+  //   const match = label.match(/x(\d+)/);
+  //   if (match) {
+  //     const index = parseInt(match[1], 10);
+  //     setUsedVariableIndices((prev) => {
+  //       const newSet = new Set(prev);
+  //       newSet.delete(index); // Mark index as available
+  //       return newSet;
+  //     });
+  //   }
+  // };
+  
   const releaseVariableName = (label) => {
     const match = label.match(/x(\d+)/);
     if (match) {
-      const index = parseInt(match[1], 10);
-      setUsedVariableIndices((prev) => {
-        const newSet = new Set(prev);
-        newSet.delete(index); // Mark index as available
-        return newSet;
-      });
+        const index = parseInt(match[1], 10);
+        
+        usedVariableIndicesRef.current.delete(index); // ✅ Update ref immediately
+        setUsedVariableIndices(new Set(usedVariableIndicesRef.current)); // Update state for UI
     }
   };
-  
+
+
+
   const drawPlus = (ctx, x, y) => {
     ctx.fillStyle = "#333";
     ctx.font = "12px Arial";
@@ -168,7 +250,7 @@ export function TreeBuilderCanvas() {
       const isRightPlus = Math.abs(node.x + nodeRadius + 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
 
       if (isParentPlus || isLeftPlus || isRightPlus) {
-        setAddingNode({ node, type: isParentPlus ? "parent" : isLeftPlus ? "left" : "right" });
+        setAddingNode({ node, position: isParentPlus ? "parent" : isLeftPlus ? "left" : "right" });
         setEditingNode(null);
         return true;
       }
@@ -176,6 +258,7 @@ export function TreeBuilderCanvas() {
       const isWithinNode = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) <= nodeRadius;
       if (isWithinNode) {
         setEditingNode(node);
+        console.log("Editing Node:", node);
         setAddingNode(null);
         return true;
       }
@@ -184,10 +267,10 @@ export function TreeBuilderCanvas() {
 
     if (!clickedNode && nodes.length === 0) {
       // Add a root node
-      const rootNode = new Node("operation", null, null, null);
+      const rootNode = new Node("+");
       rootNode.x = x;
       rootNode.y = y;
-      rootNode.value = "+";
+      // rootNode.value = "+";
       setNodes([rootNode]);
       setRootNode(rootNode);
     }else if (!clickedNode && nodes.length > 0) {
@@ -236,50 +319,13 @@ export function TreeBuilderCanvas() {
     setScale(1); // Reset scale to default
   };
 
-  // const updateNode = (type, varValue = null) => {
-  //   if (!editingNode) return;
-  
-  //   // Prevent changing a parent node with children to a variable
-  //   if (
-  //     type === "variable" &&
-  //     (nodes.some((node) => node.parent === editingNode) || editingNode.left || editingNode.right)
-  //   ) {
-  //     alert("Cannot change a parent node to a variable.");
-  //     return;
-  //   }
-  
-  //   const updatedNodes = nodes.map((node) => {
-  //     if (node === editingNode) {
-  //       // Create a new node object with updated properties
-  //       const updatedNode = {
-  //         ...node,
-  //         // type,
-  //         value: type === "variable" ? node.value : type, // Keep or set label
-  //         varValue: type === "variable" ? varValue : null, // Update value only for variables
-  //       };
-    
-  //       if (type === "variable" && node.value === "+") {
-  //         updatedNode.value = getNextVariableName();
-  //       }
-    
-  //       return updatedNode; // Return the updated node
-  //     }
-    
-  //     return node; // Return the unchanged node for other cases
-  //   });    
-  
-  //   setNodes(updatedNodes);
-  //   setEditingNode(null);
-  // };
-
-  const updateNode = (type, varValue = null) => {
+  const updateNode = (value, varValue = null) => {
     if (!editingNode) return;
   
     // Prevent changing a parent node with children to a variable
-    // (this check is presumably still valid for your case)
     if (
-      type === "variable" &&
-      (nodes.some((node) => node.parent === editingNode) ||
+      value === "variable" &&
+       (nodes.some((node) => node.parent === editingNode) ||
        editingNode.left ||
        editingNode.right)
     ) {
@@ -290,27 +336,27 @@ export function TreeBuilderCanvas() {
     const updatedNodes = nodes.map((node) => {
       if (node === editingNode) {
         const wasVariable = node.type === "variable";
-        const isVariable = type === "variable";
+        const isVariable = value === "variable";
   
         // Create a new node object
         const updatedNode = {
           ...node,
-          type, // always update the type
+          value, // always update the value
+          type: isVariable ? "variable" : "operation", // update the type
           varValue: isVariable ? varValue : null, // if we're now a variable, keep varValue
         };
   
         if (isVariable) {
-          // If old type was not variable, assign a new name
+          // If old value was not variable, assign a new name
           if (!wasVariable) {
             updatedNode.value = getNextVariableName();
-          } 
-          // If old type was already variable, keep the same name
-          else {
+          } else {  
+            // If old value was already variable, keep the same name
             updatedNode.value = node.value;
           }
         } else {
-          // For an operator node, just use the type as the label, e.g. "OR"
-          updatedNode.value = type;
+          // For an operator node, just use the value as the label, e.g. "OR"
+          updatedNode.value = value;
         }
   
         return updatedNode;
@@ -322,46 +368,62 @@ export function TreeBuilderCanvas() {
     setEditingNode(null);
   };
   
-  
-  const addNode = (type, varValue = null) => {
+  const addNode = (value, varValue = null) => {
     if (!addingNode) return;
   
-    const { node, type: position } = addingNode;
-  
+    const { node, position } = addingNode;
+
+    // console.log("new node value: ", node.value);
+    
     // Ensure variables cannot have children
     if (node.type === "variable" && position !== "parent") {
       alert("Variables cannot have children.");
       return;
     }
 
-    if (type === "variable" && position === "parent") {
+    if (value === "variable" && position === "parent") {
       alert("Variables cannot be parent nodes.");
       return;
     }
   
-    const newNode = new Node(type, null, null, varValue, null);
+    const newNode = new Node(value, null, null, varValue, null, value === "variable" ? "variable" : "operation");
     newNode.x = position === "left" ? node.x - 60 : position === "right" ? node.x + 60 : node.x;
     newNode.y = position === "parent" ? node.y - 100 : node.y + 100;
   
-    if (type === "variable") {
+    if (value === "variable") {
       newNode.value = getNextVariableName(); // Get next available variable name
       newNode.varValue = varValue;
     } else {
-      newNode.value = type;
+      newNode.value = value;
     }
   
     if (position === "parent") {
       node.parent = newNode;
       newNode.left = node;
       setRootNode(newNode);
-      console.log("New root node:", newNode);
+      // console.log("New root node:", newNode);
     } else {
-      if (position === "left") node.left = newNode;
-      if (position === "right") node.right = newNode;
+      if (position === "left"){
+        node.left = newNode;
+        newNode.parent = node;
+      } 
+      if (position === "right") {
+        node.right = newNode;
+        newNode.parent = node;
+      }
     }
-  
-    setEdges([...edges, { from: node, to: newNode }]);
-    setNodes([...nodes, newNode]);
+
+    console.log("new node: ", newNode);
+    
+    setEdges((prevEdges) => [...prevEdges, { from: node, to: newNode }]);
+
+    // setNodes((prevNodes) => [...prevNodes, newNode]);
+    setNodes((prevNodes) => {
+      const updatedNodes = [...prevNodes, newNode];
+      assignNodePositions(rootNode); 
+      return updatedNodes;
+    });
+
     setAddingNode(null);
   };
 
@@ -370,7 +432,7 @@ export function TreeBuilderCanvas() {
   
     const deleteRecursive = (node) => {
       // Release variable name if the node is a variable
-      if (node.type === "variable") {
+      if (node.value === "variable") {
         releaseVariableName(node.value);
       }
       
@@ -391,6 +453,13 @@ export function TreeBuilderCanvas() {
   
       // Remove the node itself
       setNodes((prevNodes) => prevNodes.filter((n) => n !== node));
+      // setNodes((prevNodes) => {
+      //   const updatedNodes = prevNodes.filter((n) => n !== nodeToDelete);
+      //   if (updatedNodes.length > 0) {
+      //     assignNodePositions(rootNode); 
+      //   }
+      //   return updatedNodes;
+      // });      
     };
   
     deleteRecursive(nodeToDelete);

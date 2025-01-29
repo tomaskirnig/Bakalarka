@@ -21,6 +21,8 @@
 
    > **Poznámka:** Aplikace vyžaduje nainstalovaný Node.js, protože obsahuje nástroj `npm`.
 
+## [Odkaz na stránku](bakalarka-eight.vercel.app)
+
 ## Funkcionality
 
 ### Co je zatím implementováno:
