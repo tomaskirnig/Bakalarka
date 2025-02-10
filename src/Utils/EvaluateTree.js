@@ -1,28 +1,46 @@
 import { Node } from "./NodeClass";
 
-export function evaluateTree(node) {
-    console.log("Evaluating tree");
+export function evaluateTree(node) {  
+    // decide what to do if node is null.
     if (!node) {
-        throw new Error("Node cannot be null");
+      return null;
     }
-
-    // If it's a variable node, return its value directly
-    if (node.varValue !== null) {
-        return node.varValue;
+  
+    // If it's a variable node, return its value directly.
+    if (node.type === "variable") {
+      return node.varValue;
     }
-
-    // Handle cases where the node has only one child
-    const leftValue = node.left ? evaluateTree(node.left) : null;
-    const rightValue = node.right ? evaluateTree(node.right) : leftValue; // Use left value if right is null
-
-    // Apply the operator at this node
+  
+    // Evaluate children.
+    let leftValue = node.left ? evaluateTree(node.left) : null;
+    let rightValue = node.right ? evaluateTree(node.right) : null;
+  
+    // If exactly one child exists, use that child's value for both operands.
+    if (leftValue === null && rightValue !== null) {
+      if (node.left === null && node.left.type === "operation") leftValue = null;
+      else leftValue = rightValue;
+    } else if (rightValue === null && leftValue !== null) {
+      if (node.right === null && node.left.type === "operation") rightValue = null;
+      else rightValue = leftValue;
+    }
+  
+    // If both operands are still null, the tree is incomplete.
+    if (leftValue === null || rightValue === null) {
+      return null;
+    }
+  
+    // Apply the operator at this node.
     if (node.value === 'A') {
-        // AND operation
-        return (Boolean)(leftValue && rightValue); // Ensure boolean evaluation
+      // AND operation.
+      const result = leftValue && rightValue;
+      console.log("AND:", leftValue, rightValue, "->", result);
+      return result;
     } else if (node.value === 'O') {
-        // OR operation
-        return (Boolean)(leftValue || rightValue); // Ensure boolean evaluation
+      // OR operation.
+      const result = leftValue || rightValue;
+      console.log("OR:", leftValue, rightValue, "->", result);
+      return result;
     } else {
-        throw new Error(`Unknown operator: ${node.value}`);
+      throw new Error(`Unknown operator: ${node.value}`);
     }
-}
+  }

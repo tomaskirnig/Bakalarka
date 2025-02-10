@@ -30,8 +30,8 @@ const styles = {
         backgroundColor: '#fff',
         padding: '20px',
         borderRadius: '8px',
-        maxWidth: '500px',
-        width: '100%',
+        width: '95%',
+        height: '95%',
         textAlign: 'center',
     },
     content: {

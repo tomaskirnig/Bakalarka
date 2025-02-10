@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Node } from "../../Utils/NodeClass";
+import { evaluateTree } from "../../Utils/EvaluateTree";
 
-const nodeRadius = 25;
 
 // Debug print of the tree structure
 const printTree = (node, depth = 0) => {
   if (!node) return;
 
   const indentation = ' '.repeat(depth * 2);
-  console.log(`${indentation}- ${node.value} ${node.varValue} (x: ${node.x}, y: ${node.y})`);
+  console.log(`${indentation}- ${node.value} ${node.varValue} `); // (x: ${node.x}, y: ${node.y})
 
   if (node.left) {
     printTree(node.left, depth + 1);
@@ -18,19 +18,122 @@ const printTree = (node, depth = 0) => {
   }
 };
 
-// For node layout
-const assignNodePositions = (root) => {
-  if (!root) return;
+// ─── Unique ID Generator ───────────────────────────────────────────────
+let nextId = 1;
+function generateId() {
+  return nextId++;
+}
 
-  // We will do a BFS assigning each node an 'index' and 'level'
+// ─── Helper Functions for Immutable Tree Updates ─────────────────────────
+
+// cloneTree: Recursively clone a tree (or subtree) while preserving each node’s id,
+function cloneTree(node, parent = null) {
+  if (!node) return null;
+  const newNode = new Node(node.value, null, null, node.varValue, parent, node.type);
+  newNode.id = generateId();
+  newNode.x = node.x;
+  newNode.y = node.y;
+  newNode.left = cloneTree(node.left, newNode);
+  newNode.right = cloneTree(node.right, newNode);
+  return newNode;
+}
+
+// addChildToTree: Add a child node (or add a new parent) to the node with targetId.
+function addChildToTree(node, targetId, position, childToAdd) {
+  if (!node) return null;
+  if (node.id === targetId) {
+    const newNode = cloneTree(node);
+    if (position === "parent") {
+      // Create a new parent node; the current node becomes its left child.
+      const newParent = cloneTree(childToAdd);
+      newParent.left = newNode;
+      newNode.parent = newParent;
+      return newParent;
+    } else if (position === "left") {
+      if (newNode.left) {
+        alert("Left child already exists.");
+        return newNode;
+      }
+      childToAdd.parent = newNode;
+      newNode.left = cloneTree(childToAdd, newNode);
+    } else if (position === "right") {
+      if (newNode.right) {
+        alert("Right child already exists.");
+        return newNode;
+      }
+      childToAdd.parent = newNode;
+      newNode.right = cloneTree(childToAdd, newNode);
+    }
+    return newNode;
+  }
+  // Recurse on children.
+  const newNode = cloneTree(node);
+  newNode.left = addChildToTree(node.left, targetId, position, childToAdd);
+  if (newNode.left) newNode.left.parent = newNode;
+  newNode.right = addChildToTree(node.right, targetId, position, childToAdd);
+  if (newNode.right) newNode.right.parent = newNode;
+  return newNode;
+}
+
+// updateNodeInTree: Update the node (identified by targetId) with new values.
+function updateNodeInTree(node, targetId, newValue, newVarValue, getNextVariableName) {
+  if (!node) return null;
+  if (node.id === targetId) {
+    const newNode = cloneTree(node);
+    if (newValue === "variable") {
+      if (newNode.type !== "variable") {
+        // If the node isn’t already a variable, assign a new variable name.
+        newNode.value = getNextVariableName();
+      }
+      newNode.type = "variable";
+      newNode.varValue = newVarValue;
+    } else {
+      newNode.value = newValue;
+      newNode.type = "operation";
+      newNode.varValue = null;
+    }
+    return newNode;
+  }
+  const newNode = cloneTree(node);
+  newNode.left = updateNodeInTree(node.left, targetId, newValue, newVarValue, getNextVariableName);
+  if (newNode.left) newNode.left.parent = newNode;
+  newNode.right = updateNodeInTree(node.right, targetId, newValue, newVarValue, getNextVariableName);
+  if (newNode.right) newNode.right.parent = newNode;
+  return newNode;
+}
+
+// deleteNodeFromTree: Remove the node (and its subtree) identified by targetId.
+function deleteNodeFromTree(node, targetId) {
+  if (!node) return null;
+  if (node.id === targetId) {
+    return null;
+  }
+  const newNode = cloneTree(node);
+  newNode.left = deleteNodeFromTree(node.left, targetId);
+  if (newNode.left) newNode.left.parent = newNode;
+  newNode.right = deleteNodeFromTree(node.right, targetId);
+  if (newNode.right) newNode.right.parent = newNode;
+  return newNode;
+}
+
+// ─── Layout: Derive Render Data from the Tree ─────────────────────────────
+
+// (using BFS) assign each node a render position (renderX, renderY)
+function getTreeLayout(root) {
+  if (!root) return { nodes: [], edges: [] };
   const queue = [{ node: root, level: 0, index: 1 }];
-  const levels = [];
-
+  const levels = {};
+  const nodes = [];
+  const edges = [];
+  
   while (queue.length > 0) {
     const { node, level, index } = queue.shift();
     if (!levels[level]) levels[level] = [];
     levels[level].push({ node, index });
-
+    nodes.push(node);
+    if (node.parent) {
+      edges.push({ from: node.parent, to: node });
+    }
     if (node.left) {
       queue.push({ node: node.left, level: level + 1, index: index * 2 });
     }
@@ -38,443 +141,341 @@ const assignNodePositions = (root) => {
       queue.push({ node: node.right, level: level + 1, index: index * 2 + 1 });
     }
   }
-
-  // Spacing constants — adjust as desired
-  const nodeSpacing = 120; // Horizontal space between nodes
-  const levelHeight = 100; // Vertical space between levels
-
-  // For each level, sort by 'index' and then position them
-  levels.forEach((levelNodes, levelIndex) => {
-    // Sort by index so they appear from left (smallest index) to right (largest index)
+  
+  const nodeSpacing = 120;
+  const levelHeight = 100;
+  
+  Object.keys(levels).forEach(lvl => {
+    const levelNodes = levels[lvl];
     levelNodes.sort((a, b) => a.index - b.index);
-
     const minIndex = levelNodes[0].index;
     const maxIndex = levelNodes[levelNodes.length - 1].index;
     const totalWidth = (maxIndex - minIndex) * nodeSpacing;
-
-    // Assign each node's x by how far its index is from minIndex
     levelNodes.forEach(({ node, index }) => {
-      const offsetFromLeft = index - minIndex;
-      node.x = offsetFromLeft * nodeSpacing - totalWidth / 2; 
-      node.y = levelIndex * levelHeight;
+      node.renderX = (index - minIndex) * nodeSpacing - totalWidth / 2 + root.x;
+      node.renderY = parseInt(lvl, 10) * levelHeight + root.y;
     });
   });
-};
+  
+  return { nodes, edges };
+}
 
-// -----------------------------------------------------------------------------------------------
-
+// ─── Main React Component ───────────────────────────────────────────────────
 export function TreeBuilderCanvas() {
   const canvasRef = useRef(null);
-  const [rootNode, setRootNode] = useState(null);
-  const [nodes, setNodes] = useState([]);
-  const [edges, setEdges] = useState([]);
-  const [addingNode, setAddingNode] = useState(null);
-  const [editingNode, setEditingNode] = useState(null);
+  const [tree, setTree] = useState(null);                     // The entire tree is stored as a single root node.
+  const [editingNodeId, setEditingNodeId] = useState(null);   // To know which node is being edited (by its id).
+  const [addingNode, setAddingNode] = useState(null);         // When adding a node, we store the target node id and the desired position.
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [dragging, setDragging] = useState(false);
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [hovering, setHovering] = useState(false);
-
-  const usedVariableIndicesRef = useRef(new Set());
-  const [usedVariableIndices, setUsedVariableIndices] = useState(new Set()); // Track used variable indices
+  const [evaluationResult, setEvaluationResult] = useState(null);
   
-  // Set the root node when the nodes change
-  useEffect(() => {
-    const foundRoot = nodes.find((n) => n.parent === null);
-    setRootNode(foundRoot || null);
-    // console.log("New root Node:", foundRoot);
-  }, [nodes]);
-
-  // Log the updated tree whenever nodes change
-  // useEffect(() => {
-  //   console.log("--- Current Tree ---");
-  //   // console.log("Root Node:", rootNode);
-  //   printTree(rootNode);
-  // }, [nodes, scale]);
-
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-
-    // Clear canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    // Apply transformations for movement and scaling
-    ctx.save();
-    ctx.translate(offset.x, offset.y);
-    ctx.scale(scale, scale);
-
-    // Draw edges
-    edges.forEach(({ from, to }) => {
-      if (from && to) {
-        ctx.beginPath();
-        ctx.moveTo(from.x, from.y);
-
-        // Double line for single child
-        if ((from.left === null) !== (from.right === null)) {
-          ctx.lineTo(to.x - 3, to.y);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.moveTo(from.x + 3, from.y);
-        }
-
-        ctx.lineTo(to.x, to.y);
-        ctx.strokeStyle = "#333";
-        ctx.stroke();
-      }
-    });
-
-    // Draw nodes
-    nodes.forEach((node) => {
-      // Highlight selected node
-      if (node === editingNode) {
-        ctx.beginPath();
-        ctx.arc(node.x, node.y, nodeRadius + 3, 0, Math.PI * 2);
-        ctx.strokeStyle = "#2C666E"; // Highlight color
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-
-      // Draw node circle
-      ctx.beginPath();
-      ctx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "#07393C"; // Consistent node color
-      ctx.fill();
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Draw node text
-      ctx.fillStyle = "#F0EDEE";
-      ctx.font = "14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      if (node.value !== "+"){
-        ctx.fillText(
-          node.value === "OR" || node.value === "AND" ? node.value : `${node.value}[${node.varValue}]`,
-          node.x,
-          node.y
-        );
-      }else{
-        ctx.fillText(
-          node.value,
-          node.x,
-          node.y
-        );
-      }
-    
-      // console.log(`value: ${node.value}, varValue: ${node.varValue}`);
-
-      // Draw "plus" signs
-      if (node.type !== "variable" && node.left === null) {
-        drawPlus(ctx, node.x - nodeRadius - 15, node.y + nodeRadius + 10, "left");
-      }
-      if (node.type !== "variable" && node.right === null) {
-        drawPlus(ctx, node.x + nodeRadius + 15, node.y + nodeRadius + 10, "right");
-      }
-      if (!node.parent) {
-        drawPlus(ctx, node.x, node.y - nodeRadius - 15, "parent");
-      }
-    });
-
-    ctx.restore();
-  }, [nodes, edges, editingNode, offset, scale]);
-
-  // const getNextVariableName = () => {
-  //   let index = 1; // Start searching from x1
-  //   while (usedVariableIndices.has(index)) {
-  //     index++; // Increment until a free index is found
-  //   }
-  //   setUsedVariableIndices((prev) => new Set(prev).add(index)); // Mark index as used
-  //   return `x${index}`;
-  // };  
-
+  // ─── Variable Naming Helpers ─────────────────────────────
+  // These help assign unique variable names when a node becomes a variable.
+  const usedVariableIndicesRef = useRef(new Set());
+  
   const getNextVariableName = () => {
     let availableIndices = Array.from(usedVariableIndicesRef.current).sort((a, b) => a - b);
-    
     let index = 1;
     for (let i = 0; i < availableIndices.length; i++) {
-        if (availableIndices[i] !== index) break;
-        index++;
+      if (availableIndices[i] !== index) break;
+      index++;
     }
-
-    // Update both ref & state (ensures real-time updates)
     usedVariableIndicesRef.current.add(index);
-    setUsedVariableIndices(new Set(usedVariableIndicesRef.current));
-
     return `x${index}`;
   };
-
-  // const releaseVariableName = (label) => {
-  //   const match = label.match(/x(\d+)/);
-  //   if (match) {
-  //     const index = parseInt(match[1], 10);
-  //     setUsedVariableIndices((prev) => {
-  //       const newSet = new Set(prev);
-  //       newSet.delete(index); // Mark index as available
-  //       return newSet;
-  //     });
-  //   }
-  // };
   
   const releaseVariableName = (label) => {
     const match = label.match(/x(\d+)/);
     if (match) {
-        const index = parseInt(match[1], 10);
-        
-        usedVariableIndicesRef.current.delete(index); // ✅ Update ref immediately
-        setUsedVariableIndices(new Set(usedVariableIndicesRef.current)); // Update state for UI
+      const index = parseInt(match[1], 10);
+      usedVariableIndicesRef.current.delete(index);
     }
   };
-
-
-
+  
+  // Recompute the evaluation result whenever the tree changes.
+  useEffect(() => {
+    if (tree) {
+      try {
+        console.log("Evaluationg tree:");
+        const result = evaluateTree(tree);
+        setEvaluationResult(result);
+      } catch (error) {
+        console.error("Error evaluating tree:", error);
+        setEvaluationResult(null);
+      }
+    } else {
+      setEvaluationResult(null);
+    }
+  }, [tree]);
+  
+  // ─── Canvas Rendering ─────────────────────────────────────────────
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    
+    // Clear the canvas.
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(offset.x, offset.y);
+    ctx.scale(scale, scale);
+    
+    const { nodes: derivedNodes, edges } = tree ? getTreeLayout(tree) : { nodes: [], edges: [] };
+    
+    // Draw edges.
+    edges.forEach(({ from, to }) => {
+      if (from && to) {
+        if ((from.left === null) !== (from.right === null)) {
+          // Draw left offset line.
+          ctx.beginPath();
+          ctx.moveTo(from.renderX - 3, from.renderY);
+          ctx.lineTo(to.renderX - 3, to.renderY);
+          ctx.strokeStyle = "#333";
+          ctx.stroke();
+        
+          // Draw right offset line.
+          ctx.beginPath();
+          ctx.moveTo(from.renderX + 3, from.renderY);
+          ctx.lineTo(to.renderX + 3, to.renderY);
+          ctx.stroke();
+        } else {
+          // For nodes with two children, draw a single line.
+          ctx.beginPath();
+          ctx.moveTo(from.renderX, from.renderY);
+          ctx.lineTo(to.renderX, to.renderY);
+          ctx.strokeStyle = "#333";
+          ctx.stroke();
+        }        
+      }
+    });
+    
+    const nodeRadius = 25;
+    
+    // Draw nodes.
+    derivedNodes.forEach(node => {
+      // Highlight the node if it is currently being edited.
+      if (node.id === editingNodeId) {
+        ctx.beginPath();
+        ctx.arc(node.renderX, node.renderY, nodeRadius + 3, 0, Math.PI * 2);
+        ctx.strokeStyle = "#2C666E";
+        ctx.lineWidth = 3;
+        ctx.stroke();
+      }
+      
+      // Draw the node circle.
+      ctx.beginPath();
+      ctx.arc(node.renderX, node.renderY, nodeRadius, 0, Math.PI * 2);
+      ctx.fillStyle = "#07393C";
+      ctx.fill();
+      ctx.strokeStyle = "#333";
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      
+      // Draw the node text.
+      ctx.fillStyle = "#F0EDEE";
+      ctx.font = "14px Arial";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      if (node.type === "variable") ctx.fillText(`${node.value}[${node.varValue}]`, node.renderX, node.renderY);
+      else ctx.fillText(node.value, node.renderX, node.renderY);
+      
+      // Draw plus signs for adding children (if the node isn’t a variable).
+      if (node.type !== "variable") {
+        if (!node.left) {
+          drawPlus(ctx, node.renderX - nodeRadius - 15, node.renderY + nodeRadius + 10);
+        }
+        if (!node.right) {
+          drawPlus(ctx, node.renderX + nodeRadius + 15, node.renderY + nodeRadius + 10);
+        }
+      }
+      // Draw a plus sign for adding a parent (only for the current root).
+      if (!node.parent) {
+        drawPlus(ctx, node.renderX, node.renderY - nodeRadius - 15);
+      }
+    });
+    
+    ctx.restore();
+  }, [tree, editingNodeId, offset, scale]);
+  
+  // Helper to draw a “plus” sign.
   const drawPlus = (ctx, x, y) => {
     ctx.fillStyle = "#333";
     ctx.font = "12px Arial";
     ctx.textAlign = "center";
     ctx.fillText("+", x, y);
   };
-
+  
+  // ─── Mouse and Interaction Handlers ─────────────────────────────
+  
+  // Get a node (from the derived data) at a given canvas position.
+  const getNodeAtPosition = (x, y) => {
+    if (!tree) return null;
+    const { nodes: derivedNodes } = getTreeLayout(tree);
+    const nodeRadius = 25;
+    return derivedNodes.find(node => {
+      const dx = node.renderX - x;
+      const dy = node.renderY - y;
+      return Math.sqrt(dx * dx + dy * dy) <= nodeRadius;
+    });
+  };
+  
+  // Check if a plus sign is at the given position.
+  const getPlusSignAtPosition = (x, y) => {
+    if (!tree) return null;
+    const { nodes: derivedNodes } = getTreeLayout(tree);
+    const nodeRadius = 25;
+    for (let node of derivedNodes) {
+      // Parent plus (for the root).
+      if (
+        !node.parent &&
+        Math.abs(node.renderX - x) <= 10 &&
+        Math.abs((node.renderY - nodeRadius - 15) - y) <= 10
+      ) {
+        return { nodeId: node.id, position: "parent" };
+      }
+      // Left plus.
+      if (
+        Math.abs((node.renderX - nodeRadius - 15) - x) <= 10 &&
+        Math.abs((node.renderY + nodeRadius + 10) - y) <= 10
+      ) {
+        return { nodeId: node.id, position: "left" };
+      }
+      // Right plus.
+      if (
+        Math.abs((node.renderX + nodeRadius + 15) - x) <= 10 &&
+        Math.abs((node.renderY + nodeRadius + 10) - y) <= 10
+      ) {
+        return { nodeId: node.id, position: "right" };
+      }
+    }
+    return null;
+  };
+  
+  // When the canvas is clicked.
   const handleCanvasClick = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
+    // Convert screen coordinates to canvas coordinates.
     const x = (e.clientX - rect.left - offset.x) / scale;
     const y = (e.clientY - rect.top - offset.y) / scale;
-
-    // Check if user clicked on a "plus" sign
-    const clickedNode = nodes.find((node) => {
-      const isParentPlus = !node.parent && Math.abs(node.x - x) <= 10 && Math.abs(node.y - nodeRadius - 15 - y) <= 10;
-      const isLeftPlus = Math.abs(node.x - nodeRadius - 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
-      const isRightPlus = Math.abs(node.x + nodeRadius + 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
-
-      if (isParentPlus || isLeftPlus || isRightPlus) {
-        setAddingNode({ node, position: isParentPlus ? "parent" : isLeftPlus ? "left" : "right" });
-        setEditingNode(null);
-        return true;
-      }
-
-      const isWithinNode = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) <= nodeRadius;
-      if (isWithinNode) {
-        setEditingNode(node);
-        console.log("Editing Node:", node);
-        setAddingNode(null);
-        return true;
-      }
-      return false;
-    });
-
-    if (!clickedNode && nodes.length === 0) {
-      // Add a root node
-      const rootNode = new Node("+");
-      rootNode.x = x;
-      rootNode.y = y;
-      // rootNode.value = "+";
-      setNodes([rootNode]);
-      setRootNode(rootNode);
-    }else if (!clickedNode && nodes.length > 0) {
+    
+    const plusData = getPlusSignAtPosition(x, y);
+    if (plusData) {
+      setAddingNode(plusData);
+      setEditingNodeId(null);
+      return;
+    }
+    
+    const clickedNode = getNodeAtPosition(x, y);
+    if (clickedNode) {
+      setEditingNodeId(clickedNode.id);
+      console.log("Clicked node:", clickedNode);
       setAddingNode(null);
-      setEditingNode(null);
+      return;
+    }
+    
+    // If there’s no tree yet, create a root node.
+    if (!tree) {
+      const newRoot = new Node("+");
+      newRoot.id = generateId();
+      newRoot.x = x;
+      newRoot.y = y;
+      setTree(newRoot);
+    } else {
+      setAddingNode(null);
+      setEditingNodeId(null);
     }
   };
-
+  
   const handleMouseMove = (e) => {
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = (e.clientX - rect.left - offset.x) / scale;
     const y = (e.clientY - rect.top - offset.y) / scale;
-
+    
     if (dragging) {
       const dx = e.clientX - dragStart.x;
       const dy = e.clientY - dragStart.y;
       setOffset({ x: dx, y: dy });
     }
-
-    // Change cursor to pointer if hovering over node or plus sign
-    const isHovering = nodes.some((node) => {
-      const isWithinNode = Math.sqrt((node.x - x) ** 2 + (node.y - y) ** 2) <= nodeRadius;
-      const isParentPlus = !node.parent && Math.abs(node.x - x) <= 10 && Math.abs(node.y - nodeRadius - 15 - y) <= 10;
-      const isLeftPlus = Math.abs(node.x - nodeRadius - 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
-      const isRightPlus = Math.abs(node.x + nodeRadius + 15 - x) <= 10 && Math.abs(node.y + nodeRadius + 10 - y) <= 10;
-      return isWithinNode || isParentPlus || isLeftPlus || isRightPlus;
-    });
-
-    setHovering(isHovering);
+    
+    const node = getNodeAtPosition(x, y);
+    const plus = getPlusSignAtPosition(x, y);
+    setHovering(!!node || !!plus);
   };
-
+  
   const handleMouseDown = (e) => {
     setDragging(true);
     setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
   };
-
-  const handleMouseUp = () => setDragging(false);
-
+  
+  const handleMouseUp = () => {
+    setDragging(false);
+  };
+  
   const handleZoom = (direction) => {
-    setScale((prevScale) => Math.max(0.1, prevScale + direction * 0.1));
+    setScale(prev => Math.max(0.1, prev + direction * 0.1));
   };
-
+  
   const handleCenter = () => {
-    setOffset({ x: 0, y: 0 }); // Reset offset to default
-    setScale(1); // Reset scale to default
+    setOffset({ x: 0, y: 0 });
+    setScale(1);
   };
-
-  const updateNode = (value, varValue = null) => {
-    if (!editingNode) return;
   
-    // Prevent changing a parent node with children to a variable
-    if (
-      value === "variable" &&
-       (nodes.some((node) => node.parent === editingNode) ||
-       editingNode.left ||
-       editingNode.right)
-    ) {
-      alert("Cannot change a parent node to a variable.");
-      return;
-    }
+  // ─── Button Actions for Editing and Adding Nodes ─────────────────────
   
-    const updatedNodes = nodes.map((node) => {
-      if (node === editingNode) {
-        const wasVariable = node.type === "variable";
-        const isVariable = value === "variable";
-  
-        // Create a new node object
-        const updatedNode = {
-          ...node,
-          value, // always update the value
-          type: isVariable ? "variable" : "operation", // update the type
-          varValue: isVariable ? varValue : null, // if we're now a variable, keep varValue
-        };
-  
-        if (isVariable) {
-          // If old value was not variable, assign a new name
-          if (!wasVariable) {
-            updatedNode.value = getNextVariableName();
-          } else {  
-            // If old value was already variable, keep the same name
-            updatedNode.value = node.value;
-          }
-        } else {
-          // For an operator node, just use the value as the label, e.g. "OR"
-          updatedNode.value = value;
-        }
-  
-        return updatedNode;
-      }
-      return node;
-    });
-  
-    setNodes(updatedNodes);
-    setEditingNode(null);
+  const updateNode = (newValue, newVarValue = null) => {
+    if (!editingNodeId || !tree) return;
+    const updatedTree = updateNodeInTree(
+      tree,
+      editingNodeId,
+      newValue,
+      newVarValue,
+      getNextVariableName
+    );
+    setTree(updatedTree);
+    setEditingNodeId(null);
   };
   
   const addNode = (value, varValue = null) => {
-    if (!addingNode) return;
-  
-    const { node, position } = addingNode;
-
-    // console.log("new node value: ", node.value);
-    
-    // Ensure variables cannot have children
-    if (node.type === "variable" && position !== "parent") {
+    if (!addingNode || !tree) return;
+    const { nodeId, position } = addingNode;
+    const { nodes: derivedNodes } = getTreeLayout(tree);
+    const targetNode = derivedNodes.find(n => n.id === nodeId);
+    if (!targetNode) return;
+    if (targetNode.type === "variable" && position !== "parent") {
       alert("Variables cannot have children.");
       return;
     }
-
     if (value === "variable" && position === "parent") {
       alert("Variables cannot be parent nodes.");
       return;
     }
-  
     const newNode = new Node(value, null, null, varValue, null, value === "variable" ? "variable" : "operation");
-    newNode.x = position === "left" ? node.x - 60 : position === "right" ? node.x + 60 : node.x;
-    newNode.y = position === "parent" ? node.y - 100 : node.y + 100;
-  
+    newNode.id = generateId();
+    if (position === "left") {
+      newNode.x = targetNode.renderX - 60;
+      newNode.y = targetNode.renderY + 100;
+    } else if (position === "right") {
+      newNode.x = targetNode.renderX + 60;
+      newNode.y = targetNode.renderY + 100;
+    } else if (position === "parent") {
+      newNode.x = targetNode.renderX;
+      newNode.y = targetNode.renderY - 100;
+    }
     if (value === "variable") {
-      newNode.value = getNextVariableName(); // Get next available variable name
+      newNode.value = getNextVariableName();
       newNode.varValue = varValue;
-    } else {
-      newNode.value = value;
     }
-  
-    if (position === "parent") {
-      node.parent = newNode;
-      newNode.left = node;
-      setRootNode(newNode);
-      // console.log("New root node:", newNode);
-    } else {
-      if (position === "left"){
-        node.left = newNode;
-        newNode.parent = node;
-      } 
-      if (position === "right") {
-        node.right = newNode;
-        newNode.parent = node;
-      }
-    }
-
-    console.log("new node: ", newNode);
-    
-    setEdges((prevEdges) => [...prevEdges, { from: node, to: newNode }]);
-
-    // setNodes((prevNodes) => [...prevNodes, newNode]);
-    setNodes((prevNodes) => {
-      const updatedNodes = [...prevNodes, newNode];
-      assignNodePositions(rootNode); 
-      return updatedNodes;
-    });
-
+    const updatedTree = addChildToTree(tree, nodeId, position, newNode);
+    setTree(updatedTree);
     setAddingNode(null);
   };
-
-  const deleteNode = (nodeToDelete) => {
-    if (!nodeToDelete) return;
   
-    const deleteRecursive = (node) => {
-      // Release variable name if the node is a variable
-      if (node.value === "variable") {
-        releaseVariableName(node.value);
-      }
-      
-      // Remove references from parent node
-      if (node.parent) {
-        if (node.parent.left === node) node.parent.left = null;
-        if (node.parent.right === node) node.parent.right = null;
-      }
-
-      // Delete children recursively
-      if (node.left) deleteRecursive(node.left);
-      if (node.right) deleteRecursive(node.right);
-  
-      // Remove edges connected to this node
-      setEdges((prevEdges) =>
-        prevEdges.filter((edge) => edge.from !== node && edge.to !== node)
-      );
-  
-      // Remove the node itself
-      setNodes((prevNodes) => prevNodes.filter((n) => n !== node));
-      // setNodes((prevNodes) => {
-      //   const updatedNodes = prevNodes.filter((n) => n !== nodeToDelete);
-      //   if (updatedNodes.length > 0) {
-      //     assignNodePositions(rootNode); 
-      //   }
-      //   return updatedNodes;
-      // });      
-    };
-  
-    deleteRecursive(nodeToDelete);
-  
-    // If the node being deleted is the root, clear the root reference
-    if (nodeToDelete === rootNode) {
-      setRootNode(null);
-    }
-
-    // Clear editing state if the node being deleted is currently being edited
-    if (editingNode === nodeToDelete) {
-      setEditingNode(null);
-    }
-  };
-
+  // ─── Render ─────────────────────────────────────────────────────────────
   return (
     <div>
       <div style={{ textAlign: "center", margin: "10px" }}>
@@ -482,15 +483,20 @@ export function TreeBuilderCanvas() {
         <button className="btn btn-primary mx-1" onClick={() => handleZoom(-1)}>Zoom Out</button>
         <button className="btn btn-primary mx-1" onClick={handleCenter}>Center</button>
       </div>
+      <div style={{ textAlign: "center", margin: "10px" }}>
+        <span>
+          Result: {evaluationResult !== null ? String(Boolean(evaluationResult)) : "Tree not complete"}
+        </span>
+      </div>
       <canvas
         ref={canvasRef}
-        width="800"
+        width="1000"
         height="600"
         style={{
           border: "1px solid #ccc",
           display: "block",
           margin: "20px auto",
-          cursor: dragging ? "grabbing" : hovering ? "pointer" : "grab",
+          cursor: dragging ? "grabbing" : hovering ? "pointer" : "grab"
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
@@ -498,24 +504,58 @@ export function TreeBuilderCanvas() {
         onMouseLeave={handleMouseUp}
         onClick={handleCanvasClick}
       ></canvas>
-      {editingNode && (
+      {editingNodeId && (
         <div style={{ textAlign: "center", margin: "10px" }}>
-          <p>Editing Node: {editingNode.value}</p>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("AND")}>Change to AND</button>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("OR")}>Change to OR</button>
+          <p>Editing Node: {editingNodeId}</p>
+          <button className="btn btn-primary mx-1" onClick={() => updateNode("A")}>Change to AND</button>
+          <button className="btn btn-primary mx-1" onClick={() => updateNode("O")}>Change to OR</button>
           <button className="btn btn-primary mx-1" onClick={() => updateNode("variable", 0)}>Change to Variable (0)</button>
           <button className="btn btn-primary mx-1" onClick={() => updateNode("variable", 1)}>Change to Variable (1)</button>
-          <button className="btn btn-danger mx-1" onClick={() => deleteNode(editingNode)}>Delete Node</button>
+          <button className="btn btn-danger mx-1"
+            onClick={() => {
+              const updatedTree = deleteNodeFromTree(tree, editingNodeId);
+              setTree(updatedTree);
+              setEditingNodeId(null);
+            }}
+          >
+            Delete Node
+          </button>
         </div>
       )}
       {addingNode && (
         <div style={{ textAlign: "center", margin: "10px" }}>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("AND")}>Add AND</button>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("OR")}>Add OR</button>
+          <button className="btn btn-primary mx-1" onClick={() => addNode("A")}>Add AND</button>
+          <button className="btn btn-primary mx-1" onClick={() => addNode("O")}>Add OR</button>
           <button className="btn btn-primary mx-1" onClick={() => addNode("variable", 0)}>Add Variable (0)</button>
           <button className="btn btn-primary mx-1" onClick={() => addNode("variable", 1)}>Add Variable (1)</button>
         </div>
       )}
+      <div>
+        <table className="table table-bordered" style={{ width: "50%", margin: "auto" }}>
+          <thead>
+            <tr>
+              <th>Node ID</th>
+              <th>Value</th>
+              <th>Type</th>
+              <th>Variable Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tree &&
+              (() => {
+                const { nodes } = getTreeLayout(tree);
+                return nodes.map(node => (
+                  <tr key={node.id}>
+                    <td>{node.id}</td>
+                    <td>{node.value}</td>
+                    <td>{node.type}</td>
+                    <td>{node.varValue}</td>
+                  </tr>
+                ));
+              })()}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

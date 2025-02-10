@@ -7,7 +7,7 @@ export function ManualInput( {onTreeUpdate} ) {
 
   const handleParse = () => {
     const parsedTree = parseExpressionToTree(expression);
-    setTree(parsedTree);
+    // setTree(parsedTree);
     onTreeUpdate(parsedTree);
   };
 

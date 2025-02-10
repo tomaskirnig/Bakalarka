@@ -62,7 +62,7 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'O')) {
       this.consume('OPERATOR', 'O');
       const right = this.parseAndExpr();
-      node = new Node('O', node, right);
+      node = new Node('O', node, right, null, null, 'operation');
     }
     return node;
   }
@@ -72,7 +72,7 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'A')) {
       this.consume('OPERATOR', 'A');
       const right = this.parseFactor();
-      node = new Node('A', node, right);
+      node = new Node('A', node, right, null, null, 'operation');
     }
     return node;
   }
@@ -81,7 +81,7 @@ class Parser {
     if (this.currentTokenIs('VARIABLE')) {
       const varToken = this.consume('VARIABLE');
       const [varName, varValue] = this.parseVariable(varToken[1]);
-      return new Node(varName, null, null, varValue);
+      return new Node(varName, null, null, varValue, null, 'variable');
     } 
     else if (this.currentTokenIs('LPAREN')) {
       this.consume('LPAREN');
@@ -98,7 +98,7 @@ class Parser {
     const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
     if (match) {
       const varName = match[1];
-      const varValue = match[2];
+      const varValue = match[2] !== undefined ? Number(match[2]) : null;
       return [varName, varValue];
     } else {
       throw new SyntaxError(`Invalid variable ${varStr}`);

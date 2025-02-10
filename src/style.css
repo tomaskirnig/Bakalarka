@@ -20,6 +20,12 @@
     padding-top: 50px;
 }
 
+#modal {
+    width: 90%;
+    margin: 0 auto;
+    height: 90%;
+}
+
 /* Navigation */
 .nav-link{
     color: var(--text-color);
