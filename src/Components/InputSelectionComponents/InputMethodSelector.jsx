@@ -4,13 +4,14 @@ import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
 import { TreeBuilderCanvas } from './InteractiveInput';
 
-export function InputMethodSelector( {onTreeUpdate} ) {
-  // State to track the selected option
+export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
+  // Selected option
   const [selectedOption, setSelectedOption] = useState('manual');
 
-  // Function to handle tab selection
+  // Handle tab selection
   const handleOptionSelect = (option) => {
     setSelectedOption(option);
+    setChosenOpt(option);
     onTreeUpdate(null); // Reset the tree when the option is changed
   };
 
@@ -26,7 +27,7 @@ export function InputMethodSelector( {onTreeUpdate} ) {
             checked={selectedOption === 'manual'}
             onChange={() => handleOptionSelect('manual')}
           />
-          <label className="btn btn-outline-primary" htmlFor="btnradio1">Manuálně</label>
+          <label className="btn btn-outline-primary m-1" htmlFor="btnradio1">Manuálně</label>
 
           <input
             type="radio"
@@ -37,7 +38,7 @@ export function InputMethodSelector( {onTreeUpdate} ) {
             checked={selectedOption === 'generate'}
             onChange={() => handleOptionSelect('generate')}
           />
-          <label className="btn btn-outline-primary" htmlFor="btnradio2">Generovat</label>
+          <label className="btn btn-outline-primary m-1" htmlFor="btnradio2">Generovat</label>
 
           <input
             type="radio"
@@ -48,7 +49,7 @@ export function InputMethodSelector( {onTreeUpdate} ) {
             checked={selectedOption === 'sets'}
             onChange={() => handleOptionSelect('sets')}
           />
-          <label className="btn btn-outline-primary" htmlFor="btnradio3">Načíst ze sady</label>
+          <label className="btn btn-outline-primary m-1" htmlFor="btnradio3">Načíst ze sady</label>
 
           <input
             type="radio"
@@ -59,15 +60,14 @@ export function InputMethodSelector( {onTreeUpdate} ) {
             checked={selectedOption === 'interactive'}
             onChange={() => handleOptionSelect('interactive')}
           />
-          <label className="btn btn-outline-primary" htmlFor="btnradio4">Interaktivně</label>
+          <label className="btn btn-outline-primary m-1" htmlFor="btnradio4">Interaktivně</label>
        </div>
 
-       {/* Conditionally render the selected block */}
       <div className="input-block">
-        {selectedOption === 'manual' && <ManualInput onTreeUpdate={onTreeUpdate}/>}
-        {selectedOption === 'generate' && <GenerateInput onTreeUpdate={onTreeUpdate}/>}
-        {selectedOption === 'sets' && <PreparedSetsInput onTreeUpdate={onTreeUpdate}/>}
-        {selectedOption === 'interactive' && <TreeBuilderCanvas/>}
+        {selectedOption === 'manual' && <ManualInput onTreeUpdate={ onTreeUpdate }/>}
+        {selectedOption === 'generate' && <GenerateInput onTreeUpdate={ onTreeUpdate }/>}
+        {selectedOption === 'sets' && <PreparedSetsInput onTreeUpdate={ onTreeUpdate }/>}
+        {selectedOption === 'interactive' && <TreeBuilderCanvas onTreeUpdate={ onTreeUpdate }/>}
       </div>
     </>
     

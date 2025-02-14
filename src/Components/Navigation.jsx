@@ -25,7 +25,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
                             className={'nav-link ' + (selectedOption === 'Home' ? 'active' : '') + ' fs-5'}
                             onClick={() => onNavSelect('Home')}
                         >
-                            Home
+                            Domů
                         </button>
                     </li>
                     <li className="nav-item">
@@ -41,7 +41,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
                             className={'nav-link ' + (selectedOption === 'Other' ? 'active' : '') + ' fs-5'}
                             onClick={() => onNavSelect('Other')}
                         >
-                            Other
+                            Další
                         </button>
                     </li>
                 </ul>

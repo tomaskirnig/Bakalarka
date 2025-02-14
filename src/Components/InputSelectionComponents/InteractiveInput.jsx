@@ -18,15 +18,15 @@ const printTree = (node, depth = 0) => {
   }
 };
 
-// ─── Unique ID Generator ───────────────────────────────────────────────
+// Unique ID Generator
 let nextId = 1;
 function generateId() {
   return nextId++;
 }
 
-// ─── Helper Functions for Immutable Tree Updates ─────────────────────────
+// Helper Functions for Immutable Tree Updates
 
-// cloneTree: Recursively clone a tree (or subtree) while preserving each node’s id,
+// cloneTree: Recursively clone a tree (or subtree)
 function cloneTree(node, parent = null) {
   if (!node) return null;
   const newNode = new Node(node.value, null, null, node.varValue, parent, node.type);
@@ -38,7 +38,7 @@ function cloneTree(node, parent = null) {
   return newNode;
 }
 
-// addChildToTree: Add a child node (or add a new parent) to the node with targetId.
+// Add a child node (or add a new parent) to the node with targetId.
 function addChildToTree(node, targetId, position, childToAdd) {
   if (!node) return null;
   if (node.id === targetId) {
@@ -75,7 +75,7 @@ function addChildToTree(node, targetId, position, childToAdd) {
   return newNode;
 }
 
-// updateNodeInTree: Update the node (identified by targetId) with new values.
+// Update the node (identified by targetId) with new values.
 function updateNodeInTree(node, targetId, newValue, newVarValue, getNextVariableName) {
   if (!node) return null;
   if (node.id === targetId) {
@@ -102,7 +102,7 @@ function updateNodeInTree(node, targetId, newValue, newVarValue, getNextVariable
   return newNode;
 }
 
-// deleteNodeFromTree: Remove the node (and its subtree) identified by targetId.
+// Remove the node (and its subtree) identified by targetId.
 function deleteNodeFromTree(node, targetId) {
   if (!node) return null;
   if (node.id === targetId) {
@@ -116,7 +116,7 @@ function deleteNodeFromTree(node, targetId) {
   return newNode;
 }
 
-// ─── Layout: Derive Render Data from the Tree ─────────────────────────────
+// Layout: Compute Render Data from the Tree
 
 // (using BFS) assign each node a render position (renderX, renderY)
 function getTreeLayout(root) {
@@ -161,11 +161,11 @@ function getTreeLayout(root) {
 }
 
 // ─── Main React Component ───────────────────────────────────────────────────
-export function TreeBuilderCanvas() {
+export function TreeBuilderCanvas( {onTreeUpdate} ) {
   const canvasRef = useRef(null);
   const [tree, setTree] = useState(null);                     // The entire tree is stored as a single root node.
   const [editingNodeId, setEditingNodeId] = useState(null);   // To know which node is being edited (by its id).
-  const [addingNode, setAddingNode] = useState(null);         // When adding a node, we store the target node id and the desired position.
+  const [addingNode, setAddingNode] = useState(null);         // When adding a node, store the target node id and the desired position.
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
   const [dragging, setDragging] = useState(false);
@@ -173,8 +173,7 @@ export function TreeBuilderCanvas() {
   const [hovering, setHovering] = useState(false);
   const [evaluationResult, setEvaluationResult] = useState(null);
   
-  // ─── Variable Naming Helpers ─────────────────────────────
-  // These help assign unique variable names when a node becomes a variable.
+  // Keep track of used variable names.
   const usedVariableIndicesRef = useRef(new Set());
   
   const getNextVariableName = () => {
@@ -310,7 +309,7 @@ export function TreeBuilderCanvas() {
   
   // ─── Mouse and Interaction Handlers ─────────────────────────────
   
-  // Get a node (from the derived data) at a given canvas position.
+  // Get a node at a given canvas position.
   const getNodeAtPosition = (x, y) => {
     if (!tree) return null;
     const { nodes: derivedNodes } = getTreeLayout(tree);
@@ -384,6 +383,8 @@ export function TreeBuilderCanvas() {
       newRoot.x = x;
       newRoot.y = y;
       setTree(newRoot);
+      onTreeUpdate(newRoot);
+      console.log("Created root node:", newRoot);
     } else {
       setAddingNode(null);
       setEditingNodeId(null);
@@ -437,6 +438,8 @@ export function TreeBuilderCanvas() {
       getNextVariableName
     );
     setTree(updatedTree);
+    onTreeUpdate(updatedTree);
+    console.log("Updated tree:", updatedTree);
     setEditingNodeId(null);
   };
   
@@ -472,6 +475,7 @@ export function TreeBuilderCanvas() {
     }
     const updatedTree = addChildToTree(tree, nodeId, position, newNode);
     setTree(updatedTree);
+    onTreeUpdate(updatedTree);
     setAddingNode(null);
   };
   
@@ -479,8 +483,8 @@ export function TreeBuilderCanvas() {
   return (
     <div>
       <div style={{ textAlign: "center", margin: "10px" }}>
-        <button className="btn btn-primary mx-1" onClick={() => handleZoom(1)}>Zoom In</button>
-        <button className="btn btn-primary mx-1" onClick={() => handleZoom(-1)}>Zoom Out</button>
+        <button className="btn btn-primary mx-1" onClick={() => handleZoom(1)}>+</button>
+        <button className="btn btn-primary mx-1" onClick={() => handleZoom(-1)}>-</button>
         <button className="btn btn-primary mx-1" onClick={handleCenter}>Center</button>
       </div>
       <div style={{ textAlign: "center", margin: "10px" }}>
@@ -494,6 +498,7 @@ export function TreeBuilderCanvas() {
         height="600"
         style={{
           border: "1px solid #ccc",
+          borderRadius: "10px",
           display: "block",
           margin: "20px auto",
           cursor: dragging ? "grabbing" : hovering ? "pointer" : "grab"
@@ -515,6 +520,7 @@ export function TreeBuilderCanvas() {
             onClick={() => {
               const updatedTree = deleteNodeFromTree(tree, editingNodeId);
               setTree(updatedTree);
+              onTreeUpdate(updatedTree);
               setEditingNodeId(null);
             }}
           >
@@ -531,7 +537,7 @@ export function TreeBuilderCanvas() {
         </div>
       )}
       <div>
-        <table className="table table-bordered" style={{ width: "50%", margin: "auto" }}>
+        <table className="table table-bordered mb-3" style={{ width: "50%", margin: "auto" }}>
           <thead>
             <tr>
               <th>Node ID</th>

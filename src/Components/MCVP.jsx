@@ -4,11 +4,11 @@ import { TreeCanvas } from '../Utils/TreeRenderCanvas';
 import { evaluateTree } from '../Utils/EvaluateTree';
 import { Modal } from './Modal';
 import StepByStepTree from './StepByStepTree';
-// import { getMax } from 'mermaid/dist/diagrams/common/common.js';
 
 export function MCVP() {
-    const [tree, setTree] = useState(null); 
-    const [explain, setExplain] = useState(false);
+    const [tree, setTree] = useState(null); // Current tree
+    const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
+    const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
 
     // Function to update the tree
     const handleTreeUpdate = (newTree) => {
@@ -22,23 +22,20 @@ export function MCVP() {
     return (
         <div className='div-content'>
             <h1 className='display-4'>MCVP</h1>
-            <p>This is the MCVP Page</p>
+            {/* <p>This is the MCVP Page</p> */}
 
-            {/* Pass the handleTreeUpdate function to InputMethodSelector */}
-            <InputMethodSelector onTreeUpdate={handleTreeUpdate} />
+            <InputMethodSelector onTreeUpdate={ handleTreeUpdate } setChosenOpt={ setChosenOpt } />
 
             {tree && <p>Result: {Boolean(evaluateTree(tree)) ? 'True' : 'False'}</p>}
 
-            {/* Render the tree if it exists */}
-            {tree && <TreeCanvas tree={tree} />}
+            {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
             <button className='btn btn-primary' onClick={() => handleExplainToggle(true)}> Vysvětlit</button>
 
-            {/* Render the modal if explain is true */}
             {explain && (
                 <Modal onClose={() => handleExplainToggle(false)}>
                     {tree && (
-                        <StepByStepTree tree={tree} />
+                        <StepByStepTree tree={ tree } />
                     )}
                 </Modal>
             )}

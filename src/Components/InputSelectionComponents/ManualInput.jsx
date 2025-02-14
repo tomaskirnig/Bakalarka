@@ -7,13 +7,12 @@ export function ManualInput( {onTreeUpdate} ) {
 
   const handleParse = () => {
     const parsedTree = parseExpressionToTree(expression);
-    // setTree(parsedTree);
     onTreeUpdate(parsedTree);
   };
 
   return (
     <div className="inputWindow">
-      <h2>Expression Parser</h2>
+      <h2>Parser výrazů</h2>
       <h3>Formát: (x1[0] O x2[1]) A (x3[1] A x4[1])</h3>
       <div>
         <input
@@ -23,7 +22,7 @@ export function ManualInput( {onTreeUpdate} ) {
           onChange={(e) => setExpression(e.target.value)} 
         /> 
       </div>
-      <button className='btn btn-primary' onClick={handleParse}>Parse Expression</button> 
+      <button className='btn btn-primary mt-1' onClick={handleParse}>Zpracovat</button> 
 
        {tree && printTree(tree)}
     </div>

@@ -1,7 +1,6 @@
 import { Node } from "./NodeClass";
 
 export function evaluateTree(node) {  
-    // decide what to do if node is null.
     if (!node) {
       return null;
     }
@@ -33,12 +32,12 @@ export function evaluateTree(node) {
     if (node.value === 'A') {
       // AND operation.
       const result = leftValue && rightValue;
-      console.log("AND:", leftValue, rightValue, "->", result);
+      // console.log("AND:", leftValue, rightValue, "->", result);
       return result;
     } else if (node.value === 'O') {
       // OR operation.
       const result = leftValue || rightValue;
-      console.log("OR:", leftValue, rightValue, "->", result);
+      // console.log("OR:", leftValue, rightValue, "->", result);
       return result;
     } else {
       throw new Error(`Unknown operator: ${node.value}`);

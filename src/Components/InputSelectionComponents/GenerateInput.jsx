@@ -4,7 +4,6 @@ import { printTree } from '../../Utils/Parser';
 
 
 export function GenerateInput( {onTreeUpdate} ) {
-  // State for storing input values
   const [numGates, setNumGates] = useState(1);      
   const [numVariables, setNumVariables] = useState(1); 
   const [tree, setTree] = useState(null); 

@@ -98,7 +98,7 @@ class Parser {
     const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
     if (match) {
       const varName = match[1];
-      const varValue = match[2] !== undefined ? Number(match[2]) : null;
+      const varValue = match[2] !== undefined ? Math.max(Math.min(Number(match[2]), 0), 1) : null;
       return [varName, varValue];
     } else {
       throw new SyntaxError(`Invalid variable ${varStr}`);

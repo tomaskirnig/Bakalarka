@@ -1,21 +1,19 @@
 import React, { useState } from 'react';
 import { parseExpressionToTree, printTree } from '../../Utils/Parser'; 
-import { getData, printData } from '../../Utils/FileLoader';
+import { getData } from '../../Utils/FileLoader';
 
 export function PreparedSetsInput( {onTreeUpdate} ) {
   const data = getData();
   const [selectedKey, setSelectedKey] = useState(''); 
-  const [tree, setTree] = useState(null);
 
-  // Update selected key and parse expression when dropdown changes
+  // Handle set selection
   const handleSelectChange = (event) => {
     const key = event.target.value;
     setSelectedKey(key);
     if (key) {
       const expression = data[key]; // Get expression by key from data
       const parsedTree = parseExpressionToTree(expression); // Parse the expression
-      setTree(parsedTree); // Update state with parsed tree
-      onTreeUpdate(parsedTree); // Call the update function if needed
+      onTreeUpdate(parsedTree); // Send the tree to the component above for rendering
     }
   };
 
@@ -30,12 +28,7 @@ export function PreparedSetsInput( {onTreeUpdate} ) {
           </option>
         ))}
       </select>
-      {/* <div className="confirmInputDiv">
-          <button className='btn btn-primary' type="button" onClick={() => printTree(tree)}>
-            Potvrdit
-          </button>
-      </div> */}
-      {printData()}
+      {console.log(data)}
     </div>
   );
 }
