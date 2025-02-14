@@ -1,5 +1,5 @@
 {
-    "circuit1" : "(x1[0] O x2[1]) A (x3[1] A x4[0])",
-    "circuit2" : "(x1[1] O x2[1]) O (x3[0] A x4[1])",
-    "circuit3" : "x1[1]"
+    "Sada1 (4xPro, 3xOpe)" : "(x1[0] O x2[1]) A (x3[1] A x4[0])",
+    "Sada2 (4xPro, 3xOpe)" : "(x1[1] O x2[1]) O (x3[0] A x4[1])",
+    "Sada4 (1xPro)" : "x1[1]"
 }
