@@ -48,7 +48,7 @@ class Parser {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
       alert('Chybná syntaxe vstupu!');
-      throw new SyntaxError('Unexpected tokens at end of input');
+      throw new SyntaxError('Neočekávané tokeny na konci vstupu.');
     }
     return node;
   }
@@ -90,7 +90,7 @@ class Parser {
       return node;
     } 
     else {
-      throw new SyntaxError(`Expected VARIABLE or LPAREN, got ${this.currentToken()[0]}`);
+      throw new SyntaxError(`Očekávala se PROMĚNNÁ nebo LEVÁ ZÁVORKA, místo toho ${this.currentToken()[0]}`);
     }
   }
 
@@ -101,7 +101,7 @@ class Parser {
       const varValue = match[2] !== undefined ? Math.max(Math.min(Number(match[2]), 0), 1) : null;
       return [varName, varValue];
     } else {
-      throw new SyntaxError(`Invalid variable ${varStr}`);
+      throw new SyntaxError(`Neplatná proměnná ${varStr}`);
     }
   }
 
@@ -127,10 +127,10 @@ class Parser {
   consume(kind, value = null) {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
-      throw new SyntaxError(`Expected token ${kind}, got ${tok[0]}`);
+      throw new SyntaxError(`Očekával se ${kind}, místo ${tok[0]}`);
     }
     if (value !== null && tok[1] !== value) {
-      throw new SyntaxError(`Expected token value ${value}, got ${tok[1]}`);
+      throw new SyntaxError(`Očekávaná hodnota ${value}, místo ${tok[1]}`);
     }
     this.pos += 1;
     return tok;

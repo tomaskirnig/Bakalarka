@@ -25,6 +25,7 @@ export function generateTree(numGates, numVariables) {
   // Create gates and combine nodes
   for (let i = 0; i < numGates; i++) {
       if (nodes.length < 1) {
+        alert('Nedostatek uzlů!');
           throw new Error("Nedostatek uzlů!");
       }
 
@@ -41,6 +42,7 @@ export function generateTree(numGates, numVariables) {
 
   // The last remaining node is the root of the tree
   if (nodes.length !== 1) {
+      alert('Generování neuspělo, zbyl špatný počet uzlů.');
       throw new Error("Generování neuspělo, zbyl špatný počet uzlů.");
   }
 

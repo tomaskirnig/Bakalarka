@@ -236,6 +236,12 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
           borderRadius: "10px",
           cursor: dragging ? "grabbing" : "grab",
           marginBottom: "10px",
+          // width: "90%",
+          // maxWidth: "1000px",
+          // minWidth: "500px",
+          // height: "60%",
+          // maxHeight: "600px",
+          // minHeight: "400px",
         }}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

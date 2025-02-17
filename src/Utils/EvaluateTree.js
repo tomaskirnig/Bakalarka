@@ -40,6 +40,7 @@ export function evaluateTree(node) {
       // console.log("OR:", leftValue, rightValue, "->", result);
       return result;
     } else {
-      throw new Error(`Unknown operator: ${node.value}`);
+      alert(`Neznámý operátor: ${node.value}`);
+      throw new Error(`Neznámý operátor: ${node.value}`);
     }
   }
