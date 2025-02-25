@@ -22,6 +22,7 @@ export function GenerateInput( {onTreeUpdate} ) {
         className='form-control'
         type="number"
         min="1"
+        max="3000"
         placeholder="Počet hradel"
         value={numGates}
         onChange={(e) => setNumGates(Number(e.target.value))} // Update state with input value
@@ -32,12 +33,13 @@ export function GenerateInput( {onTreeUpdate} ) {
         className='form-control'
         type="number"
         min="1"
+        max="3000"
         placeholder="Počet proměnných"
         value={numVariables}
         onChange={(e) => setNumVariables(Number(e.target.value))} // Update state with input value
       />
 
-      <button className='btn btn-primary' onClick={handleGenerateTree}>Generovat</button> 
+      <button className='btn btn-primary mt-1' onClick={handleGenerateTree}>Generovat</button> 
 
       {tree && printTree(tree)}
     </div>

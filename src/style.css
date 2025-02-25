@@ -1,12 +1,83 @@
 :root {
     --root-background-color: #F0EDEE;
-    --color1: #90DDF0; 
+    --color1: #438c96; 
     --color2: #2C666E;
     --color3: #07393C;
+    --color4: #90DDF0;
     --text-color: #0A090C;
-    --primary-color: #07393C;
 }
- 
+
+/* Working stock bootstrap look */
+.btn-primary{
+    background-color: var(--color2);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+} 
+
+.btn-primary:hover {
+    background-color: #24595E !important; 
+}
+
+.btn-outline-primary{
+    background-color: white;
+    color: var(--color2);
+    border: 1px solid var(--color2);
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Not working custom look */
+/* .btn-primary {
+    background-color: var(--color2) !important;
+    border-color: var(--color2) !important;
+    color: white !important;
+    border: none !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+}
+
+.btn-primary:hover {
+    background-color: #24595E !important;
+}
+
+.btn-outline-primary {
+    background-color: white !important;
+    color: black !important;
+    border: 1px solid var(--color2) !important;
+    padding: 10px 20px !important;
+    border-radius: 10px !important;
+    cursor: pointer !important;
+    transition: background-color 0.3s ease !important;
+} */
+
+.btn-primary.active {
+    background-color: #1F4E53 !important;  /* A darker shade of the primary color */
+    border-color: #1F4E53 !important;
+    color: white !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important;  /* Add shadow for emphasis */
+    font-weight: bold !important;  /* Make the active button's text bold */
+}
+
+.btn-primary:not(.active):hover {
+    background-color: #24595E !important;  /* Slightly darker shade */
+    color: white !important;
+}
+
+
+
+.btn:disabled{
+    background-color: rgba(46, 98, 105, 0.8);
+    color: #fff;
+    cursor: not-allowed;
+}
 
 #root{
     height: 100vh;
@@ -32,13 +103,13 @@
 }
 
 .nav-link:hover{
-    color: var(--primary-color);
+    color: var(--color3);
     text-decoration: underline;
 }
 .active{
     /* color: var(--color1) !important; */
     text-decoration: underline;
-    color: var(--primary-color);
+    color: var(--color3);
 }
   
 

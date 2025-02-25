@@ -61,10 +61,10 @@ export function StepByStepTree({ tree }) {
 
   return (
     <div id='modal'>
-      <h2>Step-by-Step Evaluation</h2> 
+      <h2>Postupné vyhodnocení</h2> 
       {steps.length > 0 ? (
         <>
-          <p>Step {currentStep + 1} of {steps.length}</p>
+          <p>Krok {currentStep + 1} z {steps.length}</p>
           <TreeCanvas 
             tree={tree} 
             highlightedNode={steps[currentStep].node} 
@@ -72,15 +72,15 @@ export function StepByStepTree({ tree }) {
             completedSteps={steps.slice(0, currentStep + 1)}
           />
           <div className='step-info'>
-            <p>Evaluating Node: {steps[currentStep].node.value === 'A' ? 'AND' : 'OR'}</p>
-            <p>Left Value: {String(steps[currentStep].leftValue)}, Right Value: {String(steps[currentStep].rightValue)}</p>
-            <p>Result: {String(steps[currentStep].result)}</p>
+            <p>Vyhodnocovaný uzel: {steps[currentStep].node.value === 'A' ? 'AND' : 'OR'}</p>
+            <p>Levý potomek: {String(steps[currentStep].leftValue)}, Pravý potomek: {String(steps[currentStep].rightValue)}</p>
+            <p>Výsledek: {String(steps[currentStep].result)}</p>
           </div>
           <button className='btn btn-primary mx-1' onClick={goToPreviousStep} disabled={currentStep === 0}>Previous</button>
           <button className='btn btn-primary mx-1' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>Next</button>
         </>
       ) : (
-        <p>No evaluation steps to display. The expression evaluates to: {tree ? tree.varValue : "N/A"}</p>
+        <p>Žádné kroky vyhodnocení pro zobrazení. Výsledek výrazu: {tree ? tree.varValue : "N/A"}</p>
       )}
     </div>
   );  

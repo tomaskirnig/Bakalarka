@@ -8,21 +8,55 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Compute Positions & Assign Parent Pointers 
-  const computePositions = (node, x, y, level = 1, parent = null) => {
+  // const computePositions = (node, x, y, level = 1, parent = null) => {
+  //   if (!node) return;
+  //   node.x = x;
+  //   node.y = y;
+  //   node.parent = parent; // assign pointer to parent
+
+  //   const verticalSpacing = 100 * scale; // vertical gap
+  //   const horizontalSpacing = (300 / level) * scale; // horizontal gap
+
+  //   if (node.left) {
+  //     computePositions(node.left, x - horizontalSpacing, y + verticalSpacing, level + 1, node);
+  //   }
+  //   if (node.right) {
+  //     computePositions(node.right, x + horizontalSpacing, y + verticalSpacing, level + 1, node);
+  //   }
+  // };
+
+  const computePositions = (node, depth = 0, nextPos = { value: 0 }) => {
     if (!node) return;
-    node.x = x;
-    node.y = y;
-    node.parent = parent; // assign pointer to parent
+    const verticalSpacing = 100;  // vertical gap between levels
+    const horizontalSpacing = 40; // horizontal gap between leaves
 
-    const verticalSpacing = 100 * scale; // vertical gap
-    const horizontalSpacing = (300 / level) * scale; // horizontal gap
-
+    // Process children first.
     if (node.left) {
-      computePositions(node.left, x - horizontalSpacing, y + verticalSpacing, level + 1, node);
+      computePositions(node.left, depth + 1, nextPos);
+      // Set parent pointer if needed.
+      node.left.parent = node;
     }
     if (node.right) {
-      computePositions(node.right, x + horizontalSpacing, y + verticalSpacing, level + 1, node);
+      computePositions(node.right, depth + 1, nextPos);
+      node.right.parent = node;
     }
+
+    // If the node is a leaf, assign an x based on the counter.
+    if (!node.left && !node.right) {
+      node.x = nextPos.value * horizontalSpacing;
+      nextPos.value++;
+    } else if (node.left && node.right) {
+      // Center the node above its two children.
+      node.x = (node.left.x + node.right.x) / 2;
+    } else if (node.left) {
+      // Only left child: position slightly to the right.
+      node.x = node.left.x + horizontalSpacing / 2;
+    } else if (node.right) {
+      // Only right child: position slightly to the left.
+      node.x = node.right.x - horizontalSpacing / 2;
+    }
+    // Y coordinate based on depth (with a top margin of 50).
+    node.y = depth * verticalSpacing + 50;
   };
 
   const drawAllEdges = (ctx, node) => {
@@ -148,7 +182,7 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
 
     // Compute positions for all nodes.
     if (tree) {
-      computePositions(tree, canvas.width / 2 / scale, 50 / scale, 1, null);
+      computePositions(tree); //, canvas.width / 2 / scale, 50 / scale, 1, null
     } else {
       console.warn("Tree is null or undefined");
     }
