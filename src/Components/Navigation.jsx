@@ -38,6 +38,14 @@ export function Navigation({ selectedOption, onNavSelect }) {
                     </li>
                     <li className="nav-item">
                         <button
+                            className={'nav-link ' + (selectedOption === 'CombinatorialGame' ? 'active' : '') + ' fs-5'}
+                            onClick={() => onNavSelect('CombinatorialGame')}
+                        >
+                            Kombinatorická hra
+                        </button>
+                    </li>
+                    <li className="nav-item">
+                        <button
                             className={'nav-link ' + (selectedOption === 'Other' ? 'active' : '') + ' fs-5'}
                             onClick={() => onNavSelect('Other')}
                         >
@@ -88,5 +96,3 @@ export function Navigation({ selectedOption, onNavSelect }) {
         </nav>
     );
 }
-
-export default Navigation;

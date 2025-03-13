@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { TreeCanvas } from '../Utils/TreeRenderCanvas';
 
 export function StepByStepTree({ tree }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const forceCenterNode = useRef(false); 
+  const [followSteps, setFollowSteps] = useState(true);
 
   useEffect(() => {
     if (tree) {
       generateSteps(tree);
+      forceCenterNode.current = false;
     }
   }, [tree]);
 
@@ -45,17 +48,20 @@ export function StepByStepTree({ tree }) {
     
     evaluateWithSteps(node);
     setSteps(stepsArray);
+    setCurrentStep(0);
   };
 
   const goToNextStep = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
+      forceCenterNode.current = false;
     }
   };
 
   const goToPreviousStep = () => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
+      forceCenterNode.current = false;
     }
   };
 
@@ -70,14 +76,27 @@ export function StepByStepTree({ tree }) {
             highlightedNode={steps[currentStep].node} 
             evaluatedResult={steps[currentStep].result}
             completedSteps={steps.slice(0, currentStep + 1)}
+            forceCenterNode={forceCenterNode}
+            followSteps={followSteps}
+            setFollowSteps={setFollowSteps}
           />
-          <div className='step-info'>
-            <p>Vyhodnocovaný uzel: {steps[currentStep].node.value === 'A' ? 'AND' : 'OR'}</p>
-            <p>Levý potomek: {String(steps[currentStep].leftValue)}, Pravý potomek: {String(steps[currentStep].rightValue)}</p>
-            <p>Výsledek: {String(steps[currentStep].result)}</p>
-          </div>
-          <button className='btn btn-primary mx-1' onClick={goToPreviousStep} disabled={currentStep === 0}>Previous</button>
-          <button className='btn btn-primary mx-1' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>Next</button>
+          {/* <div id='custom-switch' className="form-switch"> 
+            <input 
+              class="form-check-input" 
+              type="checkbox" 
+              id="flexSwitchCheckChecked" 
+              checked={followSteps} 
+              onChange={() => setFollowSteps((prev) => !prev)}
+            />
+            <label class="form-check-label" for="flexSwitchCheckChecked">Následovat kroky</label>
+          </div> */}
+            <div className='step-info'>
+              <p>Vyhodnocovaný uzel: {steps[currentStep].node.value === 'A' ? 'AND' : 'OR'}</p>
+              <p>Levý potomek: {String(steps[currentStep].leftValue)}, Pravý potomek: {String(steps[currentStep].rightValue)}</p>
+              <p>Výsledek: {String(steps[currentStep].result)}</p>
+            </div>
+          <button className='btn btn-primary mx-1' onClick={goToPreviousStep} disabled={currentStep === 0}>Předchozí</button>
+          <button className='btn btn-primary mx-1' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>Další</button>
         </>
       ) : (
         <p>Žádné kroky vyhodnocení pro zobrazení. Výsledek výrazu: {tree ? tree.varValue : "N/A"}</p>
@@ -85,5 +104,3 @@ export function StepByStepTree({ tree }) {
     </div>
   );  
 }
-
-export default StepByStepTree;

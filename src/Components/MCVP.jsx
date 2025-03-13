@@ -3,7 +3,7 @@ import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelec
 import { TreeCanvas } from '../Utils/TreeRenderCanvas';
 import { evaluateTree } from '../Utils/EvaluateTree';
 import { Modal } from './Modal';
-import StepByStepTree from './StepByStepTree';
+import { StepByStepTree } from './StepByStepTree';
 
 export function MCVP() {
     const [tree, setTree] = useState(null); // Current tree
@@ -42,5 +42,3 @@ export function MCVP() {
         </div>
     );
 }
-
-export default MCVP;

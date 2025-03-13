@@ -75,7 +75,7 @@
 
 .btn:disabled{
     background-color: rgba(46, 98, 105, 0.8);
-    color: #fff;
+    color: white;
     cursor: not-allowed;
 }
 
@@ -95,6 +95,7 @@
     width: 90%;
     margin: 0 auto;
     height: 90%;
+    position: relative;
 }
 
 /* Navigation */
@@ -125,7 +126,7 @@
     font-size: 16px;
     cursor: pointer;
     border: none;
-    color: #FFF;
+    color: white;
     background-color: var(--color3);
     transition: background-color 0.3s ease;
 }
@@ -152,58 +153,48 @@
     margin-bottom: 10px; 
 }
 
-/* RenderTree function */
-.treeNodeStyle {
+/* step by step component */
+
+#custom-switch {
+    position: absolute;
+    top: 0px;
+    right: 20px;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    position: relative;
-}
-
-.nodeStyle {
-    padding: 10px;
-    border-radius: 50%;
-    background-color: #4CAF50;
+    gap: 10px;
     color: white;
-    font-weight: bold;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    text-align: center;
-    position: relative;
+    background: var(--color2);
+    /* padding: 6px 12px; */
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
+    border: 1px solid #ccc;
 }
 
-.childrenContainerStyle {
-    display: flex;
-    justify-content: center;
-    margin-top: 20px;
-    position: relative;
+.form-switch {
+    display: flex !important; 
+    align-items: center !important;
+    /* gap: 8px !important; */
+    /* padding: 0 !important; */
+    /* margin: 0 !important; */
 }
 
-.branchConnector {
-    position: absolute;
-    top: -10px;
-    width: 2px;
+.form-switch .form-check-input {
+    margin: 0 !important; 
+    width: 40px; 
     height: 20px;
-    background-color: #4CAF50;
 }
 
-.branchConnectorLeft {
-    left: -20px;
-    border-left: 2px solid #4CAF50;
-    height: 20px;
-    width: 50%;
+.form-switch .form-check-label {
+    white-space: nowrap;
 }
 
-.branchConnectorRight {
-    right: -20px;
-    border-right: 2px solid #4CAF50;
-    height: 20px;
-    width: 50%;
+#flexSwitchCheckChecked:checked{
+    border: 1px solid var(--color4);
+    background-color: var(--color4);
 }
 
-.lineHorizontal {
-    position: absolute;
-    top: -10px;
-    height: 2px;
-    width: 100%;
-    background-color: #4CAF50;
+#flexSwitchCheckChecked::before{
+    border: 1px solid var(--color4);
+    background-color: white;
 }

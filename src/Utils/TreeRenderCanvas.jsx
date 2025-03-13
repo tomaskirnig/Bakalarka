@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 
-export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSteps = [] }) {
+export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSteps = [] , forceCenterNode }) {
   const canvasRef = useRef(null);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [scale, setScale] = useState(1);
@@ -8,23 +8,6 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
 
   // Compute Positions & Assign Parent Pointers 
-  // const computePositions = (node, x, y, level = 1, parent = null) => {
-  //   if (!node) return;
-  //   node.x = x;
-  //   node.y = y;
-  //   node.parent = parent; // assign pointer to parent
-
-  //   const verticalSpacing = 100 * scale; // vertical gap
-  //   const horizontalSpacing = (300 / level) * scale; // horizontal gap
-
-  //   if (node.left) {
-  //     computePositions(node.left, x - horizontalSpacing, y + verticalSpacing, level + 1, node);
-  //   }
-  //   if (node.right) {
-  //     computePositions(node.right, x + horizontalSpacing, y + verticalSpacing, level + 1, node);
-  //   }
-  // };
-
   const computePositions = (node, depth = 0, nextPos = { value: 0 }) => {
     if (!node) return;
     const verticalSpacing = 100;  // vertical gap between levels
@@ -107,8 +90,6 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
     }
   };
   
-  
-
   // Draw Completed Labels
   // For every step in completedSteps, draw its evaluated result on the connecting edge.
   const drawCompletedLabels = (ctx) => {
@@ -216,6 +197,23 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
     ctx.restore();
   }, [tree, offset, scale, highlightedNode, evaluatedResult, completedSteps]);
 
+  // Center on the highlighted node when it changes.
+  useEffect(() => {
+    if (highlightedNode && forceCenterNode.current === false) {
+      const canvas = canvasRef.current;
+      // const canvasWidth = canvas.width;
+      // const canvasHeight = canvas.height;
+
+      setOffset({
+        x: canvas.width / 2 - highlightedNode.x * scale,
+        y: canvas.height / 2 - highlightedNode.y * scale,
+      });
+      
+      // Mark that we've performed the centering once.
+      forceCenterNode.current = true;
+    }
+  }, [highlightedNode, forceCenterNode]);
+
   // Mouse and Zoom Handlers 
   const handleMouseDown = (e) => {
     setDragging(true);
@@ -259,7 +257,7 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
         </button>
         <button className="btn btn-primary m-1 mb-2" onClick={handleCenter}>
           Center
-        </button>
+        </button>        
       </div>
       <canvas
         ref={canvasRef}
@@ -270,6 +268,8 @@ export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSt
           borderRadius: "10px",
           cursor: dragging ? "grabbing" : "grab",
           marginBottom: "10px",
+          transition: "transform 0.3s ease-out",
+          // transform: `translate(${offset.x}px, ${offset.y}px) scale(${scale})`,
           // width: "90%",
           // maxWidth: "1000px",
           // minWidth: "500px",

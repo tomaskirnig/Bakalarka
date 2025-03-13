@@ -73,5 +73,3 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
     
   );
 }
-
-export default InputMethodSelector;

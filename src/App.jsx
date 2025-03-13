@@ -3,7 +3,7 @@ import { Navigation } from './Components/Navigation'
 import { HomePage } from './Components/HomePage';
 import { MCVP } from './Components/MCVP';
 
-export function App() {
+function App() {
   // Track selected page
   const [selectedOption, setSelectedOption] = useState('Home');
 
