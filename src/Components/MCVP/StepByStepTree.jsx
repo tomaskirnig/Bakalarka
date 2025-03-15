@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { TreeCanvas } from '../../Utils/TreeRenderCanvas';
+import { TreeCanvas } from './Utils/TreeRenderCanvas';
 
 export function StepByStepTree({ tree }) {
   const [steps, setSteps] = useState([]);

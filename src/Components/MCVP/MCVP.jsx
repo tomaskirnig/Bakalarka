@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelector';
-import { TreeCanvas } from '../../Utils/TreeRenderCanvas';
-import { evaluateTree } from '../../Utils/EvaluateTree';
+import { TreeCanvas } from './Utils/TreeRenderCanvas';
+import { evaluateTree } from './Utils/EvaluateTree';
 import { Modal } from './Modal';
 import { StepByStepTree } from './StepByStepTree';
 
