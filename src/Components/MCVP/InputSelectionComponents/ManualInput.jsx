@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { parseExpressionToTree, printTree } from '../../Utils/Parser'; 
+import { parseExpressionToTree, printTree } from '../../../Utils/Parser'; 
 
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');

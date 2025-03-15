@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { Navigation } from './Components/Navigation'
 import { HomePage } from './Components/HomePage';
-import { MCVP } from './Components/MCVP';
+import { MCVP } from './Components/MCVP/MCVP';
+import { CombinatorialGame } from './Components/CombinatorialGame/CombinatorialGame';
 
 function App() {
   // Track selected page
@@ -17,6 +18,7 @@ function App() {
       <Navigation selectedOption={selectedOption} onNavSelect={handleNavSelection} />
       {selectedOption === 'Home' && <HomePage />}
       {selectedOption === 'MCVP' && <MCVP />}
+      {selectedOption === 'CombinatorialGame' && <CombinatorialGame />}
     </>
   )
 }

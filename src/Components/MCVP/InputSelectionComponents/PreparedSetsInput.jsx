@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { parseExpressionToTree, printTree } from '../../Utils/Parser'; 
-import { getData } from '../../Utils/FileLoader';
+import { parseExpressionToTree, printTree } from '../../../Utils/Parser'; 
+import { getData } from '../../../Utils/FileLoader';
 
 export function PreparedSetsInput( {onTreeUpdate} ) {
   const data = getData();

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { generateTree } from '../../Utils/Generator'; 
-import { printTree } from '../../Utils/Parser'; 
+import { generateTree } from '../../../Utils/Generator'; 
+import { printTree } from '../../../Utils/Parser'; 
 
 
 export function GenerateInput( {onTreeUpdate} ) {
