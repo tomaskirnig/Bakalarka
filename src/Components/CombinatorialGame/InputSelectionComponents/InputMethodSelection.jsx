@@ -3,13 +3,9 @@ import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
 
-export function InputMethodSelector( {onGraphUpdate, setChosenOpt} ) {
-  // Selected option
-  const [selectedOption, setSelectedOption] = useState('manual');
-
+export function InputMethodSelector( {onGraphUpdate, chosenOpt, setChosenOpt} ) {
   // Handle tab selection
   const handleOptionSelect = (option) => {
-    setSelectedOption(option);
     setChosenOpt(option);
     onGraphUpdate(null); // Reset the tree when the option is changed
   };
@@ -23,7 +19,7 @@ export function InputMethodSelector( {onGraphUpdate, setChosenOpt} ) {
             name="btnradio"
             id="btnradio1"
             autoComplete="off"
-            checked={selectedOption === 'manual'}
+            checked={chosenOpt === 'manual'}
             onChange={() => handleOptionSelect('manual')}
           />
           <label className="btn btn-outline-primary m-1" htmlFor="btnradio1">Manuálně</label>
@@ -34,7 +30,7 @@ export function InputMethodSelector( {onGraphUpdate, setChosenOpt} ) {
             name="btnradio"
             id="btnradio2"
             autoComplete="off"
-            checked={selectedOption === 'generate'}
+            checked={chosenOpt === 'generate'}
             onChange={() => handleOptionSelect('generate')}
           />
           <label className="btn btn-outline-primary m-1" htmlFor="btnradio2">Generovat</label>
@@ -45,16 +41,16 @@ export function InputMethodSelector( {onGraphUpdate, setChosenOpt} ) {
             name="btnradio"
             id="btnradio3"
             autoComplete="off"
-            checked={selectedOption === 'sets'}
+            checked={chosenOpt === 'sets'}
             onChange={() => handleOptionSelect('sets')}
           />
           <label className="btn btn-outline-primary m-1" htmlFor="btnradio3">Načíst ze sady</label>
        </div>
 
       <div className="input-block">
-        {selectedOption === 'manual' && <ManualInput onGraphUpdate={ onGraphUpdate }/>}
-        {selectedOption === 'generate' && <GenerateInput onGraphUpdate={ onGraphUpdate }/>}
-        {selectedOption === 'sets' && <PreparedSetsInput onGraphUpdate={ onGraphUpdate }/>}
+        {chosenOpt === 'manual' && <ManualInput onGraphUpdate={ onGraphUpdate }/>}
+        {chosenOpt === 'generate' && <GenerateInput onGraphUpdate={ onGraphUpdate }/>}
+        {chosenOpt === 'sets' && <PreparedSetsInput onGraphUpdate={ onGraphUpdate }/>}
       </div>
     </>
     

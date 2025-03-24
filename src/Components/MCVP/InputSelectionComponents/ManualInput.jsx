@@ -24,7 +24,7 @@ export function ManualInput( {onTreeUpdate} ) {
       </div>
       <button className='btn btn-primary mt-1' onClick={handleParse}>Zpracovat</button> 
 
-       {tree && printTree(tree)}
+       {/* {tree && printTree(tree)} */}
     </div>
   );
 }

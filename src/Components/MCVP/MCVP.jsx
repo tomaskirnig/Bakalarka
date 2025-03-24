@@ -10,30 +10,21 @@ export function MCVP() {
     const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
 
-    // Function to update the tree
-    const handleTreeUpdate = (newTree) => {
-        setTree(newTree);
-    };
-
-    const handleExplainToggle = (value) => {
-        setExplain(value);
-    }
-
     return (
         <div className='div-content'>
             <h1 className='display-4'>MCVP</h1>
             {/* <p>This is the MCVP Page</p> */}
 
-            <InputMethodSelector onTreeUpdate={ handleTreeUpdate } setChosenOpt={ setChosenOpt } />
+            <InputMethodSelector onTreeUpdate={ setTree } setChosenOpt={ setChosenOpt } />
 
             {tree && <p>Result: {Boolean(evaluateTree(tree)) ? 'True' : 'False'}</p>}
 
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
-            <button className='btn btn-primary' onClick={() => handleExplainToggle(true)}> Vysvětlit</button>
+            <button className='btn btn-primary' onClick={() => setExplain(true)}> Vysvětlit</button>
 
             {explain && (
-                <Modal onClose={() => handleExplainToggle(false)}>
+                <Modal onClose={() => setExplain(false)}>
                     {tree && (
                         <StepByStepTree tree={ tree } />
                     )}
@@ -42,3 +33,5 @@ export function MCVP() {
         </div>
     );
 }
+
+// tree structure with react-force-graph https://github.com/vasturiano/react-force-graph/blob/master/example/tree/index.html

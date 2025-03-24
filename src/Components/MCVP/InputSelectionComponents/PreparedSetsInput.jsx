@@ -28,7 +28,7 @@ export function PreparedSetsInput( {onTreeUpdate} ) {
           </option>
         ))}
       </select>
-      {console.log(data)}
+      {/* {console.log(data)} */}
     </div>
   );
 }
