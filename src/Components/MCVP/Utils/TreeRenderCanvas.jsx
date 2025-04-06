@@ -1,282 +1,280 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useMemo } from "react";
+import ForceGraph2D from "react-force-graph-2d";
 
-export function TreeCanvas({ tree, highlightedNode, evaluatedResult, completedSteps = [] , forceCenterNode }) {
-  const canvasRef = useRef(null);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+// Colors
+const highlightLinkColor = "red";
+const normalLinkColor = "rgba(0,0,0,0.5)";
+const highlightNodeColor = "yellow";
+const normalNodeColor = "#07393C";
+const nodeStrokeColor = "#333";
+const nodeTextColor = "#fff";
+const playerLabelColor = "black";
 
-  // Compute Positions & Assign Parent Pointers 
-  const computePositions = (node, depth = 0, nextPos = { value: 0 }) => {
-    if (!node) return;
-    const verticalSpacing = 100;  // vertical gap between levels
-    const horizontalSpacing = 40; // horizontal gap between leaves
+// Link color function - determines if a link should be highlighted
+const getLinkColor = (link, highlightedNode) => {
+  if (
+    highlightedNode &&
+    highlightedNode.parent &&
+    typeof link.source === 'object' && 
+    typeof link.target === 'object' &&
+    link.source.id === highlightedNode.parent.id &&
+    link.target.id === highlightedNode.id
+  ) {
+    return highlightLinkColor;
+  }
+  return normalLinkColor;
+};
 
-    // Process children first.
-    if (node.left) {
-      computePositions(node.left, depth + 1, nextPos);
-      // Set parent pointer if needed.
-      node.left.parent = node;
-    }
-    if (node.right) {
-      computePositions(node.right, depth + 1, nextPos);
-      node.right.parent = node;
-    }
+// Link width function - determines if a link should be thicker
+const getLinkWidth = (link, highlightedNode) => {
+  if (
+    highlightedNode &&
+    highlightedNode.parent &&
+    typeof link.source === 'object' && 
+    typeof link.target === 'object' &&
+    link.source.id === highlightedNode.parent.id &&
+    link.target.id === highlightedNode.id
+  ) {
+    return 3;
+  }
+  return 1;
+};
 
-    // If the node is a leaf, assign an x based on the counter.
-    if (!node.left && !node.right) {
-      node.x = nextPos.value * horizontalSpacing;
-      nextPos.value++;
-    } else if (node.left && node.right) {
-      // Center the node above its two children.
-      node.x = (node.left.x + node.right.x) / 2;
-    } else if (node.left) {
-      // Only left child: position slightly to the right.
-      node.x = node.left.x + horizontalSpacing / 2;
-    } else if (node.right) {
-      // Only right child: position slightly to the left.
-      node.x = node.right.x - horizontalSpacing / 2;
-    }
-    // Y coordinate based on depth (with a top margin of 50).
-    node.y = depth * verticalSpacing + 50;
-  };
-
-  const drawAllEdges = (ctx, node) => {
-    if (!node) return; // If the node is null, exit
+// Node canvas object function - draws the node and its labels
+const renderNode = (node, ctx, globalScale, highlightedNode) => {
+  if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
   
-    const isSingleChild = (node.left && !node.right) || (!node.left && node.right);
-    const leftOffset = isSingleChild ? 6 : 0;
-    const rightOffset = isSingleChild ? -6 : 0;
+  const r = 12; 
   
-    // Draw edges for left child
-    if (node.left) {
-      ctx.beginPath();
-      ctx.moveTo(node.x, node.y);
-      ctx.lineTo(node.left.x, node.left.y);
-      ctx.strokeStyle = "#333"; 
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    
-      // Draw second offset line for single-child nodes
-      if (isSingleChild) {
-        ctx.beginPath();
-        ctx.moveTo(node.x + leftOffset, node.y + 2);
-        ctx.lineTo(node.left.x + leftOffset, node.left.y + 2);
-        ctx.stroke();
-      }
+  // Draw circle
+  ctx.beginPath();
+  ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
   
-      drawAllEdges(ctx, node.left); 
-    }
+  // Highlight node if it's the currently highlightedNode
+  if (highlightedNode && node.id === highlightedNode.id) {
+    ctx.fillStyle = highlightNodeColor;
+  } else {
+    ctx.fillStyle = normalNodeColor;
+  }
+  ctx.fill();
+  ctx.strokeStyle = nodeStrokeColor;
+  ctx.stroke();
   
-    // Draw edges for right child
-    if (node.right) {
-      ctx.beginPath();
-      ctx.moveTo(node.x, node.y);
-      ctx.lineTo(node.right.x, node.right.y);
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-    
-      // Draw second offset line for single-child nodes
-      if (isSingleChild) {
-        ctx.beginPath();
-        ctx.moveTo(node.x + rightOffset, node.y + 2);
-        ctx.lineTo(node.right.x + rightOffset, node.right.y + 2);
-        ctx.stroke();
-      }
+  // Determine what text to display inside the node
+  let displayText = '';
   
-      drawAllEdges(ctx, node.right); 
-    }
-  };
+  // Check if it's a variable (starts with x)
+  if (typeof node.value === 'string' && node.value.startsWith('x')) {
+    // Format as x1[0]
+    displayText = `${node.value}${node.varValue !== undefined ? `[${node.varValue}]` : ''}`;
+  } 
+  // Check if it's an AND operation
+  else if (node.value === 'AND' || node.value === '∧') {
+    displayText = 'A';
+  }
+  // Check if it's an OR operation
+  else if (node.value === 'OR' || node.value === '∨') {
+    displayText = 'O';
+  }
+  // For other types, use the value as is
+  else {
+    displayText = node.value || '';
+  }
   
-  // Draw Completed Labels
-  // For every step in completedSteps, draw its evaluated result on the connecting edge.
-  const drawCompletedLabels = (ctx) => {
-    completedSteps.forEach((step) => {
-      const node = step.node;
-      if (node.parent) {
-        ctx.fillStyle = "red";
-        ctx.font = `${14 * scale}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(
-          String(step.result),
-          (node.parent.x + node.x) / 2,
-          (node.parent.y + node.y) / 2 - 5
-        );
-      } else {
-        // For the root node, draw the result above it.
-        ctx.fillStyle = "red";
-        ctx.font = `${14 * scale}px Arial`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(String(step.result), node.x, node.y - 30);
-      }
-    });
-  };
-
-  // Draw Nodes 
-  const drawNodes = (ctx, node) => {
-    if (!node) return;
-    const nodeRadius = 20 * scale;
-    
-    // Draw node circle.
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, nodeRadius, 0, Math.PI * 2);
-    // ctx.fillStyle = node === highlightedNode ? "#FFD700" : "#07393C";
-    ctx.fillStyle = "#07393C";
-    ctx.fill();
-    ctx.strokeStyle = "#333";
-    ctx.lineWidth = 1;
-    ctx.stroke();
-
-    // Draw node value.
-    ctx.fillStyle = "#F0EDEE";
-    ctx.font = `${14 * scale}px Arial`;
+  // Draw the text inside the circle
+  ctx.fillStyle = nodeTextColor;
+  ctx.textAlign = "center";
+  ctx.textBaseline = "middle";
+  ctx.font = `monospace`;
+  ctx.fillText(displayText, node.x, node.y);
+  
+  // If there's a root label, show it above the node (don't show variable value again)
+  if (node.rootLabel) {
+    ctx.fillText(`=> ${node.rootLabel}`, node.x, node.y - 2 * r);
+  }
+  
+  // Draw the player label below the node if applicable
+  if (node.player) {
+    ctx.font = `monospace`;
+    ctx.fillStyle = playerLabelColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.fillText(
-      `${node.value}${node.varValue !== null ? `[${node.varValue}]` : ""}`,
-      node.x,
-      node.y
-    );
+    ctx.fillText(node.player === 1 ? 'I' : node.player === 2 ? 'II' : '', node.x, node.y + r + 5);
+  }
+};
 
-    drawNodes(ctx, node.left);
-    drawNodes(ctx, node.right);
-  };
+// Force configuration function to prevent node overlapping
+const configureForces = (forceName, forceInstance) => {
+  // Configure the link force for greater distance
+  if (forceName === 'link') {
+    forceInstance
+      .distance(() => 120)  // Fixed distance between nodes
+      .strength(0.8);       // Make links more rigid
+  }
+  
+  // Configure charge force for node repulsion
+  if (forceName === 'charge') {
+    forceInstance.strength(-300);  // More negative = more repulsion
+  }
+  
+  // Create collision force to prevent overlapping
+  if (forceName === 'collision') {
+    // Use this callback to create a new force if it doesn't exist
+    return forceInstance || 
+      (window.d3 && window.d3.forceCollide ? 
+        window.d3.forceCollide(node => 30).iterations(3) : 
+        null);
+  }
+  
+  // Configure center force to keep graph centered
+  if (forceName === 'center') {
+    forceInstance.strength(0.4);  // Moderate pull to center
+  }
+};
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) {
-      console.error("Failed to get canvas context");
-      return;
-    }
+export function TreeCanvas({
+  tree,
+  highlightedNode,
+  evaluatedResult,
+  completedSteps = [],
+  forceCenterNode
+}) {
+  const fgRef = useRef();
+  
+  // Graph data construction with useMemo
+  const graphData = useMemo(() => {
+    if (!tree) return { nodes: [], links: [] };
+    
+    const nodes = [];
+    const links = [];
 
-    // Clear canvas.
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    ctx.save();
-    ctx.translate(offset.x, offset.y);
-    ctx.scale(scale, scale);
-
-    // Compute positions for all nodes.
-    if (tree) {
-      computePositions(tree); //, canvas.width / 2 / scale, 50 / scale, 1, null
-    } else {
-      console.warn("Tree is null or undefined");
-    }
-
-    // Draw all normal edges.
-    if (tree) drawAllEdges(ctx, tree, null);
-
-    // Draw completed evaluated labels even from previous steps.
-    drawCompletedLabels(ctx);
-
-    // Overlay the current highlighted edge (if any).
-    if (highlightedNode && highlightedNode.parent) {
-      ctx.beginPath();
-      ctx.moveTo(highlightedNode.parent.x, highlightedNode.parent.y);
-      ctx.lineTo(highlightedNode.x, highlightedNode.y);
-      ctx.strokeStyle = "red";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-    } else if (highlightedNode && !highlightedNode.parent) {
-      // If the root is highlighted, show its result above.
-      ctx.fillStyle = "red";
-      ctx.font = `${14 * scale}px Arial`;
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText(String(evaluatedResult), highlightedNode.x, highlightedNode.y - 30);
-    }
-
-    // Draw nodes on top.
-    if (tree) drawNodes(ctx, tree);
-
-    ctx.restore();
-  }, [tree, offset, scale, highlightedNode, evaluatedResult, completedSteps]);
-
-  // Center on the highlighted node when it changes.
-  useEffect(() => {
-    if (highlightedNode && forceCenterNode.current === false) {
-      const canvas = canvasRef.current;
-      // const canvasWidth = canvas.width;
-      // const canvasHeight = canvas.height;
-
-      setOffset({
-        x: canvas.width / 2 - highlightedNode.x * scale,
-        y: canvas.height / 2 - highlightedNode.y * scale,
-      });
+    function traverse(current, parent) {
+      if (!current) return;
       
-      // Mark that we've performed the centering once.
-      forceCenterNode.current = true;
+      // Give each node a unique ID if it doesn't have one
+      if (!current.id) {
+        current.id = Math.random().toString(36).substring(2, 9);
+      }
+      
+      // Keep a reference to the parent if needed
+      current.parent = parent;
+
+      // Add this node to our node list
+      nodes.push({
+        id: current.id,
+        value: current.value,
+        varValue: current.varValue,
+        nodeRef: current
+      });
+
+      // Link from parent -> current
+      if (parent) {
+        links.push({
+          source: parent.id,
+          target: current.id
+        });
+      }
+
+      // Traverse children
+      if (current.left) traverse(current.left, current);
+      if (current.right) traverse(current.right, current);
     }
-  }, [highlightedNode, forceCenterNode]);
 
-  // Mouse and Zoom Handlers 
-  const handleMouseDown = (e) => {
-    setDragging(true);
-    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
-  };
+    traverse(tree, null);
 
-  const handleMouseMove = (e) => {
-    if (dragging) {
-      setOffset({
-        x: e.clientX - dragStart.x,
-        y: e.clientY - dragStart.y,
+    // Process completed steps - store results in the node rather than link labels
+    if (completedSteps && completedSteps.length > 0) {
+      completedSteps.forEach((step) => {
+        if (!step || !step.node) return;
+        
+        const n = step.node;
+        
+        // Find the node and set its rootLabel directly
+        const targetNode = nodes.find((nd) => nd.id === n.id);
+        if (targetNode) {
+          targetNode.rootLabel = step.result;
+        }
       });
     }
-  };
 
-  const handleMouseUp = () => setDragging(false);
+    // Convert link endpoints to node objects
+    const nodeMap = {};
+    nodes.forEach(n => { nodeMap[n.id] = n; });
+    
+    links.forEach(link => {
+      link.source = nodeMap[link.source] || link.source;
+      link.target = nodeMap[link.target] || link.target;
+    });
 
-  const handleZoom = (direction) => {
-    setScale((prevScale) => Math.max(0.1, prevScale + direction * 0.1));
-  };
+    return { nodes, links };
+  }, [tree, completedSteps]);
 
-  const handleCenter = () => {
-    setOffset({ x: 0, y: 0 });
-    setScale(1);
-  };
+  // Collision detection to prevent node overlapping
+  useEffect(() => {
+    if (fgRef.current) {
+      // window.d3 to avoid direct import
+      if (window.d3 && window.d3.forceCollide) {
+        fgRef.current.d3Force('collision', window.d3.forceCollide(node => {
+          // Customize collision radius based on node depth in tree
+          const depth = node.nodeRef ? 
+            (node.nodeRef.parent ? 
+              (node.nodeRef.parent.parent ? 30 : 25) : 20) : 25;
+          return depth;
+        }).iterations(3)); 
+      }
+      
+      // Adjust link distance and charge forces for better spacing
+      fgRef.current.d3Force('link').distance(100);
+      fgRef.current.d3Force('charge').strength(-200);
+      
+      // Reheat the simulation to apply the new forces
+      fgRef.current.d3ReheatSimulation();
+    }
+  }, [graphData]); // Re-run when graphData changes
+
+  // Focus on highlighted node
+  useEffect(() => {
+    if (!highlightedNode || !fgRef.current || !forceCenterNode) return;
+    
+    if (forceCenterNode.current === false) {
+      const timer = setTimeout(() => {
+        if (fgRef.current) {
+          try {
+            // Then zoom to the node
+            // fgRef.current.zoomToFit(400, 400, node => 
+            //   node.id === highlightedNode.id
+            // );
+            forceCenterNode.current = true;
+          } catch (err) {
+            console.error("Error zooming to node:", err);
+          }
+        }
+      }, 300);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [highlightedNode?.id]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-      }}
-    >
-      <div>
-        <button className="btn btn-primary m-1 mb-2" onClick={() => handleZoom(1)}>
-          +
-        </button>
-        <button className="btn btn-primary m-1 mb-2" onClick={() => handleZoom(-1)}>
-          -
-        </button>
-        <button className="btn btn-primary m-1 mb-2" onClick={handleCenter}>
-          Center
-        </button>        
-      </div>
-      <canvas
-        ref={canvasRef}
-        width="1000"
-        height="600"
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: "10px",
-          cursor: dragging ? "grabbing" : "grab",
-          marginBottom: "10px",
-          transition: "transform 0.3s ease-out",
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      ></canvas>
+    <div className="GraphDiv">
+      <ForceGraph2D
+        ref={fgRef}
+        graphData={graphData}
+        dagMode="td"
+        dagLevelDistance={100}
+        cooldownTime={3000}   
+        d3AlphaDecay={0.02}    
+        d3VelocityDecay={0.3}  
+        nodeRelSize={8}
+        d3Force={configureForces}
+        linkDirectionalArrowLength={6}
+        linkDirectionalArrowRelPos={1}
+        linkColor={(link) => getLinkColor(link, highlightedNode)}
+        linkWidth={(link) => getLinkWidth(link, highlightedNode)}
+        nodeCanvasObjectMode={() => "after"}
+        nodeCanvasObject={(node, ctx, globalScale) => 
+          renderNode(node, ctx, globalScale, highlightedNode)}
+      />
     </div>
   );
 }
-
-export default TreeCanvas;

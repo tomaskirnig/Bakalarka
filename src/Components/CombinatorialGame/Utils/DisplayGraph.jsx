@@ -1,5 +1,6 @@
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import { computeWinner, getOptimalMoves } from './ComputeWinner';
 
 // colors
 const color1 = '#438c96'; 
@@ -11,15 +12,28 @@ export function DisplayGraph({ graph }) {
     return <div>No graph data available.</div>;
   }
 
+  // State to store analysis results
+  const [analysisResult, setAnalysisResult] = useState(null);
+  const [optimalMoves, setOptimalMoves] = useState({});
+  
+  // Analyze the graph when it changes
+  useEffect(() => {
+    if (graph && graph.positions) {
+      const result = computeWinner(graph);
+      const moves = getOptimalMoves(graph);
+      setAnalysisResult(result);
+      setOptimalMoves(moves);
+    }
+  }, [graph]);
+
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
     // Create nodes with a temporary "neighbors" as union of parents and children.
     const nodes = Object.values(graph.positions).map(node => ({
       id: node.id,
       player: node.player,
-      isWinning: node.isWinning,
-      neighbors: [...(node.parents || []), ...(node.children || [])],
-      isStartingPosition: node.id === graph.startingPosition.id
+      isStartingPosition: node.id === graph.startingPosition.id,
+      neighbors: [...(node.parents || []), ...(node.children || [])]
     }));
 
     // Build a mapping from node id to node object.
@@ -33,18 +47,22 @@ export function DisplayGraph({ graph }) {
       n.neighbors = n.neighbors.map(id => nodeMap[id]).filter(Boolean);
     });
 
-    // Build links from each node’s children.
+    // Build links from each node's children.
     const links = [];
     Object.values(graph.positions).forEach(node => {
       if (node.children) {
         node.children.forEach(childId => {
+          // Mark optimal moves for Player 1's winning strategy
+          const isOptimal = node.player === 1 && optimalMoves[node.id] === childId;
           links.push({
             source: node.id,
-            target: childId
+            target: childId,
+            isOptimal: isOptimal
           });
         });
       }
     });
+    
     // Convert link endpoints to node objects.
     links.forEach(link => {
       link.source = nodeMap[link.source];
@@ -52,7 +70,7 @@ export function DisplayGraph({ graph }) {
     });
 
     return { nodes, links };
-  }, [graph]);
+  }, [graph, optimalMoves]);
 
   // State for highlighted nodes and links, and for the hovered node.
   const [highlightNodes, setHighlightNodes] = useState(new Set());
@@ -98,36 +116,62 @@ export function DisplayGraph({ graph }) {
     // Draw a ring around highlighted nodes.
     ctx.beginPath();
     ctx.arc(node.x, node.y, NODE_R * 1.2, 0, 2 * Math.PI, false);
-    //ctx.fillStyle = node === hoverNode ? color4 : color1; //orange
-    ctx.fillStyle = node.isStartingPosition ? startingColor : (node === hoverNode ? color4 : color1); // Highlight the starting position
+    
+    // Color nodes based on player and starting position
+    let fillColor;
+    if (node.isStartingPosition) {
+      fillColor = startingColor;
+    } else if (node === hoverNode) {
+      fillColor = color4;
+    } else {
+      fillColor = color1;
+    }
+    
+    ctx.fillStyle = fillColor;
     ctx.fill();
+    
     // Draw the player label below the node.
-    ctx.font = `8px monospace`; //Sans-Serif
+    ctx.font = `8px monospace`; 
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player == 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode,highlightNodes]);
+  }, [hoverNode, highlightNodes]);
 
   return (
-    <div className="GraphDiv">
-      <ForceGraph2D
-        graphData={data}
-        nodeRelSize={NODE_R}
-        autoPauseRedraw={false}
-        linkWidth={link => highlightLinks.has(link) ? 5 : 1}
-        linkDirectionalParticles={3}
-        linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
-        linkDirectionalArrowLength={6}
-        linkDirectionalArrowRelPos={1}
-        linkDirectionalArrowColor={link => 'rgba(0,0,0,0.6)'}
-        // nodeCanvasObjectMode={node => highlightNodes.has(node) ? 'before' : undefined}
-        nodeCanvasObjectMode={() => 'after'}
-        nodeCanvasObject={paintRing}
-        onNodeHover={handleNodeHover}
-        onLinkHover={handleLinkHover}
-      />
-    </div>
+    <>
+      <div className="GraphDiv">
+        <ForceGraph2D
+          graphData={data}
+          nodeRelSize={NODE_R}
+          autoPauseRedraw={false}
+          linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
+          linkColor={link => link.isOptimal ? '#FFD700' : '#999'}  // Gold color for optimal moves
+          linkDirectionalParticles={3}
+          linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
+          linkDirectionalArrowLength={6}
+          linkDirectionalArrowRelPos={1}
+          linkDirectionalArrowColor={link => 'rgba(0,0,0,0.6)'}
+          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObject={paintRing}
+          onNodeHover={handleNodeHover}
+          onLinkHover={handleLinkHover}
+        />
+      </div>
+      
+      {/* Display analysis results */}
+      {analysisResult && (
+        <div className="analysis-result">
+          <h3>{analysisResult.message}</h3>
+          <p>
+            Gold edges represent Player I's optimal moves when they have a winning strategy.
+            A position with no outgoing edges for Player II represents a win for Player I.
+          </p>
+        </div>
+      )}
+      
+      <div style={{ height: '50px' }}></div>
+    </>
   );
 }
 

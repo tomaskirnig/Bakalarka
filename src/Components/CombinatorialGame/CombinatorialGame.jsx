@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelection';
 import { DisplayGraph } from './Utils/DisplayGraph';
+import { computeWinner } from './Utils/ComputeWinner';
 
 export function CombinatorialGame() {
     const [graph, setGraph] = useState(null); // Current tree
@@ -13,6 +14,7 @@ export function CombinatorialGame() {
             <InputMethodSelector onGraphUpdate={ setGraph } chosenOpt={ chosenOpt } setChosenOpt={ setChosenOpt } />
 
             {graph && <DisplayGraph graph={graph} />}
+            {graph && <computeWinner graph={graph} />}
         </div>  
     );
 }

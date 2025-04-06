@@ -46,10 +46,10 @@ export function Navigation({ selectedOption, onNavSelect }) {
                     </li>
                     <li className="nav-item">
                         <button
-                            className={'nav-link ' + (selectedOption === 'Other' ? 'active' : '') + ' fs-5'}
-                            onClick={() => onNavSelect('Other')}
+                            className={'nav-link ' + (selectedOption === 'Grammar' ? 'active' : '') + ' fs-5'}
+                            onClick={() => onNavSelect('Grammar')}
                         >
-                            Další
+                            Gramatika
                         </button>
                     </li>
                 </ul>
@@ -92,11 +92,11 @@ export function Navigation({ selectedOption, onNavSelect }) {
                         </li>
                         <li className="nav-item">
                             <button
-                                className={'nav-link ' + (selectedOption === 'Other' ? 'active' : '') + ' fs-5'}
-                                onClick={() => onNavSelect('Other')}
+                                className={'nav-link ' + (selectedOption === 'Grammar' ? 'active' : '') + ' fs-5'}
+                                onClick={() => onNavSelect('Grammar')}
                                 data-bs-dismiss="offcanvas" // Close sidebar on click
                             >
-                                Other
+                                Grammar
                             </button>
                         </li>
                     </ul>
