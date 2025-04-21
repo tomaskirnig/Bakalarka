@@ -1,566 +1,347 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Node } from "../Utils/NodeClass";
-import { evaluateTree } from "../Utils/EvaluateTree";
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import ForceGraph2D from 'react-force-graph-2d';
 
-// Debug print of the tree structure
-const printTree = (node, depth = 0) => {
-  if (!node) return;
+// --- Configuration ---
+const NODE_R = 12; // Slightly larger radius for better visibility
+const operationColor = '#07393C'; // Dark teal for operations
+const variableColor = '#438c96'; // Lighter teal for variables
+const selectedColor = '#FFB74D'; // Orange for selection highlight
+const nodeTextColor = '#F0EDEE'; // Light text color
 
-  const indentation = ' '.repeat(depth * 2);
-  console.log(`${indentation}- ${node.value} ${node.varValue} `); // (x: ${node.x}, y: ${node.y})
+// Helper to generate unique IDs (simple version)
+let nextNodeId = 0;
+const generateNodeId = () => `n${nextNodeId++}`;
 
-  if (node.left) {
-    printTree(node.left, depth + 1);
-  }
-  if (node.right) {
-    printTree(node.right, depth + 1);
-  }
-};
+// --- New Interactive Component using ForceGraph2D ---
+export function InteractiveMCVPGraph() {
+    // --- State ---
+    const [graph, setGraph] = useState({ nodes: [], links: [] });
+    const [selectedNode, setSelectedNode] = useState(null);
+    const [addingEdge, setAddingEdge] = useState(false);
+    const [edgeSource, setEdgeSource] = useState(null);
+    const [hoverNode, setHoverNode] = useState(null); // For hover effects
+    const fgRef = useRef(); // Ref for accessing ForceGraph methods
 
-// Unique ID Generator
-let nextId = 1;
-function generateId() {
-  return nextId++;
-}
+    // --- Derived Data ---
+    // Memoize graph data for ForceGraph2D
+    const graphData = useMemo(() => {
+        // Make sure links reference the actual node objects for the library
+        const nodeMap = graph.nodes.reduce((acc, node) => {
+            acc[node.id] = node;
+            return acc;
+        }, {});
+        const linksWithNodeRefs = graph.links.map(link => ({
+            ...link,
+            source: nodeMap[link.source] || link.source, // Use node object or ID if not found
+            target: nodeMap[link.target] || link.target, // Use node object or ID if not found
+        }));
+        return { nodes: graph.nodes, links: linksWithNodeRefs };
+    }, [graph]);
 
-// Helper Functions for Immutable Tree Updates
+    // --- Effects ---
+    // Add initial node if graph is empty
+    useEffect(() => {
+        if (graph.nodes.length === 0) {
+            // Add a default root node (e.g., an OR operation)
+            addNode('O');
+        }
+    }, [graph.nodes]); // Dependency: runs only when node count changes from 0
 
-// cloneTree: Recursively clone a tree (or subtree)
-function cloneTree(node, parent = null) {
-  if (!node) return null;
-  const newNode = new Node(node.value, null, null, node.varValue, parent, node.type);
-  newNode.id = generateId();
-  newNode.x = node.x;
-  newNode.y = node.y;
-  newNode.left = cloneTree(node.left, newNode);
-  newNode.right = cloneTree(node.right, newNode);
-  return newNode;
-}
+    // --- Core Graph Functions ---
 
-// Add a child node (or add a new parent) to the node with targetId.
-function addChildToTree(node, targetId, position, childToAdd) {
-  if (!node) return null;
-  if (node.id === targetId) {
-    const newNode = cloneTree(node);
-    if (position === "parent") {
-      // Create a new parent node; the current node becomes its left child.
-      const newParent = cloneTree(childToAdd);
-      newParent.left = newNode;
-      newNode.parent = newParent;
-      return newParent;
-    } else if (position === "left") {
-      if (newNode.left) {
-        alert("Left child already exists.");
-        return newNode;
-      }
-      childToAdd.parent = newNode;
-      newNode.left = cloneTree(childToAdd, newNode);
-    } else if (position === "right") {
-      if (newNode.right) {
-        alert("Right child already exists.");
-        return newNode;
-      }
-      childToAdd.parent = newNode;
-      newNode.right = cloneTree(childToAdd, newNode);
-    }
-    return newNode;
-  }
-  // Recurse on children.
-  const newNode = cloneTree(node);
-  newNode.left = addChildToTree(node.left, targetId, position, childToAdd);
-  if (newNode.left) newNode.left.parent = newNode;
-  newNode.right = addChildToTree(node.right, targetId, position, childToAdd);
-  if (newNode.right) newNode.right.parent = newNode;
-  return newNode;
-}
+    const addNode = (type, value = null, varValue = null) => {
+        const newId = generateNodeId();
+        let newNode;
 
-// Update the node (identified by targetId) with new values.
-function updateNodeInTree(node, targetId, newValue, newVarValue, getNextVariableName) {
-  if (!node) return null;
-  if (node.id === targetId) {
-    const newNode = cloneTree(node);
-    if (newValue === "variable") {
-      if (newNode.type !== "variable") {
-        // If the node isn’t already a variable, assign a new variable name.
-        newNode.value = getNextVariableName();
-      }
-      newNode.type = "variable";
-      newNode.varValue = newVarValue;
-    } else {
-      newNode.value = newValue;
-      newNode.type = "operation";
-      newNode.varValue = null;
-    }
-    return newNode;
-  }
-  const newNode = cloneTree(node);
-  newNode.left = updateNodeInTree(node.left, targetId, newValue, newVarValue, getNextVariableName);
-  if (newNode.left) newNode.left.parent = newNode;
-  newNode.right = updateNodeInTree(node.right, targetId, newValue, newVarValue, getNextVariableName);
-  if (newNode.right) newNode.right.parent = newNode;
-  return newNode;
-}
+        if (type === 'variable') {
+            newNode = {
+                id: newId,
+                type: 'variable',
+                // Assign a default variable name if needed, or require it
+                value: value || `x${newId.substring(1)}`, // Simple default like 'x1'
+                varValue: varValue === null ? 0 : varValue, // Default variable value to 0
+            };
+        } else { // Operation
+            newNode = {
+                id: newId,
+                type: 'operation',
+                value: type, // 'A' or 'O'
+                varValue: null,
+            };
+        }
 
-// Remove the node (and its subtree) identified by targetId.
-function deleteNodeFromTree(node, targetId) {
-  if (!node) return null;
-  if (node.id === targetId) {
-    return null;
-  }
-  const newNode = cloneTree(node);
-  newNode.left = deleteNodeFromTree(node.left, targetId);
-  if (newNode.left) newNode.left.parent = newNode;
-  newNode.right = deleteNodeFromTree(node.right, targetId);
-  if (newNode.right) newNode.right.parent = newNode;
-  return newNode;
-}
+        setGraph(prevGraph => ({
+            nodes: [...prevGraph.nodes, newNode],
+            links: prevGraph.links, // Links remain unchanged
+        }));
+        return newNode; // Return the new node
+    };
 
-// Layout: Compute Render Data from the Tree
+    const deleteNode = (nodeId) => {
+        setGraph(prevGraph => ({
+            nodes: prevGraph.nodes.filter(node => node.id !== nodeId),
+            // Remove links connected to the deleted node
+            links: prevGraph.links.filter(link => link.source !== nodeId && link.target !== nodeId)
+        }));
+        // Clear selection if the deleted node was selected
+        if (selectedNode && selectedNode.id === nodeId) {
+            setSelectedNode(null);
+        }
+        setAddingEdge(false); // Cancel edge adding if active
+        setEdgeSource(null);
+    };
 
-// (using BFS) assign each node a render position (renderX, renderY)
-function getTreeLayout(root) {
-  if (!root) return { nodes: [], edges: [] };
-  const queue = [{ node: root, level: 0, index: 1 }];
-  const levels = {};
-  const nodes = [];
-  const edges = [];
-  
-  while (queue.length > 0) {
-    const { node, level, index } = queue.shift();
-    if (!levels[level]) levels[level] = [];
-    levels[level].push({ node, index });
-    nodes.push(node);
-    if (node.parent) {
-      edges.push({ from: node.parent, to: node });
-    }
-    if (node.left) {
-      queue.push({ node: node.left, level: level + 1, index: index * 2 });
-    }
-    if (node.right) {
-      queue.push({ node: node.right, level: level + 1, index: index * 2 + 1 });
-    }
-  }
-  
-  const nodeSpacing = 120;
-  const levelHeight = 100;
-  
-  Object.keys(levels).forEach(lvl => {
-    const levelNodes = levels[lvl];
-    levelNodes.sort((a, b) => a.index - b.index);
-    const minIndex = levelNodes[0].index;
-    const maxIndex = levelNodes[levelNodes.length - 1].index;
-    const totalWidth = (maxIndex - minIndex) * nodeSpacing;
-    levelNodes.forEach(({ node, index }) => {
-      node.renderX = (index - minIndex) * nodeSpacing - totalWidth / 2 + root.x;
-      node.renderY = parseInt(lvl, 10) * levelHeight + root.y;
-    });
-  });
-  
-  return { nodes, edges };
-}
+    const edgeExists = (sourceId, targetId) => {
+        return graph.links.some(link =>
+            (link.source === sourceId && link.target === targetId) ||
+            (link.source === targetId && link.target === sourceId) // Check both directions if undirected
+        );
+    };
 
-// ─── Main React Component ───────────────────────────────────────────────────
-export function TreeBuilderCanvas( {onTreeUpdate} ) {
-  const canvasRef = useRef(null);
-  const [tree, setTree] = useState(null);                     // The entire tree is stored as a single root node.
-  const [editingNodeId, setEditingNodeId] = useState(null);   // To know which node is being edited (by its id).
-  const [addingNode, setAddingNode] = useState(null);         // When adding a node, store the target node id and the desired position.
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
-  const [scale, setScale] = useState(1);
-  const [dragging, setDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [hovering, setHovering] = useState(false);
-  const [evaluationResult, setEvaluationResult] = useState(null);
-  
-  // Keep track of used variable names.
-  const usedVariableIndicesRef = useRef(new Set());
-  
-  const getNextVariableName = () => {
-    let availableIndices = Array.from(usedVariableIndicesRef.current).sort((a, b) => a - b);
-    let index = 1;
-    for (let i = 0; i < availableIndices.length; i++) {
-      if (availableIndices[i] !== index) break;
-      index++;
-    }
-    usedVariableIndicesRef.current.add(index);
-    return `x${index}`;
-  };
-  
-  const releaseVariableName = (label) => {
-    const match = label.match(/x(\d+)/);
-    if (match) {
-      const index = parseInt(match[1], 10);
-      usedVariableIndicesRef.current.delete(index);
-    }
-  };
-  
-  // Recompute the evaluation result whenever the tree changes.
-  useEffect(() => {
-    if (tree) {
-      try {
-        console.log("Evaluationg tree:");
-        const result = evaluateTree(tree);
-        setEvaluationResult(result);
-      } catch (error) {
-        console.error("Error evaluating tree:", error);
-        setEvaluationResult(null);
-      }
-    } else {
-      setEvaluationResult(null);
-    }
-  }, [tree]);
-  
-  // ─── Canvas Rendering ─────────────────────────────────────────────
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext("2d");
-    
-    // Clear the canvas.
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.save();
-    ctx.translate(offset.x, offset.y);
-    ctx.scale(scale, scale);
-    
-    const { nodes: derivedNodes, edges } = tree ? getTreeLayout(tree) : { nodes: [], edges: [] };
-    
-    // Draw edges.
-    edges.forEach(({ from, to }) => {
-      if (from && to) {
-        if ((from.left === null) !== (from.right === null)) {
-          // Draw left offset line.
-          ctx.beginPath();
-          ctx.moveTo(from.renderX - 3, from.renderY);
-          ctx.lineTo(to.renderX - 3, to.renderY);
-          ctx.strokeStyle = "#333";
-          ctx.stroke();
-        
-          // Draw right offset line.
-          ctx.beginPath();
-          ctx.moveTo(from.renderX + 3, from.renderY);
-          ctx.lineTo(to.renderX + 3, to.renderY);
-          ctx.stroke();
+    const addEdge = (sourceId, targetId) => {
+        if (sourceId === targetId || edgeExists(sourceId, targetId)) {
+            console.warn("Edge already exists or is a self-loop.");
+            return false; // Prevent self-loops and duplicate edges
+        }
+
+        const newLink = {
+            source: sourceId, // Store IDs in state
+            target: targetId,
+        };
+
+        setGraph(prevGraph => ({
+            nodes: prevGraph.nodes,
+            links: [...prevGraph.links, newLink],
+        }));
+        return true;
+    };
+
+    const deleteEdge = (sourceId, targetId) => {
+        setGraph(prevGraph => ({
+            nodes: prevGraph.nodes,
+            // Filter out the link (consider both directions if needed, depends on graph type)
+            links: prevGraph.links.filter(link =>
+                !(link.source === sourceId && link.target === targetId) &&
+                !(link.source === targetId && link.target === sourceId) // Remove if considering undirected
+            ),
+        }));
+    };
+
+    const updateNodeValue = (nodeId, updates) => {
+         setGraph(prevGraph => ({
+             nodes: prevGraph.nodes.map(node => {
+                 if (node.id === nodeId) {
+                     // Create a new object with updated properties
+                     const updatedNode = { ...node, ...updates };
+
+                     // Ensure consistency (e.g., operations don't have varValue)
+                     if (updatedNode.type === 'operation') {
+                         updatedNode.varValue = null;
+                     } else if (updatedNode.type === 'variable' && updatedNode.varValue === null) {
+                         updatedNode.varValue = 0; // Default variable value if switching type
+                     }
+                     return updatedNode;
+                 }
+                 return node;
+             }),
+             links: prevGraph.links // Links remain the same
+         }));
+         // Update selectedNode state as well if the updated node was selected
+         if (selectedNode && selectedNode.id === nodeId) {
+            setSelectedNode(prevSelNode => ({ ...prevSelNode, ...updates }));
+         }
+     };
+
+
+    // --- Interaction Handlers ---
+
+    const handleNodeClick = useCallback((node, event) => {
+        if (addingEdge && edgeSource) {
+            // Complete adding edge
+            if (edgeSource.id !== node.id) {
+                addEdge(edgeSource.id, node.id);
+            }
+            setAddingEdge(false);
+            setEdgeSource(null);
+            setSelectedNode(node); // Select the target node after adding edge
         } else {
-          // For nodes with two children, draw a single line.
-          ctx.beginPath();
-          ctx.moveTo(from.renderX, from.renderY);
-          ctx.lineTo(to.renderX, to.renderY);
-          ctx.strokeStyle = "#333";
-          ctx.stroke();
-        }        
-      }
-    });
-    
-    const nodeRadius = 25;
-    
-    // Draw nodes.
-    derivedNodes.forEach(node => {
-      // Highlight the node if it is currently being edited.
-      if (node.id === editingNodeId) {
+            // Select node
+            setSelectedNode(node);
+        }
+    }, [addingEdge, edgeSource]); // Dependencies
+
+    const handleBackgroundClick = useCallback(() => {
+        if (addingEdge) {
+            // Cancel adding edge
+            setAddingEdge(false);
+            setEdgeSource(null);
+        }
+        setSelectedNode(null); // Deselect node
+    }, [addingEdge]); // Dependency
+
+    const startAddEdge = () => {
+        if (selectedNode) {
+            setAddingEdge(true);
+            setEdgeSource(selectedNode); // Store the actual selected node object
+            setSelectedNode(null); // Deselect node while adding edge
+        }
+    };
+
+    // --- Canvas/Rendering Functions ---
+
+    const paintNode = useCallback((node, ctx, globalScale) => {
+        const radius = NODE_R;
+        const isSelected = selectedNode && node.id === selectedNode.id;
+        const isHovered = hoverNode && node.id === hoverNode.id;
+        const isEdgeSource = edgeSource && node.id === edgeSource.id;
+
+        // Determine fill color
+        let fillColor = node.type === 'variable' ? variableColor : operationColor;
+        if (isSelected || isEdgeSource) {
+            fillColor = selectedColor;
+        }
+
+        // Draw the main circle
         ctx.beginPath();
-        ctx.arc(node.renderX, node.renderY, nodeRadius + 3, 0, Math.PI * 2);
-        ctx.strokeStyle = "#2C666E";
-        ctx.lineWidth = 3;
-        ctx.stroke();
-      }
-      
-      // Draw the node circle.
-      ctx.beginPath();
-      ctx.arc(node.renderX, node.renderY, nodeRadius, 0, Math.PI * 2);
-      ctx.fillStyle = "#07393C";
-      ctx.fill();
-      ctx.strokeStyle = "#333";
-      ctx.lineWidth = 1;
-      ctx.stroke();
-      
-      // Draw the node text.
-      ctx.fillStyle = "#F0EDEE";
-      ctx.font = "14px Arial";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      if (node.type === "variable") ctx.fillText(`${node.value}[${node.varValue}]`, node.renderX, node.renderY);
-      else ctx.fillText(node.value, node.renderX, node.renderY);
-      
-      // Draw plus signs for adding children (if the node isn’t a variable).
-      if (node.type !== "variable") {
-        if (!node.left) {
-          drawPlus(ctx, node.renderX - nodeRadius - 15, node.renderY + nodeRadius + 10);
+        ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
+        ctx.fillStyle = fillColor;
+        ctx.fill();
+
+        // Draw outline if selected/hovered/source
+         if (isSelected || isHovered || isEdgeSource) {
+            ctx.lineWidth = 2 / globalScale;
+            ctx.strokeStyle = '#FFCC80'; // Lighter orange outline
+            ctx.stroke();
+         }
+
+        // Determine text to display
+        let displayText = '';
+        if (node.type === 'variable') {
+            displayText = `${node.value}[${node.varValue}]`;
+        } else { // Operation
+            displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value); // Handle 'A'/'O' or others
         }
-        if (!node.right) {
-          drawPlus(ctx, node.renderX + nodeRadius + 15, node.renderY + nodeRadius + 10);
-        }
-      }
-      // Draw a plus sign for adding a parent (only for the current root).
-      if (!node.parent) {
-        drawPlus(ctx, node.renderX, node.renderY - nodeRadius - 15);
-      }
-    });
-    
-    ctx.restore();
-  }, [tree, editingNodeId, offset, scale]);
-  
-  // Helper to draw a “plus” sign.
-  const drawPlus = (ctx, x, y) => {
-    ctx.fillStyle = "#333";
-    ctx.font = "12px Arial";
-    ctx.textAlign = "center";
-    ctx.fillText("+", x, y);
-  };
-  
-  // ─── Mouse and Interaction Handlers ─────────────────────────────
-  
-  // Get a node at a given canvas position.
-  const getNodeAtPosition = (x, y) => {
-    if (!tree) return null;
-    const { nodes: derivedNodes } = getTreeLayout(tree);
-    const nodeRadius = 25;
-    return derivedNodes.find(node => {
-      const dx = node.renderX - x;
-      const dy = node.renderY - y;
-      return Math.sqrt(dx * dx + dy * dy) <= nodeRadius;
-    });
-  };
-  
-  // Check if a plus sign is at the given position.
-  const getPlusSignAtPosition = (x, y) => {
-    if (!tree) return null;
-    const { nodes: derivedNodes } = getTreeLayout(tree);
-    const nodeRadius = 25;
-    for (let node of derivedNodes) {
-      // Parent plus (for the root).
-      if (
-        !node.parent &&
-        Math.abs(node.renderX - x) <= 10 &&
-        Math.abs((node.renderY - nodeRadius - 15) - y) <= 10
-      ) {
-        return { nodeId: node.id, position: "parent" };
-      }
-      // Left plus.
-      if (
-        Math.abs((node.renderX - nodeRadius - 15) - x) <= 10 &&
-        Math.abs((node.renderY + nodeRadius + 10) - y) <= 10
-      ) {
-        return { nodeId: node.id, position: "left" };
-      }
-      // Right plus.
-      if (
-        Math.abs((node.renderX + nodeRadius + 15) - x) <= 10 &&
-        Math.abs((node.renderY + nodeRadius + 10) - y) <= 10
-      ) {
-        return { nodeId: node.id, position: "right" };
-      }
-    }
-    return null;
-  };
-  
-  // When the canvas is clicked.
-  const handleCanvasClick = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    // Convert screen coordinates to canvas coordinates.
-    const x = (e.clientX - rect.left - offset.x) / scale;
-    const y = (e.clientY - rect.top - offset.y) / scale;
-    
-    const plusData = getPlusSignAtPosition(x, y);
-    if (plusData) {
-      setAddingNode(plusData);
-      setEditingNodeId(null);
-      return;
-    }
-    
-    const clickedNode = getNodeAtPosition(x, y);
-    if (clickedNode) {
-      setEditingNodeId(clickedNode.id);
-      console.log("Clicked node:", clickedNode);
-      setAddingNode(null);
-      return;
-    }
-    
-    // If there’s no tree yet, create a root node.
-    if (!tree) {
-      const newRoot = new Node("+");
-      newRoot.id = generateId();
-      newRoot.x = x;
-      newRoot.y = y;
-      setTree(newRoot);
-      onTreeUpdate(newRoot);
-      console.log("Created root node:", newRoot);
-    } else {
-      setAddingNode(null);
-      setEditingNodeId(null);
-    }
-  };
-  
-  const handleMouseMove = (e) => {
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = (e.clientX - rect.left - offset.x) / scale;
-    const y = (e.clientY - rect.top - offset.y) / scale;
-    
-    if (dragging) {
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
-      setOffset({ x: dx, y: dy });
-    }
-    
-    const node = getNodeAtPosition(x, y);
-    const plus = getPlusSignAtPosition(x, y);
-    setHovering(!!node || !!plus);
-  };
-  
-  const handleMouseDown = (e) => {
-    setDragging(true);
-    setDragStart({ x: e.clientX - offset.x, y: e.clientY - offset.y });
-  };
-  
-  const handleMouseUp = () => {
-    setDragging(false);
-  };
-  
-  const handleZoom = (direction) => {
-    setScale(prev => Math.max(0.1, prev + direction * 0.1));
-  };
-  
-  const handleCenter = () => {
-    setOffset({ x: 0, y: 0 });
-    setScale(1);
-  };
-  
-  // ─── Button Actions for Editing and Adding Nodes ─────────────────────
-  
-  const updateNode = (newValue, newVarValue = null) => {
-    if (!editingNodeId || !tree) return;
-    const updatedTree = updateNodeInTree(
-      tree,
-      editingNodeId,
-      newValue,
-      newVarValue,
-      getNextVariableName
+
+        // Draw text
+        const fontSize = 12 / globalScale;
+        ctx.font = `${fontSize}px Sans-Serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillStyle = nodeTextColor;
+        ctx.fillText(displayText, node.x, node.y);
+
+        node.__bckgDimensions = ctx.measureText(displayText).width + 4 /globalScale; // Save for potential hover detection if needed
+
+    }, [selectedNode, hoverNode, edgeSource]); // Dependencies
+
+    // --- JSX ---
+    return (
+        <div>
+            {/* Instructions/Status Bar */}
+            <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: '#666' }}>
+                {addingEdge && edgeSource && `Adding edge from node ${edgeSource.id}. Click target node or background to cancel.`}
+                {selectedNode && !addingEdge && `Node ${selectedNode.id} selected.`}
+                {!selectedNode && !addingEdge && 'Click background to deselect. Click node to select.'}
+            </div>
+
+            {/* ForceGraph Canvas */}
+            <div className="GraphDiv" style={{ border: '1px solid #ccc', borderRadius: '4px', margin: '10px 0' }}>
+                <ForceGraph2D
+                    ref={fgRef}
+                    graphData={graphData}
+                    // Layout
+                    dagMode="td" // Top-down layout
+                    dagLevelDistance={70} // Distance between levels
+                    cooldownTime={2000} // Stop simulation sooner
+                    d3AlphaDecay={0.05} // Faster decay
+                    d3VelocityDecay={0.4}
+                    // Nodes
+                    nodeRelSize={NODE_R} // Use fixed radius for consistency
+                    nodeId="id"
+                    nodeCanvasObject={paintNode}
+                    nodeCanvasObjectMode={() => "after"} // Draw text after circle
+                    // Links
+                    linkSource="source"
+                    linkTarget="target"
+                    linkColor={() => 'rgba(0,0,0,0.4)'}
+                    linkWidth={1}
+                    linkDirectionalArrowLength={3.5}
+                    linkDirectionalArrowRelPos={1}
+                    // Interaction
+                    onNodeClick={handleNodeClick}
+                    onBackgroundClick={handleBackgroundClick}
+                    onNodeHover={setHoverNode} // Update hover state
+                    enableZoomPanInteraction={true}
+                    enableNodeDrag={true} // Allow dragging nodes
+                     onNodeDragEnd={node => { // Fix node position after dragging
+                       node.fx = node.x;
+                       node.fy = node.y;
+                     }}
+                />
+            </div>
+
+            {/* Control Buttons */}
+            <div style={{ textAlign: "center", margin: "10px" }}>
+                <button className="btn btn-secondary mx-1" onClick={() => addNode('A')}>Add AND Node</button>
+                <button className="btn btn-secondary mx-1" onClick={() => addNode('O')}>Add OR Node</button>
+                <button className="btn btn-secondary mx-1" onClick={() => addNode('variable')}>Add Variable Node</button>
+                {/* Add buttons to center view, zoom etc. if needed */}
+            </div>
+
+            {/* Selected Node Controls */}
+            {selectedNode && !addingEdge && (
+                <div style={{ border: '1px solid #eee', padding: '15px', margin: '10px 0', borderRadius: '4px' }}>
+                    <h5>Selected Node: {selectedNode.id}</h5>
+                    <div className="d-flex flex-wrap justify-content-center align-items-center">
+                        {/* Type/Value Change */}
+                         {selectedNode.type === 'operation' && (
+                            <>
+                            <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'A' })}>Set AND</button>
+                            <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Set OR</button>
+                            <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'variable' })}>To Variable</button>
+                            </>
+                         )}
+                         {selectedNode.type === 'variable' && (
+                             <>
+                             <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 0 })}>Set Value [0]</button>
+                             <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 1 })}>Set Value [1]</button>
+                             <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'A'})}>To AND</button>
+                             <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'O'})}>To OR</button>
+                             </>
+                         )}
+                         {/* General Actions */}
+                        <button className="btn btn-success btn-sm m-1" onClick={startAddEdge}>Connect Node</button>
+                        <button className="btn btn-danger btn-sm m-1" onClick={() => deleteNode(selectedNode.id)}>Delete Node</button>
+                    </div>
+
+                     {/* List connected edges for deletion */}
+                      <div style={{ marginTop: "10px" }}>
+                          <h6>Connected Edges:</h6>
+                          <div className="d-flex flex-wrap justify-content-center">
+                              {graph.links
+                                  .filter(link => link.source === selectedNode.id || link.target === selectedNode.id)
+                                  .map((link, index) => {
+                                      const connectedNodeId = link.source === selectedNode.id ? link.target : link.source;
+                                      return (
+                                          <div key={`${link.source}-${link.target}-${index}`} className="m-1">
+                                              <button
+                                                  className="btn btn-outline-danger btn-sm"
+                                                  onClick={() => deleteEdge(link.source, link.target)}
+                                                  title={`Delete edge between ${link.source} and ${link.target}`}
+                                              >
+                                                  Edge to {connectedNodeId} &times;
+                                              </button>
+                                          </div>
+                                      );
+                                  })
+                              }
+                              {graph.links.filter(link => link.source === selectedNode.id || link.target === selectedNode.id).length === 0 && (
+                                  <small className="text-muted">No connections</small>
+                              )}
+                          </div>
+                      </div>
+                </div>
+            )}
+        </div>
     );
-    setTree(updatedTree);
-    onTreeUpdate(updatedTree);
-    console.log("Updated tree:", updatedTree);
-    setEditingNodeId(null);
-  };
-  
-  const addNode = (value, varValue = null) => {
-    if (!addingNode || !tree) return;
-    const { nodeId, position } = addingNode;
-    const { nodes: derivedNodes } = getTreeLayout(tree);
-    const targetNode = derivedNodes.find(n => n.id === nodeId);
-    if (!targetNode) return;
-    if (targetNode.type === "variable" && position !== "parent") {
-      alert("Variables cannot have children.");
-      return;
-    }
-    if (value === "variable" && position === "parent") {
-      alert("Variables cannot be parent nodes.");
-      return;
-    }
-    const newNode = new Node(value, null, null, varValue, null, value === "variable" ? "variable" : "operation");
-    newNode.id = generateId();
-    if (position === "left") {
-      newNode.x = targetNode.renderX - 60;
-      newNode.y = targetNode.renderY + 100;
-    } else if (position === "right") {
-      newNode.x = targetNode.renderX + 60;
-      newNode.y = targetNode.renderY + 100;
-    } else if (position === "parent") {
-      newNode.x = targetNode.renderX;
-      newNode.y = targetNode.renderY - 100;
-    }
-    if (value === "variable") {
-      newNode.value = getNextVariableName();
-      newNode.varValue = varValue;
-    }
-    const updatedTree = addChildToTree(tree, nodeId, position, newNode);
-    setTree(updatedTree);
-    onTreeUpdate(updatedTree);
-    setAddingNode(null);
-  };
-  
-  // ─── Render ─────────────────────────────────────────────────────────────
-  return (
-    <div>
-      <div style={{ textAlign: "center", margin: "10px" }}>
-        <button className="btn btn-primary mx-1" onClick={() => handleZoom(1)}>+</button>
-        <button className="btn btn-primary mx-1" onClick={() => handleZoom(-1)}>-</button>
-        <button className="btn btn-primary mx-1" onClick={handleCenter}>Center</button>
-      </div>
-      <div style={{ textAlign: "center", margin: "10px" }}>
-        <span>
-          Result: {evaluationResult !== null ? String(Boolean(evaluationResult)) : "Tree not complete"}
-        </span>
-      </div>
-      <canvas
-        ref={canvasRef}
-        width="1000"
-        height="600"
-        style={{
-          border: "1px solid #ccc",
-          borderRadius: "10px",
-          display: "block",
-          margin: "20px auto",
-          cursor: dragging ? "grabbing" : hovering ? "pointer" : "grab"
-        }}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onClick={handleCanvasClick}
-      ></canvas>
-      {editingNodeId && (
-        <div style={{ textAlign: "center", margin: "10px" }}>
-          <p>Editing Node: {editingNodeId}</p>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("A")}>Change to AND</button>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("O")}>Change to OR</button>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("variable", 0)}>Change to Variable (0)</button>
-          <button className="btn btn-primary mx-1" onClick={() => updateNode("variable", 1)}>Change to Variable (1)</button>
-          <button className="btn btn-danger mx-1"
-            onClick={() => {
-              const updatedTree = deleteNodeFromTree(tree, editingNodeId);
-              setTree(updatedTree);
-              onTreeUpdate(updatedTree);
-              setEditingNodeId(null);
-            }}
-          >
-            Delete Node
-          </button>
-        </div>
-      )}
-      {addingNode && (
-        <div style={{ textAlign: "center", margin: "10px" }}>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("A")}>Add AND</button>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("O")}>Add OR</button>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("variable", 0)}>Add Variable (0)</button>
-          <button className="btn btn-primary mx-1" onClick={() => addNode("variable", 1)}>Add Variable (1)</button>
-        </div>
-      )}
-      <div>
-        <table className="table table-bordered mb-3" style={{ width: "50%", margin: "auto" }}>
-          <thead>
-            <tr>
-              <th>Node ID</th>
-              <th>Value</th>
-              <th>Type</th>
-              <th>Variable Value</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tree &&
-              (() => {
-                const { nodes } = getTreeLayout(tree);
-                return nodes.map(node => (
-                  <tr key={node.id}>
-                    <td>{node.id}</td>
-                    <td>{node.value}</td>
-                    <td>{node.type}</td>
-                    <td>{node.varValue}</td>
-                  </tr>
-                ));
-              })()}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
 }

@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
-import { TreeBuilderCanvas } from './InteractiveInput';
+import { TreeBuilderCanvas } from './oldInteractiveInput';
+// import { InteractiveMCVPGraph } from './InteractiveInput';
 
 export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
   // Selected option

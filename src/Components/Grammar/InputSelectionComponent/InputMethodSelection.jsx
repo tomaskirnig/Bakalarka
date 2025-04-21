@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
-import { PreparedSetsInput } from './PreparedSetsinput';
-// import { TreeBuilderCanvas } from './InteractiveInput';
+import { PreparedSetsInput } from './PreparedSetsInput';
 
 export function InputMethodSelection({ onGrammar, chosenOpt, onChosenOpt, onTreeUpdate }) {
   // Handle tab selection
@@ -47,16 +46,6 @@ export function InputMethodSelection({ onGrammar, chosenOpt, onChosenOpt, onTree
           />
           <label className="btn btn-outline-primary m-1" htmlFor="btnradio3">Načíst ze sady</label>
 
-          {/* <input
-            type="radio"
-            className="btn-check"
-            name="btnradio"
-            id="btnradio4"
-            autoComplete="off"
-            checked={chosenOpt === 'interactive'}
-            onChange={() => handleOptionSelect('interactive')}
-          />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio4">Interaktivně</label> */}
        </div>
 
       <div className="input-block">
