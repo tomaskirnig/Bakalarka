@@ -17,11 +17,11 @@ export function MCVP() {
 
             <InputMethodSelector onTreeUpdate={ setTree } setChosenOpt={ setChosenOpt } />
 
-            {tree && <p>Result: {Boolean(evaluateTree(tree)) ? 'True' : 'False'}</p>}
+            {tree && <p>Výsledek: {Boolean(evaluateTree(tree)) ? '1' : '0'}</p>}
 
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
-            <button className='btn btn-primary' onClick={() => setExplain(true)}> Vysvětlit</button>
+            {tree && <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>}
 
             {explain && (
                 <Modal onClose={() => setExplain(false)}>
@@ -33,5 +33,3 @@ export function MCVP() {
         </div>
     );
 }
-
-// tree structure with react-force-graph https://github.com/vasturiano/react-force-graph/blob/master/example/tree/index.html

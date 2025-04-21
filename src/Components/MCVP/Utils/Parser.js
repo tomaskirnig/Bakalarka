@@ -1,6 +1,16 @@
+/**
+ * @fileoverview Provides utilities for parsing MCVP expressions into tree structures.
+ */
+
 import { Node } from "./NodeClass";
 
-// Convert input string to tokens - [kind, value] (like ['VARIABLE', 'x1'] or ['OPERATOR', 'A']).
+/**
+ * Converts an input string into tokens for parsing.
+ * 
+ * @param {string} s - The expression string to tokenize
+ * @returns {Array<Array<string>>} Array of tokens, each a [kind, value] pair
+ * @throws {SyntaxError} If an unexpected character is encountered
+ */
 function tokenize(s) {
   // Remove spaces
   s = s.replace(/\s+/g, '');
@@ -38,12 +48,26 @@ function tokenize(s) {
   return tokens;
 }
 
+/**
+ * Parser class for converting tokens into an MCVP expression tree.
+ */
 class Parser {
+  /**
+   * Creates a new Parser instance.
+   * 
+   * @param {Array<Array<string>>} tokens - Array of tokens to parse
+   */
   constructor(tokens) {
     this.tokens = tokens;
     this.pos = 0;
   }
 
+  /**
+   * Parses the tokens into an MCVP expression tree.
+   * 
+   * @returns {Node} The root node of the parsed expression tree
+   * @throws {SyntaxError} If the syntax is invalid
+   */
   parse() {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
@@ -53,10 +77,20 @@ class Parser {
     return node;
   }
 
+  /**
+   * Parses an expression.
+   * 
+   * @returns {Node} The root node of the parsed expression
+   */
   parseExpression() {
     return this.parseOrExpr();
   }
 
+  /**
+   * Parses an OR expression.
+   * 
+   * @returns {Node} The root node of the parsed OR expression
+   */
   parseOrExpr() {
     let node = this.parseAndExpr();
     while (this.currentTokenIs('OPERATOR', 'O')) {
@@ -67,6 +101,11 @@ class Parser {
     return node;
   }
 
+  /**
+   * Parses an AND expression.
+   * 
+   * @returns {Node} The root node of the parsed AND expression
+   */
   parseAndExpr() {
     let node = this.parseFactor();
     while (this.currentTokenIs('OPERATOR', 'A')) {
@@ -77,6 +116,12 @@ class Parser {
     return node;
   }
 
+  /**
+   * Parses a factor (variable or parenthesized expression).
+   * 
+   * @returns {Node} The node representing the factor
+   * @throws {SyntaxError} If an unexpected token is encountered
+   */
   parseFactor() {
     if (this.currentTokenIs('VARIABLE')) {
       const varToken = this.consume('VARIABLE');
@@ -94,6 +139,13 @@ class Parser {
     }
   }
 
+  /**
+   * Parses a variable token into name and value.
+   * 
+   * @param {string} varStr - The variable string to parse (e.g., "x1[0]")
+   * @returns {Array} A pair of [variableName, variableValue]
+   * @throws {SyntaxError} If the variable format is invalid
+   */
   parseVariable(varStr) {
     const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
     if (match) {
@@ -105,6 +157,11 @@ class Parser {
     }
   }
 
+  /**
+   * Gets the current token.
+   * 
+   * @returns {Array<string>} The current token as [kind, value] or ['EOF', ''] if at end
+   */
   currentToken() {
     if (this.pos < this.tokens.length) {
       return this.tokens[this.pos];
@@ -113,6 +170,13 @@ class Parser {
     }
   }
 
+  /**
+   * Checks if the current token matches the specified kind and optional value.
+   * 
+   * @param {string} kind - The token kind to check for
+   * @param {string|null} value - The token value to check for (or null to check only kind)
+   * @returns {boolean} True if the current token matches, false otherwise
+   */
   currentTokenIs(kind, value = null) {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
@@ -124,6 +188,14 @@ class Parser {
     return true;
   }
 
+  /**
+   * Consumes the current token if it matches the specified kind and optional value.
+   * 
+   * @param {string} kind - The expected token kind
+   * @param {string|null} value - The expected token value (or null to check only kind)
+   * @returns {Array<string>} The consumed token
+   * @throws {SyntaxError} If the current token doesn't match the expected kind or value
+   */
   consume(kind, value = null) {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
@@ -137,6 +209,12 @@ class Parser {
   }
 }
 
+/**
+ * Prints a tree to the console with indentation.
+ * 
+ * @param {Node} node - The root node of the tree to print
+ * @param {number} indent - The indentation level (default: 0)
+ */
 export function printTree(node, indent = 0) {
   if (node !== null) {
     console.log(' '.repeat(indent) + node.value + (node.varValue !== null ? `[${node.varValue}]` : ''));
@@ -147,14 +225,15 @@ export function printTree(node, indent = 0) {
   }
 }
 
+/**
+ * Parses an expression string into an MCVP expression tree.
+ * 
+ * @param {string} exprStr - The expression string to parse
+ * @returns {Node} The root node of the parsed expression tree
+ */
 export function parseExpressionToTree(exprStr) {
   const tokens = tokenize(exprStr);
   const parser = new Parser(tokens);
   const tree = parser.parse();
   return tree;
 }
-
-//   // Example usage
-//   const expr = '(x1[0] O x2[1]) A (x3[1] A x4[1])';
-//   const tree = parseExpressionToTree(expr);
-//   printTree(tree);

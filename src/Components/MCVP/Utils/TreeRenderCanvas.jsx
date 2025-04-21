@@ -1,123 +1,29 @@
-import React, { useRef, useEffect, useMemo } from "react";
+import React, { useRef, useEffect, useMemo, useState, useCallback } from "react";
 import ForceGraph2D from "react-force-graph-2d";
 
 // Colors
 const highlightLinkColor = "red";
 const normalLinkColor = "rgba(0,0,0,0.5)";
-const highlightNodeColor = "yellow";
-const normalNodeColor = "#07393C";
+const highlightNodeColor = "#90DDF0";
+const normalNodeColor = "#438c96"; 
 const nodeStrokeColor = "#333";
 const nodeTextColor = "#fff";
-const playerLabelColor = "black";
-
-// Link color function - determines if a link should be highlighted
-const getLinkColor = (link, highlightedNode) => {
-  if (
-    highlightedNode &&
-    highlightedNode.parent &&
-    typeof link.source === 'object' && 
-    typeof link.target === 'object' &&
-    link.source.id === highlightedNode.parent.id &&
-    link.target.id === highlightedNode.id
-  ) {
-    return highlightLinkColor;
-  }
-  return normalLinkColor;
-};
-
-// Link width function - determines if a link should be thicker
-const getLinkWidth = (link, highlightedNode) => {
-  if (
-    highlightedNode &&
-    highlightedNode.parent &&
-    typeof link.source === 'object' && 
-    typeof link.target === 'object' &&
-    link.source.id === highlightedNode.parent.id &&
-    link.target.id === highlightedNode.id
-  ) {
-    return 3;
-  }
-  return 1;
-};
-
-// Node canvas object function - draws the node and its labels
-const renderNode = (node, ctx, globalScale, highlightedNode) => {
-  if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
-  
-  const r = 12; 
-  
-  // Draw circle
-  ctx.beginPath();
-  ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
-  
-  // Highlight node if it's the currently highlightedNode
-  if (highlightedNode && node.id === highlightedNode.id) {
-    ctx.fillStyle = highlightNodeColor;
-  } else {
-    ctx.fillStyle = normalNodeColor;
-  }
-  ctx.fill();
-  ctx.strokeStyle = nodeStrokeColor;
-  ctx.stroke();
-  
-  // Determine what text to display inside the node
-  let displayText = '';
-  
-  // Check if it's a variable (starts with x)
-  if (typeof node.value === 'string' && node.value.startsWith('x')) {
-    // Format as x1[0]
-    displayText = `${node.value}${node.varValue !== undefined ? `[${node.varValue}]` : ''}`;
-  } 
-  // Check if it's an AND operation
-  else if (node.value === 'AND' || node.value === '∧') {
-    displayText = 'A';
-  }
-  // Check if it's an OR operation
-  else if (node.value === 'OR' || node.value === '∨') {
-    displayText = 'O';
-  }
-  // For other types, use the value as is
-  else {
-    displayText = node.value || '';
-  }
-  
-  // Draw the text inside the circle
-  ctx.fillStyle = nodeTextColor;
-  ctx.textAlign = "center";
-  ctx.textBaseline = "middle";
-  ctx.font = `monospace`;
-  ctx.fillText(displayText, node.x, node.y);
-  
-  // If there's a root label, show it above the node (don't show variable value again)
-  if (node.rootLabel) {
-    ctx.fillText(`=> ${node.rootLabel}`, node.x, node.y - 2 * r);
-  }
-  
-  // Draw the player label below the node if applicable
-  if (node.player) {
-    ctx.font = `monospace`;
-    ctx.fillStyle = playerLabelColor;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "middle";
-    ctx.fillText(node.player === 1 ? 'I' : node.player === 2 ? 'II' : '', node.x, node.y + r + 5);
-  }
-};
 
 // Force configuration function to prevent node overlapping
 const configureForces = (forceName, forceInstance) => {
-  // Configure the link force for greater distance
+  // Link force for greater distance
   if (forceName === 'link') {
     forceInstance
       .distance(() => 120)  // Fixed distance between nodes
       .strength(0.8);       // Make links more rigid
   }
   
-  // Configure charge force for node repulsion
+  // Charge force for node repulsion
   if (forceName === 'charge') {
     forceInstance.strength(-300);  // More negative = more repulsion
   }
   
-  // Create collision force to prevent overlapping
+  // Collision force to prevent overlapping
   if (forceName === 'collision') {
     // Use this callback to create a new force if it doesn't exist
     return forceInstance || 
@@ -128,18 +34,21 @@ const configureForces = (forceName, forceInstance) => {
   
   // Configure center force to keep graph centered
   if (forceName === 'center') {
-    forceInstance.strength(0.4);  // Moderate pull to center
+    forceInstance.strength(0.4); 
   }
 };
 
 export function TreeCanvas({
   tree,
   highlightedNode,
-  evaluatedResult,
   completedSteps = [],
   forceCenterNode
 }) {
   const fgRef = useRef();
+  const idCounter = useRef(0);
+  
+  // Track highlighted links separately to avoid re-renders
+  const [highlightLinks, setHighlightLinks] = useState(new Set());
   
   // Graph data construction with useMemo
   const graphData = useMemo(() => {
@@ -151,22 +60,21 @@ export function TreeCanvas({
     function traverse(current, parent) {
       if (!current) return;
       
-      // Give each node a unique ID if it doesn't have one
       if (!current.id) {
-        current.id = Math.random().toString(36).substring(2, 9);
+        current.id = `n${idCounter.current++}`;
       }
       
-      // Keep a reference to the parent if needed
-      current.parent = parent;
-
-      // Add this node to our node list
-      nodes.push({
-        id: current.id,
+      // Add this node to node list
+      const node = {
+        id: current.id, 
         value: current.value,
         varValue: current.varValue,
-        nodeRef: current
-      });
-
+        nodeRef: current,
+        parentId: parent ? parent.id : null
+      };
+      
+      nodes.push(node);
+    
       // Link from parent -> current
       if (parent) {
         links.push({
@@ -174,7 +82,7 @@ export function TreeCanvas({
           target: current.id
         });
       }
-
+    
       // Traverse children
       if (current.left) traverse(current.left, current);
       if (current.right) traverse(current.right, current);
@@ -182,7 +90,7 @@ export function TreeCanvas({
 
     traverse(tree, null);
 
-    // Process completed steps - store results in the node rather than link labels
+    // Process completed steps
     if (completedSteps && completedSteps.length > 0) {
       completedSteps.forEach((step) => {
         if (!step || !step.node) return;
@@ -208,6 +116,94 @@ export function TreeCanvas({
 
     return { nodes, links };
   }, [tree, completedSteps]);
+  
+  // Update highlight links when highlighted node changes
+  // but with proper dependencies to avoid render loops
+  useEffect(() => {
+    // Skip if no highlighted node
+    if (!highlightedNode) {
+      setHighlightLinks(new Set());
+      return;
+    }
+    
+    // Extract primitives to work with
+    const nodeId = highlightedNode.id;
+    const parentId = highlightedNode.parent?.id;
+    
+    if (!parentId) {
+      setHighlightLinks(new Set());
+      return;
+    }
+    
+    // Find the link between highlightedNode and its parent
+    const highlightedLink = graphData.links.find(link => {
+      if (typeof link.source === 'object' && typeof link.target === 'object') {
+        return link.source.id === parentId && link.target.id === nodeId;
+      }
+      return false;
+    });
+    
+    // Update the highlights set instead of rerendering everything
+    if (highlightedLink) {
+      setHighlightLinks(new Set([highlightedLink]));
+    } else {
+      setHighlightLinks(new Set());
+    }
+  }, [highlightedNode?.id, highlightedNode?.parent?.id]); // Just use IDs, not object references
+
+  // Node rendering 
+  const paintNode = useCallback((node, ctx, globalScale) => {
+    if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
+    
+    const r = 12; 
+    
+    // Draw circle
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+    
+    // Highlight node if it's the currently highlightedNode
+    if (highlightedNode && node.id === highlightedNode.id) {
+      ctx.fillStyle = highlightNodeColor;
+    } else {
+      ctx.fillStyle = normalNodeColor;
+    }
+    ctx.fill();
+    ctx.strokeStyle = nodeStrokeColor;
+    ctx.stroke();
+    
+    let displayText = '';
+    
+    // Check if it's a variable (starts with x)
+    if (typeof node.value === 'string' && node.value.startsWith('x')) {
+      // Format as x1[0]
+      displayText = `${node.value}${node.varValue !== undefined ? `[${node.varValue}]` : ''}`;
+    } 
+    // Check if it's an AND operation
+    else if (node.value === 'AND' || node.value === '∧') {
+      displayText = 'A';
+    }
+    // Check if it's an OR operation
+    else if (node.value === 'OR' || node.value === '∨') {
+      displayText = 'O';
+    }
+    // For other types, use the value as is
+    else {
+      displayText = node.value || '';
+    }
+    
+    // Draw the text inside the circle
+    ctx.fillStyle = nodeTextColor;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = `monospace`;
+    ctx.fillText(displayText, node.x, node.y);
+    
+    // If there's a root label, show it above the node
+    if (node.rootLabel) {
+      ctx.fillText(`=> ${node.rootLabel}`, node.x, node.y - 2 * r);
+    }
+    
+  }, [highlightedNode?.id]); 
 
   // Collision detection to prevent node overlapping
   useEffect(() => {
@@ -230,7 +226,7 @@ export function TreeCanvas({
       // Reheat the simulation to apply the new forces
       fgRef.current.d3ReheatSimulation();
     }
-  }, [graphData]); // Re-run when graphData changes
+  }, [graphData]);
 
   // Focus on highlighted node
   useEffect(() => {
@@ -240,10 +236,9 @@ export function TreeCanvas({
       const timer = setTimeout(() => {
         if (fgRef.current) {
           try {
-            // Then zoom to the node
-            // fgRef.current.zoomToFit(400, 400, node => 
-            //   node.id === highlightedNode.id
-            // );
+            fgRef.current.zoomToFit(400, 480, node => 
+              node.id === highlightedNode.id
+            );
             forceCenterNode.current = true;
           } catch (err) {
             console.error("Error zooming to node:", err);
@@ -269,11 +264,12 @@ export function TreeCanvas({
         d3Force={configureForces}
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
-        linkColor={(link) => getLinkColor(link, highlightedNode)}
-        linkWidth={(link) => getLinkWidth(link, highlightedNode)}
+        
+        linkColor={link => highlightLinks.has(link) ? highlightLinkColor : normalLinkColor}
+        linkWidth={link => highlightLinks.has(link) ? 3 : 1}
+        
         nodeCanvasObjectMode={() => "after"}
-        nodeCanvasObject={(node, ctx, globalScale) => 
-          renderNode(node, ctx, globalScale, highlightedNode)}
+        nodeCanvasObject={paintNode}
       />
     </div>
   );

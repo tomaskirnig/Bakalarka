@@ -2,7 +2,6 @@ import React, { useRef, useState, useEffect } from "react";
 import { Node } from "../Utils/NodeClass";
 import { evaluateTree } from "../Utils/EvaluateTree";
 
-
 // Debug print of the tree structure
 const printTree = (node, depth = 0) => {
   if (!node) return;

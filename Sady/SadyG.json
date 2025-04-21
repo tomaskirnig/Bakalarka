@@ -1,0 +1,69 @@
+[
+  {
+    "name": "Simple Arithmetic Grammar",
+    "description": "A basic grammar for parsing arithmetic expressions",
+    "startSymbol": "E",
+    "nonTerminals": ["E", "T", "F"],
+    "terminals": ["+", "-", "*", "/", "(", ")", "number"],
+    "productions": [
+      {
+        "left": "E",
+        "right": ["E", "+", "T"]
+      },
+      {
+        "left": "E",
+        "right": ["E", "-", "T"]
+      },
+      {
+        "left": "E",
+        "right": ["T"]
+      },
+      {
+        "left": "T",
+        "right": ["T", "*", "F"]
+      },
+      {
+        "left": "T",
+        "right": ["T", "/", "F"]
+      },
+      {
+        "left": "T",
+        "right": ["F"]
+      },
+      {
+        "left": "F",
+        "right": ["(", "E", ")"]
+      },
+      {
+        "left": "F",
+        "right": ["number"]
+      }
+    ]
+  },
+  {
+    "name": "Basic Addition Grammar",
+    "description": "A minimal grammar for simple addition expressions",
+    "startSymbol": "S",
+    "nonTerminals": ["S", "E"],
+    "terminals": ["+", "id"],
+    "productions": [
+      {
+        "left": "S",
+        "right": ["E"]
+      },
+      {
+        "left": "E",
+        "right": ["E", "+", "id"]
+      },
+      {
+        "left": "E",
+        "right": ["id"]
+      }
+    ],
+    "examples": [
+      "a",
+      "a + b",
+      "a + b + c"
+    ]
+  }
+]

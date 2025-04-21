@@ -1,5 +1,16 @@
+/**
+ * @fileoverview Provides functionality to generate random combinatorial game graphs.
+ */
+
 import { GamePosition, GameGraph } from './NodeClasses';
 
+/**
+ * Generates a random combinatorial game graph.
+ * 
+ * @param {number} numGameFields - Number of positions/nodes to generate
+ * @param {number} edgeProbability - Probability (0-100) of creating an edge between unconnected nodes
+ * @returns {GameGraph} A randomly generated game graph
+ */
 export function generateGraph(numGameFields, edgeProbability) {
   // edgeProbability is between 0 and 100
   const positions = {};
@@ -14,7 +25,6 @@ export function generateGraph(numGameFields, edgeProbability) {
   }
 
   // First, connect all nodes in a chain to ensure connectivity.
-  // This guarantees that every node (except the first) has at least one parent.
   for (let i = 0; i < numGameFields - 1; i++) {
     const currentId = i.toString();
     const nextId = (i + 1).toString();
@@ -23,7 +33,7 @@ export function generateGraph(numGameFields, edgeProbability) {
   }
 
   // Now, add some extra random edges.
-  // We only add edges from a node with lower index to a node with higher index to avoid cycles.
+  // Only add edges from a node with lower index to a node with higher index to avoid cycles.
   const extraEdgeProbability = edgeProbability / 100 
   for (let i = 0; i < numGameFields; i++) {
     for (let j = i + 2; j < numGameFields; j++) {
@@ -39,9 +49,5 @@ export function generateGraph(numGameFields, edgeProbability) {
     }
   }
 
-  // Define the starting position as the first node ("0").
-  // const startingPosition = "0";
-
-  // Create and return the graph instance.
   return new GameGraph(positions, positions[0]);
 }

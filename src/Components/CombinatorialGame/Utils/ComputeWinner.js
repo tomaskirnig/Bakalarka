@@ -1,9 +1,19 @@
 /**
+ * @fileoverview Provides functions to analyze combinatorial games and determine winning strategies.
+ */
+
+/**
  * Determines if Player I has a winning strategy from a given position.
  * Player I wins when Player II has no moves available on their turn.
  * 
  * @param {Object} graph - The game graph with positions and startingPosition
- * @returns {Object} - Result with winner information
+ * @param {Object<string, Object>} graph.positions - Map of position IDs to position objects
+ * @param {Object} graph.startingPosition - The starting position of the game
+ * @returns {Object} Result with winner information, containing:
+ *   - hasWinningStrategy: boolean indicating if Player I can win
+ *   - winningPositions: map of positions with their winning status
+ *   - message: human-readable result message
+ *   - error: error message if analysis failed
  */
 export function computeWinner(graph) {
   if (!graph || !graph.positions || !graph.startingPosition) {
@@ -13,7 +23,12 @@ export function computeWinner(graph) {
   // Map to store computed results (memoization)
   const memo = {};
   
-  // Returns true if the player at position has a winning strategy
+  /**
+   * Recursively determines if a player has a winning strategy from a position.
+   * 
+   * @param {string} positionId - The ID of the position to analyze
+   * @returns {boolean} True if the current player has a winning strategy
+   */
   function hasWinningStrategy(positionId) {
     // If already computed, return the result
     if (memo[positionId] !== undefined) {
@@ -80,16 +95,17 @@ export function computeWinner(graph) {
     hasWinningStrategy: playerIWins,
     winningPositions: memo,
     message: playerIWins 
-      ? "Player I has a winning strategy"
-      : "Player I does not have a winning strategy"
+      ? "Hráč I má výherní strategii"
+      : "Hráč I nemá výherní strategii",
   };
 }
 
 /**
- * Finds and returns optimal moves for Player 1's winning strategy
+ * Finds and returns optimal moves for Player 1's winning strategy.
  * 
  * @param {Object} graph - The game graph with positions and startingPosition
- * @returns {Object} - Map of position IDs to optimal next move IDs
+ * @param {Object<string, Object>} graph.positions - Map of position IDs to position objects
+ * @returns {Object} Map of position IDs to optimal next move IDs for Player 1
  */
 export function getOptimalMoves(graph) {
   if (!graph || !graph.positions) {

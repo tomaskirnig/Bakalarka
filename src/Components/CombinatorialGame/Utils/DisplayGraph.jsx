@@ -3,9 +3,11 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { computeWinner, getOptimalMoves } from './ComputeWinner';
 
 // colors
-const color1 = '#438c96'; 
-const color4 = '#90DDF0';
+const defaultNodeColor = '#438c96'; 
+const highlightNodeColor = '#90DDF0';
 const startingColor = '#FF6347';
+const optimalLinkColor = '#FFD700'; 
+const defaultLinkColor = '#999'; 
 
 export function DisplayGraph({ graph }) {
   if (!graph || !graph.positions) {
@@ -119,12 +121,12 @@ export function DisplayGraph({ graph }) {
     
     // Color nodes based on player and starting position
     let fillColor;
-    if (node.isStartingPosition) {
+    if (node === hoverNode) {
+      fillColor = highlightNodeColor;
+    }else if (node.isStartingPosition) {
       fillColor = startingColor;
-    } else if (node === hoverNode) {
-      fillColor = color4;
-    } else {
-      fillColor = color1;
+    }else {
+      fillColor = defaultNodeColor;
     }
     
     ctx.fillStyle = fillColor;
@@ -146,7 +148,7 @@ export function DisplayGraph({ graph }) {
           nodeRelSize={NODE_R}
           autoPauseRedraw={false}
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => link.isOptimal ? '#FFD700' : '#999'}  // Gold color for optimal moves
+          linkColor={link => link.isOptimal ? optimalLinkColor : defaultLinkColor}  
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}

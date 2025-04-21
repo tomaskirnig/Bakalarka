@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
-import { TreeBuilderCanvas } from './InteractiveInput';
 import { PreparedSetsInput } from './PreparedSetsinput';
+// import { TreeBuilderCanvas } from './InteractiveInput';
 
 export function InputMethodSelection({ onGrammar, chosenOpt, onChosenOpt, onTreeUpdate }) {
   // Handle tab selection
@@ -47,7 +47,7 @@ export function InputMethodSelection({ onGrammar, chosenOpt, onChosenOpt, onTree
           />
           <label className="btn btn-outline-primary m-1" htmlFor="btnradio3">Načíst ze sady</label>
 
-          <input
+          {/* <input
             type="radio"
             className="btn-check"
             name="btnradio"
@@ -56,14 +56,14 @@ export function InputMethodSelection({ onGrammar, chosenOpt, onChosenOpt, onTree
             checked={chosenOpt === 'interactive'}
             onChange={() => handleOptionSelect('interactive')}
           />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio4">Interaktivně</label>
+          <label className="btn btn-outline-primary m-1" htmlFor="btnradio4">Interaktivně</label> */}
        </div>
 
       <div className="input-block">
         {chosenOpt === 'manual' && <ManualInput onGrammar={onGrammar} />}
         {chosenOpt === 'generate' && <GenerateInput onGrammar={onGrammar} />}
         {chosenOpt === 'sets' && <PreparedSetsInput onGrammar={onGrammar} />}
-        {chosenOpt === 'interactive' && <TreeBuilderCanvas onGrammar={onGrammar} />}
+        {/* {chosenOpt === 'interactive' && <TreeBuilderCanvas onGrammar={onGrammar} />} */}
       </div>
     </>
   );

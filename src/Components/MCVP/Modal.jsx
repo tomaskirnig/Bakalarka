@@ -2,48 +2,21 @@ import React from 'react';
 
 export function Modal({ onClose, children }) {
     return (
-        <div style={styles.overlay}>
-            <div style={styles.modal}>
-                <div style={styles.content}>
-                    <button onClick={onClose} style={styles.closeButton}>X</button>
-                    <div>{children}</div>
+        <div className="position-fixed top-0 start-0 end-0 bottom-0 d-flex justify-content-center align-items-center" 
+             style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)', zIndex: 1000 }}>
+            <div className="bg-white rounded-3 text-center" style={{ width: '95%', height: '95%', overflow: 'auto' }}>
+                <div className="position-relative">
+                    <button 
+                        onClick={onClose} 
+                        className="position-absolute top-0 bg-transparent border-0 fs-4"
+                        style={{ cursor: 'pointer', right: '15px'}}>
+                        &#x2715;
+                    </button>
+                    <div className="mt-3">
+                        {children}
+                    </div>
                 </div>
             </div>
         </div>
     );
 }
-
-const styles = {
-    overlay: {
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        zIndex: 1000,
-    },
-    modal: {
-        backgroundColor: '#fff',
-        padding: '20px',
-        borderRadius: '8px',
-        width: '95%',
-        height: '95%',
-        textAlign: 'center',
-    },
-    content: {
-        position: 'relative',
-    },
-    closeButton: {
-        position: 'absolute',
-        // top: '10px',
-        right: '0%',
-        background: 'none',
-        border: 'none',
-        fontSize: '16px',
-        cursor: 'pointer',
-    },
-};

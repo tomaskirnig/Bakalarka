@@ -1,19 +1,41 @@
+/**
+ * @fileoverview Provides utility functions for generating random MCVP expression trees.
+ */
+
 import { Node } from "./NodeClass";
 
-// Function to create a random variable node
+/**
+ * Creates a random variable node with a specified index.
+ * 
+ * @param {number} varIndex - The index to use for the variable name (e.g., x1, x2)
+ * @returns {Node} A new variable node with random value (0 or 1)
+ */
 function createVariableNode(varIndex) {
   const varName = 'x' + varIndex; // Variable name 
   const varValue = Math.floor(Math.random() * 2); // Random binary value (0 or 1)
   return new Node(varName, null, null, varValue, null, 'variable'); 
 }
 
-// Function to create a random operator node (A = AND, O = OR)
+/**
+ * Creates a random operator node (AND or OR).
+ * 
+ * @param {Node} left - The left child of the gate
+ * @param {Node|null} right - The right child of the gate, can be null
+ * @returns {Node} A new operator node (AND or OR)
+ */
 function createGateNode(left, right = null) {
   const operator = Math.random() < 0.5 ? 'A' : 'O'; // AND (A) or OR (O)
   return new Node(operator, left, right, null, null, 'operation');
 }
 
-// Function to generate the tree  
+/**
+ * Generates a random MCVP expression tree.
+ * 
+ * @param {number} numGates - Number of logical gates (AND/OR) to include
+ * @param {number} numVariables - Number of variables to include
+ * @returns {Node} The root node of the generated tree
+ * @throws {Error} If there are not enough nodes or if generation fails
+ */
 export function generateTree(numGates, numVariables) {
   const nodes = [];
 
