@@ -1,107 +1,65 @@
-import React from 'react';
-
 export function Navigation({ selectedOption, onNavSelect }) {
-    return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light py-3">
+  const navItems = [
+    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Home' },
+    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP' },
+    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra' },
+    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Grammar' },
+  ];
 
-            {/* Toggle button for offcanvas sidebar (visible only on mobile) */}
-            <button
-                className="navbar-toggler d-lg-none" // Show only on small screens
-                type="button"
-                data-bs-toggle="offcanvas"
-                data-bs-target="#offcanvasNavbar"
-                aria-controls="offcanvasNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation"
-            >
-                <span className="navbar-toggler-icon"></span>
-            </button>
+  const renderButton = ({ key, label }) => (
+    <button
+      key={key}
+      className={`nav-link fs-5 ${selectedOption === key ? 'active' : ''}`}
+      onClick={() => onNavSelect(key)}
+      data-bs-dismiss="offcanvas"  // needed on mobile
+    >
+      {label}
+    </button>
+  );
 
-            {/* Regular navbar menu for desktop (hidden on mobile) */}
-            <div className="collapse navbar-collapse d-none d-lg-flex" id="navbarNav">
-                <ul className="navbar-nav">
-                    <li className="nav-item">
-                        <button
-                            className={'nav-link ' + (selectedOption === 'Home' ? 'active' : '') + ' fs-5'}
-                            onClick={() => onNavSelect('Home')}
-                        >
-                            Domů
-                        </button>
-                    </li>
-                    <li className="nav-item">
-                        <button
-                            className={'nav-link ' + (selectedOption === 'MCVP' ? 'active' : '') + ' fs-5'}
-                            onClick={() => onNavSelect('MCVP')}
-                        >
-                            MCVP
-                        </button>
-                    </li>
-                    <li className="nav-item">
-                        <button
-                            className={'nav-link ' + (selectedOption === 'CombinatorialGame' ? 'active' : '') + ' fs-5'}
-                            onClick={() => onNavSelect('CombinatorialGame')}
-                        >
-                            Kombinatorická hra
-                        </button>
-                    </li>
-                    <li className="nav-item">
-                        <button
-                            className={'nav-link ' + (selectedOption === 'Grammar' ? 'active' : '') + ' fs-5'}
-                            onClick={() => onNavSelect('Grammar')}
-                        >
-                            Gramatika
-                        </button>
-                    </li>
-                </ul>
-            </div>
+  return (
+    <nav className="navbar navbar-expand-lg navbar-light bg-light py-3">
+      {/* Mobile toggle */}
+      <button
+        className="navbar-toggler d-lg-none"
+        type="button"
+        data-bs-toggle="offcanvas"
+        data-bs-target="#offcanvasNavbar"
+        aria-controls="offcanvasNavbar"
+        aria-label="Toggle navigation"
+      >
+        <span className="navbar-toggler-icon" />
+      </button>
 
-            {/* Offcanvas sidebar for mobile (hidden on desktop) */}
-            <div className="offcanvas offcanvas-start d-lg-none" tabIndex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
-                <div className="offcanvas-header">
-                    <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
-                    <button type="button" className="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div className="offcanvas-body">
-                    <ul className="navbar-nav">
-                        <li className="nav-item">
-                            <button
-                                className={'nav-link ' + (selectedOption === 'Home' ? 'active' : '') + ' fs-5'}
-                                onClick={() => onNavSelect('Home')}
-                                data-bs-dismiss="offcanvas" // Close sidebar on click
-                            >
-                                Home
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={'nav-link ' + (selectedOption === 'MCVP' ? 'active' : '') + ' fs-5'}
-                                onClick={() => onNavSelect('MCVP')}
-                                data-bs-dismiss="offcanvas" // Close sidebar on click
-                            >
-                                MCVP
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={'nav-link ' + (selectedOption === 'CombinatorialGame' ? 'active' : '') + ' fs-5'}
-                                onClick={() => onNavSelect('CombinatorialGame')}
-                                data-bs-dismiss="offcanvas" // Close sidebar on click
-                            >
-                                Kombinatorická hra
-                            </button>
-                        </li>
-                        <li className="nav-item">
-                            <button
-                                className={'nav-link ' + (selectedOption === 'Grammar' ? 'active' : '') + ' fs-5'}
-                                onClick={() => onNavSelect('Grammar')}
-                                data-bs-dismiss="offcanvas" // Close sidebar on click
-                            >
-                                Grammar
-                            </button>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    );
+      {/* Desktop menu */}
+      <div className="collapse navbar-collapse d-none d-lg-flex" id="navbarNav">
+        <ul className="navbar-nav">
+          {navItems.map(item => renderButton({ ...item, label: item.labelDesktop }))}
+        </ul>
+      </div>
+
+      {/* Mobile offcanvas */}
+      <div
+        className="offcanvas offcanvas-start d-lg-none"
+        tabIndex={-1}
+        id="offcanvasNavbar"
+        aria-labelledby="offcanvasNavbarLabel"
+      >
+        <div className="offcanvas-header">
+          <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+          <button
+            type="button"
+            className="btn-close text-reset"
+            data-bs-dismiss="offcanvas"
+            aria-label="Close"
+          />
+        </div>
+        <div className="offcanvas-body">
+          <ul className="navbar-nav">
+            {navItems.map(item => renderButton({ ...item, label: item.labelMobile }))}
+          </ul>
+        </div>
+      </div>
+    </nav>
+  );
 }

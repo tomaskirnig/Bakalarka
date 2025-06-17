@@ -2,6 +2,8 @@
  * @fileoverview Provides a function to evaluate MCVP expression trees.
  */
 
+import { toast } from "react-toastify";
+
 /**
  * Evaluates an MCVP expression tree.
  * 
@@ -54,7 +56,7 @@ export function evaluateTree(node) {
       console.log("OR:", leftValue, rightValue, "->", result);
       return result;
     } else {
-      console.error(`Neznámý operátor: ${node.value}`);
+      toast.error(`Neznámý operátor: ${node.value}`);
       throw new Error(`Neznámý operátor: ${node.value}`);
     }
 }

@@ -14,13 +14,13 @@ const configureForces = (forceName, forceInstance) => {
   // Link force for greater distance
   if (forceName === 'link') {
     forceInstance
-      .distance(() => 120)  // Fixed distance between nodes
-      .strength(0.8);       // Make links more rigid
+      .distance(() => 150)  // Increased from 120
+      .strength(0.7);       // Slightly reduced for more flexibility
   }
   
   // Charge force for node repulsion
   if (forceName === 'charge') {
-    forceInstance.strength(-300);  // More negative = more repulsion
+    forceInstance.strength(-400);  // Increased from -300
   }
   
   // Collision force to prevent overlapping
@@ -28,13 +28,13 @@ const configureForces = (forceName, forceInstance) => {
     // Use this callback to create a new force if it doesn't exist
     return forceInstance || 
       (window.d3 && window.d3.forceCollide ? 
-        window.d3.forceCollide(node => 30).iterations(3) : 
+        window.d3.forceCollide(node => 35).iterations(5) : // Increased from 30, iterations from 3
         null);
   }
   
   // Configure center force to keep graph centered
   if (forceName === 'center') {
-    forceInstance.strength(0.4); 
+    forceInstance.strength(0.3);  // Reduced slightly from 0.4
   }
 };
 
@@ -42,13 +42,12 @@ export function TreeCanvas({
   tree,
   highlightedNode,
   completedSteps = [],
-  forceCenterNode
 }) {
   const fgRef = useRef();
   const idCounter = useRef(0);
   
   // Track highlighted links separately to avoid re-renders
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  // const [highlightLinks, setHighlightLinks] = useState(new Set());
   
   // Graph data construction with useMemo
   const graphData = useMemo(() => {
@@ -119,40 +118,40 @@ export function TreeCanvas({
   
   // Update highlight links when highlighted node changes
   // but with proper dependencies to avoid render loops
-  useEffect(() => {
-    // Skip if no highlighted node
-    if (!highlightedNode) {
-      setHighlightLinks(new Set());
-      return;
-    }
+  // useEffect(() => {
+  //   // Skip if no highlighted node
+  //   if (!highlightedNode) {
+  //     setHighlightLinks(new Set());
+  //     return;
+  //   }
     
-    // Extract primitives to work with
-    const nodeId = highlightedNode.id;
-    const parentId = highlightedNode.parent?.id;
+  //   // Extract primitives to work with
+  //   const nodeId = highlightedNode.id;
+  //   const parentId = highlightedNode.parent?.id;
     
-    if (!parentId) {
-      setHighlightLinks(new Set());
-      return;
-    }
+  //   if (!parentId) {
+  //     setHighlightLinks(new Set());
+  //     return;
+  //   }
     
-    // Find the link between highlightedNode and its parent
-    const highlightedLink = graphData.links.find(link => {
-      if (typeof link.source === 'object' && typeof link.target === 'object') {
-        return link.source.id === parentId && link.target.id === nodeId;
-      }
-      return false;
-    });
+  //   // Find the link between highlightedNode and its parent
+  //   const highlightedLink = graphData.links.find(link => {
+  //     if (typeof link.source === 'object' && typeof link.target === 'object') {
+  //       return link.source.id === parentId && link.target.id === nodeId;
+  //     }
+  //     return false;
+  //   });
     
-    // Update the highlights set instead of rerendering everything
-    if (highlightedLink) {
-      setHighlightLinks(new Set([highlightedLink]));
-    } else {
-      setHighlightLinks(new Set());
-    }
-  }, [highlightedNode?.id, highlightedNode?.parent?.id]); // Just use IDs, not object references
+  //   // Update the highlights set instead of rerendering everything
+  //   if (highlightedLink) {
+  //     setHighlightLinks(new Set([highlightedLink]));
+  //   } else {
+  //     setHighlightLinks(new Set());
+  //   }
+  // }, [highlightedNode?.id, highlightedNode?.parent?.id]); // Just use IDs, not object references
 
   // Node rendering 
-  const paintNode = useCallback((node, ctx, globalScale) => {
+  const paintNode = useCallback((node, ctx) => {
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
     
     const r = 12; 
@@ -229,26 +228,26 @@ export function TreeCanvas({
   }, [graphData]);
 
   // Focus on highlighted node
-  useEffect(() => {
-    if (!highlightedNode || !fgRef.current || !forceCenterNode) return;
+  // useEffect(() => {
+  //   if (!highlightedNode || !fgRef.current || !forceCenterNode) return;
     
-    if (forceCenterNode.current === false) {
-      const timer = setTimeout(() => {
-        if (fgRef.current) {
-          try {
-            fgRef.current.zoomToFit(400, 480, node => 
-              node.id === highlightedNode.id
-            );
-            forceCenterNode.current = true;
-          } catch (err) {
-            console.error("Error zooming to node:", err);
-          }
-        }
-      }, 300);
+  //   if (forceCenterNode.current === false) {
+  //     const timer = setTimeout(() => {
+  //       if (fgRef.current) {
+  //         try {
+  //           fgRef.current.zoomToFit(400, 480, node => 
+  //             node.id === highlightedNode.id
+  //           );
+  //           forceCenterNode.current = true;
+  //         } catch (err) {
+  //           console.error("Error zooming to node:", err);
+  //         }
+  //       }
+  //     }, 300);
       
-      return () => clearTimeout(timer);
-    }
-  }, [highlightedNode?.id]);
+  //     return () => clearTimeout(timer);
+  //   }
+  // }, [highlightedNode?.id]);
 
   return (
     <div className="GraphDiv">
@@ -256,6 +255,7 @@ export function TreeCanvas({
         ref={fgRef}
         graphData={graphData}
         dagMode="td"
+        centerAt = {{ }}
         dagLevelDistance={100}
         cooldownTime={3000}   
         d3AlphaDecay={0.02}    
@@ -265,8 +265,8 @@ export function TreeCanvas({
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
         
-        linkColor={link => highlightLinks.has(link) ? highlightLinkColor : normalLinkColor}
-        linkWidth={link => highlightLinks.has(link) ? 3 : 1}
+        // linkColor={link => highlightLinks.has(link) ? highlightLinkColor : normalLinkColor}
+        // linkWidth={link => highlightLinks.has(link) ? 3 : 1}
         
         nodeCanvasObjectMode={() => "after"}
         nodeCanvasObject={paintNode}

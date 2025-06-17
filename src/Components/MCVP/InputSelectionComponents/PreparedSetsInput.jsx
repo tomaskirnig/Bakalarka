@@ -4,14 +4,12 @@ import { getData } from '../Utils/FileLoader';
 
 export function PreparedSetsInput( {onTreeUpdate} ) {
   const data = getData();
-  const [selectedKey, setSelectedKey] = useState(''); 
 
   // Handle set selection
   const handleSelectChange = (event) => {
     const key = event.target.value;
-    setSelectedKey(key);
     if (key) {
-      const expression = data[key]; // Get expression by key from data
+      const expression = data[key]; 
       const parsedTree = parseExpressionToTree(expression); // Parse the expression
       onTreeUpdate(parsedTree); // Send the tree to the component above for rendering
     }

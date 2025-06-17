@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
 
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');
-  const [tree, setTree] = useState(null);
 
   const handleParse = () => {
-    const parsedTree = parseExpressionToTree(expression);
-    onTreeUpdate(parsedTree);
+    onTreeUpdate(parseExpressionToTree(expression));
   };
 
   return (

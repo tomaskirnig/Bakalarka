@@ -1,0 +1,32 @@
+---- MCVP ----
+- Finish the following of the steps in steb by step component
+
+- Moidfy the Interactive component - child to be able to have more parents and for the parent to be able to have a child from any deeper level
+- Modify the deletion - not cascade only when del. node has one child and no parents
+- Store prepared sets as DAG
+- Add center button
+
+- Fix max children (2)
+- Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
+- When adding already existing variable -> dont create new one with same name 
+
+- Optimize - space between nodes
+- Optimize - initial placement of tree in canvas (tree is in upper left corner and not centered)
+- Optimize - ids of nodes icrement when AND or OR added 
+
+- Look into react-d3-tree for tree layout in MCVP 
+
+---- CG ----
+- Remake the isWinning property to hold players id
+- Add highlight of the selected node (in manual)
+
+---- Grammar ----
+
+
+---- Global ----
+- Add better display of errors - own modal or toastify
+- Optimize using the useCallback 
+- Optimize using loaders  
+- Look into deleting file loader files - propably more optimal to import the data sets directly with import key word 
+- Rewrite css to bootstrap
+- Set grabing cursor on canvas and clickable on the node

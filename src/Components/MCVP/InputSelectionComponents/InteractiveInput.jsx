@@ -1,28 +1,28 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
 
-// --- Configuration ---
-const NODE_R = 12; // Slightly larger radius for better visibility
-const operationColor = '#07393C'; // Dark teal for operations
-const variableColor = '#438c96'; // Lighter teal for variables
-const selectedColor = '#FFB74D'; // Orange for selection highlight
-const nodeTextColor = '#F0EDEE'; // Light text color
+const NODE_R = 12; 
+const outerCircleColor = '#07393C';
+const innerCircleColor = '#438c96'; 
+const selectedColor = '#FFB74D'; 
+const textColor = '#F0EDEE'; 
 
-// Helper to generate unique IDs (simple version)
-let nextNodeId = 0;
-const generateNodeId = () => `n${nextNodeId++}`;
-
-// --- New Interactive Component using ForceGraph2D ---
 export function InteractiveMCVPGraph() {
-    // --- State ---
     const [graph, setGraph] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
     const [hoverNode, setHoverNode] = useState(null); // For hover effects
     const fgRef = useRef(); // Ref for accessing ForceGraph methods
+    const nextNodeIdRef = useRef(0);
+    
+    // Generate unique ID function 
+    const generateNodeId = useCallback(() => {
+        const id = nextNodeIdRef.current;
+        nextNodeIdRef.current += 1;
+        return id;
+    }, []);
 
-    // --- Derived Data ---
     // Memoize graph data for ForceGraph2D
     const graphData = useMemo(() => {
         // Make sure links reference the actual node objects for the library
@@ -35,17 +35,16 @@ export function InteractiveMCVPGraph() {
             source: nodeMap[link.source] || link.source, // Use node object or ID if not found
             target: nodeMap[link.target] || link.target, // Use node object or ID if not found
         }));
+        console.log("Graph Data:", graph.nodes, linksWithNodeRefs);
         return { nodes: graph.nodes, links: linksWithNodeRefs };
     }, [graph]);
 
-    // --- Effects ---
     // Add initial node if graph is empty
     useEffect(() => {
         if (graph.nodes.length === 0) {
-            // Add a default root node (e.g., an OR operation)
-            addNode('O');
+            addNode('operation', 'O'); // Add a default operation node
         }
-    }, [graph.nodes]); // Dependency: runs only when node count changes from 0
+    }, [graph.nodes]);
 
     // --- Core Graph Functions ---
 
@@ -53,19 +52,19 @@ export function InteractiveMCVPGraph() {
         const newId = generateNodeId();
         let newNode;
 
-        if (type === 'variable') {
+        if (type === 'var') {
             newNode = {
                 id: newId,
                 type: 'variable',
-                // Assign a default variable name if needed, or require it
-                value: value || `x${newId.substring(1)}`, // Simple default like 'x1'
-                varValue: varValue === null ? 0 : varValue, // Default variable value to 0
+                // Assign a default variable name 
+                value: value || `x${newId}`, 
+                varValue: varValue === null ? 0 : varValue, 
             };
         } else { // Operation
             newNode = {
                 id: newId,
                 type: 'operation',
-                value: type, // 'A' or 'O'
+                value: value, // 'A' or 'O'
                 varValue: null,
             };
         }
@@ -78,9 +77,8 @@ export function InteractiveMCVPGraph() {
     };
 
     const deleteNode = (nodeId) => {
-        setGraph(prevGraph => ({
+        setGraph(prevGraph => ({ // Remove links and node itself
             nodes: prevGraph.nodes.filter(node => node.id !== nodeId),
-            // Remove links connected to the deleted node
             links: prevGraph.links.filter(link => link.source !== nodeId && link.target !== nodeId)
         }));
         // Clear selection if the deleted node was selected
@@ -93,8 +91,8 @@ export function InteractiveMCVPGraph() {
 
     const edgeExists = (sourceId, targetId) => {
         return graph.links.some(link =>
-            (link.source === sourceId && link.target === targetId) ||
-            (link.source === targetId && link.target === sourceId) // Check both directions if undirected
+            (link.source === sourceId && link.target === targetId) 
+            //|| (link.source === targetId && link.target === sourceId) 
         );
     };
 
@@ -121,8 +119,8 @@ export function InteractiveMCVPGraph() {
             nodes: prevGraph.nodes,
             // Filter out the link (consider both directions if needed, depends on graph type)
             links: prevGraph.links.filter(link =>
-                !(link.source === sourceId && link.target === targetId) &&
-                !(link.source === targetId && link.target === sourceId) // Remove if considering undirected
+                !(link.source === sourceId && link.target === targetId) 
+                //&& !(link.source === targetId && link.target === sourceId) 
             ),
         }));
     };
@@ -134,11 +132,11 @@ export function InteractiveMCVPGraph() {
                      // Create a new object with updated properties
                      const updatedNode = { ...node, ...updates };
 
-                     // Ensure consistency (e.g., operations don't have varValue)
                      if (updatedNode.type === 'operation') {
                          updatedNode.varValue = null;
                      } else if (updatedNode.type === 'variable' && updatedNode.varValue === null) {
-                         updatedNode.varValue = 0; // Default variable value if switching type
+                        updatedNode.value = `x${nodeId}`; // Default variable name if switching type
+                        updatedNode.varValue = 0; // Default variable value if switching type
                      }
                      return updatedNode;
                  }
@@ -155,7 +153,7 @@ export function InteractiveMCVPGraph() {
 
     // --- Interaction Handlers ---
 
-    const handleNodeClick = useCallback((node, event) => {
+    const handleNodeClick = useCallback((node) => {
         if (addingEdge && edgeSource) {
             // Complete adding edge
             if (edgeSource.id !== node.id) {
@@ -163,12 +161,11 @@ export function InteractiveMCVPGraph() {
             }
             setAddingEdge(false);
             setEdgeSource(null);
-            setSelectedNode(node); // Select the target node after adding edge
+            setSelectedNode(node); // Select the target node after adding edge // CHECK AFTER REFACTORING IF IS NOT BS
         } else {
-            // Select node
             setSelectedNode(node);
         }
-    }, [addingEdge, edgeSource]); // Dependencies
+    }, [addingEdge, edgeSource]); 
 
     const handleBackgroundClick = useCallback(() => {
         if (addingEdge) {
@@ -177,7 +174,7 @@ export function InteractiveMCVPGraph() {
             setEdgeSource(null);
         }
         setSelectedNode(null); // Deselect node
-    }, [addingEdge]); // Dependency
+    }, [addingEdge]); 
 
     const startAddEdge = () => {
         if (selectedNode) {
@@ -187,30 +184,31 @@ export function InteractiveMCVPGraph() {
         }
     };
 
+    // Check if a node has any children 
+    const hasChildren = (nodeId) => {
+    return graph.links.some(link => link.source === nodeId);
+    };
+
     // --- Canvas/Rendering Functions ---
 
-    const paintNode = useCallback((node, ctx, globalScale) => {
+    const paintNode = useCallback((node, ctx) => {
         const radius = NODE_R;
         const isSelected = selectedNode && node.id === selectedNode.id;
         const isHovered = hoverNode && node.id === hoverNode.id;
         const isEdgeSource = edgeSource && node.id === edgeSource.id;
 
-        // Determine fill color
-        let fillColor = node.type === 'variable' ? variableColor : operationColor;
-        if (isSelected || isEdgeSource) {
-            fillColor = selectedColor;
-        }
-
         // Draw the main circle
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = fillColor;
+        ctx.fillStyle = (isSelected || isEdgeSource) ? selectedColor : innerCircleColor;
         ctx.fill();
+
+        ctx.strokeStyle = outerCircleColor;
+        ctx.stroke();
 
         // Draw outline if selected/hovered/source
          if (isSelected || isHovered || isEdgeSource) {
-            ctx.lineWidth = 2 / globalScale;
-            ctx.strokeStyle = '#FFCC80'; // Lighter orange outline
+            ctx.strokeStyle = '#90DDF0'; //'#FFCC80' Lighter orange outline
             ctx.stroke();
          }
 
@@ -223,14 +221,14 @@ export function InteractiveMCVPGraph() {
         }
 
         // Draw text
-        const fontSize = 12 / globalScale;
-        ctx.font = `${fontSize}px Sans-Serif`;
+        const fontSize = 12;
+        ctx.font = `monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = nodeTextColor;
+        ctx.fillStyle = textColor;
         ctx.fillText(displayText, node.x, node.y);
 
-        node.__bckgDimensions = ctx.measureText(displayText).width + 4 /globalScale; // Save for potential hover detection if needed
+        // node.__bckgDimensions = ctx.measureText(displayText).width + 4; // Save for potential hover detection if needed
 
     }, [selectedNode, hoverNode, edgeSource]); // Dependencies
 
@@ -245,7 +243,7 @@ export function InteractiveMCVPGraph() {
             </div>
 
             {/* ForceGraph Canvas */}
-            <div className="GraphDiv" style={{ border: '1px solid #ccc', borderRadius: '4px', margin: '10px 0' }}>
+            <div className="GraphDiv">
                 <ForceGraph2D
                     ref={fgRef}
                     graphData={graphData}
@@ -281,37 +279,41 @@ export function InteractiveMCVPGraph() {
             </div>
 
             {/* Control Buttons */}
-            <div style={{ textAlign: "center", margin: "10px" }}>
-                <button className="btn btn-secondary mx-1" onClick={() => addNode('A')}>Add AND Node</button>
-                <button className="btn btn-secondary mx-1" onClick={() => addNode('O')}>Add OR Node</button>
-                <button className="btn btn-secondary mx-1" onClick={() => addNode('variable')}>Add Variable Node</button>
-                {/* Add buttons to center view, zoom etc. if needed */}
+            <div className='mt-2 pb-2'>
+                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>Add AND Node</button>
+                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>Add OR Node</button>
+                <button className="btn add-btn mx-1" onClick={() => addNode('var')}>Add Variable Node</button>
+                {/* Add buttons to center view */}
             </div>
 
             {/* Selected Node Controls */}
             {selectedNode && !addingEdge && (
-                <div style={{ border: '1px solid #eee', padding: '15px', margin: '10px 0', borderRadius: '4px' }}>
-                    <h5>Selected Node: {selectedNode.id}</h5>
+                <div className="p-4 my-3" style={{ border: '1px solid #eee', borderRadius: '4px'}}>
+                    <h5>Selected Node: {selectedNode.value === 'O' ? "OR" : selectedNode.value === 'A' ? "AND" : selectedNode.value}</h5>
                     <div className="d-flex flex-wrap justify-content-center align-items-center">
                         {/* Type/Value Change */}
                          {selectedNode.type === 'operation' && (
                             <>
-                            <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'A' })}>Set AND</button>
-                            <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Set OR</button>
-                            <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'variable' })}>To Variable</button>
+                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'A' })}>Set AND</button>
+                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Set OR</button>
+                            {!hasChildren(selectedNode.id) && (
+                                <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'variable' })}>
+                                    To Variable
+                                </button>
+                            )}
+                            <button className="btn btn-success mx-1" onClick={startAddEdge}>Connect Node</button>
                             </>
                          )}
                          {selectedNode.type === 'variable' && (
                              <>
-                             <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 0 })}>Set Value [0]</button>
-                             <button className="btn btn-outline-primary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 1 })}>Set Value [1]</button>
-                             <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'A'})}>To AND</button>
-                             <button className="btn btn-outline-secondary btn-sm m-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'O'})}>To OR</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 0 })}>Set Value [0]</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 1 })}>Set Value [1]</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'A'})}>To AND</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'O'})}>To OR</button>
                              </>
                          )}
                          {/* General Actions */}
-                        <button className="btn btn-success btn-sm m-1" onClick={startAddEdge}>Connect Node</button>
-                        <button className="btn btn-danger btn-sm m-1" onClick={() => deleteNode(selectedNode.id)}>Delete Node</button>
+                        <button className="btn btn-danger mx-1" onClick={() => deleteNode(selectedNode.id)}>Delete Node</button>
                     </div>
 
                      {/* List connected edges for deletion */}
@@ -322,14 +324,25 @@ export function InteractiveMCVPGraph() {
                                   .filter(link => link.source === selectedNode.id || link.target === selectedNode.id)
                                   .map((link, index) => {
                                       const connectedNodeId = link.source === selectedNode.id ? link.target : link.source;
+                                      
+                                      // Find the node object for display
+                                      const connectedNode = graph.nodes.find(node => node.id === connectedNodeId);
+                                      
+                                      // Format display text based on node type
+                                      let displayText = connectedNodeId; // Fallback
+                                      if (connectedNode) {
+                                        if (connectedNode.type === 'variable') {
+                                          displayText = `${connectedNode.value}[${connectedNode.varValue}]`;
+                                        } else {
+                                          displayText = connectedNode.value === 'A' ? 'AND' : 'OR';
+                                        }
+                                      }
+                                      
                                       return (
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
-                                              <button
-                                                  className="btn btn-outline-danger btn-sm"
-                                                  onClick={() => deleteEdge(link.source, link.target)}
-                                                  title={`Delete edge between ${link.source} and ${link.target}`}
-                                              >
-                                                  Edge to {connectedNodeId} &times;
+                                              <button className="btn btn-outline-danger btn-sm"
+                                                      onClick={() => deleteEdge(link.source, link.target)}>
+                                                  Edge to {displayText} &times;
                                               </button>
                                           </div>
                                       );

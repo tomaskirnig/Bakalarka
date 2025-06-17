@@ -2,6 +2,7 @@
  * @fileoverview Provides utilities for parsing MCVP expressions into tree structures.
  */
 
+import { toast } from "react-toastify";
 import { Node } from "./NodeClass";
 
 /**
@@ -12,15 +13,14 @@ import { Node } from "./NodeClass";
  * @throws {SyntaxError} If an unexpected character is encountered
  */
 function tokenize(s) {
-  // Remove spaces
-  s = s.replace(/\s+/g, '');
+  s = s.replace(/\s+/g, ''); // Remove whitespace characters 
 
   // Define token patterns
   const tokenSpecification = [
     ['LPAREN', /\(/],
     ['RPAREN', /\)/],
     ['OPERATOR', /A|O/],
-    ['VARIABLE', /x\d+(?:\[\d\])?/],  // Matches x followed by digits, optional [digit]
+    ['VARIABLE', /x\d+\[\d+\]/],  // Matches x followed by digits
   ];
 
   const tokens = [];
@@ -40,8 +40,8 @@ function tokenize(s) {
       tokens.push([match.kind, match.value]);
       pos += match.value.length;
     } else {
-      alert('Neočekávaný znak ' + s[pos] + ' na pozici ' + pos);
-      throw new SyntaxError(`Unexpected character ${s[pos]} at position ${pos}`);
+      // toast.error('Neočekávaný znak ' + s[pos] + ' na pozici ' + pos);
+      throw new SyntaxError(`Neočekávaný znak "${s[pos]}" na pozici ${pos}`);
     }
   }
   
@@ -71,7 +71,6 @@ class Parser {
   parse() {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
-      alert('Chybná syntaxe vstupu!');
       throw new SyntaxError('Neočekávané tokeny na konci vstupu.');
     }
     return node;
@@ -135,7 +134,8 @@ class Parser {
       return node;
     } 
     else {
-      throw new SyntaxError(`Očekávala se PROMĚNNÁ nebo LEVÁ ZÁVORKA, místo toho ${this.currentToken()[0]}`);
+      // toast.error('Očekávala se proměnná nebo levá závorka, místo ' + this.currentToken()[0]);
+      throw new SyntaxError(`Očekávala se PROMĚNNÁ nebo "(", místo toho ${this.currentToken()[0] == 'EOF' ? 'KONEC VSTUPU' : `"${this.currentToken()[1]}"`}`);
     }
   }
 
@@ -150,9 +150,10 @@ class Parser {
     const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
     if (match) {
       const varName = match[1];
-      const varValue = match[2] !== undefined ? Math.max(Math.min(Number(match[2]), 0), 1) : null;
+      const varValue = Number(match[2]) !== 0 ? 1 : 0;
       return [varName, varValue];
     } else {
+      // toast.error('Neplatný formát proměnné: ' + varStr);
       throw new SyntaxError(`Neplatná proměnná ${varStr}`);
     }
   }
@@ -189,6 +190,29 @@ class Parser {
   }
 
   /**
+   * Converts a token kind to a string representation.
+   * 
+   * @param {string} kind - The token kind to convert
+   * @returns {string} The string representation of the token kind
+   */
+  convertToString(kind) {
+    switch (kind) {
+      case 'LPAREN':
+        return '"("';
+      case 'RPAREN':
+        return '")"';
+      case 'EOF':
+        return 'KONEC VSTUPU';
+      case 'OPERATOR':
+        return 'A|O';
+      case 'VARIABLE':
+        return 'x';
+      default:
+        return kind;
+    }
+  }
+
+  /**
    * Consumes the current token if it matches the specified kind and optional value.
    * 
    * @param {string} kind - The expected token kind
@@ -199,7 +223,7 @@ class Parser {
   consume(kind, value = null) {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
-      throw new SyntaxError(`Očekával se ${kind}, místo ${tok[0]}`);
+      throw new SyntaxError(`Očekával se ${this.convertToString(kind)}, místo ${this.convertToString(tok[0])}`);
     }
     if (value !== null && tok[1] !== value) {
       throw new SyntaxError(`Očekávaná hodnota ${value}, místo ${tok[1]}`);
@@ -207,6 +231,8 @@ class Parser {
     this.pos += 1;
     return tok;
   }
+
+  
 }
 
 /**
@@ -232,8 +258,23 @@ export function printTree(node, indent = 0) {
  * @returns {Node} The root node of the parsed expression tree
  */
 export function parseExpressionToTree(exprStr) {
-  const tokens = tokenize(exprStr);
-  const parser = new Parser(tokens);
-  const tree = parser.parse();
-  return tree;
+  try {
+    if (exprStr === '') {
+      toast.error('Vstupní výraz je prázdný.');
+      return null;
+    }
+    const tokens = tokenize(exprStr);
+    const parser = new Parser(tokens);
+    const tree = parser.parse();
+    return tree;
+  } 
+  catch (error) {
+    if (error instanceof SyntaxError) {
+      toast.error('Chyba při parsování: ' + error.message);
+    } else {
+      toast.error('Neočekávaná chyba: ' + error.message);
+    }
+    return null;
+  }
+  
 }

@@ -2,6 +2,7 @@
  * @fileoverview Provides utility functions for generating random MCVP expression trees.
  */
 
+import { toast } from "react-toastify";
 import { Node } from "./NodeClass";
 
 /**
@@ -47,8 +48,8 @@ export function generateTree(numGates, numVariables) {
   // Create gates and combine nodes
   for (let i = 0; i < numGates; i++) {
       if (nodes.length < 1) {
-        alert('Nedostatek uzlů!');
-          throw new Error("Nedostatek uzlů!");
+        toast.error('Nedostatek uzlů!');
+        throw new Error("Nedostatek uzlů!");
       }
 
       // Pick one or two nodes randomly
@@ -64,7 +65,7 @@ export function generateTree(numGates, numVariables) {
 
   // The last remaining node is the root of the tree
   if (nodes.length !== 1) {
-      alert('Generování neuspělo, zbyl špatný počet uzlů.');
+      toast.error('Generování neuspělo, zbyl špatný počet uzlů.');
       throw new Error("Generování neuspělo, zbyl špatný počet uzlů.");
   }
 

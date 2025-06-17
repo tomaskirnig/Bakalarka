@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
-import { TreeBuilderCanvas } from './oldInteractiveInput';
-// import { InteractiveMCVPGraph } from './InteractiveInput';
+// import { TreeBuilderCanvas } from './oldInteractiveInput';
+import { InteractiveMCVPGraph } from './InteractiveInput';
 
 export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
   // Selected option
@@ -68,7 +68,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
         {selectedOption === 'manual' && <ManualInput onTreeUpdate={ onTreeUpdate }/>}
         {selectedOption === 'generate' && <GenerateInput onTreeUpdate={ onTreeUpdate }/>}
         {selectedOption === 'sets' && <PreparedSetsInput onTreeUpdate={ onTreeUpdate }/>}
-        {selectedOption === 'interactive' && <TreeBuilderCanvas onTreeUpdate={ onTreeUpdate }/>}
+        {selectedOption === 'interactive' && <InteractiveMCVPGraph onTreeUpdate={ onTreeUpdate }/>}
       </div>
     </>
     
