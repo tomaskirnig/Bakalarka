@@ -21,8 +21,6 @@
 - Allow edges to be longer
 
 ---- Grammar ----
-- Add logic for GenerationInp
-- Add logic for PreparedSetsInput
 
 - Optimize - (manual) make the text area as big as the content automaticly 
 
@@ -33,6 +31,7 @@
 - Look into deleting file loader files - propably more optimal to import the data sets directly with import key word 
 - Rewrite css to bootstrap
 - Set grabing cursor on canvas and clickable on the node
+- add little bit of space to pages where content is touching the bottom of the page
 
 - Add conversion from MCVP to CG
 - Add conversion from MCVP to Grammar

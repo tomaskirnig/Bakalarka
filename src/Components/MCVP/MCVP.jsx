@@ -13,7 +13,6 @@ export function MCVP() {
     return (
         <div className='div-content'>
             <h1 className='display-4'>MCVP</h1>
-            {/* <p>This is the MCVP Page</p> */}
 
             <InputMethodSelector onTreeUpdate={ setTree } setChosenOpt={ setChosenOpt } />
 
@@ -21,7 +20,13 @@ export function MCVP() {
 
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
-            {tree && <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>}
+            {tree && (
+                <div>
+                    <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
+                    <button className='btn btn-primary mx-2'>Převést na MCVP</button>
+                    <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
+                </div>
+            )}
 
             {explain && (
                 <Modal onClose={() => setExplain(false)}>

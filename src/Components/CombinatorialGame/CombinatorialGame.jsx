@@ -15,6 +15,9 @@ export function CombinatorialGame() {
 
             {graph && <DisplayGraph graph={graph} />}
             {graph && <computeWinner graph={graph} />}
+
+            <button className='btn btn-primary mx-2 mb-3'>Převést na MCVP</button>
+            <button className='btn btn-primary mx-2 mb-3'>Převést na Kombinatorickou hru</button>
         </div>  
     );
 }

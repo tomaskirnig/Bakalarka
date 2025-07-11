@@ -18,6 +18,9 @@ export function Grammar() {
                     <pre className='text-start w-auto mx-auto d-inline-block'>{grammar.toText()}</pre>
                     <p>{String(isEmptyLanguage(grammar).isEmpty)}</p>
                     <p>{isEmptyLanguage(grammar).explanation}</p>
+
+                    <button className='btn btn-primary mx-2'>Převést na MCVP</button>
+                    <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
                 </div>
             )}
         </div>
