@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { generateGrammar } from '../Utils/GrammarGenerator';
+import { Grammar } from '../Utils/Grammar';
 
 export function GenerateInput({ onGrammar }) {
     // Basic parameters
@@ -30,35 +31,21 @@ export function GenerateInput({ onGrammar }) {
         };
 
         try {
-            // Generate the grammar
+            // Generate the grammar 
             const generatedGrammar = generateGrammar(config);
-            
+            console.log("Generated Grammar:", generatedGrammar);
+
             // Format the grammar as a text string for display
-            const grammarText = formatGrammarText(generatedGrammar);
-            
-            // Create the object to pass to the parent component
-            const formattedGrammar = {
-                ...generatedGrammar,
-                input: grammarText
-            };
+            const grammarText = generatedGrammar.toText();
+            console.log(`Formatted Grammar Text:\n${grammarText}`);
             
             // Pass the grammar to the parent component
-            onGrammar(formattedGrammar);
+            onGrammar(generatedGrammar);
         } catch (error) {
             alert(`Error generating grammar: ${error.message}`);
         }
     };
     
-    // Helper function to format the grammar as text
-    const formatGrammarText = (grammar) => {
-        return grammar.productions.reduce((text, production) => {
-            const rightSide = production.right.length > 0 
-                ? production.right.join(' ') 
-                : 'ε';
-            return text + `${production.left} → ${rightSide}\n`;
-        }, '');
-    };
-
     return (
         <div className="inputWindow">
             <h3>Generátor gramatiky</h3>
@@ -66,8 +53,9 @@ export function GenerateInput({ onGrammar }) {
             {/* Basic parameters */}
             <div className="row">
                 <div className="col-md-6">
-                    <label>Počet terminálů:</label>
+                    <label htmlFor="numTerminals">Počet terminálů:</label>
                     <input
+                        id="numTerminals"
                         className='form-control'
                         type="number"
                         min="1"
@@ -77,8 +65,9 @@ export function GenerateInput({ onGrammar }) {
                     />
                 </div>
                 <div className="col-md-6">
-                    <label>Počet neterminálů:</label>
+                    <label htmlFor="numNonTerminals">Počet neterminálů:</label>
                     <input
+                        id="numNonTerminals"
                         className='form-control'
                         type="number"
                         min="1"
@@ -91,8 +80,9 @@ export function GenerateInput({ onGrammar }) {
             
             <div className="row mt-2">
                 <div className="col-md-6">
-                    <label>Min. pravidel na neterminál:</label>
+                    <label htmlFor="minProductions">Min. pravidel na neterminál:</label>
                     <input
+                        id="minProductions"
                         className='form-control'
                         type="number"
                         min="1"
@@ -102,8 +92,9 @@ export function GenerateInput({ onGrammar }) {
                     />
                 </div>
                 <div className="col-md-6">
-                    <label>Max. pravidel na neterminál:</label>
+                    <label htmlFor="maxProductions">Max. pravidel na neterminál:</label>
                     <input
+                        id="maxProductions"
                         className='form-control'
                         type="number"
                         min={minProductions}
@@ -116,8 +107,9 @@ export function GenerateInput({ onGrammar }) {
             
             <div className="row mt-2">
                 <div className="col-md-6">
-                    <label>Max. délka pravé strany:</label>
+                    <label htmlFor="maxRuleLength">Max. délka pravé strany:</label>
                     <input
+                        id="maxRuleLength"
                         className='form-control'
                         type="number"
                         min="1"

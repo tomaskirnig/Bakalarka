@@ -185,7 +185,7 @@
     max-width: 600px;
     margin: auto;
     margin-bottom: 30px;
-
+    position: relative;
 }
 .inputWindow label, input, select{
     margin: auto;
@@ -193,6 +193,33 @@
     margin-bottom: 10px;
 }
 
+.legend{
+    cursor: pointer;
+}
+
+.legend:hover{
+    color: var(--color4);
+}
+
+.legend-bubble{
+    color: black;
+    width: 300px; 
+    right: -315px; 
+    top: 0; 
+    z-index: 1000;
+    border: 1px solid #ddd;
+    text-align: left;
+    font-weight: normal;
+}
+
+.legend-bubble ul{
+    /*color: red; var(--color2);  // color of the dots - not working*/
+    font-size: 0.9rem;
+}
+
+.legend-bubble ul li{
+    color: black;
+}
 /* step by step component */
 
 #custom-switch {

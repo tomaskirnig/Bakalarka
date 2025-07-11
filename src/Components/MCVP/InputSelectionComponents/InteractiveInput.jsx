@@ -235,11 +235,11 @@ export function InteractiveMCVPGraph() {
     // --- JSX ---
     return (
         <div>
-            {/* Instructions/Status Bar */}
+            {/*Instructions*/}
             <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: '#666' }}>
-                {addingEdge && edgeSource && `Adding edge from node ${edgeSource.id}. Click target node or background to cancel.`}
-                {selectedNode && !addingEdge && `Node ${selectedNode.id} selected.`}
-                {!selectedNode && !addingEdge && 'Click background to deselect. Click node to select.'}
+                {addingEdge && edgeSource && `Přidávání hrany z uzlu ${edgeSource.id}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
+                {selectedNode && !addingEdge && `Uzel ${selectedNode.id} vybrán.`}
+                {!selectedNode && !addingEdge && 'Klikněte na pozadí pro zrušení výběru. Klikněte na uzel pro výběr.'}
             </div>
 
             {/* ForceGraph Canvas */}
@@ -280,9 +280,9 @@ export function InteractiveMCVPGraph() {
 
             {/* Control Buttons */}
             <div className='mt-2 pb-2'>
-                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>Add AND Node</button>
-                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>Add OR Node</button>
-                <button className="btn add-btn mx-1" onClick={() => addNode('var')}>Add Variable Node</button>
+                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>Přidat AND uzel</button>
+                <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>Přidat OR uzel</button>
+                <button className="btn add-btn mx-1" onClick={() => addNode('var')}>Přidat uzel s proměnou</button>
                 {/* Add buttons to center view */}
             </div>
 
@@ -294,8 +294,8 @@ export function InteractiveMCVPGraph() {
                         {/* Type/Value Change */}
                          {selectedNode.type === 'operation' && (
                             <>
-                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'A' })}>Set AND</button>
-                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Set OR</button>
+                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'A' })}>Nastavit na AND</button>
+                            <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Nastavit na OR</button>
                             {!hasChildren(selectedNode.id) && (
                                 <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'variable' })}>
                                     To Variable
@@ -306,14 +306,14 @@ export function InteractiveMCVPGraph() {
                          )}
                          {selectedNode.type === 'variable' && (
                              <>
-                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 0 })}>Set Value [0]</button>
-                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 1 })}>Set Value [1]</button>
-                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'A'})}>To AND</button>
-                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'O'})}>To OR</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 0 })}>Nastavit hodnotu na [0]</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { varValue: 1 })}>Nastavit hodnotu na [1]</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'A'})}>Změnit na AND</button>
+                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'operation', value: 'O'})}>Změnit na OR</button>
                              </>
                          )}
                          {/* General Actions */}
-                        <button className="btn btn-danger mx-1" onClick={() => deleteNode(selectedNode.id)}>Delete Node</button>
+                        <button className="btn btn-danger mx-1" onClick={() => deleteNode(selectedNode.id)}>Smazat uzel</button>
                     </div>
 
                      {/* List connected edges for deletion */}
@@ -342,14 +342,14 @@ export function InteractiveMCVPGraph() {
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
                                               <button className="btn btn-outline-danger btn-sm"
                                                       onClick={() => deleteEdge(link.source, link.target)}>
-                                                  Edge to {displayText} &times;
+                                                  Hrana k {displayText} &times;
                                               </button>
                                           </div>
                                       );
                                   })
                               }
                               {graph.links.filter(link => link.source === selectedNode.id || link.target === selectedNode.id).length === 0 && (
-                                  <small className="text-muted">No connections</small>
+                                  <small className="text-muted">Žádné hrany.</small>
                               )}
                           </div>
                       </div>

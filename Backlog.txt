@@ -1,15 +1,13 @@
 ---- MCVP ----
 - Finish the following of the steps in steb by step component
-
-- Moidfy the Interactive component - child to be able to have more parents and for the parent to be able to have a child from any deeper level
-- Modify the deletion - not cascade only when del. node has one child and no parents
+- (interactive) Add evaluation result 
 - Store prepared sets as DAG
 - Add center button
 
-- Fix max children (2)
+- Fix (interactive) max children 2 - check if this constrain is valid 
 - Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
-- When adding already existing variable -> dont create new one with same name 
 
+- Display numbers on edges when node is selected and then use these numbers in the delete butons 
 - Optimize - space between nodes
 - Optimize - initial placement of tree in canvas (tree is in upper left corner and not centered)
 - Optimize - ids of nodes icrement when AND or OR added 
@@ -19,14 +17,27 @@
 ---- CG ----
 - Remake the isWinning property to hold players id
 - Add highlight of the selected node (in manual)
+- Add center button
+- Allow edges to be longer
 
 ---- Grammar ----
+- Add logic for GenerationInp
+- Add logic for PreparedSetsInput
+
+- Optimize - (manual) make the text area as big as the content automaticly 
 
 
 ---- Global ----
-- Add better display of errors - own modal or toastify
 - Optimize using the useCallback 
 - Optimize using loaders  
 - Look into deleting file loader files - propably more optimal to import the data sets directly with import key word 
 - Rewrite css to bootstrap
 - Set grabing cursor on canvas and clickable on the node
+
+- Add conversion from MCVP to CG
+- Add conversion from MCVP to Grammar
+- Add conversion from CG to MCVP
+- Add conversion from CG to Grammar
+- Add conversion from Grammar to MCVP
+- Add conversion from Grammar to CG
+

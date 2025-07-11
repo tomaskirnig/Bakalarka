@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
-import { getData } from '../Utils/FileLoader';
+import Data from '../../../../Sady/SadyCG.json'; 
 import { parseExpressionToTree } from '../Utils/Parser';
 
 export function PreparedSetsInput({ onGraphUpdate }) {
-  const data = getData();
+  const data = Data; // Data is imported JSON file
 
   const handleSelectChange = (event) => {
     const key = event.target.value;

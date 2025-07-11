@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
 import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
-import { getData } from '../Utils/FileLoader';
+import Data from '../../../../Sady/SadyMCVP.json';
 
 export function PreparedSetsInput( {onTreeUpdate} ) {
-  const data = getData();
+  const data = Data; // Load the data from the JSON file
 
   // Handle set selection
   const handleSelectChange = (event) => {

@@ -1,3 +1,5 @@
+import { Grammar } from './Grammar.js';
+
 /**
  * Grammar generator configuration object
  * @typedef {Object} GrammarConfig
@@ -14,7 +16,7 @@
 /**
  * Generates a random context-free grammar based on the provided configuration
  * @param {GrammarConfig} config - Configuration parameters
- * @returns {Object} Generated grammar object
+ * @returns {Grammar} Generated grammar instance
  */
 export function generateGrammar(config) {
   validateConfig(config);
@@ -23,7 +25,12 @@ export function generateGrammar(config) {
   const terminals = generateTerminals(config.terminalCount);
   const productions = generateProductions(nonTerminals, terminals, config);
 
-  return formatGrammarOutput(nonTerminals, terminals, productions);
+  return new Grammar({
+    name: "Generated Context-Free Grammar",
+    nonTerminals,
+    terminals,
+    productions
+  });
 }
 
 /**
@@ -71,10 +78,10 @@ function generateTerminals(count) {
  * @param {string[]} nonTerminals - Array of non-terminal symbols
  * @param {string[]} terminals - Array of terminal symbols
  * @param {GrammarConfig} config - Configuration parameters
- * @returns {Object[]} Array of production rule objects
+ * @returns {Object<string, string[][]>} Object mapping non-terminals to their production rules
  */
 function generateProductions(nonTerminals, terminals, config) {
-  const productions = [];
+  const productions = {};
   
   nonTerminals.forEach(nonTerminal => {
     const productionCount = getRandomInt(
@@ -82,9 +89,11 @@ function generateProductions(nonTerminals, terminals, config) {
       config.maxProductionsPerNonTerminal
     );
 
+    productions[nonTerminal] = [];
+    
     for (let i = 0; i < productionCount; i++) {
-      const production = createProduction(nonTerminal, nonTerminals, terminals, config);
-      productions.push(production);
+      const production = createProductionRule(nonTerminal, nonTerminals, terminals, config);
+      productions[nonTerminal].push(production);
     }
   });
   
@@ -97,12 +106,12 @@ function generateProductions(nonTerminals, terminals, config) {
  * @param {string[]} nonTerminals - All available non-terminals
  * @param {string[]} terminals - All available terminals
  * @param {GrammarConfig} config - Configuration parameters
- * @returns {Object} Production rule object with left and right properties
+ * @returns {string[]} Production rule right-hand side
  */
-function createProduction(nonTerminal, nonTerminals, terminals, config) {
+function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   // Handle epsilon rule case
   if (config.allowEpsilonRules && Math.random() < 0.1) {
-    return { left: nonTerminal, right: [] };
+    return [];
   }
 
   // Create regular rule
@@ -112,7 +121,7 @@ function createProduction(nonTerminal, nonTerminals, terminals, config) {
   // Apply recursion if configured
   rule = applyRecursion(rule, nonTerminal, config);
   
-  return { left: nonTerminal, right: rule };
+  return rule;
 }
 
 /**
@@ -157,24 +166,6 @@ function applyRecursion(rule, nonTerminal, config) {
   }
   
   return result;
-}
-
-/**
- * Formats the final grammar output object
- * @param {string[]} nonTerminals - Non-terminal symbols
- * @param {string[]} terminals - Terminal symbols
- * @param {Object[]} productions - Production rules
- * @returns {Object} Formatted grammar object
- */
-function formatGrammarOutput(nonTerminals, terminals, productions) {
-  return {
-    name: "Generated Context-Free Grammar",
-    description: "A randomly generated context-free grammar",
-    startSymbol: nonTerminals[0],
-    nonTerminals,
-    terminals,
-    productions
-  };
 }
 
 /**
