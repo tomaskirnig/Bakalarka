@@ -279,7 +279,7 @@ export function InteractiveMCVPGraph() {
             </div>
 
             {/* Control Buttons */}
-            <div className='mt-2 pb-2'>
+            <div className='py-3'>
                 <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>Přidat AND uzel</button>
                 <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>Přidat OR uzel</button>
                 <button className="btn add-btn mx-1" onClick={() => addNode('var')}>Přidat uzel s proměnou</button>
@@ -289,7 +289,7 @@ export function InteractiveMCVPGraph() {
             {/* Selected Node Controls */}
             {selectedNode && !addingEdge && (
                 <div className="p-4 my-3" style={{ border: '1px solid #eee', borderRadius: '4px'}}>
-                    <h5>Selected Node: {selectedNode.value === 'O' ? "OR" : selectedNode.value === 'A' ? "AND" : selectedNode.value}</h5>
+                    <h5>Vybraný uzel: {selectedNode.value === 'O' ? "OR" : selectedNode.value === 'A' ? "AND" : selectedNode.value}</h5>
                     <div className="d-flex flex-wrap justify-content-center align-items-center">
                         {/* Type/Value Change */}
                          {selectedNode.type === 'operation' && (
@@ -298,10 +298,10 @@ export function InteractiveMCVPGraph() {
                             <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { value: 'O' })}>Nastavit na OR</button>
                             {!hasChildren(selectedNode.id) && (
                                 <button className="btn add-btn mx-1" onClick={() => updateNodeValue(selectedNode.id, { type: 'variable' })}>
-                                    To Variable
+                                    Nastavit na proměnnou
                                 </button>
                             )}
-                            <button className="btn btn-success mx-1" onClick={startAddEdge}>Connect Node</button>
+                            <button className="btn btn-success mx-1" onClick={startAddEdge}>Propojit uzel</button>
                             </>
                          )}
                          {selectedNode.type === 'variable' && (
@@ -318,7 +318,7 @@ export function InteractiveMCVPGraph() {
 
                      {/* List connected edges for deletion */}
                       <div style={{ marginTop: "10px" }}>
-                          <h6>Connected Edges:</h6>
+                          <h6>Spojené hrany:</h6>
                           <div className="d-flex flex-wrap justify-content-center">
                               {graph.links
                                   .filter(link => link.source === selectedNode.id || link.target === selectedNode.id)

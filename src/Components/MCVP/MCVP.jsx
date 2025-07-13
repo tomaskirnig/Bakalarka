@@ -23,8 +23,8 @@ export function MCVP() {
             {tree && (
                 <div>
                     <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn btn-primary mx-2'>Převést na MCVP</button>
                     <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
+                    <button className='btn btn-primary mx-2'>Převést na Gramatiku</button>
                 </div>
             )}
 

@@ -39,7 +39,7 @@ export function GenerateInput( {onTreeUpdate} ) {
         onChange={(e) => setNumVariables(Number(e.target.value))} // Update state with input value
       />
 
-      <button className='btn btn-primary mt-1' onClick={handleGenerateTree}>Generovat</button> 
+      <button className='btn btn-primary mt-3' onClick={handleGenerateTree}>Generovat</button> 
 
       {tree && printTree(tree)}
     </div>

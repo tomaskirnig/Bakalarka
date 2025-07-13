@@ -20,7 +20,7 @@ export function ManualInput( {onTreeUpdate} ) {
           onChange={(e) => setExpression(e.target.value)} 
         /> 
       </div>
-      <button className='btn btn-primary mt-1' onClick={handleParse}>Zpracovat</button> 
+      <button className='btn btn-primary mt-3' onClick={handleParse}>Zpracovat</button> 
 
        {/* {tree && printTree(tree)} */}
     </div>

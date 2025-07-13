@@ -44,8 +44,8 @@ export function Navigation({ selectedOption, onNavSelect }) {
         tabIndex={-1}
         id="offcanvasNavbar"
         aria-labelledby="offcanvasNavbarLabel"
-        data-bs-backdrop="true" 
-        data-bs-scroll="false"  
+        data-bs-backdrop="true"
+        data-bs-scroll="false"
       >
         <div className="offcanvas-header">
           <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>

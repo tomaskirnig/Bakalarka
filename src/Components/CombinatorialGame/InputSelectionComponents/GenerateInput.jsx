@@ -34,7 +34,7 @@ export function GenerateInput({ onGraphUpdate }) {
            onChange={(e) => setEdgePropability(Number(e.target.value))} // Update state with input value
          />
    
-         <button className='btn btn-primary mt-1' onClick={handleGenerateGraph}>Generovat</button> 
+         <button className='btn btn-primary mt-3' onClick={handleGenerateGraph}>Generovat</button> 
         </div>
     );
 }

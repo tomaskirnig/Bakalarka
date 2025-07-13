@@ -163,12 +163,24 @@ export function DisplayGraph({ graph }) {
       
       {/* Display analysis results */}
       {analysisResult && (
-        <div className="analysis-result">
-          <h3>{analysisResult.message}</h3>
-          <p>
-            Gold edges represent Player I's optimal moves when they have a winning strategy.
-            A position with no outgoing edges for Player II represents a win for Player I.
-          </p>
+        <div className="card h-100 mt-3">
+            <div className="card-header">
+                <h4>Analýza hry</h4>
+            </div>
+            <div className="card-body">
+                {analysisResult ? (
+                    <>
+                        <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
+                            {analysisResult.message}
+                        </div>
+                        <p className="text-muted">
+                            Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
+                        </p>
+                    </>
+                ) : (
+                    <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
+                )}
+            </div>
         </div>
       )}
       

@@ -107,13 +107,13 @@
 }
 
 .add-btn{
-    background-color: var(--color3);
-    color: #eee;
+    background-color: var(--color3) !important;
+    color: #eee !important;
 }
 
 .add-btn:hover{
-    background-color: var(--color4);
-    color: var(--color3);
+    background-color: var(--color4) !important;
+    color: var(--color3) !important;
 }
 
 /* Navigation */

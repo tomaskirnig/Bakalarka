@@ -17,6 +17,7 @@ export function ManualInput() {
   const [addingEdge, setAddingEdge] = useState(false);     // Track if in edge adding mode
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
   const fgRef = useRef();
+  
   // State to store analysis results
   const [analysisResult, setAnalysisResult] = useState(null);
   const [optimalMoves, setOptimalMoves] = useState({});
@@ -358,7 +359,7 @@ export function ManualInput() {
       />
     </div>
     <div style={{ textAlign: "center", margin: "10px" }}>
-        <button className="btn btn-primary mx-1" onClick={addNode}>Přidat uzel</button>
+        <button className="btn add-btn mx-1" onClick={addNode}>Přidat uzel</button>
     </div>
 
     {/* Two-column layout container */}
