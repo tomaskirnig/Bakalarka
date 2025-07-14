@@ -23,11 +23,3 @@
 
 ## [Odkaz na stránku](bakalarka-eight.vercel.app)
 
-## Funkcionality
-
-### Co je zatím implementováno:
-
-- **Možnost zadat příklad MCVP textově**
-- **Možnost vygenerovat příklad MCVP**
-  - Zadání počtu hradel a proměnných
-- **Vizualizace stromu MCVP**
