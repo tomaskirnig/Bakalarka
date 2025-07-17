@@ -68,7 +68,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
         {selectedOption === 'manual' && <ManualInput onTreeUpdate={ onTreeUpdate }/>}
         {selectedOption === 'generate' && <GenerateInput onTreeUpdate={ onTreeUpdate }/>}
         {selectedOption === 'sets' && <PreparedSetsInput onTreeUpdate={ onTreeUpdate }/>}
-        {selectedOption === 'interactive' && <InteractiveMCVPGraph onTreeUpdate={ onTreeUpdate }/>}
+        {selectedOption === 'interactive' && <InteractiveMCVPGraph/>}
       </div>
     </>
     

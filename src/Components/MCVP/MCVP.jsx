@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelector';
 import { TreeCanvas } from './Utils/TreeRenderCanvas';
 import { evaluateTree } from './Utils/EvaluateTree';
@@ -10,15 +10,40 @@ export function MCVP() {
     const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
 
+    const evaluationResult = useMemo(() => {
+        return tree ? evaluateTree(tree) : null;
+    }, [tree]);
+
     return (
         <div className='div-content'>
             <h1 className='display-4'>MCVP</h1>
 
             <InputMethodSelector onTreeUpdate={ setTree } setChosenOpt={ setChosenOpt } />
 
-            {tree && <p>Výsledek: {Boolean(evaluateTree(tree)) ? '1' : '0'}</p>}
 
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
+
+            {tree && (
+                <div className="card h-100 mt-3">
+                    <div className="card-header">
+                        <h4>Výsledek obvodu</h4>
+                    </div>
+                    <div className="card-body">
+                        {evaluationResult !== null ? (
+                            <>
+                                <div className={`alert ${Boolean(evaluationResult) ? 'alert-success' : 'alert-warning'}`}>
+                                    {`Výsledek: ${evaluationResult}`}
+                                </div>
+                                {/* <p className="text-muted">
+                                    Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
+                                </p> */}
+                            </>
+                        ) : (
+                            <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
+                        )}
+                    </div>
+                </div>
+            )}
 
             {tree && (
                 <div>

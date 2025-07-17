@@ -1,5 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { evaluateTree } from '../Utils/EvaluateTree';
 import ForceGraph2D from 'react-force-graph-2d';
+import { toast } from 'react-toastify';
 
 const NODE_R = 12; 
 const outerCircleColor = '#07393C';
@@ -8,12 +10,12 @@ const selectedColor = '#FFB74D';
 const textColor = '#F0EDEE'; 
 
 export function InteractiveMCVPGraph() {
-    const [graph, setGraph] = useState({ nodes: [], links: [] });
+    const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
-    const [hoverNode, setHoverNode] = useState(null); // For hover effects
-    const fgRef = useRef(); // Ref for accessing ForceGraph methods
+    const [hoverNode, setHoverNode] = useState(null);
+    const fgRef = useRef();
     const nextNodeIdRef = useRef(0);
     
     // Generate unique ID function 
@@ -23,28 +25,26 @@ export function InteractiveMCVPGraph() {
         return id;
     }, []);
 
-    // Memoize graph data for ForceGraph2D
-    const graphData = useMemo(() => {
-        // Make sure links reference the actual node objects for the library
-        const nodeMap = graph.nodes.reduce((acc, node) => {
-            acc[node.id] = node;
-            return acc;
-        }, {});
-        const linksWithNodeRefs = graph.links.map(link => ({
-            ...link,
-            source: nodeMap[link.source] || link.source, // Use node object or ID if not found
-            target: nodeMap[link.target] || link.target, // Use node object or ID if not found
-        }));
-        console.log("Graph Data:", graph.nodes, linksWithNodeRefs);
-        return { nodes: graph.nodes, links: linksWithNodeRefs };
-    }, [graph]);
+    // Memoize evaluation result 
+    const evaluationResult = useMemo(() => {
+        if (!graphData.nodes.length) return null;
+        
+        // Convert graph format to tree format for evaluation
+        const convertToTree = () => {
+            // implement conversion function 
+            return graphData;
+        };
+        
+        const treeData = convertToTree();
+        return treeData ? evaluateTree(treeData) : null;
+    }, [graphData]);
 
     // Add initial node if graph is empty
     useEffect(() => {
-        if (graph.nodes.length === 0) {
-            addNode('operation', 'O'); // Add a default operation node
+        if (graphData.nodes.length === 0) {
+            addNode('operation', 'O');
         }
-    }, [graph.nodes]);
+    }, [graphData.nodes.length]);
 
     // --- Core Graph Functions ---
 
@@ -56,137 +56,159 @@ export function InteractiveMCVPGraph() {
             newNode = {
                 id: newId,
                 type: 'variable',
-                // Assign a default variable name 
                 value: value || `x${newId}`, 
                 varValue: varValue === null ? 0 : varValue, 
             };
-        } else { // Operation
+        } else {
             newNode = {
                 id: newId,
                 type: 'operation',
-                value: value, // 'A' or 'O'
+                value: value,
                 varValue: null,
             };
         }
 
-        setGraph(prevGraph => ({
-            nodes: [...prevGraph.nodes, newNode],
-            links: prevGraph.links, // Links remain unchanged
+        setGraphData(prevData => ({
+            nodes: [...prevData.nodes, newNode],
+            links: prevData.links,
         }));
-        return newNode; // Return the new node
+        return newNode;
     };
 
     const deleteNode = (nodeId) => {
-        setGraph(prevGraph => ({ // Remove links and node itself
-            nodes: prevGraph.nodes.filter(node => node.id !== nodeId),
-            links: prevGraph.links.filter(link => link.source !== nodeId && link.target !== nodeId)
+        setGraphData(prevData => ({
+            nodes: prevData.nodes.filter(node => node.id !== nodeId),
+            links: prevData.links.filter(link => 
+                link.source.id !== nodeId && link.target.id !== nodeId
+            )
         }));
-        // Clear selection if the deleted node was selected
+        
         if (selectedNode && selectedNode.id === nodeId) {
             setSelectedNode(null);
         }
-        setAddingEdge(false); // Cancel edge adding if active
+        setAddingEdge(false);
         setEdgeSource(null);
     };
 
     const edgeExists = (sourceId, targetId) => {
-        return graph.links.some(link =>
-            (link.source === sourceId && link.target === targetId) 
-            //|| (link.source === targetId && link.target === sourceId) 
+        return graphData.links.some(link =>
+            link.source.id === sourceId && link.target.id === targetId
         );
     };
 
     const addEdge = (sourceId, targetId) => {
         if (sourceId === targetId || edgeExists(sourceId, targetId)) {
             console.warn("Edge already exists or is a self-loop.");
-            return false; // Prevent self-loops and duplicate edges
+            return false;
+        }
+
+        const sourceNode = graphData.nodes.find(n => n.id === sourceId);
+        const targetNode = graphData.nodes.find(n => n.id === targetId);
+        
+        if (!sourceNode || !targetNode) {
+            console.warn("Source or target node not found");
+            return false;
         }
 
         const newLink = {
-            source: sourceId, // Store IDs in state
-            target: targetId,
+            source: sourceNode, 
+            target: targetNode,
         };
 
-        setGraph(prevGraph => ({
-            nodes: prevGraph.nodes,
-            links: [...prevGraph.links, newLink],
+        setGraphData(prevData => ({
+            nodes: prevData.nodes,
+            links: [...prevData.links, newLink],
         }));
         return true;
     };
 
     const deleteEdge = (sourceId, targetId) => {
-        setGraph(prevGraph => ({
-            nodes: prevGraph.nodes,
-            // Filter out the link (consider both directions if needed, depends on graph type)
-            links: prevGraph.links.filter(link =>
-                !(link.source === sourceId && link.target === targetId) 
-                //&& !(link.source === targetId && link.target === sourceId) 
+        setGraphData(prevData => ({
+            nodes: prevData.nodes,
+            links: prevData.links.filter(link =>
+                !(link.source.id === sourceId && link.target.id === targetId)
             ),
         }));
     };
 
+    const handleDagError = (error) => {
+        console.error("DAG Error:", error);
+        toast.error("Chyba v DAG struktuře: Cyklus detekován nebo neplatná struktura.");
+        graphData.links.pop();
+    };
+
     const updateNodeValue = (nodeId, updates) => {
-         setGraph(prevGraph => ({
-             nodes: prevGraph.nodes.map(node => {
-                 if (node.id === nodeId) {
-                     // Create a new object with updated properties
-                     const updatedNode = { ...node, ...updates };
-
-                     if (updatedNode.type === 'operation') {
-                         updatedNode.varValue = null;
-                     } else if (updatedNode.type === 'variable' && updatedNode.varValue === null) {
-                        updatedNode.value = `x${nodeId}`; // Default variable name if switching type
-                        updatedNode.varValue = 0; // Default variable value if switching type
-                     }
-                     return updatedNode;
-                 }
-                 return node;
-             }),
-             links: prevGraph.links // Links remain the same
-         }));
-         // Update selectedNode state as well if the updated node was selected
-         if (selectedNode && selectedNode.id === nodeId) {
+        setGraphData(prevData => {
+            const updatedNodes = prevData.nodes.map(node => {
+                if (node.id === nodeId) {
+                    const updatedNode = { ...node, ...updates };
+                    
+                    if (updatedNode.type === 'operation') {
+                        updatedNode.varValue = null;
+                    } else if (updatedNode.type === 'variable' && updatedNode.varValue === null) {
+                        updatedNode.value = `x${nodeId}`;
+                        updatedNode.varValue = 0;
+                    }
+                    return updatedNode;
+                }
+                return node;
+            });
+            
+            // Update links to reference the new node objects
+            const nodeMap = updatedNodes.reduce((acc, node) => {
+                acc[node.id] = node;
+                return acc;
+            }, {});
+            
+            const updatedLinks = prevData.links.map(link => ({
+                source: nodeMap[link.source.id],
+                target: nodeMap[link.target.id],
+            }));
+            
+            return {
+                nodes: updatedNodes,
+                links: updatedLinks
+            };
+        });
+        
+        if (selectedNode && selectedNode.id === nodeId) {
             setSelectedNode(prevSelNode => ({ ...prevSelNode, ...updates }));
-         }
-     };
-
+        }
+    };
 
     // --- Interaction Handlers ---
 
     const handleNodeClick = useCallback((node) => {
         if (addingEdge && edgeSource) {
-            // Complete adding edge
             if (edgeSource.id !== node.id) {
                 addEdge(edgeSource.id, node.id);
             }
             setAddingEdge(false);
             setEdgeSource(null);
-            setSelectedNode(node); // Select the target node after adding edge // CHECK AFTER REFACTORING IF IS NOT BS
+            setSelectedNode(node);
         } else {
             setSelectedNode(node);
         }
-    }, [addingEdge, edgeSource]); 
+    }, [addingEdge, edgeSource]);
 
     const handleBackgroundClick = useCallback(() => {
         if (addingEdge) {
-            // Cancel adding edge
             setAddingEdge(false);
             setEdgeSource(null);
         }
-        setSelectedNode(null); // Deselect node
-    }, [addingEdge]); 
+        setSelectedNode(null);
+    }, [addingEdge]);
 
     const startAddEdge = () => {
         if (selectedNode) {
             setAddingEdge(true);
-            setEdgeSource(selectedNode); // Store the actual selected node object
-            setSelectedNode(null); // Deselect node while adding edge
+            setEdgeSource(selectedNode);
+            setSelectedNode(null);
         }
     };
 
-    // Check if a node has any children 
     const hasChildren = (nodeId) => {
-    return graph.links.some(link => link.source === nodeId);
+        return graphData.links.some(link => link.source.id === nodeId);
     };
 
     // --- Canvas/Rendering Functions ---
@@ -197,7 +219,6 @@ export function InteractiveMCVPGraph() {
         const isHovered = hoverNode && node.id === hoverNode.id;
         const isEdgeSource = edgeSource && node.id === edgeSource.id;
 
-        // Draw the main circle
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
         ctx.fillStyle = (isSelected || isEdgeSource) ? selectedColor : innerCircleColor;
@@ -206,21 +227,18 @@ export function InteractiveMCVPGraph() {
         ctx.strokeStyle = outerCircleColor;
         ctx.stroke();
 
-        // Draw outline if selected/hovered/source
-         if (isSelected || isHovered || isEdgeSource) {
-            ctx.strokeStyle = '#90DDF0'; //'#FFCC80' Lighter orange outline
+        if (isSelected || isHovered || isEdgeSource) {
+            ctx.strokeStyle = '#90DDF0';
             ctx.stroke();
-         }
+        }
 
-        // Determine text to display
         let displayText = '';
         if (node.type === 'variable') {
             displayText = `${node.value}[${node.varValue}]`;
-        } else { // Operation
-            displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value); // Handle 'A'/'O' or others
+        } else {
+            displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
         }
 
-        // Draw text
         const fontSize = 12;
         ctx.font = `monospace`;
         ctx.textAlign = 'center';
@@ -228,11 +246,8 @@ export function InteractiveMCVPGraph() {
         ctx.fillStyle = textColor;
         ctx.fillText(displayText, node.x, node.y);
 
-        // node.__bckgDimensions = ctx.measureText(displayText).width + 4; // Save for potential hover detection if needed
+    }, [selectedNode, hoverNode, edgeSource]);
 
-    }, [selectedNode, hoverNode, edgeSource]); // Dependencies
-
-    // --- JSX ---
     return (
         <div>
             {/*Instructions*/}
@@ -259,22 +274,21 @@ export function InteractiveMCVPGraph() {
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
                     // Links
-                    linkSource="source"
-                    linkTarget="target"
                     linkColor={() => 'rgba(0,0,0,0.4)'}
                     linkWidth={1}
                     linkDirectionalArrowLength={3.5}
                     linkDirectionalArrowRelPos={1}
+                    onDagError={handleDagError}
                     // Interaction
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
                     onNodeHover={setHoverNode} // Update hover state
                     enableZoomPanInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
-                     onNodeDragEnd={node => { // Fix node position after dragging
-                       node.fx = node.x;
-                       node.fy = node.y;
-                     }}
+                    onNodeDragEnd={node => { // Fix node position after dragging
+                    node.fx = node.x;
+                    node.fy = node.y;
+                    }}
                 />
             </div>
 
@@ -320,13 +334,13 @@ export function InteractiveMCVPGraph() {
                       <div style={{ marginTop: "10px" }}>
                           <h6>Spojené hrany:</h6>
                           <div className="d-flex flex-wrap justify-content-center">
-                              {graph.links
-                                  .filter(link => link.source === selectedNode.id || link.target === selectedNode.id)
+                              {graphData.links
+                                  .filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id)
                                   .map((link, index) => {
-                                      const connectedNodeId = link.source === selectedNode.id ? link.target : link.source;
+                                      const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
                                       
                                       // Find the node object for display
-                                      const connectedNode = graph.nodes.find(node => node.id === connectedNodeId);
+                                      const connectedNode = graphData.nodes.find(node => node.id === connectedNodeId);
                                       
                                       // Format display text based on node type
                                       let displayText = connectedNodeId; // Fallback
@@ -341,18 +355,37 @@ export function InteractiveMCVPGraph() {
                                       return (
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
                                               <button className="btn btn-outline-danger btn-sm"
-                                                      onClick={() => deleteEdge(link.source, link.target)}>
+                                                      onClick={() => deleteEdge(link.source.id, link.target.id)}>
                                                   Hrana k {displayText} &times;
                                               </button>
                                           </div>
                                       );
                                   })
                               }
-                              {graph.links.filter(link => link.source === selectedNode.id || link.target === selectedNode.id).length === 0 && (
+                              {graphData.links.filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id).length === 0 && (
                                   <small className="text-muted">Žádné hrany.</small>
                               )}
                           </div>
                       </div>
+                </div>
+            )}
+
+            {graphData && (
+                <div className="card h-100 mt-3">
+                    <div className="card-header">
+                        <h4>Výsledek obvodu</h4>
+                    </div>
+                    <div className="card-body">
+                        {evaluationResult !== null ? (
+                            <>
+                                <div className={`alert ${Boolean(evaluationResult) ? 'alert-success' : 'alert-warning'}`}>
+                                    {`Výsledek: ${evaluationResult}`}
+                                </div>
+                            </>
+                        ) : (
+                            <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
+                        )}
+                    </div>
                 </div>
             )}
         </div>

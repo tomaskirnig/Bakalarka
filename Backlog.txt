@@ -1,9 +1,10 @@
 ---- MCVP ----
 - Finish the following of the steps in steb by step component
-- (interactive) Add evaluation result 
 - Store prepared sets as DAG
 - Add center button
 
+- Fix (interactive) possible to connect two nodes in both directions at the same time  
+- Fix (interactive) convert graph structure to structer needed in evaluateTree
 - Fix (interactive) max children 2 - check if this constrain is valid 
 - Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
 
@@ -27,6 +28,8 @@
 
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
+- Optimize max and min value of input parameters from user
+- Optimize display structure in the center of the canvas
 - Optimize using the useCallback 
 - Optimize using loaders  
 - Rewrite css to bootstrap
