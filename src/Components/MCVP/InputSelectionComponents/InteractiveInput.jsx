@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import { evaluateTree } from '../Utils/EvaluateTree';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
+import { Node } from './../Utils/NodeClass';
 
 const NODE_R = 12; 
 const outerCircleColor = '#07393C';
@@ -24,19 +25,29 @@ export function InteractiveMCVPGraph() {
         nextNodeIdRef.current += 1;
         return id;
     }, []);
+    
+    const GraphDataToNodeClass = (graphData) => {
+        let tree = graphData.nodes.map(node => new Node(node.value, null, null, node.varValue, null, node.type));
+        console.log(tree);
+
+        // for(const link of graphData.links) {
+        //     const sourceNode = tree.find(node => node.id === link.source.id);
+        //     const targetNode = tree.find(node => node.id === link.target.id);
+        //     if (sourceNode && targetNode) {
+                
+        //     }
+        // }
+        return tree;
+    };
 
     // Memoize evaluation result 
     const evaluationResult = useMemo(() => {
         if (!graphData.nodes.length) return null;
         
         // Convert graph format to tree format for evaluation
-        const convertToTree = () => {
-            // implement conversion function 
-            return graphData;
-        };
-        
-        const treeData = convertToTree();
-        return treeData ? evaluateTree(treeData) : null;
+        const tree = GraphDataToNodeClass(graphData);
+
+        // return tree ? evaluateTree(tree) : null;
     }, [graphData]);
 
     // Add initial node if graph is empty
@@ -45,6 +56,8 @@ export function InteractiveMCVPGraph() {
             addNode('operation', 'O');
         }
     }, [graphData.nodes.length]);
+
+
 
     // --- Core Graph Functions ---
 
