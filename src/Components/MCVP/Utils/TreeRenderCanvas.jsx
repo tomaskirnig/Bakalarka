@@ -46,22 +46,24 @@ export function TreeCanvas({
   const fgRef = useRef();
   const idCounter = useRef(0);
   
-  // Track highlighted links separately to avoid re-renders
-  // const [highlightLinks, setHighlightLinks] = useState(new Set());
-  
   // Graph data construction with useMemo
   const graphData = useMemo(() => {
     if (!tree) return { nodes: [], links: [] };
     
     const nodes = [];
     const links = [];
+    const visited = new Set(); // To avoid infinite loops if there are cycles
 
     function traverse(current, parent) {
-      if (!current) return;
+      if (!current || visited.has(current.id)) return;
       
+      // Generate ID if not exists
       if (!current.id) {
         current.id = `n${idCounter.current++}`;
       }
+      
+      // Mark as visited
+      visited.add(current.id);
       
       // Add this node to node list
       const node = {
@@ -82,9 +84,17 @@ export function TreeCanvas({
         });
       }
     
-      // Traverse children
-      if (current.left) traverse(current.left, current);
-      if (current.right) traverse(current.right, current);
+      // Traverse children - using new array structure
+      if (current.children && Array.isArray(current.children)) {
+        current.children.forEach(child => {
+          if (child) traverse(child, current);
+        });
+      } 
+      // Backward compatibility for left/right
+      // else if (current.left || current.right) {
+      //   if (current.left) traverse(current.left, current);
+      //   if (current.right) traverse(current.right, current);
+      // }
     }
 
     traverse(tree, null);
@@ -116,40 +126,6 @@ export function TreeCanvas({
     return { nodes, links };
   }, [tree, completedSteps]);
   
-  // Update highlight links when highlighted node changes
-  // but with proper dependencies to avoid render loops
-  // useEffect(() => {
-  //   // Skip if no highlighted node
-  //   if (!highlightedNode) {
-  //     setHighlightLinks(new Set());
-  //     return;
-  //   }
-    
-  //   // Extract primitives to work with
-  //   const nodeId = highlightedNode.id;
-  //   const parentId = highlightedNode.parent?.id;
-    
-  //   if (!parentId) {
-  //     setHighlightLinks(new Set());
-  //     return;
-  //   }
-    
-  //   // Find the link between highlightedNode and its parent
-  //   const highlightedLink = graphData.links.find(link => {
-  //     if (typeof link.source === 'object' && typeof link.target === 'object') {
-  //       return link.source.id === parentId && link.target.id === nodeId;
-  //     }
-  //     return false;
-  //   });
-    
-  //   // Update the highlights set instead of rerendering everything
-  //   if (highlightedLink) {
-  //     setHighlightLinks(new Set([highlightedLink]));
-  //   } else {
-  //     setHighlightLinks(new Set());
-  //   }
-  // }, [highlightedNode?.id, highlightedNode?.parent?.id]); // Just use IDs, not object references
-
   // Node rendering 
   const paintNode = useCallback((node, ctx) => {
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
@@ -178,11 +154,11 @@ export function TreeCanvas({
       displayText = `${node.value}${node.varValue !== undefined ? `[${node.varValue}]` : ''}`;
     } 
     // Check if it's an AND operation
-    else if (node.value === 'AND' || node.value === '∧') {
+    else if (node.value === 'AND' || node.value === '∧' || node.value === 'A') {
       displayText = 'A';
     }
     // Check if it's an OR operation
-    else if (node.value === 'OR' || node.value === '∨') {
+    else if (node.value === 'OR' || node.value === '∨' || node.value === 'O') {
       displayText = 'O';
     }
     // For other types, use the value as is
@@ -211,10 +187,7 @@ export function TreeCanvas({
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision', window.d3.forceCollide(node => {
           // Customize collision radius based on node depth in tree
-          const depth = node.nodeRef ? 
-            (node.nodeRef.parent ? 
-              (node.nodeRef.parent.parent ? 30 : 25) : 20) : 25;
-          return depth;
+          return 30; // Fixed radius for simplicity
         }).iterations(3)); 
       }
       
@@ -226,28 +199,6 @@ export function TreeCanvas({
       fgRef.current.d3ReheatSimulation();
     }
   }, [graphData]);
-
-  // Focus on highlighted node
-  // useEffect(() => {
-  //   if (!highlightedNode || !fgRef.current || !forceCenterNode) return;
-    
-  //   if (forceCenterNode.current === false) {
-  //     const timer = setTimeout(() => {
-  //       if (fgRef.current) {
-  //         try {
-  //           fgRef.current.zoomToFit(400, 480, node => 
-  //             node.id === highlightedNode.id
-  //           );
-  //           forceCenterNode.current = true;
-  //         } catch (err) {
-  //           console.error("Error zooming to node:", err);
-  //         }
-  //       }
-  //     }, 300);
-      
-  //     return () => clearTimeout(timer);
-  //   }
-  // }, [highlightedNode?.id]);
 
   return (
     <div className="GraphDiv">
@@ -264,10 +215,6 @@ export function TreeCanvas({
         d3Force={configureForces}
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
-        
-        // linkColor={link => highlightLinks.has(link) ? highlightLinkColor : normalLinkColor}
-        // linkWidth={link => highlightLinks.has(link) ? 3 : 1}
-        
         nodeCanvasObjectMode={() => "after"}
         nodeCanvasObject={paintNode}
       />

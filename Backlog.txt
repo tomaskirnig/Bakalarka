@@ -8,7 +8,8 @@
 - Fix (interactive) max children 2 - check if this constrain is valid 
 - Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
 
-- Display numbers on edges when node is selected and then use these numbers in the delete butons 
+- (interactive) Display numbers on edges when node is selected and then use these numbers in the delete butons 
+- Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - space between nodes
 - Optimize - initial placement of tree in canvas (tree is in upper left corner and not centered)
 - Optimize - ids of nodes icrement when AND or OR added 
@@ -43,3 +44,5 @@
 - Add conversion from Grammar to MCVP
 - Add conversion from Grammar to CG
 
+
+Finish the transition after NodeClass refactoring (jsx files and Generator.js and EvaluateTree.js)

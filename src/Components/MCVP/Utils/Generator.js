@@ -14,19 +14,48 @@ import { Node } from "./NodeClass";
 function createVariableNode(varIndex) {
   const varName = 'x' + varIndex; // Variable name 
   const varValue = Math.floor(Math.random() * 2); // Random binary value (0 or 1)
-  return new Node(varName, null, null, varValue, null, 'variable'); 
+  
+  return new Node(
+    varName,
+    varValue,
+    'variable',
+    [],
+    []
+  ); 
 }
 
 /**
  * Creates a random operator node (AND or OR).
  * 
- * @param {Node} left - The left child of the gate
- * @param {Node|null} right - The right child of the gate, can be null
+ * @param {Array<Node>} children - Array of child nodes for this gate
  * @returns {Node} A new operator node (AND or OR)
  */
-function createGateNode(left, right = null) {
+function createGateNode(children = []) {
   const operator = Math.random() < 0.5 ? 'A' : 'O'; // AND (A) or OR (O)
-  return new Node(operator, left, right, null, null, 'operation');
+  
+  const node = new Node(
+    operator,
+    null,
+    'operation',
+    children,
+    []
+  );
+  
+  // Set parent relationship for each child
+  children.forEach(child => {
+    if (child) {
+      // Ensure parents array exists
+      if (!child.parents) {
+        child.parents = [];
+      }
+      // Add this node as parent if not already there
+      if (!child.parents.includes(node)) {
+        child.parents.push(node);
+      }
+    }
+  });
+  
+  return node;
 }
 
 /**
@@ -52,14 +81,18 @@ export function generateTree(numGates, numVariables) {
         throw new Error("Nedostatek uzlů!");
       }
 
-      // Pick one or two nodes randomly
-      const left = nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0];
-      const right = nodes.length > 0 
-          ? nodes.splice(Math.floor(Math.random() * nodes.length), 1)[0] 
-          : null;
+      // Decide how many child nodes to use (1 or 2)
+      const childCount = Math.min(2, nodes.length);
+      const children = [];
+      
+      // Select random nodes to be children of new gate
+      for (let j = 0; j < childCount; j++) {
+        const randomIndex = Math.floor(Math.random() * nodes.length);
+        children.push(nodes.splice(randomIndex, 1)[0]);
+      }
 
-      // Create a gate (AND or OR) and push the new node back into the list
-      const gateNode = createGateNode(left, right);
+      // Create a gate (AND or OR) with selected children
+      const gateNode = createGateNode(children);
       nodes.push(gateNode);
   }
 

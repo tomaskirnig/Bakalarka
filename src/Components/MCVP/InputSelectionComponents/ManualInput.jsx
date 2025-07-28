@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
+import { parseExpressionToTree } from '../Utils/Parser'; 
 
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');
@@ -21,8 +21,6 @@ export function ManualInput( {onTreeUpdate} ) {
         /> 
       </div>
       <button className='btn btn-primary mt-3' onClick={handleParse}>Zpracovat</button> 
-
-       {/* {tree && printTree(tree)} */}
     </div>
   );
 }

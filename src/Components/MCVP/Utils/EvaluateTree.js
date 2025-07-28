@@ -1,18 +1,13 @@
 /**
  * @fileoverview Provides a function to evaluate MCVP expression trees.
  */
-
 import { toast } from "react-toastify";
+import { Node } from "./NodeClass";
 
 /**
  * Evaluates an MCVP expression tree.
  * 
- * @param {Object} node - The root node of the tree to evaluate
- * @param {string} node.value - The node value ('A' for AND, 'O' for OR, or variable name)
- * @param {string} node.type - Type of node ('operation' or 'variable')
- * @param {number|null} node.varValue - For variables, their value (0 or 1)
- * @param {Object|null} node.left - Left child node
- * @param {Object|null} node.right - Right child node
+ * @param {Node} node - The root node of the tree to evaluate
  * @returns {number|null} The result of evaluating the tree (1 or 0), or null if tree is incomplete
  * @throws {Error} If an unknown operator is encountered
  */
@@ -26,34 +21,40 @@ export function evaluateTree(node) {
       return node.varValue !== undefined ? node.varValue : null;
     }
   
-    // Evaluate children.
-    let leftValue = node.left ? evaluateTree(node.left) : null;
-    let rightValue = node.right ? evaluateTree(node.right) : null;
-  
-    // If exactly one child exists, use that child's value for both operands.
-    if (leftValue === null && rightValue !== null) {
-      // Only use right value if left node isn't an operation node
-      leftValue = (node.left === null || node.left.type !== "operation") ? rightValue : null;
-    } else if (rightValue === null && leftValue !== null) {
-      // Only use left value if right node isn't an operation node
-      rightValue = (node.right === null || node.right.type !== "operation") ? leftValue : null;
+    // Check if children array exists
+    if (!node.children || !Array.isArray(node.children) || node.children.length === 0) {
+      return null;
     }
   
-    // If both operands are still null, the tree is incomplete.
-    if (leftValue === null || rightValue === null) {
+    // Evaluate all children
+    const childValues = [];
+    for (const child of node.children) {
+      if (child) {
+        const childValue = evaluateTree(child);
+        childValues.push(childValue);
+      }
+    }
+  
+    // Handle special case: if there's only one child
+    if (childValues.length === 1) {
+      return childValues[0]; // For single child, just propagate its value
+    }
+    
+    // If any child couldn't be evaluated or there are no children, the tree is incomplete
+    if (childValues.length === 0 || childValues.some(value => value === null)) {
       return null;
     }
   
     // Apply the operator at this node.
     if (node.value === 'A') {
-      // AND operation - correctly convert to binary result
-      const result = leftValue && rightValue ? 1 : 0;
-      console.log("AND:", leftValue, rightValue, "->", result);
+      // AND operation - all children must be true
+      const result = childValues.every(value => value === 1) ? 1 : 0;
+      console.log(`AND: [${childValues.join(', ')}] -> ${result}`);
       return result;
     } else if (node.value === 'O') {
-      // OR operation - correctly convert to binary result
-      const result = leftValue || rightValue ? 1 : 0;
-      console.log("OR:", leftValue, rightValue, "->", result);
+      // OR operation - at least one child must be true
+      const result = childValues.some(value => value === 1) ? 1 : 0;
+      console.log(`OR: [${childValues.join(', ')}] -> ${result}`);
       return result;
     } else {
       toast.error(`Neznámý operátor: ${node.value}`);
