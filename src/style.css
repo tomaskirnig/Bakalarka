@@ -32,32 +32,6 @@
     transition: background-color 0.3s ease;
 }
 
-/* Not working custom look */
-/* .btn-primary {
-    background-color: var(--color2) !important;
-    border-color: var(--color2) !important;
-    color: white !important;
-    border: none !important;
-    padding: 10px 20px !important;
-    border-radius: 10px !important;
-    cursor: pointer !important;
-    transition: background-color 0.3s ease !important;
-}
-
-.btn-primary:hover {
-    background-color: #24595E !important;
-}
-
-.btn-outline-primary {
-    background-color: white !important;
-    color: black !important;
-    border: 1px solid var(--color2) !important;
-    padding: 10px 20px !important;
-    border-radius: 10px !important;
-    cursor: pointer !important;
-    transition: background-color 0.3s ease !important;
-} */
-
 .btn-primary.active {
     background-color: #1F4E53 !important;  /* A darker shade of the primary color */
     border-color: #1F4E53 !important;
@@ -86,7 +60,6 @@
     width: 90%;
     margin: 0 auto;
     text-align: center;
-    /* padding-top: 50px; */
 }
 
 #modal {
@@ -97,13 +70,12 @@
 }
 
 .bg-trans-color{
-    background-color: rgba(255, 255, 255, 0.5);
-    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 15px;
 }
 
 #home-page{
     width: 60%;
-    /* margin: 0 auto; */
 }
 
 .add-btn{
@@ -116,65 +88,388 @@
     color: var(--color3) !important;
 }
 
-/* Navigation */
-.nav-link{
-    color: var(--text-color);
+/* Modern Navigation */
+.modern-navbar {
+    background: #07393C;
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    padding: 1rem 2rem;
+    position: relative;
+    top: 0;
+    z-index: 1000;
+    transition: all 0.3s ease;
 }
 
-.nav-link:hover{
+.modern-navbar:hover {
+    box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
+}
+
+/* Desktop Navigation Container */
+.desktop-nav-container {
+    display: none;
+}
+
+/* Mobile Navigation Container */
+.mobile-nav-container {
+    display: flex;
+    justify-content: right;
+    align-items: right;
+    width: 100%;
+}
+
+@media (min-width: 992px) {
+    .desktop-nav-container {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .mobile-nav-container {
+        display: none;
+    }
+}
+
+.nav-items-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.brand-section .navbar-brand {
+    color: white;
+    font-weight: 600;
+    font-size: 1.5rem;
+    margin: 0;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Modern Navigation Links */
+.modern-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    border: none;
+    border-radius: 15px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-nav-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-nav-link:hover::before {
+    left: 100%;
+}
+
+.modern-nav-link:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.modern-nav-link:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
+}
+
+.modern-nav-link.active {
+    background: linear-gradient(135deg, var(--color4), var(--color1));
+    color: black;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    border-color: var(--color4);
+}
+
+.modern-nav-link.active:hover {
+    background: linear-gradient(135deg, var(--color4), var(--color1));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
     color: var(--color3);
-    text-decoration: underline;
 }
-.active{
-    /* color: var(--color1) !important; */
-    text-decoration: underline;
-    color: var(--color3);
+
+.nav-icon {
+    font-size: 1.1rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.nav-text {
+    white-space: nowrap;
+}
+
+/* Modern Hamburger Menu */
+.modern-navbar-toggler {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s ease;
+}
+
+.hamburger-line {
+    width: 25px;
+    height: 3px;
+    background: white;
+    border-radius: 2px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.modern-navbar-toggler:hover .hamburger-line {
+    background: var(--color4);
+    transform: scale(1.1);
+}
+
+/* Modern Offcanvas */
+.modern-offcanvas {
+    position: fixed;
+    top: 0;
+    left: -100%;
+    width: 300px;
+    height: 100vh;
+    background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
+    backdrop-filter: blur(20px);
+    transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1050;
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+}
+
+.modern-offcanvas.show {
+    left: 0;
+}
+
+.offcanvas-header-modern {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2rem 1.5rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.offcanvas-title-modern {
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.title-icon {
+    font-size: 1.3rem;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.2));
+}
+
+.modern-btn-close {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.modern-btn-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: rotate(90deg);
+}
+
+.offcanvas-body-modern {
+    padding: 1.5rem;
+}
+
+.mobile-nav-items {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.mobile-nav-items .modern-nav-link {
+    width: 100%;
+    justify-content: flex-start;
+    border-radius: 12px;
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+}
+
+/* Offcanvas backdrop */
+.offcanvas-backdrop {
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+}
+
+/* Responsive improvements */
+@media (max-width: 991px) {
+    .modern-navbar {
+        padding: 1rem;
+    }
+    
+    .nav-text {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .modern-offcanvas {
+        width: 280px;
+    }
+    
+    .offcanvas-header-modern {
+        padding: 1.5rem 1rem;
+    }
+    
+    .offcanvas-body-modern {
+        padding: 1rem;
+    }
 }
 
 
-/* Input type data selection */
+/* Modern Input type data selection - Clean and consistent */
 .tabs {
     display: flex;
     justify-content: center;
-    margin-bottom: 10px;
+    margin: 0 auto 40px auto;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    padding: 0.5rem;
+    background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
 }
 
-.tabs label {
-  background-color: var(--color3);
-  color: white;
-  border: 1px solid var(--color3);
-  transition: 
-    background-color 0.3s ease, 
-    border-color 0.3s ease, 
-    color 0.3s ease;
+/* Hide radio inputs */
+.tabs input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
 }
 
-.tabs label.btn:hover {
-  border: 1px solid var(--color4);
-  color: var(--color4);
-  background-color: var(--color3);
-}
-
-.tabs input[type="radio"].btn-check:checked + label {
-  background-color: var(--color4);
-  color: var(--color3);
-  border-color: var(--color4);
-}
-
-/* .tab-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    border: none;
+/* All tab labels - using specific selectors instead of !important */
+.tabs label,
+.tabs label.btn,
+.tabs label.btn-outline-primary {
+    background: rgba(255, 255, 255, 0.1);
     color: white;
-    background-color: var(--color3);
-    transition: background-color 0.3s ease;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    backdrop-filter: blur(10px);
+    text-align: center;
+    min-width: 120px;
+    user-select: none;
+    display: inline-block;
+    margin: 0;
+    position: relative;
+    overflow: hidden;
+    text-decoration: none;
 }
 
-.tab-button.active {
-    font-weight: bold;
-    border-bottom: 1px solid black;
-} */
+/* Hover effect - using specific selectors */
+.tabs label:hover,
+.tabs label.btn:hover,
+.tabs label.btn-outline-primary:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+/* Active/checked state - specific selectors for all input types */
+.tabs input[type="radio"]:checked + label,
+.tabs input.btn-check:checked + label,
+.tabs input[type="radio"]:checked + label.btn,
+.tabs input.btn-check:checked + label.btn-outline-primary {
+    background: linear-gradient(135deg, var(--color4), var(--color1));
+    color: black;
+    border-color: var(--color4);
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transform: translateY(-1px);
+}
+
+/* Active state hover - enhanced animation */
+.tabs input[type="radio"]:checked + label:hover,
+.tabs input.btn-check:checked + label:hover {
+    background: linear-gradient(135deg, var(--color4), var(--color1));
+    color: var(--color3);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+        max-width: 300px;
+        gap: 0.75rem;
+        padding: 1rem;
+    }
+    
+    .tabs label,
+    .tabs label.btn,
+    .tabs label.btn-outline-primary {
+        width: 100%;
+        min-width: unset;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .tabs {
+        padding: 0.75rem;
+        margin-bottom: 30px;
+    }
+    
+    .tabs label,
+    .tabs label.btn,
+    .tabs label.btn-outline-primary {
+        padding: 0.875rem 1rem;
+        font-size: 0.9rem;
+    }
+}
 
 .inputWindow {
     color: var(--root-background-color);
@@ -213,13 +508,13 @@
 }
 
 .legend-bubble ul{
-    /*color: red; var(--color2);  // color of the dots - not working*/
     font-size: 0.9rem;
 }
 
 .legend-bubble ul li{
     color: black;
 }
+
 /* step by step component */
 
 #custom-switch {
@@ -231,7 +526,6 @@
     gap: 10px;
     color: white;
     background: var(--color2);
-    /* padding: 6px 12px; */
     padding: 10px;
     border-radius: 10px;
     box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.2);
@@ -241,9 +535,6 @@
 .form-switch {
     display: flex !important;
     align-items: center !important;
-    /* gap: 8px !important; */
-    /* padding: 0 !important; */
-    /* margin: 0 !important; */
 }
 
 .form-switch .form-check-input {
@@ -284,7 +575,8 @@ canvas:hover{
     cursor: default;
 }
 
-/* ManualInput specific styles --- */
+/* ManualInput */
+
 .manual-input-instruction {
     position: absolute;
     top: 10px;
@@ -295,4 +587,96 @@ canvas:hover{
     color: white;
     border-radius: 5px;
     z-index: 1000;
+}
+
+/* MCVP to Grammar Converter */
+.visualizations {
+    display: flex;
+    padding: 5px 10px;
+}
+
+/* Final Grammar Display Styles */
+.conversion-result {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid var(--color4);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.conversion-result:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+}
+
+.grammar-section {
+    margin-bottom: 1.5rem;
+}
+
+.grammar-section h5 {
+    border-bottom: 2px solid var(--color4);
+    padding-bottom: 0.5rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.grammar-symbols {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+.grammar-symbols .badge {
+    font-size: 0.9rem;
+    padding: 0.5rem 0.8rem;
+    border-radius: 20px;
+    font-weight: 500;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.productions-list {
+    font-family: 'Courier New', monospace;
+}
+
+.production-rule {
+    padding: 0.75rem;
+    border-left: 4px solid var(--color4);
+    background: linear-gradient(90deg, rgba(144, 221, 240, 0.1) 0%, transparent 100%);
+    transition: all 0.2s ease;
+}
+
+.production-rule:hover {
+    background: linear-gradient(90deg, rgba(144, 221, 240, 0.2) 0%, transparent 100%);
+    border-left-color: var(--color2);
+}
+
+.production-rule .fw-bold {
+    font-size: 1.1rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Navigation Controls for Grammar Converter */
+.navigation-controls {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin: 2rem 0;
+    padding: 1rem;
+    background: rgba(144, 221, 240, 0.1);
+    border-radius: 10px;
+}
+
+.navigation-controls button {
+    min-width: 150px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.navigation-controls button:disabled {
+    opacity: 0.6;
+    transform: none !important;
+}
+
+.navigation-controls button:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }

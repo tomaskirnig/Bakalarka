@@ -28,7 +28,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
             checked={selectedOption === 'manual'}
             onChange={() => handleOptionSelect('manual')}
           />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio1">Manuálně</label>
+          <label className="m-1" htmlFor="btnradio1">Manuálně</label>
 
           <input
             type="radio"
@@ -39,7 +39,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
             checked={selectedOption === 'generate'}
             onChange={() => handleOptionSelect('generate')}
           />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio2">Generovat</label>
+          <label className="m-1" htmlFor="btnradio2">Generovat</label>
 
           <input
             type="radio"
@@ -50,7 +50,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
             checked={selectedOption === 'sets'}
             onChange={() => handleOptionSelect('sets')}
           />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio3">Načíst ze sady</label>
+          <label className="m-1" htmlFor="btnradio3">Načíst ze sady</label>
 
           <input
             type="radio"
@@ -61,7 +61,7 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
             checked={selectedOption === 'interactive'}
             onChange={() => handleOptionSelect('interactive')}
           />
-          <label className="btn btn-outline-primary m-1" htmlFor="btnradio4">Interaktivně</label>
+          <label className="m-1" htmlFor="btnradio4">Interaktivně</label>
        </div>
 
       <div className="input-block">

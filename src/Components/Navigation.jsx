@@ -1,65 +1,122 @@
+import { useEffect } from 'react';
+
 export function Navigation({ selectedOption, onNavSelect }) {
   const navItems = [
-    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Home' },
-    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP' },
-    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra' },
-    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Grammar' },
+    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Domů', icon: '🏠' },
+    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP', icon: '🌳' },
+    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra', icon: '🎲' },
+    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Gramatika', icon: '📝' },
   ];
 
-  const renderButton = ({ key, label }) => (
+  // Handle offcanvas functionality
+  useEffect(() => {
+    const handleOffcanvas = () => {
+      const toggler = document.querySelector('.modern-navbar-toggler');
+      const offcanvas = document.querySelector('.modern-offcanvas');
+      const backdrop = document.createElement('div');
+      backdrop.className = 'offcanvas-backdrop fade';
+
+      const showOffcanvas = () => {
+        document.body.appendChild(backdrop);
+        setTimeout(() => {
+          backdrop.classList.add('show');
+          offcanvas.classList.add('show');
+        }, 10);
+        
+        backdrop.addEventListener('click', hideOffcanvas);
+      };
+
+      const hideOffcanvas = () => {
+        backdrop.classList.remove('show');
+        offcanvas.classList.remove('show');
+        setTimeout(() => {
+          if (document.body.contains(backdrop)) {
+            document.body.removeChild(backdrop);
+          }
+        }, 400);
+      };
+
+      toggler?.addEventListener('click', showOffcanvas);
+      
+      // Handle close button and nav links
+      const closeBtn = document.querySelector('.modern-btn-close');
+      const navLinks = document.querySelectorAll('[data-bs-dismiss="offcanvas"]');
+      
+      closeBtn?.addEventListener('click', hideOffcanvas);
+      navLinks.forEach(link => link.addEventListener('click', hideOffcanvas));
+
+      // Cleanup
+      return () => {
+        toggler?.removeEventListener('click', showOffcanvas);
+        closeBtn?.removeEventListener('click', hideOffcanvas);
+        navLinks.forEach(link => link.removeEventListener('click', hideOffcanvas));
+        if (document.body.contains(backdrop)) {
+          document.body.removeChild(backdrop);
+        }
+      };
+    };
+
+    const cleanup = handleOffcanvas();
+    return cleanup;
+  }, []);
+
+  const renderButton = ({ key, label, icon }) => (
     <button
       key={key}
-      className={`nav-link fs-5 ${selectedOption === key ? 'active' : ''}`}
+      className={`modern-nav-link ${selectedOption === key ? 'active' : ''}`}
       onClick={() => onNavSelect(key)}
-      data-bs-dismiss="offcanvas"  // needed on mobile
     >
-      {label}
+      <span className="nav-icon">{icon}</span>
+      <span className="nav-text">{label}</span>
     </button>
   );
 
   return (
-    <nav className="navbar navbar-expand-lg navbar-light bg-light py-3">
+    <nav className="modern-navbar">
       {/* Mobile toggle */}
-      <button
-        className="navbar-toggler d-lg-none"
-        type="button"
-        data-bs-toggle="offcanvas"
-        data-bs-target="#offcanvasNavbar"
-        aria-controls="offcanvasNavbar"
-        aria-label="Toggle navigation"
-      >
-        <span className="navbar-toggler-icon" />
-      </button>
+      <div className="mobile-nav-container">
+        <button
+          className="modern-navbar-toggler"
+          type="button"
+          aria-label="Přepnout navigaci"
+        >
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+          <span className="hamburger-line"></span>
+        </button>
+      </div>
 
       {/* Desktop menu */}
-      <div className="collapse navbar-collapse d-none d-lg-flex" id="navbarNav">
-        <ul className="navbar-nav">
+      <div className="desktop-nav-container">
+        <div className="nav-items-container">
           {navItems.map(item => renderButton({ ...item, label: item.labelDesktop }))}
-        </ul>
+        </div>
       </div>
 
       {/* Mobile offcanvas */}
       <div
-        className="offcanvas offcanvas-start d-lg-none"
+        className="modern-offcanvas"
         tabIndex={-1}
         id="offcanvasNavbar"
         aria-labelledby="offcanvasNavbarLabel"
-        data-bs-backdrop="true"
-        data-bs-scroll="false"
       >
-        <div className="offcanvas-header">
-          <h5 className="offcanvas-title" id="offcanvasNavbarLabel">Menu</h5>
+        <div className="offcanvas-header-modern">
+          <h5 className="offcanvas-title-modern" id="offcanvasNavbarLabel">
+            <span className="title-icon">📚</span>
+            Bakalářka Menu
+          </h5>
           <button
             type="button"
-            className="btn-close text-reset"
-            data-bs-dismiss="offcanvas"
-            aria-label="Close"
-          />
+            className="modern-btn-close"
+            aria-label="Zavřít"
+          >
+            ✕
+          </button>
         </div>
-        <div className="offcanvas-body">
-          <ul className="navbar-nav">
+        <div className="offcanvas-body-modern">
+          <div className="mobile-nav-items">
             {navItems.map(item => renderButton({ ...item, label: item.labelMobile }))}
-          </ul>
+          </div>
         </div>
       </div>
     </nav>

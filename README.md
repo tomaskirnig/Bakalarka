@@ -1,4 +1,4 @@
-# Bakalářská práce
+# Bakalářská práce - Komponenta výukového serveru TI - P-úplné problémy
 
 ## Instalace
 

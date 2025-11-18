@@ -27,17 +27,55 @@ export function InteractiveMCVPGraph() {
     }, []);
     
     const GraphDataToNodeClass = (graphData) => {
-        let tree = graphData.nodes.map(node => new Node(node.value, null, null, node.varValue, null, node.type));
-        console.log(tree);
-
-        // for(const link of graphData.links) {
-        //     const sourceNode = tree.find(node => node.id === link.source.id);
-        //     const targetNode = tree.find(node => node.id === link.target.id);
-        //     if (sourceNode && targetNode) {
-                
-        //     }
-        // }
-        return tree;
+        if (!graphData.nodes.length) return null;
+        
+        // Create a map of Node instances
+        const nodeMap = new Map();
+        
+        // First pass: Create all Node instances
+        for (const graphNode of graphData.nodes) {
+            const node = new Node(
+                graphNode.value,
+                graphNode.varValue,
+                graphNode.type,
+                [], // Initialize empty children array
+                []  // Initialize empty parents array
+            );
+            node.id = graphNode.id; // Keep the original ID for reference
+            nodeMap.set(graphNode.id, node);
+        }
+        
+        // Second pass: Build parent-child relationships
+        for (const link of graphData.links) {
+            const sourceNode = nodeMap.get(link.source.id);
+            const targetNode = nodeMap.get(link.target.id);
+            
+            if (sourceNode && targetNode) {
+                // Add target as child of source
+                sourceNode.children.push(targetNode);
+                // Add source as parent of target
+                targetNode.parents.push(sourceNode);
+            }
+        }
+        
+        // Find the root node (node with no parents)
+        const rootNodes = Array.from(nodeMap.values()).filter(node => 
+            node.parents.length === 0
+        );
+        
+        if (rootNodes.length === 0) {
+            console.warn("No root node found - graph may have cycles");
+            return null;
+        }
+        
+        if (rootNodes.length > 1) {
+            console.warn("Multiple root nodes found - using the first one");
+        }
+        
+        console.log(`Graph converted to tree structure:`);
+        console.log(rootNodes[0]);
+        
+        return rootNodes[0]; // Return the root node of the tree
     };
 
     // Memoize evaluation result 
@@ -46,8 +84,8 @@ export function InteractiveMCVPGraph() {
         
         // Convert graph format to tree format for evaluation
         const tree = GraphDataToNodeClass(graphData);
-
-        // return tree ? evaluateTree(tree) : null;
+        
+        return tree ? evaluateTree(tree) : null;
     }, [graphData]);
 
     // Add initial node if graph is empty

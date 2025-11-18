@@ -1,4 +1,5 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { computeWinner, getOptimalMoves } from './ComputeWinner';
 
@@ -10,13 +11,15 @@ const optimalLinkColor = '#FFD700';
 const defaultLinkColor = '#999'; 
 
 export function DisplayGraph({ graph }) {
-  if (!graph || !graph.positions) {
-    return <div>No graph data available.</div>;
-  }
-
   // State to store analysis results
   const [analysisResult, setAnalysisResult] = useState(null);
   const [optimalMoves, setOptimalMoves] = useState({});
+  
+  // State for highlighted nodes and links, and for the hovered node.
+  const [, setHighlightNodes] = useState(new Set());
+  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  const [hoverNode, setHoverNode] = useState(null);
+  const NODE_R = 8;
   
   // Analyze the graph when it changes
   useEffect(() => {
@@ -73,12 +76,6 @@ export function DisplayGraph({ graph }) {
 
     return { nodes, links };
   }, [graph, optimalMoves]);
-
-  // State for highlighted nodes and links, and for the hovered node.
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
-  const [hoverNode, setHoverNode] = useState(null);
-  const NODE_R = 8;
 
   // When a node is hovered, create new highlight sets.
   const handleNodeHover = useCallback((node) => {
@@ -137,8 +134,12 @@ export function DisplayGraph({ graph }) {
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player == 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, highlightNodes]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
+  }, [hoverNode]);
+
+  if (!graph || !graph.positions) {
+    return <div>Žádná data grafu nejsou k dispozici.</div>;
+  }
 
   return (
     <>
@@ -153,7 +154,7 @@ export function DisplayGraph({ graph }) {
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
           linkDirectionalArrowRelPos={1}
-          linkDirectionalArrowColor={link => 'rgba(0,0,0,0.6)'}
+          linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           nodeCanvasObjectMode={() => 'after'}
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
@@ -188,5 +189,14 @@ export function DisplayGraph({ graph }) {
     </>
   );
 }
+
+DisplayGraph.propTypes = {
+  graph: PropTypes.shape({
+    positions: PropTypes.object,
+    startingPosition: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    })
+  })
+};
 
 export default DisplayGraph;
