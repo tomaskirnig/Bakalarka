@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { generateTree } from '../Utils/Generator'; 
 import { printTree } from '../Utils/Parser'; 
 
@@ -45,3 +46,7 @@ export function GenerateInput( {onTreeUpdate} ) {
     </div>
   );
 }
+
+GenerateInput.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired
+};

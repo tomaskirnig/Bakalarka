@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import PropTypes from 'prop-types';
 
 export function Navigation({ selectedOption, onNavSelect }) {
   const navItems = [
@@ -122,3 +123,8 @@ export function Navigation({ selectedOption, onNavSelect }) {
     </nav>
   );
 }
+
+Navigation.propTypes = {
+  selectedOption: PropTypes.string.isRequired,
+  onNavSelect: PropTypes.func.isRequired
+};

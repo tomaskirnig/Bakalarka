@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { parseExpressionToTree } from '../Utils/Parser'; 
 
 export function ManualInput( {onTreeUpdate} ) {
@@ -24,3 +25,7 @@ export function ManualInput( {onTreeUpdate} ) {
     </div>
   );
 }
+
+ManualInput.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired
+};

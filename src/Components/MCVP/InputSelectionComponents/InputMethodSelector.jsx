@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { ManualInput } from './ManualInput';
 import { GenerateInput } from './GenerateInput';
 import { PreparedSetsInput } from './PreparedSetsInput';
@@ -74,3 +75,8 @@ export function InputMethodSelector( {onTreeUpdate, setChosenOpt} ) {
     
   );
 }
+
+InputMethodSelector.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired,
+  setChosenOpt: PropTypes.func.isRequired
+};

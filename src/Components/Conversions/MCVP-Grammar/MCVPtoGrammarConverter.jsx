@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import PropTypes from 'prop-types';
 import { TreeCanvas } from '../../MCVP/Utils/TreeRenderCanvas';
 import ConversionGrammar from './ConversionGrammar';
 
@@ -103,7 +104,7 @@ class MCVPToGrammarConverter {
     this.processNodeRecursively(this.mcvpTree);
   }
 
-  processNodeRecursively(node, parentSymbol = null) {
+  processNodeRecursively(node) { //, parentSymbol = null
     if (!node) return;
 
     const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
@@ -272,6 +273,16 @@ export default function MCVPtoGrammarConverter({ mcvpTree }) {
   );
 }
 
+MCVPtoGrammarConverter.propTypes = {
+  mcvpTree: PropTypes.shape({
+    id: PropTypes.string,
+    type: PropTypes.string,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    varValue: PropTypes.number,
+    children: PropTypes.array
+  })
+};
+
 /**
  * Component for displaying grammar in a formatted way
  */
@@ -294,6 +305,15 @@ function GrammarDisplay({ grammar }) {
     </div>
   );
 }
+
+GrammarDisplay.propTypes = {
+  grammar: PropTypes.shape({
+    nonTerminals: PropTypes.array.isRequired,
+    terminals: PropTypes.array.isRequired,
+    startSymbol: PropTypes.string.isRequired,
+    productions: PropTypes.object.isRequired
+  }).isRequired
+};
 
 /**
  * Component for step navigation controls
@@ -320,6 +340,13 @@ function NavigationControls({ currentStep, totalSteps, onPrevious, onNext }) {
   );
 }
 
+NavigationControls.propTypes = {
+  currentStep: PropTypes.number.isRequired,
+  totalSteps: PropTypes.number.isRequired,
+  onPrevious: PropTypes.func.isRequired,
+  onNext: PropTypes.func.isRequired
+};
+
 /**
  * Component for quick navigation controls
  */
@@ -342,6 +369,11 @@ function QuickNavigationControls({ onGoToStart, onGoToEnd }) {
     </div>
   );
 }
+
+QuickNavigationControls.propTypes = {
+  onGoToStart: PropTypes.func.isRequired,
+  onGoToEnd: PropTypes.func.isRequired
+};
 
 /**
  * Component for displaying the final converted grammar
@@ -379,3 +411,12 @@ function FinalGrammarDisplay({ grammar }) {
     </div>
   );
 }
+
+FinalGrammarDisplay.propTypes = {
+  grammar: PropTypes.shape({
+    nonTerminals: PropTypes.array.isRequired,
+    terminals: PropTypes.array.isRequired,
+    startSymbol: PropTypes.string.isRequired,
+    productions: PropTypes.object.isRequired
+  }).isRequired
+};

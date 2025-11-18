@@ -1,4 +1,5 @@
 import { useRef, useEffect, useMemo, useState, useCallback } from "react";
+import PropTypes from 'prop-types';
 import ForceGraph2D from "react-force-graph-2d";
 
 // Colors
@@ -321,4 +322,16 @@ export function TreeCanvas({
     </div>
   );
 }
+
+TreeCanvas.propTypes = {
+  tree: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    type: PropTypes.string,
+    value: PropTypes.any,
+    varValue: PropTypes.any,
+    children: PropTypes.array
+  }),
+  highlightedNode: PropTypes.array,
+  completedSteps: PropTypes.array
+};
 
