@@ -1,4 +1,4 @@
-import { useRef, useEffect, useMemo, useState, useCallback } from "react";
+import { useRef, useEffect, useMemo, useCallback, useState } from "react";
 import PropTypes from 'prop-types';
 import ForceGraph2D from "react-force-graph-2d";
 
@@ -10,35 +10,6 @@ const defaultNodeColor = "#438c96";
 const nodeStrokeColor = "#333";
 const nodeTextColor = "#fff";
 
-// Force configuration function to prevent node overlapping
-const configureForces = (forceName, forceInstance) => {
-  // Link force for greater distance
-  if (forceName === 'link') {
-    forceInstance
-      .distance(() => 150) 
-      .strength(0.7);       
-  }
-  
-  // Charge force for node repulsion
-  if (forceName === 'charge') {
-    forceInstance.strength(-400);  // Increased from -300
-  }
-  
-  // Collision force to prevent overlapping
-  if (forceName === 'collision') {
-    // Use this callback to create a new force if it doesn't exist
-    return forceInstance || 
-      (window.d3 && window.d3.forceCollide ? 
-        window.d3.forceCollide(node => 35).iterations(5) : // Increased from 30, iterations from 3
-        null);
-  }
-  
-  // Configure center force to keep graph centered
-  if (forceName === 'center') {
-    forceInstance.strength(0.3);  // Reduced slightly from 0.4
-  }
-};
-
 export function TreeCanvas({
   tree,
   highlightedNode = [],
@@ -49,8 +20,7 @@ export function TreeCanvas({
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
-  const graphDataRef = useRef();
-  
+    
   // Convert tree structure to data structure for ForceGraph
   const graphData = useMemo(() => {
     if (!tree) return { nodes: [], links: [] };
@@ -102,22 +72,30 @@ export function TreeCanvas({
       });
     }
 
-    // Convert link endpoints to node objects
+    // Convert link endpoints to node objects and setup neighbor relationships
     const nodeMap = {};
-    nodes.forEach(n => nodeMap[n.id] = n);
+    nodes.forEach(n => {
+      nodeMap[n.id] = n;
+      n.neighbors = [];
+      n.links = [];
+    });
     
     links.forEach(link => {
-      link.source = nodeMap[link.source];
-      link.target = nodeMap[link.target];
+      const sourceNode = nodeMap[link.source];
+      const targetNode = nodeMap[link.target];
+      
+      link.source = sourceNode;
+      link.target = targetNode;
+      
+      // Setup bidirectional neighbors
+      sourceNode.neighbors.push(targetNode);
+      targetNode.neighbors.push(sourceNode);
+      sourceNode.links.push(link);
+      targetNode.links.push(link);
     });
 
     return { nodes, links };
   }, [tree, completedSteps]);
-  
-  // Update graph data ref when it changes
-  useEffect(() => {
-    graphDataRef.current = graphData;
-  }, [graphData]);
   
   // Node rendering 
   const paintNode = useCallback((node, ctx) => {
@@ -191,7 +169,7 @@ export function TreeCanvas({
       ctx.fillText(`=> ${node.rootLabel}`, node.x, node.y - 2 * r);
     }
     
-  }, [highlightedNode?.id, hoverNode, highlightNodes]); 
+  }, [highlightedNode, highlightNodes, hoverNode]); 
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
@@ -211,30 +189,18 @@ export function TreeCanvas({
     const newHighlightNodes = new Set();
     const newHighlightLinks = new Set();
 
-    if (node && graphDataRef.current) {
+    if (node) {
       newHighlightNodes.add(node);
-
-      const neighbors = [];
       
-      // Add parents as neighbors
-      if (node.parents && Array.isArray(node.parents)) {
-        neighbors.push(...node.parents);
+      // Add all neighbors
+      if (node.neighbors) {
+        node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
       }
-      
-      // Add children as neighbors  
-      if (node.children && Array.isArray(node.children)) {
-        neighbors.push(...node.children);
-      }
-      
-      // Add all neighbor nodes to highlight set
-      neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
       
       // Add all connected links
-      graphDataRef.current.links.forEach(link => {
-        if (link.source === node || link.target === node) {
-          newHighlightLinks.add(link);
-        }
-      });
+      if (node.links) {
+        node.links.forEach(link => newHighlightLinks.add(link));
+      }
     }
 
     setHoverNode(node || null);
@@ -254,21 +220,28 @@ export function TreeCanvas({
     
     setHighlightNodes(newHighlightNodes);
     setHighlightLinks(newHighlightLinks);
-    setHoverNode(null); // Clear hover node when hovering links
+    setHoverNode(null);
   }, []);
 
-  // Collision detection to prevent node overlapping
+  // Initialize graph
   useEffect(() => {
     if (fgRef.current) {
-      // Set up forces once without reheating
+      // Set up forces once
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision', window.d3.forceCollide(30).iterations(3)); 
       }
       
       fgRef.current.d3Force('link').distance(100);
       fgRef.current.d3Force('charge').strength(-200);
+      
+      // After initial layout, center the graph
+      setTimeout(() => {
+        if (fgRef.current) {
+          fgRef.current.zoomToFit(400, 50);
+        }
+      }, 3500);
     }
-  }, []); // tree
+  }, [tree]);
 
 
 
@@ -295,6 +268,7 @@ export function TreeCanvas({
         d3AlphaDecay={0.02}    
         d3VelocityDecay={0.3}  
         nodeRelSize={8}
+        autoPauseRedraw={false}
         // d3Force={configureForces}
 
         linkDirectionalArrowLength={6}
@@ -318,6 +292,8 @@ export function TreeCanvas({
         enableZoomInteraction={true}
         minZoom={0.1}
         maxZoom={8}
+        warmupTicks={100}
+        cooldownTicks={0}
       />
     </div>
   );
