@@ -1,16 +1,40 @@
 import { useState } from 'react';
-import { InputMethodSelection } from './InputSelectionComponent/InputMethodSelection';
+import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
+import { ManualInput } from './InputSelectionComponent/ManualInput';
+import { GenerateInput } from './InputSelectionComponent/GenerateInput';
+import { PreparedSetsInput } from './InputSelectionComponent/PreparedSetsInput';
 import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 
 export function Grammar() {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
 
+    const handleOptionChange = (option) => {
+        setChosenOpt(option);
+        setGrammar(null);
+    };
+
     return (
         <div className='div-content'>
             <h1 className='display-4'>Gramatika</h1>
 
-            <InputMethodSelection onGrammar={setGrammar} chosenOpt={chosenOpt} onChosenOpt={setChosenOpt}/>
+            <GenericInputMethodSelector
+                selectedOption={chosenOpt}
+                onOptionSelect={handleOptionChange}
+                options={[
+                    { value: 'manual', label: 'Manuálně' },
+                    { value: 'generate', label: 'Generovat' },
+                    { value: 'sets', label: 'Načíst ze sady' }
+                ]}
+                renderContent={(opt) => {
+                    switch (opt) {
+                        case 'manual': return <ManualInput onGrammar={setGrammar} />;
+                        case 'generate': return <GenerateInput onGrammar={setGrammar} />;
+                        case 'sets': return <PreparedSetsInput onGrammar={setGrammar} />;
+                        default: return null;
+                    }
+                }}
+            />
 
             {grammar && (
                 <div className='inputWindow'>

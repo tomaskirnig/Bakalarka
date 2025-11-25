@@ -1,5 +1,8 @@
 import { useState } from 'react';
-import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelection';
+import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
+import { ManualInput } from './InputSelectionComponents/ManualInput';
+import { GenerateInput } from './InputSelectionComponents/GenerateInput';
+import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { DisplayGraph } from './Utils/DisplayGraph';
 
 export function CombinatorialGame() {
@@ -7,10 +10,31 @@ export function CombinatorialGame() {
     //const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     
+    const handleOptionChange = (option) => {
+        setChosenOpt(option);
+        setGraph(null);
+    };
+
     return(
         <div className='div-content'>
             <h1 className='display-4'>Kombinatorická hra</h1>
-            <InputMethodSelector onGraphUpdate={ setGraph } chosenOpt={ chosenOpt } setChosenOpt={ setChosenOpt } />
+            <GenericInputMethodSelector
+                selectedOption={chosenOpt}
+                onOptionSelect={handleOptionChange}
+                options={[
+                    { value: 'manual', label: 'Manuálně' },
+                    { value: 'generate', label: 'Generovat' },
+                    { value: 'sets', label: 'Načíst ze sady' }
+                ]}
+                renderContent={(opt) => {
+                    switch (opt) {
+                        case 'manual': return <ManualInput onGraphUpdate={setGraph} />;
+                        case 'generate': return <GenerateInput onGraphUpdate={setGraph} />;
+                        case 'sets': return <PreparedSetsInput onGraphUpdate={setGraph} />;
+                        default: return null;
+                    }
+                }}
+            />
 
             {graph && <DisplayGraph graph={graph} />}
 

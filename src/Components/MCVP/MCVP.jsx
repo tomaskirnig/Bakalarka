@@ -1,5 +1,9 @@
 import { useMemo, useState } from 'react';
-import { InputMethodSelector } from './InputSelectionComponents/InputMethodSelector';
+import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
+import { ManualInput } from './InputSelectionComponents/ManualInput';
+import { GenerateInput } from './InputSelectionComponents/GenerateInput';
+import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
+import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
 import { TreeCanvas } from './Utils/TreeRenderCanvas';
 import { evaluateTree } from './Utils/EvaluateTree';
 import { Modal } from './Modal';
@@ -16,12 +20,34 @@ export function MCVP() {
         return tree ? evaluateTree(tree) : null;
     }, [tree]);
 
+    const handleOptionChange = (option) => {
+        setChosenOpt(option);
+        setTree(null);
+    };
+
     return (
         <div className='div-content'>
             <h1 className='display-4'>MCVP</h1>
 
-            <InputMethodSelector onTreeUpdate={ setTree } setChosenOpt={ setChosenOpt } />
-
+            <GenericInputMethodSelector
+                selectedOption={chosenOpt}
+                onOptionSelect={handleOptionChange}
+                options={[
+                    { value: 'manual', label: 'Manuálně' },
+                    { value: 'generate', label: 'Generovat' },
+                    { value: 'sets', label: 'Načíst ze sady' },
+                    { value: 'interactive', label: 'Interaktivně' }
+                ]}
+                renderContent={(opt) => {
+                    switch (opt) {
+                        case 'manual': return <ManualInput onTreeUpdate={setTree} />;
+                        case 'generate': return <GenerateInput onTreeUpdate={setTree} />;
+                        case 'sets': return <PreparedSetsInput onTreeUpdate={setTree} />;
+                        case 'interactive': return <InteractiveMCVPGraph />;
+                        default: return null;
+                    }
+                }}
+            />
 
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
