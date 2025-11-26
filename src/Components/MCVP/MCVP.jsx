@@ -4,9 +4,9 @@ import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
-import { TreeCanvas } from './Utils/TreeRenderCanvas';
+import { TreeCanvas } from './TreeRenderCanvas';
 import { evaluateTree } from './Utils/EvaluateTree';
-import { Modal } from './Modal';
+import { Modal } from '../Common/Modal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 

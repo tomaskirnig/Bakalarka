@@ -6,14 +6,16 @@ import ForceGraph2D from "react-force-graph-2d";
 const highlightLinkColor = "red";
 const defaultLinkColor = "rgba(0,0,0,0.5)";
 const highlightNodeColor = "#90DDF0";
+const activeNodeColor = "#FFD700"; // Gold
 const defaultNodeColor = "#438c96"; 
 const nodeStrokeColor = "#333";
 const nodeTextColor = "#fff";
 
 export function TreeCanvas({
   tree,
-  highlightedNode = [],
-  completedSteps = [],
+  highlightedNode = null, // Node to highlight (e.g. from converter)
+  activeNode = null,      // Node currently being evaluated (step-by-step)
+  completedSteps = [],    // Steps with results to display
 }) {
   const fgRef = useRef();
   const idCounter = useRef(0);
@@ -28,16 +30,21 @@ export function TreeCanvas({
     const nodes = [];
     const links = [];
     const visited = new Set();
+    const idMap = new Map(); // Map node objects to IDs to handle duplicates if any (though tree should be unique nodes)
 
     function traverse(current, parent) {
-      if (!current || visited.has(current.id)) return;
+      if (!current) return;
       
-      // Generate ID if not exists
+      // Ensure ID
       if (!current.id) {
         current.id = `n${idCounter.current++}`;
       }
       
+      if (visited.has(current.id)) return;
       visited.add(current.id);
+      
+      // Reset display properties
+      current.evaluationResult = undefined;
       
       nodes.push(current);
   
@@ -64,10 +71,10 @@ export function TreeCanvas({
       completedSteps.forEach((step) => {
         if (!step || !step.node) return;
         
-        const n = step.node;
-        const targetNode = nodes.find((nd) => nd.id === n.id);
+        // Find the node in our nodes array by ID
+        const targetNode = nodes.find((nd) => nd.id === step.node.id);
         if (targetNode) {
-          targetNode.rootLabel = step.result;
+          targetNode.evaluationResult = step.result;
         }
       });
     }
@@ -84,14 +91,16 @@ export function TreeCanvas({
       const sourceNode = nodeMap[link.source];
       const targetNode = nodeMap[link.target];
       
-      link.source = sourceNode;
-      link.target = targetNode;
-      
-      // Setup bidirectional neighbors
-      sourceNode.neighbors.push(targetNode);
-      targetNode.neighbors.push(sourceNode);
-      sourceNode.links.push(link);
-      targetNode.links.push(link);
+      if (sourceNode && targetNode) {
+          link.source = sourceNode;
+          link.target = targetNode;
+          
+          // Setup bidirectional neighbors
+          sourceNode.neighbors.push(targetNode);
+          targetNode.neighbors.push(sourceNode);
+          sourceNode.links.push(link);
+          targetNode.links.push(link);
+      }
     });
 
     return { nodes, links };
@@ -102,12 +111,14 @@ export function TreeCanvas({
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
     
     const r = 12; 
-    const isHighlighted = highlightNodes.has(node);
     const isHovered = hoverNode && hoverNode.id === node.id;
+    const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
+    const isActive = activeNode && node.id === activeNode.id;
+    const isInternalHighlight = highlightNodes.has(node);
     
     // Add glow effect for highlighted nodes
-    if (isHighlighted || isHovered) {
-      ctx.shadowColor = isHovered ? '#FFD700' : '#90DDF0';
+    if (isExternalHighlight || isHovered || isActive) {
+      ctx.shadowColor = isActive ? activeNodeColor : (isHovered ? activeNodeColor : highlightNodeColor);
       ctx.shadowBlur = 15;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -117,20 +128,22 @@ export function TreeCanvas({
     ctx.beginPath();
     ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
 
-    // Color based on state
-    if (highlightedNode && node.id === highlightedNode.id) {
-      ctx.fillStyle = highlightNodeColor;
+    // Color priority: Active (Gold) > Hover (Gold) > External Highlight (Cyan) > Connected Highlight (Cyan) > Default
+    if (isActive) {
+        ctx.fillStyle = activeNodeColor;
     } else if (isHovered) {
-      ctx.fillStyle = '#FFD700'; // Gold for hovered
-    } else if (isHighlighted) {
-      ctx.fillStyle = '#90DDF0'; // Light blue for connected
+        ctx.fillStyle = activeNodeColor; 
+    } else if (isExternalHighlight) {
+        ctx.fillStyle = highlightNodeColor;
+    } else if (isInternalHighlight) {
+        ctx.fillStyle = highlightNodeColor; 
     } else {
-      ctx.fillStyle = defaultNodeColor;
+        ctx.fillStyle = defaultNodeColor;
     }
     
     ctx.fill();
-    ctx.strokeStyle = isHighlighted || isHovered ? '#333' : nodeStrokeColor;
-    ctx.lineWidth = isHighlighted || isHovered ? 2 : 1;
+    ctx.strokeStyle = (isExternalHighlight || isHovered || isActive || isInternalHighlight) ? '#333' : nodeStrokeColor;
+    ctx.lineWidth = (isExternalHighlight || isHovered || isActive || isInternalHighlight) ? 2 : 1;
     ctx.stroke();
 
     // Reset shadow
@@ -164,12 +177,16 @@ export function TreeCanvas({
     ctx.font = `monospace`;
     ctx.fillText(displayText, node.x, node.y);
     
-    // If there's a root label, show it above the node
-    if (node.rootLabel) {
-      ctx.fillText(`=> ${node.rootLabel}`, node.x, node.y - 2 * r);
+    // If there's an evaluation result, show it above the node
+    if (node.evaluationResult !== undefined) {
+      ctx.fillStyle = 'red';
+      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - 1.8 * r);
+    } else if (node.rootLabel !== undefined) { // Legacy support if needed, or for manual labels
+      ctx.fillStyle = 'red';
+      ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * r);
     }
     
-  }, [highlightedNode, highlightNodes, hoverNode]); 
+  }, [highlightedNode, activeNode, highlightNodes, hoverNode]); 
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
@@ -239,11 +256,20 @@ export function TreeCanvas({
         if (fgRef.current) {
           fgRef.current.zoomToFit(400, 50);
         }
-      }, 3500);
+      }, 1000); // Reduced from 3500 for snappier feel, user can always zoom/pan
     }
   }, [tree]);
 
-
+  // Focus on active node if provided
+  useEffect(() => {
+    if (activeNode && fgRef.current) {
+         // Find the node in graphData to get its coordinates
+         const node = graphData.nodes.find(n => n.id === activeNode.id);
+         if (node && typeof node.x === 'number' && typeof node.y === 'number') {
+             fgRef.current.centerAt(node.x, node.y, 500);
+         }
+    }
+  }, [activeNode, graphData.nodes]);
 
   // Function for larger hitboxes
   const paintNodeHitbox = useCallback((node, color, ctx) => {
@@ -255,13 +281,11 @@ export function TreeCanvas({
     ctx.fill();
   }, []);
 
-  // Add linkCanvasObjectMode and linkCanvasObject to ForceGraph2D
   return (
     <div className="GraphDiv">
       <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
-        // onEngineStop={handleEngineStop}
         dagMode="td"
         dagLevelDistance={100}
         cooldownTime={3000}   
@@ -269,19 +293,16 @@ export function TreeCanvas({
         d3VelocityDecay={0.3}  
         nodeRelSize={8}
         autoPauseRedraw={false}
-        // d3Force={configureForces}
-
+        
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
         
-        // Add these for custom link rendering
         linkCanvasObjectMode={() => "replace"}
         linkCanvasObject={paintLink}
 
         nodeCanvasObjectMode={() => "after"}
         nodeCanvasObject={paintNode}
 
-        // Custom node hitbox (invisible, larger area for mouse interaction)
         nodePointerAreaPaint={paintNodeHitbox}
 
         onNodeHover={handleNodeHover}
@@ -307,7 +328,7 @@ TreeCanvas.propTypes = {
     varValue: PropTypes.any,
     children: PropTypes.array
   }),
-  highlightedNode: PropTypes.array,
+  highlightedNode: PropTypes.object,
+  activeNode: PropTypes.object,
   completedSteps: PropTypes.array
 };
-

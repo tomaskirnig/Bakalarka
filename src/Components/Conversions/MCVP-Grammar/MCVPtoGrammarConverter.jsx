@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { TreeCanvas } from '../../MCVP/Utils/TreeRenderCanvas';
+import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
 import ConversionGrammar from './ConversionGrammar';
 
 /**
