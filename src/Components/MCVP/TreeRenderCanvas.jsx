@@ -32,7 +32,7 @@ export function TreeCanvas({
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   
-  // Layout State: Start with Tree Down ('td'), then release to free physics
+  // Get rid of this state and use td always
   const [layoutMode, setLayoutMode] = useState('td');
 
   // 1. Prepare Graph Data
