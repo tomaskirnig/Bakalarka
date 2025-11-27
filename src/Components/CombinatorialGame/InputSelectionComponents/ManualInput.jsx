@@ -18,11 +18,35 @@ export function ManualInput() {
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
   const fgRef = useRef();
   
-  // State to store analysis results
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [optimalMoves, setOptimalMoves] = useState({});
-
   const NODE_R = 8;
+
+  const { analysisResult, optimalMoves } = useMemo(() => {
+    if (!graph || graph.nodes.length === 0) {
+      return { analysisResult: null, optimalMoves: {} };
+    }
+
+    const formattedGraph = {
+      positions: graph.nodes.reduce((acc, node) => {
+        acc[node.id] = {
+          id: node.id,
+          player: node.player,
+          children: graph.links
+            .filter(link => link.source.id === node.id)
+            .map(link => link.target.id),
+          parents: graph.links
+            .filter(link => link.target.id === node.id)
+            .map(link => link.source.id)
+        };
+        return acc;
+      }, {}),
+      startingPosition: graph.nodes.find(node => node.id === "0")
+    };
+
+    const result = computeWinner(formattedGraph);
+    const moves = getOptimalMoves(formattedGraph, result);
+
+    return { analysisResult: result, optimalMoves: moves };
+  }, [graph]);
 
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
@@ -55,38 +79,7 @@ export function ManualInput() {
     setNodeMap(newNodeMap);
   }, [graph.nodes]);
 
-  // Analyze the graph when it changes
-  useEffect(() => {
-    if (graph && graph.nodes.length > 0) {
-      // Convert graph to format expected by ComputeWinner
-      const formattedGraph = {
-        positions: graph.nodes.reduce((acc, node) => {
-          acc[node.id] = {
-            id: node.id,
-            player: node.player,
-            children: graph.links
-              .filter(link => link.source.id === node.id)
-              .map(link => link.target.id),
-            parents: graph.links
-              .filter(link => link.target.id === node.id)
-              .map(link => link.source.id)
-          };
-          return acc;
-        }, {}),
-        startingPosition: graph.nodes.find(node => node.id === "0")
-      };
-      
-      const result = computeWinner(formattedGraph);
-      const moves = getOptimalMoves(formattedGraph);
 
-      // debugging output
-      console.log("Winning analysis:", result);
-      console.log("Optimal moves:", moves);
-      
-      setAnalysisResult(result);
-      setOptimalMoves(moves);
-    }
-  }, [graph]);
 
   // Refresh the graph when optimal moves change
   useEffect(() => {

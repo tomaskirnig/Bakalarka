@@ -25,7 +25,7 @@ export function DisplayGraph({ graph }) {
   useEffect(() => {
     if (graph && graph.positions) {
       const result = computeWinner(graph);
-      const moves = getOptimalMoves(graph);
+      const moves = getOptimalMoves(graph, result);
       setAnalysisResult(result);
       setOptimalMoves(moves);
     }

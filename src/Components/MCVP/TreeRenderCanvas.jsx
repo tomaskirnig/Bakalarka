@@ -11,6 +11,13 @@ const defaultNodeColor = "#438c96";
 const nodeStrokeColor = "#333";
 const nodeTextColor = "#fff";
 
+// Constants for visual consistency
+const NODE_R = 12;
+
+// Constant accessor functions to prevent re-renders of the graph engine
+const MODE_REPLACE = () => "replace";
+const MODE_AFTER = () => "after";
+
 export function TreeCanvas({
   tree,
   highlightedNode = null, // Node to highlight (e.g. from converter)
@@ -19,23 +26,31 @@ export function TreeCanvas({
 }) {
   const fgRef = useRef();
   const idCounter = useRef(0);
+  
+  // Interaction State
+  const [hoverNode, setHoverNode] = useState(null);
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
-  const [hoverNode, setHoverNode] = useState(null);
-    
-  // Convert tree structure to data structure for ForceGraph
+  
+  // Layout State: Start with Tree Down ('td'), then release to free physics
+  const [layoutMode, setLayoutMode] = useState('td');
+
+  // 1. Prepare Graph Data
+  // useMemo ensures we only regenerate the graph topology when tree/steps change.
   const graphData = useMemo(() => {
     if (!tree) return { nodes: [], links: [] };
     
     const nodes = [];
     const links = [];
     const visited = new Set();
-    const idMap = new Map(); // Map node objects to IDs to handle duplicates if any (though tree should be unique nodes)
 
+    // Reset ID counter only if we were to generate fresh IDs for a fresh tree, 
+    // but we write IDs to the tree objects, so they persist.
+    
     function traverse(current, parent) {
       if (!current) return;
       
-      // Ensure ID
+      // Ensure ID exists on the node object itself
       if (!current.id) {
         current.id = `n${idCounter.current++}`;
       }
@@ -43,12 +58,11 @@ export function TreeCanvas({
       if (visited.has(current.id)) return;
       visited.add(current.id);
       
-      // Reset display properties
+      // Reset ephemeral display properties
       current.evaluationResult = undefined;
       
       nodes.push(current);
   
-      // Link from parent -> current
       if (parent) {
         links.push({
           source: parent.id,
@@ -56,7 +70,6 @@ export function TreeCanvas({
         });
       }
   
-      // Traverse children
       if (current.children && Array.isArray(current.children)) {
         current.children.forEach(child => {
           if (child) traverse(child, current);
@@ -66,12 +79,10 @@ export function TreeCanvas({
 
     traverse(tree, null);
 
-    // Process completed steps
+    // Apply evaluation results from completed steps
     if (completedSteps && completedSteps.length > 0) {
       completedSteps.forEach((step) => {
         if (!step || !step.node) return;
-        
-        // Find the node in our nodes array by ID
         const targetNode = nodes.find((nd) => nd.id === step.node.id);
         if (targetNode) {
           targetNode.evaluationResult = step.result;
@@ -79,23 +90,26 @@ export function TreeCanvas({
       });
     }
 
-    // Convert link endpoints to node objects and setup neighbor relationships
-    const nodeMap = {};
+    // Pre-calculate neighbors for efficient hover lookup
+    // We map IDs to node objects first
+    const nodeMap = new Map(nodes.map(n => [n.id, n]));
+    
+    // Initialize neighbor arrays
     nodes.forEach(n => {
-      nodeMap[n.id] = n;
       n.neighbors = [];
       n.links = [];
     });
-    
+
+    // Populate relationships
     links.forEach(link => {
-      const sourceNode = nodeMap[link.source];
-      const targetNode = nodeMap[link.target];
+      // ForceGraph2D might replace source/target with objects, but initially they are IDs
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+
+      const sourceNode = nodeMap.get(sourceId);
+      const targetNode = nodeMap.get(targetId);
       
       if (sourceNode && targetNode) {
-          link.source = sourceNode;
-          link.target = targetNode;
-          
-          // Setup bidirectional neighbors
           sourceNode.neighbors.push(targetNode);
           targetNode.neighbors.push(sourceNode);
           sourceNode.links.push(link);
@@ -105,88 +119,124 @@ export function TreeCanvas({
 
     return { nodes, links };
   }, [tree, completedSteps]);
-  
-  // Node rendering 
-  const paintNode = useCallback((node, ctx) => {
-    if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
-    
-    const r = 12; 
-    const isHovered = hoverNode && hoverNode.id === node.id;
-    const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
-    const isActive = activeNode && node.id === activeNode.id;
-    const isInternalHighlight = highlightNodes.has(node);
-    
-    // Add glow effect for highlighted nodes
-    if (isExternalHighlight || isHovered || isActive) {
-      ctx.shadowColor = isActive ? activeNodeColor : (isHovered ? activeNodeColor : highlightNodeColor);
-      ctx.shadowBlur = 15;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+
+  // Reset layout mode when tree changes
+  // useEffect(() => {
+  //   setLayoutMode('td');
+  // }, [tree]);
+
+  // 2. Interaction Handlers
+  const handleNodeHover = useCallback((node) => {
+    if (!node) {
+      setHoverNode(null);
+      setHighlightNodes(new Set());
+      setHighlightLinks(new Set());
+      return;
     }
 
-    // Draw circle
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, r, 0, 2 * Math.PI, false);
+    const newHighlightNodes = new Set();
+    const newHighlightLinks = new Set();
 
-    // Color priority: Active (Gold) > Hover (Gold) > External Highlight (Cyan) > Connected Highlight (Cyan) > Default
+    newHighlightNodes.add(node);
+    if (node.neighbors) {
+      node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
+    }
+    if (node.links) {
+      node.links.forEach(link => newHighlightLinks.add(link));
+    }
+
+    setHoverNode(node);
+    setHighlightNodes(newHighlightNodes);
+    setHighlightLinks(newHighlightLinks);
+  }, []);
+
+  const handleLinkHover = useCallback((link) => {
+    if (!link) {
+      setHoverNode(null);
+      setHighlightNodes(new Set());
+      setHighlightLinks(new Set());
+      return;
+    }
+    
+    const newHighlightNodes = new Set();
+    const newHighlightLinks = new Set();
+    
+    newHighlightLinks.add(link);
+    if (link.source) newHighlightNodes.add(link.source);
+    if (link.target) newHighlightNodes.add(link.target);
+    
+    setHoverNode(null);
+    setHighlightNodes(newHighlightNodes);
+    setHighlightLinks(newHighlightLinks);
+  }, []);
+
+  // 3. Paint Functions
+  // These depend on the interaction state (hoverNode, etc.)
+  // When state changes, these functions update. ForceGraph detects the prop change and repaints.
+  
+  const paintNode = useCallback((node, ctx) => {
+    if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
+
+    // State-based Styling logic
+    const isHovered = hoverNode === node;
+    const isNeighbor = highlightNodes.has(node) && !isHovered; 
+    const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
+    const isActive = activeNode && node.id === activeNode.id;
+    
+    const shouldHighlight = isHovered || isNeighbor || isExternalHighlight || isActive;
+
+    // Draw Circle
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, NODE_R, 0, 2 * Math.PI, false);
+
+    // Fill Color
     if (isActive) {
         ctx.fillStyle = activeNodeColor;
     } else if (isHovered) {
-        ctx.fillStyle = activeNodeColor; 
+        ctx.fillStyle = activeNodeColor;
     } else if (isExternalHighlight) {
         ctx.fillStyle = highlightNodeColor;
-    } else if (isInternalHighlight) {
-        ctx.fillStyle = highlightNodeColor; 
+    } else if (isNeighbor) {
+        ctx.fillStyle = highlightNodeColor;
     } else {
         ctx.fillStyle = defaultNodeColor;
     }
     
     ctx.fill();
-    ctx.strokeStyle = (isExternalHighlight || isHovered || isActive || isInternalHighlight) ? '#333' : nodeStrokeColor;
-    ctx.lineWidth = (isExternalHighlight || isHovered || isActive || isInternalHighlight) ? 2 : 1;
+
+    // Stroke
+    ctx.strokeStyle = shouldHighlight ? '#333' : nodeStrokeColor;
+    ctx.lineWidth = shouldHighlight ? 2 : 1;
     ctx.stroke();
 
-    // Reset shadow
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    
+    // Text Label
     let displayText = '';
-    
-    // Check if it's a variable (starts with x)
     if (typeof node.value === 'string' && node.value.startsWith('x')) {
-      // Format as x1[0]
       displayText = `${node.value}${node.varValue !== undefined ? `[${node.varValue}]` : ''}`;
-    } 
-    // Check if it's an AND operation
-    else if (node.value === 'AND' || node.value === '∧' || node.value === 'A') {
+    } else if (node.value === 'AND' || node.value === '∧' || node.value === 'A') {
       displayText = 'A';
-    }
-    // Check if it's an OR operation
-    else if (node.value === 'OR' || node.value === '∨' || node.value === 'O') {
+    } else if (node.value === 'OR' || node.value === '∨' || node.value === 'O') {
       displayText = 'O';
-    }
-    // For other types, use the value as is
-    else {
+    } else {
       displayText = node.value || '';
     }
     
-    // Draw the text inside the circle
     ctx.fillStyle = nodeTextColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `monospace`;
     ctx.fillText(displayText, node.x, node.y);
     
-    // If there's an evaluation result, show it above the node
+    // Result Label (above node)
     if (node.evaluationResult !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - 1.8 * r);
-    } else if (node.rootLabel !== undefined) { // Legacy support if needed, or for manual labels
+      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - 1.8 * NODE_R);
+    } else if (node.rootLabel !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * r);
+      ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * NODE_R);
     }
     
-  }, [highlightedNode, activeNode, highlightNodes, hoverNode]); 
+  }, [hoverNode, highlightNodes, highlightedNode, activeNode]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
@@ -202,119 +252,67 @@ export function TreeCanvas({
     ctx.stroke();
   }, [highlightLinks]);
 
-  const handleNodeHover = useCallback((node) => {
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-
-    if (node) {
-      newHighlightNodes.add(node);
-      
-      // Add all neighbors
-      if (node.neighbors) {
-        node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
-      }
-      
-      // Add all connected links
-      if (node.links) {
-        node.links.forEach(link => newHighlightLinks.add(link));
-      }
-    }
-
-    setHoverNode(node || null);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
-  }, []); 
-
-  const handleLinkHover = useCallback((link) => {
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-    
-    if (link) {
-      newHighlightLinks.add(link);
-      if (link.source) newHighlightNodes.add(link.source);
-      if (link.target) newHighlightNodes.add(link.target);
-    }
-    
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
-    setHoverNode(null);
-  }, []);
-
-  // Initialize graph
+  // 4. Effects
+  
+  // Initial Forces Setup
   useEffect(() => {
     if (fgRef.current) {
-      // Set up forces once
+      // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(30).iterations(3)); 
+        fgRef.current.d3Force('collision', window.d3.forceCollide(NODE_R * 2).iterations(2)); 
       }
-      
       fgRef.current.d3Force('link').distance(100);
       fgRef.current.d3Force('charge').strength(-200);
-      
-      // After initial layout, center the graph
-      setTimeout(() => {
-        if (fgRef.current) {
-          fgRef.current.zoomToFit(400, 50);
-        }
-      }, 1000); // Reduced from 3500 for snappier feel, user can always zoom/pan
     }
-  }, [tree]);
+  }, [tree]); // Re-run if tree changes (new simulation)
 
-  // Focus on active node if provided
+  // Focus Camera on Active Node
   useEffect(() => {
     if (activeNode && fgRef.current) {
-         // Find the node in graphData to get its coordinates
+         // We need to find the node object in the current graph data to get (x,y)
          const node = graphData.nodes.find(n => n.id === activeNode.id);
          if (node && typeof node.x === 'number' && typeof node.y === 'number') {
              fgRef.current.centerAt(node.x, node.y, 500);
          }
     }
-  }, [activeNode, graphData.nodes]);
-
-  // Function for larger hitboxes
-  const paintNodeHitbox = useCallback((node, color, ctx) => {
-    const hitboxRadius = 15; 
-    
-    ctx.fillStyle = color;
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, hitboxRadius, 0, 2 * Math.PI, false);
-    ctx.fill();
-  }, []);
+  }, [activeNode, graphData]);
 
   return (
     <div className="GraphDiv">
       <ForceGraph2D
         ref={fgRef}
         graphData={graphData}
-        dagMode="td"
+        
+        // Layout
+        dagMode={layoutMode}
         dagLevelDistance={100}
-        cooldownTime={3000}   
-        d3AlphaDecay={0.02}    
-        d3VelocityDecay={0.3}  
-        nodeRelSize={8}
-        autoPauseRedraw={false}
         
-        linkDirectionalArrowLength={6}
-        linkDirectionalArrowRelPos={1}
+        // Physics
+        cooldownTime={3000}
+        d3AlphaDecay={0.02}
+        d3VelocityDecay={0.3}
         
-        linkCanvasObjectMode={() => "replace"}
-        linkCanvasObject={paintLink}
-
-        nodeCanvasObjectMode={() => "after"}
-        nodeCanvasObject={paintNode}
-
-        nodePointerAreaPaint={paintNodeHitbox}
-
-        onNodeHover={handleNodeHover}
-        onLinkHover={handleLinkHover}
-
+        // Interaction
         enableNodeDrag={true}
         enablePanInteraction={true}
         enableZoomInteraction={true}
         minZoom={0.1}
         maxZoom={8}
-        warmupTicks={100}
-        cooldownTicks={0}
+        
+        // Rendering Props
+        nodeRelSize={NODE_R} // Matches paintNode radius
+        linkDirectionalArrowLength={6}
+        linkDirectionalArrowRelPos={1}
+        
+        // Custom Painters
+        linkCanvasObjectMode={MODE_REPLACE}
+        linkCanvasObject={paintLink}
+        nodeCanvasObjectMode={MODE_AFTER}
+        nodeCanvasObject={paintNode}
+        
+        // Events
+        onNodeHover={handleNodeHover}
+        onLinkHover={handleLinkHover}
       />
     </div>
   );

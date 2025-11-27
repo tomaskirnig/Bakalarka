@@ -8,7 +8,6 @@ export function GenerateInput({ onGraphUpdate }) {
     const handleGenerateGraph = () => {
         const generatedGraph = generateGraph(numGameFields, edgePropability);
         onGraphUpdate(generatedGraph);
-        console.log(generatedGraph);
     }
 
     return (

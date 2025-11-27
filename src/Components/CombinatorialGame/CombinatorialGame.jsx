@@ -7,7 +7,6 @@ import { DisplayGraph } from './Utils/DisplayGraph';
 
 export function CombinatorialGame() {
     const [graph, setGraph] = useState(null); // Current tree
-    //const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     
     const handleOptionChange = (option) => {

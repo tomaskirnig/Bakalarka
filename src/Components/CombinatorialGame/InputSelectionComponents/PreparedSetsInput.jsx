@@ -8,7 +8,6 @@ export function PreparedSetsInput({ onGraphUpdate }) {
     const key = event.target.value;
     if (key) {
       const { nodes, edges, startingPosition } = data[key];
-      console.log('nodes: ', nodes, '\n egdes: ', edges, '\n start pos: ', startingPosition);
       const expression = `nodes: ${nodes}; edges: ${edges}`; // Create the expression in the expected format
       const parsedGraph = parseExpressionToTree(expression, startingPosition);
       onGraphUpdate(parsedGraph);
