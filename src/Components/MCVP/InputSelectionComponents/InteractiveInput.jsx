@@ -17,7 +17,27 @@ export function InteractiveMCVPGraph() {
     const [edgeSource, setEdgeSource] = useState(null);
     const [hoverNode, setHoverNode] = useState(null);
     const fgRef = useRef();
+    const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
+    const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
+    // ResizeObserver for responsive graph
+    useEffect(() => {
+        if (!containerRef.current) return;
+
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                setDimensions({ width, height });
+            }
+        });
+
+        resizeObserver.observe(containerRef.current);
+
+        return () => {
+            resizeObserver.disconnect();
+        };
+    }, []);
     
     // Generate unique ID function 
     const generateNodeId = useCallback(() => {
@@ -309,9 +329,11 @@ export function InteractiveMCVPGraph() {
             </div>
 
             {/* ForceGraph Canvas */}
-            <div className="GraphDiv">
+            <div className="GraphDiv" ref={containerRef}>
                 <ForceGraph2D
                     ref={fgRef}
+                    width={dimensions.width}
+                    height={dimensions.height}
                     graphData={graphData}
                     // Layout
                     dagMode="td" // Top-down layout

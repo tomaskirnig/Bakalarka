@@ -25,15 +25,34 @@ export function TreeCanvas({
   completedSteps = [],    // Steps with results to display
 }) {
   const fgRef = useRef();
+  const containerRef = useRef(); // Ref for the container div
   const idCounter = useRef(0);
   
+  // Dimensions State
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+
   // Interaction State
   const [hoverNode, setHoverNode] = useState(null);
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
-  
-  // Get rid of this state and use td always
-  const [layoutMode, setLayoutMode] = useState('td');
+
+  // ResizeObserver to handle responsive sizing
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        setDimensions({ width, height });
+      }
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // 1. Prepare Graph Data
   // useMemo ensures we only regenerate the graph topology when tree/steps change.
@@ -119,11 +138,6 @@ export function TreeCanvas({
 
     return { nodes, links };
   }, [tree, completedSteps]);
-
-  // Reset layout mode when tree changes
-  // useEffect(() => {
-  //   setLayoutMode('td');
-  // }, [tree]);
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
@@ -278,13 +292,15 @@ export function TreeCanvas({
   }, [activeNode, graphData]);
 
   return (
-    <div className="GraphDiv">
+    <div className="GraphDiv" ref={containerRef}>
       <ForceGraph2D
         ref={fgRef}
+        width={dimensions.width}
+        height={dimensions.height}
         graphData={graphData}
         
         // Layout
-        dagMode={layoutMode}
+        dagMode="td"
         dagLevelDistance={100}
         
         // Physics

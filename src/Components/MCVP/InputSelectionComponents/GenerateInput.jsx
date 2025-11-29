@@ -41,8 +41,6 @@ export function GenerateInput( {onTreeUpdate} ) {
       />
 
       <button className='btn btn-primary mt-3' onClick={handleGenerateTree}>Generovat</button> 
-
-      {tree && printTree(tree)}
     </div>
   );
 }
