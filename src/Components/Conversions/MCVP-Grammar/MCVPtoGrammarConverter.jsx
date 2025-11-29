@@ -181,7 +181,7 @@ class MCVPToGrammarConverter {
  * Component that converts an MCVP problem to a Context-Free Grammar
  * and visualizes each step of the conversion process.
  */
-export default function MCVPtoGrammarConverter({ mcvpTree }) {
+export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
   const [currentStep, setCurrentStep] = useState(0);
 
   // Generate conversion steps using useMemo for performance
@@ -211,6 +211,12 @@ export default function MCVPtoGrammarConverter({ mcvpTree }) {
   const goToPreviousStep = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleRedirect = () => {
+    if (onNavigate && finalGrammar) {
+      onNavigate('Grammar', finalGrammar);
     }
   };
 
@@ -264,10 +270,15 @@ export default function MCVPtoGrammarConverter({ mcvpTree }) {
       />
       
       {finalGrammar && (
-        <QuickNavigationControls 
-          onGoToStart={() => setCurrentStep(0)}
-          onGoToEnd={() => setCurrentStep(steps.length - 1)}
-        />
+        <div className="d-flex justify-content-center flex-column align-items-center">
+            <QuickNavigationControls 
+            onGoToStart={() => setCurrentStep(0)}
+            onGoToEnd={() => setCurrentStep(steps.length - 1)}
+            />
+            <button className="btn btn-success btn-lg mt-2" onClick={handleRedirect}>
+                Otevřít v Gramatice
+            </button>
+        </div>
       )}
     </div>
   );
@@ -280,7 +291,8 @@ MCVPtoGrammarConverter.propTypes = {
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     varValue: PropTypes.number,
     children: PropTypes.array
-  })
+  }),
+  onNavigate: PropTypes.func
 };
 
 /**

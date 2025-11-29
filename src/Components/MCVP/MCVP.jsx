@@ -1,4 +1,5 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
+import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
@@ -9,12 +10,23 @@ import { evaluateTree } from './Utils/EvaluateTree';
 import { Modal } from '../Common/Modal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
+import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
 
-export function MCVP() {
+export function MCVP({ onNavigate, initialData }) {
     const [tree, setTree] = useState(null); // Current tree
     const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
-    const [conversion, setConversion] = useState(null); // Conversion result
+    const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
+    const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
+
+    // Handle initial data if provided (e.g., from reverse conversion)
+    useEffect(() => {
+        if (initialData) {
+            // If initialData is an MCVP tree structure, set it
+            // This assumes initialData structure matches what setTree expects
+            setTree(initialData);
+        }
+    }, [initialData]);
 
     const evaluationResult = useMemo(() => {
         return tree ? evaluateTree(tree) : null;
@@ -62,9 +74,6 @@ export function MCVP() {
                                 <div className={`alert ${evaluationResult ? 'alert-success' : 'alert-warning'}`}>
                                     {`Výsledek: ${evaluationResult}`}
                                 </div>
-                                {/* <p className="text-muted">
-                                    Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
-                                </p> */}
                             </>
                         ) : (
                             <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
@@ -76,15 +85,23 @@ export function MCVP() {
             {tree && (
                 <div>
                     <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
-                    <button className='btn btn-primary mx-2' onClick={() => setConversion(true)} >Převést na Gramatiku</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
                 </div>
             )}
 
-            {conversion && (
-                <Modal onClose={() => setConversion(false)}>
+            {grammarConversion && (
+                <Modal onClose={() => setGrammarConversion(false)}>
                     {tree && (
-                        <MCVPtoGrammarConverter mcvpTree={tree} />
+                        <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} />
+                    )}
+                </Modal>
+            )}
+
+            {gameConversion && (
+                <Modal onClose={() => setGameConversion(false)}>
+                    {tree && (
+                        <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} />
                     )}
                 </Modal>
             )}
@@ -99,3 +116,8 @@ export function MCVP() {
         </div>
     );
 }
+
+MCVP.propTypes = {
+    onNavigate: PropTypes.func,
+    initialData: PropTypes.object
+};
