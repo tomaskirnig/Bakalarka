@@ -1,0 +1,14 @@
+\chapter{Úvod}
+\label{sec:Introduction}
+
+V oblasti teoretické informatiky hrají složitostní třídy zásadní roli při porozumění tomu, jak obtížné je řešit určité problémy pomocí algoritmů. Jednou z nejdůležitějších složitostních tříd je třída \( P \), která zahrnuje všechny problémy řešitelné v polynomiálním čase na deterministickém Turingově stroji \cite{papadimitriou1993}. Některé úlohy spadající do této třídy jsou však považovány za tzv. \emph{P-úplné} (P-complete), což znamená, že jsou nejkomplexnějšími problémy této třídy z hlediska paralelní vypočitatelnosti \cite{arora2009}.
+
+Jedním z klasických příkladů P-úplných problémů je \emph{Monotone Circuit Value Problem} (MCVP), který se zaměřuje na hodnocení logických obvodů složených z monotonních hradel typu AND a OR \cite{miyano1990}. Tento problém je často využíván při studiu složitosti algoritmů a při analýze logických struktur, protože reprezentuje základní typ úlohy vyhodnocující hodnotu výrazu na základě vstupních dat.
+
+Cílem této bakalářské práce je navrhnout a implementovat interaktivní výukovou komponentu, která studentům umožní lépe pochopit vlastnosti P-úplných problémů prostřednictvím simulace jejich řešení. V rámci této komponenty budou implementovány simulace řešení problému MCVP a také dvou dalších P-úplných problémů: problému určení vítěze v kombinatorické hře dvou hráčů a problému prázdnosti jazyka generovaného bezkontextovou gramatikou \cite{sawa}. Uživatelé budou moci zadávat vstupy ručně, generovat je náhodně podle zadaných parametrů nebo vybírat z předem připravených sad.
+
+Další klíčovou funkcí této výukové aplikace bude možnost zobrazit převod instance problému MCVP na jiné P-úplné problémy. Tento převod bude možné provádět krok po kroku, přičemž každý krok bude doprovázen slovním vysvětlením a vizualizací změn \cite{arora2009}. Cílem této funkce je pomoci studentům pochopit principy redukce složitostních problémů a propojení mezi jednotlivými úlohami.
+
+Výsledná aplikace bude navržena jako dynamická webová stránka s uživatelsky přívětivým rozhraním a interaktivní vizualizací. Tato práce by měla přispět k usnadnění výuky teoretické informatiky, konkrétně oblasti složitostní teorie, a zároveň poskytnout flexibilní nástroj pro pochopení náročných konceptů spojených s P-úplnými problémy.
+
+\endinput

@@ -8,7 +8,6 @@ export function PreparedSetsInput({ onGrammar }) {
       const selectedGrammar = new Grammar(Data[index]);
       
       onGrammar(selectedGrammar);
-      console.log(selectedGrammar);
     }
   };
 
