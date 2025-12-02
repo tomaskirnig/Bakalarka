@@ -15,16 +15,18 @@ export function PreparedSetsInput({ onGraphUpdate }) {
   };
 
   return (
-    <div className="inputWindow">
-      <label>Vybrat sadu:</label>
-      <select className="form-select" onChange={handleSelectChange}>
-        <option value="">Vybrat sadu</option>
-        {Object.keys(data).map((key) => (
-          <option key={key} value={key}>
-            {key}
-          </option>
-        ))}
-      </select>
+    <div className="card p-4 mb-4 mx-auto shadow-sm text-start" style={{ maxWidth: '600px' }}>
+      <div className="mb-3">
+        <label className="form-label">Vybrat sadu:</label>
+        <select className="form-select" onChange={handleSelectChange}>
+          <option value="">Vybrat sadu</option>
+          {Object.keys(data).map((key) => (
+            <option key={key} value={key}>
+              {key}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 }

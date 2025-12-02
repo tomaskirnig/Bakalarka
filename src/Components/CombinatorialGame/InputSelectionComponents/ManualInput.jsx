@@ -413,7 +413,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   return (
     <>
-    <div className="GraphDiv">
+    <div className="GraphDiv mb-3 shadow-sm">
       {addingEdge && (
         <div className="manual-input-instruction">
           Vyberte uzel pro přidání hrany. Klikněte na pozadí pro zrušení.
@@ -442,17 +442,18 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         onBackgroundClick={handleBackgroundClick} 
       />
     </div>
-    <div style={{ textAlign: "center", margin: "10px" }}>
-        <button className="btn add-btn mx-1" onClick={addNode}>Přidat uzel</button>
+    
+    <div className="d-flex justify-content-center my-3">
+        <button className="btn btn-control" onClick={addNode}>Přidat uzel</button>
     </div>
 
     {/* Two-column layout container */}
-    <div className="row">
+    <div className="row g-4 mb-5">
         {/* Left column: Analysis results */}
         <div className="col-md-6">
-            <div className="card h-100">
-                <div className="card-header">
-                    <h4>Analýza hry</h4>
+            <div className="card h-100 shadow-sm">
+                <div className="card-header bg-light fw-bold">
+                    Analýza hry
                 </div>
                 <div className="card-body">
                     {analysisResult ? (
@@ -460,12 +461,12 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
                             <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
                                 {analysisResult.message}
                             </div>
-                            <p className="text-muted">
+                            <p className="text-muted small mb-0">
                                 Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
                             </p>
                         </>
                     ) : (
-                        <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
+                        <p className="text-muted text-center my-auto">Přidejte více uzlů a propojte je pro analýzu.</p>
                     )}
                 </div>
             </div>
@@ -473,46 +474,50 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
         {/* Right column: Graph controls */}
         <div className="col-md-6">
-            <div className="card h-100">
-                <div className="card-header">
-                    <h4>Ovládání grafu</h4>
+            <div className="card h-100 shadow-sm">
+                <div className="card-header bg-light fw-bold">
+                    Ovládání grafu
                 </div>
                 <div className="card-body">
                     {selectedNode && !addingEdge ? (
                         <>
-                            <h5>Vybraný uzel: {selectedNode.id}</h5>
-                            <div className="mb-3">
-                                <button className="btn btn-primary mx-1" onClick={changePlayer}>Změnit hráče</button>
-                                <button className="btn btn-danger mx-1" onClick={() => deleteNode(selectedNode.id)}>Smazat uzel</button>
-                                <button className="btn btn-success mx-1" onClick={startAddEdge}>Přidat hranu</button>
+                            <h5 className="card-title mb-3">Vybraný uzel: {selectedNode.id}</h5>
+                            <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
+                                <button className="btn btn-control btn-sm" onClick={changePlayer}>Změnit hráče</button>
+                                <button className="btn btn-danger btn-sm" onClick={() => deleteNode(selectedNode.id)}>Smazat uzel</button>
+                                <button className="btn btn-success btn-sm" onClick={startAddEdge}>Přidat hranu</button>
                             </div>
                             
                             {/* List of connected nodes with delete buttons */}
                             <div>
-                                <h5>Propojené uzly:</h5>
-                                <div className="d-flex flex-wrap justify-content-center">
+                                <h6 className="mb-2">Propojené uzly:</h6>
+                                <div className="d-flex flex-wrap gap-2 justify-content-center">
                                     {graph.links
                                         .filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id)
                                         .map((link, index) => {
                                             const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
                                             
                                             return (
-                                                <div key={index} className="m-1">
-                                                    <button 
-                                                        className="btn btn-outline-danger" 
-                                                        onClick={() => deleteEdge(link.source.id, link.target.id)}
-                                                    >
-                                                        Smazat hranu {connectedNodeId}
-                                                    </button>
-                                                </div>
+                                                <button 
+                                                    key={index}
+                                                    className="btn btn-outline-danger btn-sm" 
+                                                    onClick={() => deleteEdge(link.source.id, link.target.id)}
+                                                >
+                                                    Smazat hranu {connectedNodeId}
+                                                </button>
                                             );
                                         })
+                                    }
+                                    {graph.links.filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id).length === 0 && 
+                                        <span className="text-muted small">Žádné hrany</span>
                                     }
                                 </div>
                             </div>
                         </>
                     ) : (
-                        <p className="text-muted">Vyberte uzel pro zobrazení možností.</p>
+                        <div className="d-flex h-100 align-items-center justify-content-center text-muted">
+                            Vyberte uzel pro zobrazení možností.
+                        </div>
                     )}
                 </div>
             </div>

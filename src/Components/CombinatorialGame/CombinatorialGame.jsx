@@ -23,8 +23,8 @@ export function CombinatorialGame({ onNavigate, initialData }) {
     };
 
     return(
-        <div className='div-content'>
-            <h1 className='display-4'>Kombinatorická hra</h1>
+        <div className='container text-center py-4'>
+            <h1 className='display-4 mb-4'>Kombinatorická hra</h1>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}
@@ -46,9 +46,9 @@ export function CombinatorialGame({ onNavigate, initialData }) {
             {(graph && chosenOpt !== 'manual') && <DisplayGraph graph={graph} />}
 
             {graph && (
-                <div>
-                    <button className='btn add-btn m-3'>Převést na MCVP</button>
-                    <button className='btn add-btn m-3'>Převést na Kombinatorickou hru</button>
+                <div className="d-flex justify-content-center gap-3 my-4">
+                    <button className='btn btn-control'>Převést na MCVP</button>
+                    <button className='btn btn-control'>Převést na Kombinatorickou hru</button>
                 </div>
             )}
         </div>  
