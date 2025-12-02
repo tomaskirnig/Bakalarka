@@ -124,7 +124,7 @@ export function DisplayGraph({ graph, width, height }) {
 
   return (
     <>
-      <div className="GraphDiv">
+      <div className="GraphDiv shadow-sm">
         <ForceGraph2D
           graphData={data}
           nodeRelSize={NODE_R}

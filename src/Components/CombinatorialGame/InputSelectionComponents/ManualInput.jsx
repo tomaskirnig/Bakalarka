@@ -444,7 +444,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     </div>
     
     <div className="d-flex justify-content-center my-3">
-        <button className="btn btn-control" onClick={addNode}>Přidat uzel</button>
+        <button className="btn-control" onClick={addNode}>Přidat uzel</button>
     </div>
 
     {/* Two-column layout container */}
@@ -483,7 +483,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
                         <>
                             <h5 className="card-title mb-3">Vybraný uzel: {selectedNode.id}</h5>
                             <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                                <button className="btn btn-control btn-sm" onClick={changePlayer}>Změnit hráče</button>
+                                <button className="btn btn-primary btn-sm" onClick={changePlayer}>Změnit hráče</button>
                                 <button className="btn btn-danger btn-sm" onClick={() => deleteNode(selectedNode.id)}>Smazat uzel</button>
                                 <button className="btn btn-success btn-sm" onClick={startAddEdge}>Přidat hranu</button>
                             </div>

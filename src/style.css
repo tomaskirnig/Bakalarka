@@ -7,7 +7,36 @@
     --text-color: #0A090C;
 }
 
-/* Working stock bootstrap look */
+/* Control Buttons - Unified Look (Matching Active Nav) */
+.btn-control {
+    /* Dimensions */
+    padding: 10px 20px;
+    
+    /* Visual Styling */
+    background: var(--color2);
+    color: white;
+    border: 1px solid var(--color2);
+    border-radius: 12px;
+    font-weight: 600;
+    
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn-control:hover {
+    background: var(--color2);
+    filter: brightness(1.3);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.25);
+    color: white;
+}
+
+.btn-control:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Update existing stock classes to match theme if used */
 .btn-primary{
     background-color: var(--color2);
     color: white; 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { generateGraph } from '../Utils/Generator';
 
 export function GenerateInput({ onGraphUpdate }) {
@@ -37,7 +37,7 @@ export function GenerateInput({ onGraphUpdate }) {
                 />
             </div>
    
-            <button className='btn btn-control w-100 mt-2' onClick={handleGenerateGraph}>Generovat</button> 
+            <button className='btn-control mt-2' onClick={handleGenerateGraph}>Generovat</button> 
         </div>
     );
 }

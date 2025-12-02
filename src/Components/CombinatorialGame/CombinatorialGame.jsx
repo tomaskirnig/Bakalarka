@@ -47,8 +47,8 @@ export function CombinatorialGame({ onNavigate, initialData }) {
 
             {graph && (
                 <div className="d-flex justify-content-center gap-3 my-4">
-                    <button className='btn btn-control'>Převést na MCVP</button>
-                    <button className='btn btn-control'>Převést na Kombinatorickou hru</button>
+                    <button className='btn-control'>Převést na MCVP</button>
+                    <button className='btn-control'>Převést na Kombinatorickou hru</button>
                 </div>
             )}
         </div>  
@@ -59,3 +59,5 @@ CombinatorialGame.propTypes = {
     onNavigate: PropTypes.func,
     initialData: PropTypes.object
 };
+
+export default CombinatorialGame;

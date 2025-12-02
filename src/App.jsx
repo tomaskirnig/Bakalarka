@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Navigation } from './Components/Navigation'
 import { HomePage } from './Components/HomePage';
 import { MCVP } from './Components/MCVP/MCVP';
-import { CombinatorialGame } from './Components/CombinatorialGame/CombinatorialGame';
+import CombinatorialGame from './Components/CombinatorialGame/CombinatorialGame';
 import { Grammar } from './Components/Grammar/Grammar';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
