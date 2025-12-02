@@ -447,7 +447,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     </div>
 
     {/* Two-column layout container */}
-    <div className="row mt-3 mb-5">
+    <div className="row">
         {/* Left column: Analysis results */}
         <div className="col-md-6">
             <div className="card h-100">

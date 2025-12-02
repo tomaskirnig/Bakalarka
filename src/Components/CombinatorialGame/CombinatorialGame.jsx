@@ -47,8 +47,8 @@ export function CombinatorialGame({ onNavigate, initialData }) {
 
             {graph && (
                 <div>
-                    <button className='btn add-btn mx-2 mb-3'>Převést na MCVP</button>
-                    <button className='btn add-btn mx-2 mb-3'>Převést na Kombinatorickou hru</button>
+                    <button className='btn add-btn m-3'>Převést na MCVP</button>
+                    <button className='btn add-btn m-3'>Převést na Kombinatorickou hru</button>
                 </div>
             )}
         </div>  
