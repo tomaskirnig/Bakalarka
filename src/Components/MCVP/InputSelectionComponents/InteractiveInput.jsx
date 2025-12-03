@@ -364,6 +364,15 @@ export function InteractiveMCVPGraph() {
 
             {/* ForceGraph Canvas */}
             <div className="GraphDiv" ref={containerRef}>
+                <div className="graph-controls">
+                  <button 
+                    className="graph-btn" 
+                    onClick={() => fgRef.current?.zoomToFit(400, 50)}
+                    title="Fit Graph to Screen"
+                  >
+                    Vycentrovat
+                  </button>
+                </div>
                 <ForceGraph2D
                     ref={fgRef}
                     width={dimensions.width}
@@ -390,7 +399,8 @@ export function InteractiveMCVPGraph() {
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
                     onNodeHover={setHoverNode} // Update hover state
-                    enableZoomPanInteraction={true}
+                    enablePanInteraction={true}
+                    enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
                     onNodeDragEnd={node => { // Fix node position after dragging
                     node.fx = node.x;

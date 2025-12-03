@@ -304,6 +304,15 @@ export function TreeCanvas({
 
   return (
     <div className="GraphDiv" ref={containerRef}>
+      <div className="graph-controls">
+        <button 
+          className="graph-btn" 
+          onClick={() => fgRef.current?.zoomToFit(400, 50)}
+          title="Fit Graph to Screen"
+        >
+          Vycentrovat
+        </button>
+      </div>
       <ForceGraph2D
         ref={fgRef}
         width={dimensions.width}

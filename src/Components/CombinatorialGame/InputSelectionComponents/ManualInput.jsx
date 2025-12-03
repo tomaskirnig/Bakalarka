@@ -414,6 +414,15 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   return (
     <>
     <div className="GraphDiv mb-3 shadow-sm">
+      <div className="graph-controls">
+        <button 
+          className="graph-btn" 
+          onClick={() => fgRef.current?.zoomToFit(400, 50)}
+          title="Fit Graph to Screen"
+        >
+          Vycentrovat
+        </button>
+      </div>
       {addingEdge && (
         <div className="manual-input-instruction">
           Vyberte uzel pro přidání hrany. Klikněte na pozadí pro zrušení.
@@ -421,6 +430,8 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       )}
       <ForceGraph2D
         ref={fgRef}
+        enablePanInteraction={true}
+        enableZoomInteraction={true}
         graphData={data}
         nodeRelSize={NODE_R}
         autoPauseRedraw={false}

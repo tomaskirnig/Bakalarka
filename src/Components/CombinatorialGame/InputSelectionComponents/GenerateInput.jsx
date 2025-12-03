@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { generateGraph } from '../Utils/Generator';
+import PropTypes from 'prop-types';
 
 export function GenerateInput({ onGraphUpdate }) {
     const [numGameFields, setNumGameFields] = useState(1);
@@ -41,3 +42,7 @@ export function GenerateInput({ onGraphUpdate }) {
         </div>
     );
 }
+
+GenerateInput.propTypes = {
+  onGraphUpdate: PropTypes.func.isRequired,
+};

@@ -93,9 +93,9 @@ export function MCVP({ onNavigate, initialData }) {
 
             {tree && (
                 <div>
-                    <button className='btn btn-control m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn btn-control mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
-                    <button className='btn btn-control mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
+                    <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
                 </div>
             )}
 

@@ -1,5 +1,6 @@
 import Data from '../../../../Sady/SadyCG.json'; 
 import { parseExpressionToTree } from '../Utils/Parser';
+import PropTypes from 'prop-types';
 
 export function PreparedSetsInput({ onGraphUpdate }) {
   const data = Data; // Data is imported JSON file
@@ -30,3 +31,7 @@ export function PreparedSetsInput({ onGraphUpdate }) {
     </div>
   );
 }
+
+PreparedSetsInput.propTypes = {
+  onGraphUpdate: PropTypes.func.isRequired,
+};
