@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
+import PropTypes from 'prop-types';
+import { parseExpressionToTree } from '../Utils/Parser'; 
 
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');
@@ -20,9 +21,11 @@ export function ManualInput( {onTreeUpdate} ) {
           onChange={(e) => setExpression(e.target.value)} 
         /> 
       </div>
-      <button className='btn btn-primary mt-1' onClick={handleParse}>Zpracovat</button> 
-
-       {/* {tree && printTree(tree)} */}
+      <button className='btn btn-primary mt-3' onClick={handleParse}>Zpracovat</button> 
     </div>
   );
 }
+
+ManualInput.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired
+};

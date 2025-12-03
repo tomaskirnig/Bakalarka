@@ -95,7 +95,28 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'O')) {
       this.consume('OPERATOR', 'O');
       const right = this.parseAndExpr();
-      node = new Node('O', node, right, null, null, 'operation');
+      
+      // Create new node with children array
+      const newNode = new Node(
+        'O',             // value
+        null,            // varValue
+        'operation',     // type
+        [node, right],   // children
+        null             // parents
+      );
+      
+      // Update parent references
+      if (node) {
+        node.parents = node.parents || [];
+        node.parents.push(newNode);
+      }
+      
+      if (right) {
+        right.parents = right.parents || [];
+        right.parents.push(newNode);
+      }
+      
+      node = newNode;
     }
     return node;
   }
@@ -110,7 +131,28 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'A')) {
       this.consume('OPERATOR', 'A');
       const right = this.parseFactor();
-      node = new Node('A', node, right, null, null, 'operation');
+      
+      // Create new node with children array
+      const newNode = new Node(
+        'A',             // value
+        null,            // varValue
+        'operation',     // type
+        [node, right],   // children
+        null             // parents
+      );
+      
+      // Update parent references
+      if (node) {
+        node.parents = node.parents || [];
+        node.parents.push(newNode);
+      }
+      
+      if (right) {
+        right.parents = right.parents || [];
+        right.parents.push(newNode);
+      }
+      
+      node = newNode;
     }
     return node;
   }
@@ -125,7 +167,15 @@ class Parser {
     if (this.currentTokenIs('VARIABLE')) {
       const varToken = this.consume('VARIABLE');
       const [varName, varValue] = this.parseVariable(varToken[1]);
-      return new Node(varName, null, null, varValue, null, 'variable');
+      
+      // Create variable node with new constructor signature
+      return new Node(
+        varName,         // value
+        varValue,        // varValue
+        'variable',      // type
+        [],              // children (empty for variables)
+        []               // parents (will be updated by parent node)
+      );
     } 
     else if (this.currentTokenIs('LPAREN')) {
       this.consume('LPAREN');
@@ -244,9 +294,12 @@ class Parser {
 export function printTree(node, indent = 0) {
   if (node !== null) {
     console.log(' '.repeat(indent) + node.value + (node.varValue !== null ? `[${node.varValue}]` : ''));
-    if (node.left || node.right) {
-      if (node.left) printTree(node.left, indent + 2);
-      if (node.right) printTree(node.right, indent + 2);
+    
+    // Use children array instead of left/right
+    if (node.children && node.children.length > 0) {
+      node.children.forEach(child => {
+        if (child) printTree(child, indent + 2);
+      });
     }
   }
 }
@@ -266,6 +319,8 @@ export function parseExpressionToTree(exprStr) {
     const tokens = tokenize(exprStr);
     const parser = new Parser(tokens);
     const tree = parser.parse();
+    console.log("Parsed tree:");
+    //printTree(tree); 
     return tree;
   } 
   catch (error) {

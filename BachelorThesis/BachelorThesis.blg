@@ -1,0 +1,45 @@
+[0] Config.pm:328> INFO - This is Biber 2.21
+[0] Config.pm:331> INFO - Logfile is 'BachelorThesis.blg'
+[90] biber-MSWIN64:342> INFO - === 
+[122] Biber.pm:421> INFO - Reading 'BachelorThesis.bcf'
+[240] Biber.pm:1002> INFO - Found 31 citekeys in bib section 0
+[252] Biber.pm:4487> INFO - Processing section 0
+[261] Biber.pm:4678> INFO - Looking for bibtex file 'bibliography.bib' for section 0
+[309] bibtex.pm:1713> INFO - LaTeX decoding ...
+[323] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography.bib'
+[369] Biber.pm:4678> INFO - Looking for bibtex file 'coffee.bib' for section 0
+[409] bibtex.pm:1713> INFO - LaTeX decoding ...
+[413] bibtex.pm:1519> INFO - Found BibTeX data source 'coffee.bib'
+[424] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[424] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'variable = shifted' with 'variable = non-ignorable'
+[424] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'cs-CZ'
+[431] bbl.pm:676> INFO - Writing 'BachelorThesis.bbl' with encoding 'UTF-8'
+[433] bbl.pm:779> INFO - Output to BachelorThesis.bbl
+[438] Biber.pm:132> WARN - I didn't find a database entry for 'herrmann' (section 0)
+[438] Biber.pm:132> WARN - I didn't find a database entry for 'bertram' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'moore' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'yoon' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'sigfridsson' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'baez/article' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'wilde' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'nietzsche:ksa1' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'averroes/bland' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'hammond' (section 0)
+[439] Biber.pm:132> WARN - I didn't find a database entry for 'cotton' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'knuth:ct:a' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'gerhardt' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'gonzalez' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'companion' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'jcg' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'geer' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'kowalik' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'almendro' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'sorace' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'laufenberg' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'ctan' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'wassenberg' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'itzhaki' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'markey' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'baez/online' (section 0)
+[440] Biber.pm:132> WARN - I didn't find a database entry for 'cms' (section 0)
+[440] Biber.pm:134> INFO - WARNINGS: 27

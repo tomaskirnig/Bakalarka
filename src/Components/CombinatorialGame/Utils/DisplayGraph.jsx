@@ -1,33 +1,20 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { useState, useMemo, useCallback } from 'react';
+import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
-import { computeWinner, getOptimalMoves } from './ComputeWinner';
 
 // colors
 const defaultNodeColor = '#438c96'; 
 const highlightNodeColor = '#90DDF0';
 const startingColor = '#FF6347';
-const optimalLinkColor = '#FFD700'; 
 const defaultLinkColor = '#999'; 
 
-export function DisplayGraph({ graph }) {
-  if (!graph || !graph.positions) {
-    return <div>No graph data available.</div>;
-  }
-
-  // State to store analysis results
-  const [analysisResult, setAnalysisResult] = useState(null);
-  const [optimalMoves, setOptimalMoves] = useState({});
+export function DisplayGraph({ graph, width, height }) {
+  // State for highlighted nodes and links, and for the hovered node.
+  const [, setHighlightNodes] = useState(new Set());
+  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  const [hoverNode, setHoverNode] = useState(null);
+  const NODE_R = 8;
   
-  // Analyze the graph when it changes
-  useEffect(() => {
-    if (graph && graph.positions) {
-      const result = computeWinner(graph);
-      const moves = getOptimalMoves(graph);
-      setAnalysisResult(result);
-      setOptimalMoves(moves);
-    }
-  }, [graph]);
-
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
     // Create nodes with a temporary "neighbors" as union of parents and children.
@@ -54,12 +41,9 @@ export function DisplayGraph({ graph }) {
     Object.values(graph.positions).forEach(node => {
       if (node.children) {
         node.children.forEach(childId => {
-          // Mark optimal moves for Player 1's winning strategy
-          const isOptimal = node.player === 1 && optimalMoves[node.id] === childId;
           links.push({
             source: node.id,
-            target: childId,
-            isOptimal: isOptimal
+            target: childId
           });
         });
       }
@@ -72,13 +56,7 @@ export function DisplayGraph({ graph }) {
     });
 
     return { nodes, links };
-  }, [graph, optimalMoves]);
-
-  // State for highlighted nodes and links, and for the hovered node.
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
-  const [hoverNode, setHoverNode] = useState(null);
-  const NODE_R = 8;
+  }, [graph]);
 
   // When a node is hovered, create new highlight sets.
   const handleNodeHover = useCallback((node) => {
@@ -137,44 +115,48 @@ export function DisplayGraph({ graph }) {
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player == 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, highlightNodes]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
+  }, [hoverNode]);
+
+  if (!graph || !graph.positions) {
+    return <div>Žádná data grafu nejsou k dispozici.</div>;
+  }
 
   return (
     <>
-      <div className="GraphDiv">
+      <div className="GraphDiv shadow-sm">
         <ForceGraph2D
           graphData={data}
           nodeRelSize={NODE_R}
           autoPauseRedraw={false}
-          linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => link.isOptimal ? optimalLinkColor : defaultLinkColor}  
+          linkWidth={link => highlightLinks.has(link) ? 5 : 1}
+          linkColor={defaultLinkColor}  
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
           linkDirectionalArrowRelPos={1}
-          linkDirectionalArrowColor={link => 'rgba(0,0,0,0.6)'}
+          linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           nodeCanvasObjectMode={() => 'after'}
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
+          width={width}
+          height={height}
         />
       </div>
-      
-      {/* Display analysis results */}
-      {analysisResult && (
-        <div className="analysis-result">
-          <h3>{analysisResult.message}</h3>
-          <p>
-            Gold edges represent Player I's optimal moves when they have a winning strategy.
-            A position with no outgoing edges for Player II represents a win for Player I.
-          </p>
-        </div>
-      )}
-      
-      <div style={{ height: '50px' }}></div>
     </>
   );
 }
+
+DisplayGraph.propTypes = {
+  graph: PropTypes.shape({
+    positions: PropTypes.object,
+    startingPosition: PropTypes.shape({
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    })
+  }),
+  width: PropTypes.number,
+  height: PropTypes.number
+};
 
 export default DisplayGraph;

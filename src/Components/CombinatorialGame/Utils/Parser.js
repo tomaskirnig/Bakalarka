@@ -32,9 +32,9 @@ export function parseExpressionToTree(expression, startingPosition) {
   // Build the positions object.
   const positions = {};
   nodesArr.forEach((nodeDef) => {
-    // Each node is defined as "id:player" (both numeric).
+    // Each node is defined as "id:player".
     const [idStr, playerStr] = nodeDef.split(":").map(s => s.trim());
-    const id = Number(idStr);
+    const id = idStr;
     const player = Number(playerStr);
     positions[id] = {
       id,
@@ -47,10 +47,10 @@ export function parseExpressionToTree(expression, startingPosition) {
 
   // Process the edges and fill in the children/parents arrays.
   edgesArr.forEach(edgeDef => {
-    // Each edge is defined as "source->target" (both numeric).
+    // Each edge is defined as "source->target".
     const [sourceStr, targetStr] = edgeDef.split("->").map(s => s.trim());
-    const source = Number(sourceStr);
-    const target = Number(targetStr);
+    const source = sourceStr;
+    const target = targetStr;
     if (positions[source] && positions[target]) {
       positions[source].children.push(target);
       positions[target].parents.push(source);

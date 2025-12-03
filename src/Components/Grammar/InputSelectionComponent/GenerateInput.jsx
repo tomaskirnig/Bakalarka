@@ -33,11 +33,9 @@ export function GenerateInput({ onGrammar }) {
         try {
             // Generate the grammar 
             const generatedGrammar = generateGrammar(config);
-            console.log("Generated Grammar:", generatedGrammar);
 
             // Format the grammar as a text string for display
             const grammarText = generatedGrammar.toText();
-            console.log(`Formatted Grammar Text:\n${grammarText}`);
             
             // Pass the grammar to the parent component
             onGrammar(generatedGrammar);

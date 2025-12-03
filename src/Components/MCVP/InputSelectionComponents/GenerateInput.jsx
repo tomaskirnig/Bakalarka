@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import { generateTree } from '../Utils/Generator'; 
 import { printTree } from '../Utils/Parser'; 
 
@@ -39,9 +40,11 @@ export function GenerateInput( {onTreeUpdate} ) {
         onChange={(e) => setNumVariables(Number(e.target.value))} // Update state with input value
       />
 
-      <button className='btn btn-primary mt-1' onClick={handleGenerateTree}>Generovat</button> 
-
-      {tree && printTree(tree)}
+      <button className='btn btn-primary mt-3' onClick={handleGenerateTree}>Generovat</button> 
     </div>
   );
 }
+
+GenerateInput.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired
+};

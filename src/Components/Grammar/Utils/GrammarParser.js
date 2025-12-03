@@ -35,9 +35,9 @@ export function parseGrammar(inputText) {
                 if (alt === '') {
                     throw new Error(`Pravidlo pro ${ls} obsahuje prázdnou alternativu.`);
                 }
-                // Handle epsilon as special case
+                // Handle epsilon as special case - represent as empty array
                 if (alt === 'ε') {
-                    grammar.productions[ls].push(['ε']);
+                    grammar.productions[ls].push([]);
                     continue;
                 }
                 
@@ -45,10 +45,20 @@ export function parseGrammar(inputText) {
                 const symbols = alt.split('');
                 grammar.productions[ls].push(symbols);
                 
-                // Add terminals
+                // Categorize symbols
                 for (let sym of symbols) {
-                    if (!grammar.nonTerminals.includes(sym) && !grammar.terminals.includes(sym)) {
-                        if (!sym.match(/^[A-Z]$/)) { // Uppercase letters are non-terminals
+                    if (sym.match(/^[A-Z]$/)) {
+                        // It is a Non-Terminal
+                        if (!grammar.nonTerminals.includes(sym)) {
+                            grammar.nonTerminals.push(sym);
+                        }
+                        // Initialize productions for this new non-terminal if not exists
+                        if (!grammar.productions[sym]) {
+                            grammar.productions[sym] = [];
+                        }
+                    } else {
+                        // It is a Terminal
+                        if (!grammar.terminals.includes(sym)) {
                             grammar.terminals.push(sym);
                         }
                     }

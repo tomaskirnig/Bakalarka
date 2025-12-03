@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
 import Data from '../../../../Sady/SadyMCVP.json';
 
@@ -29,4 +30,8 @@ export function PreparedSetsInput( {onTreeUpdate} ) {
     </div>
   );
 }
+
+PreparedSetsInput.propTypes = {
+  onTreeUpdate: PropTypes.func.isRequired
+};
   

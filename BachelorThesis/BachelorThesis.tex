@@ -1,0 +1,84 @@
+% Nejprve uvedeme tridu dokumentu s volbami
+\documentclass[czech,bachelor]{diploma}
+% Dalsi doplnujici baliky maker
+\usepackage[autostyle=true,czech=quotes]{csquotes} % korektni sazba uvozovek, podpora pro balik biblatex
+\usepackage[backend=biber, style=iso-numeric, alldates=iso]{biblatex} % bibliografie
+\usepackage{dcolumn} % sloupce tabulky s ciselnymi hodnotami
+\usepackage{subfig} % makra pro "podobrazky" a "podtabulky"
+\usepackage[cpp]{diplomalst}
+
+% Zadame pozadovane vstupy pro generovani titulnich stran.
+\ThesisAuthor{Tomáš Kirnig}
+% Použité knihovny
+%react-force-graph
+
+\ThesisSupervisor{Ing. Martin Kot, Ph.D.}
+
+\CzechThesisTitle{Komponenta výukového serveru TI - P-úplné problémy}
+
+\EnglishThesisTitle{Component of Teaching Server for Theoretical Computer Science - Pcomplete problems
+}
+
+\SubmissionYear{2025}
+
+\ThesisAssignmentFileName{ZadáníPráce.pdf}
+
+% Pokud nechceme nikomu dekovat makro zapoznamkujeme.
+% \Acknowledgement{Rád bych na tomto místě poděkoval všem, kteří mi s prací pomohli, protože bez nich by tato práce nevznikla.}
+
+\CzechAbstract{Tato bakalářská práce se zabývá vývojem výukové webové aplikace pro demonstraci P-úplných problémů. Hlavním cílem je usnadnit studentům pochopení a procvičení takových úloh, mezi které patří například \emph{Monotone Circuit Value Problem} (MCVP) a dvě další vybrané P-úplné úlohy. V rámci práce jsou implementovány moduly pro interaktivní zadávání vstupů uživatelem (ručně, náhodnou generací nebo výběrem z připravené sady) a simulaci výpočtu řešení. Uživatel má rovněž možnost sledovat krokový převod instance MCVP na jiné P-úplné problémy a následně i jejich samotné řešení. Výsledná aplikace demonstruje principy teoretické informatiky včetně pojmu P-úplnosti a poskytuje rozšiřitelný základ pro výukové účely.}
+
+\CzechKeywords{Teoretická informatika, P-úplné problémy, Monotone Circuit Value Problem, webová aplikace, simulace, převod instancí}
+
+\EnglishAbstract{This bachelor’s thesis focuses on the development of a teaching-oriented web application for illustrating P-complete problems. The main goal is to facilitate students’ understanding and practice of such tasks, including the \emph{Monotone Circuit Value Problem} (MCVP) and two additional P-complete problems. The project implements modules for interactive input of problem instances (manually, via random generation, or by selecting from a pre-defined set) and provides a simulation of their solutions. Users can also observe a step-by-step reduction from an MCVP instance to other P-complete problems and subsequently explore how those are solved. The resulting application demonstrates key concepts of theoretical computer science, including the notion of P-completeness, and provides a flexible basis for educational use.}
+
+\EnglishKeywords{Theoretical computer science, P-complete problems, Monotone Circuit Value Problem, web application, simulation, instance reduction}
+
+\AddAcronym{MCVP}{Monotone Circuit Value Problem}
+\AddAcronym{PC}{P-complete}
+\AddAcronym{BFS}{Breadth-First Search}
+\AddAcronym{DFS}{Depth-First Search}
+
+\addbibresource{bibliography.bib}
+\addbibresource{coffee.bib}
+
+% Novy druh tabulkoveho sloupce, ve kterem jsou cisla zarovnana podle desetinne carky
+\newcolumntype{d}[1]{D{,}{,}{#1}}
+
+
+% Zacatek dokumentu
+\begin{document}
+
+% Nechame vysazet titulni strany.
+\MakeTitlePages
+
+% Jsou v praci obrazky? Pokud ano vysazime jejich seznam a odstrankujeme.
+% Pokud ne smazeme nasledujici dve makra.
+\listoffigures
+\clearpage
+
+% Jsou v praci tabulky? Pokud ano vysazime jejich seznam a odstrankujeme.
+% Pokud ne smazeme nasledujici dve makra.
+\listoftables
+\clearpage
+
+% A nasleduje text zaverecne prace.
+\input{Chapters/Introduction.tex}
+% \input{Chapters/SampleChapter1.tex}
+% \input{Chapters/SampleChapter2.tex}
+\input{Chapters/TechnicalDetails.tex}
+% \input{Chapters/Conclusion.tex}
+
+% Seznam literatury
+\printbibliography[title={Literatura}, heading=bibintoc]
+
+% Prilohy
+\appendix
+% \input{Chapters/Appendix1.tex}
+% \input{Chapters/Appendix2.tex}
+
+% Priloha vlozena primo do hlavniho LaTeX souboru. Ne vsechny prilohy je nutne mit ve zvlastnich souborech.
+\chapter{Dlouhý zdrojový kód}
+% \lstinputlisting[label=src:CppExternal,caption={Dlouhý zdrojový kód v jazyce C++ načtený s externího souboru}]{SourceCodes/ArraySortingAlgorithms.cpp}
+
+\end{document}
