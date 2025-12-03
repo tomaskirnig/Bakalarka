@@ -3,12 +3,9 @@ import { evaluateTree } from '../Utils/EvaluateTree';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
 import { Node } from './../Utils/NodeClass';
+import { useGraphColors } from '../../../Hooks/useGraphColors';
 
 const NODE_R = 12; 
-const outerCircleColor = '#07393C';
-const innerCircleColor = '#438c96'; 
-const selectedColor = '#FFB74D'; 
-const textColor = '#F0EDEE'; 
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -28,15 +25,21 @@ export function InteractiveMCVPGraph() {
     const nextNodeIdRef = useRef(0);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    // ResizeObserver for responsive graph
+    const colors = useGraphColors();
+
+    // ResizeObserver for responsive graph and color updates
     useEffect(() => {
         if (!containerRef.current) return;
 
+        const updateDimensions = () => {
+            const { width, height } = containerRef.current.getBoundingClientRect();
+            setDimensions({ width, height });
+        };
+
+        updateDimensions();
+
         const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const { width, height } = entry.contentRect;
-                setDimensions({ width, height });
-            }
+            updateDimensions();
         });
 
         resizeObserver.observe(containerRef.current);
@@ -326,14 +329,14 @@ export function InteractiveMCVPGraph() {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = (isSelected || isEdgeSource) ? selectedColor : innerCircleColor;
+        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.innerCircle;
         ctx.fill();
 
-        ctx.strokeStyle = outerCircleColor;
+        ctx.strokeStyle = colors.outerCircle;
         ctx.stroke();
 
         if (isSelected || isHovered || isEdgeSource) {
-            ctx.strokeStyle = '#90DDF0';
+            ctx.strokeStyle = colors.hover;
             ctx.stroke();
         }
 
@@ -348,15 +351,15 @@ export function InteractiveMCVPGraph() {
         ctx.font = `monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
 
-    }, [selectedNode, hoverNode, edgeSource]);
+    }, [selectedNode, hoverNode, edgeSource, colors]);
 
     return (
         <div>
             {/*Instructions*/}
-            <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: '#666' }}>
+            <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: 'var(--color-grey-medium)' }}>
                 {addingEdge && edgeSource && `Přidávání hrany z uzlu ${edgeSource.id}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
                 {selectedNode && !addingEdge && `Uzel ${selectedNode.id} vybrán.`}
                 {!selectedNode && !addingEdge && 'Klikněte na pozadí pro zrušení výběru. Klikněte na uzel pro výběr.'}

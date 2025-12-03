@@ -2,12 +2,7 @@ import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react'
 import PropTypes from 'prop-types';
 import { computeWinner, getOptimalMoves } from '../Utils/ComputeWinner';
 import ForceGraph2D from 'react-force-graph-2d';
-
-const color1 = '#438c96'; 
-const color4 = '#90DDF0';
-const startingColor = '#FF6347';
-const optimalLinkColor = '#FFD700'; 
-const defaultLinkColor = '#999'; 
+import { useGraphColors } from '../../../Hooks/useGraphColors';
 
 export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
@@ -19,9 +14,35 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
   const [startingNodeId, setStartingNodeId] = useState("0"); // Track starting node ID
   const fgRef = useRef();
+  const containerRef = useRef();
   const isInternalUpdate = useRef(false); // Track if update originated internally
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   
   const NODE_R = 8;
+
+  const colors = useGraphColors();
+
+  // ResizeObserver for responsive graph and color updates
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+    };
+
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        updateDimensions();
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // Initialize from initialGraph if provided
   useEffect(() => {
@@ -289,13 +310,13 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     
     // Change color based on node state
     if (addingEdge && edgeSource && edgeSource.id === node.id) {
-      ctx.fillStyle = color4; 
+      ctx.fillStyle = colors.color4; 
     } else if (node === hoverNode) {
-      ctx.fillStyle = color4;
+      ctx.fillStyle = colors.color4;
     } else if (node.id == 0){
-      ctx.fillStyle = startingColor; 
+      ctx.fillStyle = colors.starting; 
     }else {
-      ctx.fillStyle = color1;
+      ctx.fillStyle = colors.color1;
     }
     
     ctx.fill();
@@ -304,7 +325,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, addingEdge, edgeSource]);
+  }, [hoverNode, addingEdge, edgeSource, colors]);
 
   // Display the label for links
   const getLinkLabel = useCallback((link) => {
@@ -413,7 +434,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   return (
     <>
-    <div className="GraphDiv mb-3 shadow-sm">
+    <div className="GraphDiv mb-3 shadow-sm" ref={containerRef}>
       <div className="graph-controls">
         <button 
           className="graph-btn" 
@@ -430,13 +451,15 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       )}
       <ForceGraph2D
         ref={fgRef}
+        width={dimensions.width}
+        height={dimensions.height}
         enablePanInteraction={true}
         enableZoomInteraction={true}
         graphData={data}
         nodeRelSize={NODE_R}
         autoPauseRedraw={false}
         linkWidth={link => highlightLinks.has(link) ? 5 : 3}
-        linkColor={link => link.isOptimal ? optimalLinkColor : defaultLinkColor} 
+        linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
         linkDirectionalParticles={3}
         linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
         linkDirectionalArrowLength={6}

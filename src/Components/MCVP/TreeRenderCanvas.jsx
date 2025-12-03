@@ -1,15 +1,7 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from "react";
 import PropTypes from 'prop-types';
 import ForceGraph2D from "react-force-graph-2d";
-
-// Colors
-const highlightLinkColor = "red";
-const defaultLinkColor = "rgba(0,0,0,0.5)";
-const highlightNodeColor = "#90DDF0";
-const activeNodeColor = "#FFD700"; // Gold
-const defaultNodeColor = "#438c96"; 
-const nodeStrokeColor = "#333";
-const nodeTextColor = "#fff";
+import { useGraphColors } from "../../Hooks/useGraphColors";
 
 // Constants for visual consistency
 const NODE_R = 12;
@@ -47,15 +39,22 @@ export function TreeCanvas({
   const [highlightNodes, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
 
+  const colors = useGraphColors();
+
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
+    const updateDimensions = () => {
+        const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
-      }
+    };
+
+    // Initial call
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        updateDimensions();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -216,21 +215,21 @@ export function TreeCanvas({
 
     // Fill Color
     if (isActive) {
-        ctx.fillStyle = activeNodeColor;
+        ctx.fillStyle = colors.activeNode;
     } else if (isHovered) {
-        ctx.fillStyle = activeNodeColor;
+        ctx.fillStyle = colors.activeNode;
     } else if (isExternalHighlight) {
-        ctx.fillStyle = highlightNodeColor;
+        ctx.fillStyle = colors.highlightNode;
     } else if (isNeighbor) {
-        ctx.fillStyle = highlightNodeColor;
+        ctx.fillStyle = colors.highlightNode;
     } else {
-        ctx.fillStyle = defaultNodeColor;
+        ctx.fillStyle = colors.defaultNode;
     }
     
     ctx.fill();
 
     // Stroke
-    ctx.strokeStyle = shouldHighlight ? '#333' : nodeStrokeColor;
+    ctx.strokeStyle = shouldHighlight ? '#333' : colors.nodeStroke;
     ctx.lineWidth = shouldHighlight ? 2 : 1;
     ctx.stroke();
 
@@ -246,7 +245,7 @@ export function TreeCanvas({
       displayText = node.value || '';
     }
     
-    ctx.fillStyle = nodeTextColor;
+    ctx.fillStyle = colors.nodeText;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `monospace`;
@@ -261,21 +260,21 @@ export function TreeCanvas({
       ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * NODE_R);
     }
     
-  }, [hoverNode, highlightNodes, highlightedNode, activeNode]);
+  }, [hoverNode, highlightNodes, highlightedNode, activeNode, colors]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
     
     const isHighlighted = highlightLinks.has(link);
     
-    ctx.strokeStyle = isHighlighted ? highlightLinkColor : defaultLinkColor;
+    ctx.strokeStyle = isHighlighted ? colors.highlightLink : colors.defaultLink;
     ctx.lineWidth = isHighlighted ? 3 : 1;
     
     ctx.beginPath();
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
     ctx.stroke();
-  }, [highlightLinks]);
+  }, [highlightLinks, colors]);
 
   // 4. Effects
   

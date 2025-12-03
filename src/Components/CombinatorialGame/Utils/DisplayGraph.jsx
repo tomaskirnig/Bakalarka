@@ -2,13 +2,7 @@ import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { computeWinner, getOptimalMoves } from './ComputeWinner';
-
-// colors
-const defaultNodeColor = '#438c96'; 
-const highlightNodeColor = '#90DDF0';
-const startingColor = '#FF6347';
-const defaultLinkColor = '#999'; 
-const optimalLinkColor = '#FFD700'; 
+import { useGraphColors } from '../../../Hooks/useGraphColors';
 
 export function DisplayGraph({ graph }) {
   // State for highlighted nodes and links, and for the hovered node.
@@ -20,15 +14,22 @@ export function DisplayGraph({ graph }) {
   const fgRef = useRef();
   const containerRef = useRef();
 
+  const colors = useGraphColors();
+
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
+    const updateDimensions = () => {
+        const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
-      }
+    };
+
+    // Initial call
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        updateDimensions();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -143,11 +144,11 @@ export function DisplayGraph({ graph }) {
     // Color nodes based on player and starting position
     let fillColor;
     if (node === hoverNode) {
-      fillColor = highlightNodeColor;
+      fillColor = colors.highlightNode;
     }else if (node.isStartingPosition) {
-      fillColor = startingColor;
+      fillColor = colors.starting;
     }else {
-      fillColor = defaultNodeColor;
+      fillColor = colors.defaultNode;
     }
     
     ctx.fillStyle = fillColor;
@@ -159,7 +160,7 @@ export function DisplayGraph({ graph }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode]);
+  }, [hoverNode, colors]);
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -187,7 +188,7 @@ export function DisplayGraph({ graph }) {
           nodeRelSize={NODE_R}
           autoPauseRedraw={false}
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => link.isOptimal ? optimalLinkColor : defaultLinkColor} 
+          linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
