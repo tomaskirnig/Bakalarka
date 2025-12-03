@@ -18,6 +18,17 @@ const NODE_R = 12;
 const MODE_REPLACE = () => "replace";
 const MODE_AFTER = () => "after";
 
+/**
+ * Component for rendering an MCVP tree using a force-directed graph.
+ * Supports visualization of evaluation results and highlighting specific nodes.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {Object} props.tree - The MCVP tree to display
+ * @param {Object} [props.highlightedNode] - A specific node to highlight (e.g. from conversion)
+ * @param {Object} [props.activeNode] - The node currently being evaluated (for step-by-step)
+ * @param {Array} [props.completedSteps] - Array of evaluation steps to display intermediate results
+ */
 export function TreeCanvas({
   tree,
   highlightedNode = null, // Node to highlight (e.g. from converter)

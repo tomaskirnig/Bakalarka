@@ -10,6 +10,13 @@ const innerCircleColor = '#438c96';
 const selectedColor = '#FFB74D'; 
 const textColor = '#F0EDEE'; 
 
+/**
+ * Component for interactively building and evaluating an MCVP graph.
+ * Uses a force-directed graph to allow users to add nodes, edges, and modify values.
+ * Automatically evaluates the circuit as it is built.
+ * 
+ * @component
+ */
 export function InteractiveMCVPGraph() {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
@@ -119,6 +126,13 @@ export function InteractiveMCVPGraph() {
 
     // --- Core Graph Functions ---
 
+    /**
+     * Adds a new node to the graph.
+     * @param {string} type - The type of node ('var' for variable, 'op' or other for operation).
+     * @param {string|null} [value=null] - The value/label of the node (e.g., 'A', 'O', 'x1').
+     * @param {number|null} [varValue=null] - The value of the variable (0 or 1), if applicable.
+     * @returns {Object} The newly created node object.
+     */
     const addNode = (type, value = null, varValue = null) => {
         const newId = generateNodeId();
         let newNode;
@@ -146,6 +160,10 @@ export function InteractiveMCVPGraph() {
         return newNode;
     };
 
+    /**
+     * Deletes a node and all connected edges from the graph.
+     * @param {number|string} nodeId - The ID of the node to delete.
+     */
     const deleteNode = (nodeId) => {
         setGraphData(prevData => ({
             nodes: prevData.nodes.filter(node => node.id !== nodeId),
@@ -167,6 +185,12 @@ export function InteractiveMCVPGraph() {
         );
     };
 
+    /**
+     * Adds a directed edge between two nodes.
+     * @param {number|string} sourceId - The ID of the source node (parent).
+     * @param {number|string} targetId - The ID of the target node (child).
+     * @returns {boolean} True if the edge was added, false if it already exists or is invalid.
+     */
     const addEdge = (sourceId, targetId) => {
         if (sourceId === targetId || edgeExists(sourceId, targetId)) {
             console.warn("Edge already exists or is a self-loop.");
@@ -193,6 +217,11 @@ export function InteractiveMCVPGraph() {
         return true;
     };
 
+    /**
+     * Deletes an edge between two nodes.
+     * @param {number|string} sourceId - The ID of the source node.
+     * @param {number|string} targetId - The ID of the target node.
+     */
     const deleteEdge = (sourceId, targetId) => {
         setGraphData(prevData => ({
             nodes: prevData.nodes,
@@ -208,6 +237,11 @@ export function InteractiveMCVPGraph() {
         graphData.links.pop();
     };
 
+    /**
+     * Updates properties of a specific node.
+     * @param {number|string} nodeId - The ID of the node to update.
+     * @param {Object} updates - An object containing the properties to update.
+     */
     const updateNodeValue = (nodeId, updates) => {
         setGraphData(prevData => {
             const updatedNodes = prevData.nodes.map(node => {

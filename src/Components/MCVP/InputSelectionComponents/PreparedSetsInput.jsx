@@ -2,6 +2,14 @@ import PropTypes from 'prop-types';
 import { parseExpressionToTree, printTree } from '../Utils/Parser'; 
 import Data from '../../../../Sady/SadyMCVP.json';
 
+/**
+ * Component for selecting a pre-defined MCVP problem set.
+ * Loads data from a JSON file and allows the user to choose a set.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {function} props.onTreeUpdate - Callback function called when a set is selected. Receives the parsed tree of the selected expression.
+ */
 export function PreparedSetsInput( {onTreeUpdate} ) {
   const data = Data; // Load the data from the JSON file
 
