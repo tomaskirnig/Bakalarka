@@ -314,7 +314,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       ctx.fillStyle = colors.color4; 
     } else if (node === hoverNode) {
       ctx.fillStyle = colors.color4;
-    } else if (node.id === startingNodeId){
+    } else if (node.id === Number(startingNodeId)){
       ctx.fillStyle = colors.starting; 
     }else {
       ctx.fillStyle = colors.color1;
