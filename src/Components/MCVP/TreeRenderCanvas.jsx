@@ -35,9 +35,9 @@ export function TreeCanvas({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Interaction State
-  const [hoverNode, setHoverNode] = useState(null);
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  const hoverNode = useRef(null);
+  const highlightNodes = useRef(new Set());
+  const highlightLinks = useRef(new Set());
 
   const colors = useGraphColors();
 
@@ -151,47 +151,31 @@ export function TreeCanvas({
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
-    if (!node) {
-      setHoverNode(null);
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
-      return;
-    }
+    hoverNode.current = node || null;
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
 
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-
-    newHighlightNodes.add(node);
-    if (node.neighbors) {
-      node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
+    if (node) {
+      highlightNodes.current.add(node);
+      if (node.neighbors) {
+        node.neighbors.forEach(neighbor => highlightNodes.current.add(neighbor));
+      }
+      if (node.links) {
+        node.links.forEach(link => highlightLinks.current.add(link));
+      }
     }
-    if (node.links) {
-      node.links.forEach(link => newHighlightLinks.add(link));
-    }
-
-    setHoverNode(node);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
   }, []);
 
   const handleLinkHover = useCallback((link) => {
-    if (!link) {
-      setHoverNode(null);
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
-      return;
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
+
+    if (link) {
+      highlightLinks.current.add(link);
+      if (link.source) highlightNodes.current.add(link.source);
+      if (link.target) highlightNodes.current.add(link.target);
     }
-    
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-    
-    newHighlightLinks.add(link);
-    if (link.source) newHighlightNodes.add(link.source);
-    if (link.target) newHighlightNodes.add(link.target);
-    
-    setHoverNode(null);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
+    hoverNode.current = null;
   }, []);
 
   // 3. Paint Functions
@@ -202,8 +186,8 @@ export function TreeCanvas({
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
 
     // State-based Styling logic
-    const isHovered = hoverNode === node;
-    const isNeighbor = highlightNodes.has(node) && !isHovered; 
+    const isHovered = hoverNode.current === node;
+    const isNeighbor = highlightNodes.current.has(node) && !isHovered; 
     const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
     const isActive = activeNode && node.id === activeNode.id;
     
@@ -260,12 +244,12 @@ export function TreeCanvas({
       ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * NODE_R);
     }
     
-  }, [hoverNode, highlightNodes, highlightedNode, activeNode, colors]);
+  }, [highlightedNode, activeNode, colors]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
     
-    const isHighlighted = highlightLinks.has(link);
+    const isHighlighted = highlightLinks.current.has(link);
     
     ctx.strokeStyle = isHighlighted ? colors.highlightLink : colors.defaultLink;
     ctx.lineWidth = isHighlighted ? 3 : 1;
@@ -274,7 +258,7 @@ export function TreeCanvas({
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
     ctx.stroke();
-  }, [highlightLinks, colors]);
+  }, [colors]);
 
   // 4. Effects
   
@@ -326,6 +310,7 @@ export function TreeCanvas({
         cooldownTime={3000}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
+        autoPauseRedraw={false}
         
         // Interaction
         enableNodeDrag={true}
