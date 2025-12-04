@@ -313,7 +313,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       ctx.fillStyle = colors.color4; 
     } else if (node === hoverNode) {
       ctx.fillStyle = colors.color4;
-    } else if (node.id == 0){
+    } else if (node.id === startingNodeId){
       ctx.fillStyle = colors.starting; 
     }else {
       ctx.fillStyle = colors.color1;
@@ -325,7 +325,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, addingEdge, edgeSource, colors]);
+  }, [hoverNode, addingEdge, edgeSource, colors, startingNodeId]);
 
   // Display the label for links
   const getLinkLabel = useCallback((link) => {
