@@ -72,10 +72,8 @@ export function useGraphColors() {
         updateColors();
 
         // Optional: Add listener for theme changes if implemented in future
-        // window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', updateColors);
         
         // Clean up
-        // return () => window.matchMedia('(prefers-color-scheme: dark)').removeEventListener('change', updateColors);
     }, []);
 
     return colors;
