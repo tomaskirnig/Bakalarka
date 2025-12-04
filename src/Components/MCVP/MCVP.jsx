@@ -12,6 +12,15 @@ import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
 
+/**
+ * Main component for the Monotone Circuit Value Problem (MCVP) module.
+ * Coordinates input selection, graph visualization, evaluation, and problem conversions.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {function} [props.onNavigate] - Callback to navigate to other modules (e.g., Combinatorial Game).
+ * @param {Object} [props.initialData] - Initial tree data to load (e.g., when coming from another module).
+ */
 export function MCVP({ onNavigate, initialData }) {
     const [tree, setTree] = useState(null); // Current tree
     const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
@@ -84,9 +93,9 @@ export function MCVP({ onNavigate, initialData }) {
 
             {tree && (
                 <div>
-                    <button className='btn add-btn m-3' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn add-btn m-3' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
-                    <button className='btn add-btn m-3' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
+                    <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
+                    <button className='btn btn-primary mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
                 </div>
             )}
 

@@ -3,13 +3,17 @@ import { evaluateTree } from '../Utils/EvaluateTree';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
 import { Node } from './../Utils/NodeClass';
+import { useGraphColors } from '../../../Hooks/useGraphColors';
 
 const NODE_R = 12; 
-const outerCircleColor = '#07393C';
-const innerCircleColor = '#438c96'; 
-const selectedColor = '#FFB74D'; 
-const textColor = '#F0EDEE'; 
 
+/**
+ * Component for interactively building and evaluating an MCVP graph.
+ * Uses a force-directed graph to allow users to add nodes, edges, and modify values.
+ * Automatically evaluates the circuit as it is built.
+ * 
+ * @component
+ */
 export function InteractiveMCVPGraph() {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
@@ -21,15 +25,21 @@ export function InteractiveMCVPGraph() {
     const nextNodeIdRef = useRef(0);
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
-    // ResizeObserver for responsive graph
+    const colors = useGraphColors();
+
+    // ResizeObserver for responsive graph and color updates
     useEffect(() => {
         if (!containerRef.current) return;
 
+        const updateDimensions = () => {
+            const { width, height } = containerRef.current.getBoundingClientRect();
+            setDimensions({ width, height });
+        };
+
+        updateDimensions();
+
         const resizeObserver = new ResizeObserver((entries) => {
-            for (const entry of entries) {
-                const { width, height } = entry.contentRect;
-                setDimensions({ width, height });
-            }
+            updateDimensions();
         });
 
         resizeObserver.observe(containerRef.current);
@@ -119,6 +129,13 @@ export function InteractiveMCVPGraph() {
 
     // --- Core Graph Functions ---
 
+    /**
+     * Adds a new node to the graph.
+     * @param {string} type - The type of node ('var' for variable, 'op' or other for operation).
+     * @param {string|null} [value=null] - The value/label of the node (e.g., 'A', 'O', 'x1').
+     * @param {number|null} [varValue=null] - The value of the variable (0 or 1), if applicable.
+     * @returns {Object} The newly created node object.
+     */
     const addNode = (type, value = null, varValue = null) => {
         const newId = generateNodeId();
         let newNode;
@@ -146,6 +163,10 @@ export function InteractiveMCVPGraph() {
         return newNode;
     };
 
+    /**
+     * Deletes a node and all connected edges from the graph.
+     * @param {number|string} nodeId - The ID of the node to delete.
+     */
     const deleteNode = (nodeId) => {
         setGraphData(prevData => ({
             nodes: prevData.nodes.filter(node => node.id !== nodeId),
@@ -167,6 +188,12 @@ export function InteractiveMCVPGraph() {
         );
     };
 
+    /**
+     * Adds a directed edge between two nodes.
+     * @param {number|string} sourceId - The ID of the source node (parent).
+     * @param {number|string} targetId - The ID of the target node (child).
+     * @returns {boolean} True if the edge was added, false if it already exists or is invalid.
+     */
     const addEdge = (sourceId, targetId) => {
         if (sourceId === targetId || edgeExists(sourceId, targetId)) {
             console.warn("Edge already exists or is a self-loop.");
@@ -193,6 +220,11 @@ export function InteractiveMCVPGraph() {
         return true;
     };
 
+    /**
+     * Deletes an edge between two nodes.
+     * @param {number|string} sourceId - The ID of the source node.
+     * @param {number|string} targetId - The ID of the target node.
+     */
     const deleteEdge = (sourceId, targetId) => {
         setGraphData(prevData => ({
             nodes: prevData.nodes,
@@ -208,6 +240,11 @@ export function InteractiveMCVPGraph() {
         graphData.links.pop();
     };
 
+    /**
+     * Updates properties of a specific node.
+     * @param {number|string} nodeId - The ID of the node to update.
+     * @param {Object} updates - An object containing the properties to update.
+     */
     const updateNodeValue = (nodeId, updates) => {
         setGraphData(prevData => {
             const updatedNodes = prevData.nodes.map(node => {
@@ -292,14 +329,14 @@ export function InteractiveMCVPGraph() {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = (isSelected || isEdgeSource) ? selectedColor : innerCircleColor;
+        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.innerCircle;
         ctx.fill();
 
-        ctx.strokeStyle = outerCircleColor;
+        ctx.strokeStyle = colors.outerCircle;
         ctx.stroke();
 
         if (isSelected || isHovered || isEdgeSource) {
-            ctx.strokeStyle = '#90DDF0';
+            ctx.strokeStyle = colors.hover;
             ctx.stroke();
         }
 
@@ -314,15 +351,15 @@ export function InteractiveMCVPGraph() {
         ctx.font = `monospace`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillStyle = textColor;
+        ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
 
-    }, [selectedNode, hoverNode, edgeSource]);
+    }, [selectedNode, hoverNode, edgeSource, colors]);
 
     return (
         <div>
             {/*Instructions*/}
-            <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: '#666' }}>
+            <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: 'var(--color-grey-medium)' }}>
                 {addingEdge && edgeSource && `Přidávání hrany z uzlu ${edgeSource.id}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
                 {selectedNode && !addingEdge && `Uzel ${selectedNode.id} vybrán.`}
                 {!selectedNode && !addingEdge && 'Klikněte na pozadí pro zrušení výběru. Klikněte na uzel pro výběr.'}
@@ -330,6 +367,15 @@ export function InteractiveMCVPGraph() {
 
             {/* ForceGraph Canvas */}
             <div className="GraphDiv" ref={containerRef}>
+                <div className="graph-controls">
+                  <button 
+                    className="graph-btn" 
+                    onClick={() => fgRef.current?.zoomToFit(400, 50)}
+                    title="Fit Graph to Screen"
+                  >
+                    Vycentrovat
+                  </button>
+                </div>
                 <ForceGraph2D
                     ref={fgRef}
                     width={dimensions.width}
@@ -356,7 +402,8 @@ export function InteractiveMCVPGraph() {
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
                     onNodeHover={setHoverNode} // Update hover state
-                    enableZoomPanInteraction={true}
+                    enablePanInteraction={true}
+                    enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
                     onNodeDragEnd={node => { // Fix node position after dragging
                     node.fx = node.x;

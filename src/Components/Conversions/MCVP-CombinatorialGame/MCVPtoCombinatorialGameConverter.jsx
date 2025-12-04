@@ -66,7 +66,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                 <div className="row flex-grow-1" style={{ minHeight: '0' }}>
                     <div className="col-md-6 d-flex flex-column">
                         <h4 className='text-center'>MCVP</h4>
-                        <div className="flex-grow-1" style={{ border: '1px solid #eee', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
+                        <div className="flex-grow-1" style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
                             <TreeCanvas 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
@@ -79,7 +79,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                         <div 
                             ref={cgContainerRef}
                             className="flex-grow-1" 
-                            style={{ border: '1px solid #eee', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}
+                            style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}
                         >
                             {step.graph && step.graph.positions && Object.keys(step.graph.positions).length > 0 ? (
                                 <DisplayGraph 

@@ -2,6 +2,14 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { parseExpressionToTree } from '../Utils/Parser'; 
 
+/**
+ * Component for manually entering an MCVP expression string.
+ * Parses the string into a tree structure.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {function} props.onTreeUpdate - Callback function called when the expression is successfully parsed. Receives the root node of the parsed tree.
+ */
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');
 

@@ -1,15 +1,7 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from "react";
 import PropTypes from 'prop-types';
 import ForceGraph2D from "react-force-graph-2d";
-
-// Colors
-const highlightLinkColor = "red";
-const defaultLinkColor = "rgba(0,0,0,0.5)";
-const highlightNodeColor = "#90DDF0";
-const activeNodeColor = "#FFD700"; // Gold
-const defaultNodeColor = "#438c96"; 
-const nodeStrokeColor = "#333";
-const nodeTextColor = "#fff";
+import { useGraphColors } from "../../Hooks/useGraphColors";
 
 // Constants for visual consistency
 const NODE_R = 12;
@@ -18,6 +10,17 @@ const NODE_R = 12;
 const MODE_REPLACE = () => "replace";
 const MODE_AFTER = () => "after";
 
+/**
+ * Component for rendering an MCVP tree using a force-directed graph.
+ * Supports visualization of evaluation results and highlighting specific nodes.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {Object} props.tree - The MCVP tree to display
+ * @param {Object} [props.highlightedNode] - A specific node to highlight (e.g. from conversion)
+ * @param {Object} [props.activeNode] - The node currently being evaluated (for step-by-step)
+ * @param {Array} [props.completedSteps] - Array of evaluation steps to display intermediate results
+ */
 export function TreeCanvas({
   tree,
   highlightedNode = null, // Node to highlight (e.g. from converter)
@@ -32,19 +35,27 @@ export function TreeCanvas({
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   // Interaction State
-  const [hoverNode, setHoverNode] = useState(null);
-  const [highlightNodes, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
+  const hoverNode = useRef(null);
+  const highlightNodes = useRef(new Set());
+  const highlightLinks = useRef(new Set());
+
+  const colors = useGraphColors();
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
     if (!containerRef.current) return;
 
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
+    const updateDimensions = () => {
+        if (!containerRef.current) return;
+        const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
-      }
+    };
+
+    // Initial call
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        updateDimensions();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -141,47 +152,31 @@ export function TreeCanvas({
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
-    if (!node) {
-      setHoverNode(null);
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
-      return;
-    }
+    hoverNode.current = node || null;
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
 
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-
-    newHighlightNodes.add(node);
-    if (node.neighbors) {
-      node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
+    if (node) {
+      highlightNodes.current.add(node);
+      if (node.neighbors) {
+        node.neighbors.forEach(neighbor => highlightNodes.current.add(neighbor));
+      }
+      if (node.links) {
+        node.links.forEach(link => highlightLinks.current.add(link));
+      }
     }
-    if (node.links) {
-      node.links.forEach(link => newHighlightLinks.add(link));
-    }
-
-    setHoverNode(node);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
   }, []);
 
   const handleLinkHover = useCallback((link) => {
-    if (!link) {
-      setHoverNode(null);
-      setHighlightNodes(new Set());
-      setHighlightLinks(new Set());
-      return;
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
+
+    if (link) {
+      highlightLinks.current.add(link);
+      if (link.source) highlightNodes.current.add(link.source);
+      if (link.target) highlightNodes.current.add(link.target);
     }
-    
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-    
-    newHighlightLinks.add(link);
-    if (link.source) newHighlightNodes.add(link.source);
-    if (link.target) newHighlightNodes.add(link.target);
-    
-    setHoverNode(null);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
+    hoverNode.current = null;
   }, []);
 
   // 3. Paint Functions
@@ -192,8 +187,8 @@ export function TreeCanvas({
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
 
     // State-based Styling logic
-    const isHovered = hoverNode === node;
-    const isNeighbor = highlightNodes.has(node) && !isHovered; 
+    const isHovered = hoverNode.current === node;
+    const isNeighbor = highlightNodes.current.has(node) && !isHovered; 
     const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
     const isActive = activeNode && node.id === activeNode.id;
     
@@ -205,21 +200,21 @@ export function TreeCanvas({
 
     // Fill Color
     if (isActive) {
-        ctx.fillStyle = activeNodeColor;
+        ctx.fillStyle = colors.activeNode;
     } else if (isHovered) {
-        ctx.fillStyle = activeNodeColor;
+        ctx.fillStyle = colors.activeNode;
     } else if (isExternalHighlight) {
-        ctx.fillStyle = highlightNodeColor;
+        ctx.fillStyle = colors.highlightNode;
     } else if (isNeighbor) {
-        ctx.fillStyle = highlightNodeColor;
+        ctx.fillStyle = colors.highlightNode;
     } else {
-        ctx.fillStyle = defaultNodeColor;
+        ctx.fillStyle = colors.defaultNode;
     }
     
     ctx.fill();
 
     // Stroke
-    ctx.strokeStyle = shouldHighlight ? '#333' : nodeStrokeColor;
+    ctx.strokeStyle = shouldHighlight ? '#333' : colors.nodeStroke;
     ctx.lineWidth = shouldHighlight ? 2 : 1;
     ctx.stroke();
 
@@ -235,7 +230,7 @@ export function TreeCanvas({
       displayText = node.value || '';
     }
     
-    ctx.fillStyle = nodeTextColor;
+    ctx.fillStyle = colors.nodeText;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `monospace`;
@@ -250,21 +245,21 @@ export function TreeCanvas({
       ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * NODE_R);
     }
     
-  }, [hoverNode, highlightNodes, highlightedNode, activeNode]);
+  }, [highlightedNode, activeNode, colors]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
     
-    const isHighlighted = highlightLinks.has(link);
+    const isHighlighted = highlightLinks.current.has(link);
     
-    ctx.strokeStyle = isHighlighted ? highlightLinkColor : defaultLinkColor;
+    ctx.strokeStyle = isHighlighted ? colors.highlightLink : colors.defaultLink;
     ctx.lineWidth = isHighlighted ? 3 : 1;
     
     ctx.beginPath();
     ctx.moveTo(link.source.x, link.source.y);
     ctx.lineTo(link.target.x, link.target.y);
     ctx.stroke();
-  }, [highlightLinks]);
+  }, [colors]);
 
   // 4. Effects
   
@@ -293,6 +288,15 @@ export function TreeCanvas({
 
   return (
     <div className="GraphDiv" ref={containerRef}>
+      <div className="graph-controls">
+        <button 
+          className="graph-btn" 
+          onClick={() => fgRef.current?.zoomToFit(400, 50)}
+          title="Fit Graph to Screen"
+        >
+          Vycentrovat
+        </button>
+      </div>
       <ForceGraph2D
         ref={fgRef}
         width={dimensions.width}
@@ -307,6 +311,7 @@ export function TreeCanvas({
         cooldownTime={3000}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
+        autoPauseRedraw={false}
         
         // Interaction
         enableNodeDrag={true}

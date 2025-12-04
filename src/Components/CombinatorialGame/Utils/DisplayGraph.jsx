@@ -1,19 +1,55 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { computeWinner, getOptimalMoves } from './ComputeWinner';
+import { useGraphColors } from '../../../Hooks/useGraphColors';
 
-// colors
-const defaultNodeColor = '#438c96'; 
-const highlightNodeColor = '#90DDF0';
-const startingColor = '#FF6347';
-const defaultLinkColor = '#999'; 
-
-export function DisplayGraph({ graph, width, height }) {
+export function DisplayGraph({ graph }) {
   // State for highlighted nodes and links, and for the hovered node.
   const [, setHighlightNodes] = useState(new Set());
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
+  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const NODE_R = 8;
+  const fgRef = useRef();
+  const containerRef = useRef();
+
+  const colors = useGraphColors();
+
+  // ResizeObserver to handle responsive sizing
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+        if (!containerRef.current) return;
+        const { width, height } = containerRef.current.getBoundingClientRect();
+        setDimensions({ width, height });
+    };
+
+    // Initial call
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver((entries) => {
+        updateDimensions();
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  const { analysisResult, optimalMoves } = useMemo(() => {
+    if (!graph || !graph.positions) {
+      return { analysisResult: null, optimalMoves: {} };
+    }
+
+    const result = computeWinner(graph);
+    const moves = getOptimalMoves(graph, result);
+
+    return { analysisResult: result, optimalMoves: moves };
+  }, [graph]);
   
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
@@ -21,6 +57,8 @@ export function DisplayGraph({ graph, width, height }) {
     const nodes = Object.values(graph.positions).map(node => ({
       id: node.id,
       player: node.player,
+      x: node.x,
+      y: node.y,
       isStartingPosition: node.id === graph.startingPosition.id,
       neighbors: [...(node.parents || []), ...(node.children || [])]
     }));
@@ -50,13 +88,20 @@ export function DisplayGraph({ graph, width, height }) {
     });
     
     // Convert link endpoints to node objects.
-    links.forEach(link => {
-      link.source = nodeMap[link.source];
-      link.target = nodeMap[link.target];
+    const linksWithOptimal = links.map(link => {
+        const source = nodeMap[link.source];
+        const target = nodeMap[link.target];
+        const isOptimal = optimalMoves[link.source] === link.target;
+        
+        return {
+            source,
+            target,
+            isOptimal
+        };
     });
 
-    return { nodes, links };
-  }, [graph]);
+    return { nodes, links: linksWithOptimal };
+  }, [graph, optimalMoves]);
 
   // When a node is hovered, create new highlight sets.
   const handleNodeHover = useCallback((node) => {
@@ -100,11 +145,11 @@ export function DisplayGraph({ graph, width, height }) {
     // Color nodes based on player and starting position
     let fillColor;
     if (node === hoverNode) {
-      fillColor = highlightNodeColor;
+      fillColor = colors.highlightNode;
     }else if (node.isStartingPosition) {
-      fillColor = startingColor;
+      fillColor = colors.starting;
     }else {
-      fillColor = defaultNodeColor;
+      fillColor = colors.defaultNode;
     }
     
     ctx.fillStyle = fillColor;
@@ -116,7 +161,7 @@ export function DisplayGraph({ graph, width, height }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode]);
+  }, [hoverNode, colors]);
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -124,13 +169,27 @@ export function DisplayGraph({ graph, width, height }) {
 
   return (
     <>
-      <div className="GraphDiv shadow-sm">
+      <div className="GraphDiv shadow-sm" ref={containerRef}>
+        <div className="graph-controls">
+          <button 
+            className="graph-btn" 
+            onClick={() => fgRef.current?.zoomToFit(400, 50)}
+            title="Fit Graph to Screen"
+          >
+            Vycentrovat
+          </button>
+        </div>
         <ForceGraph2D
+          ref={fgRef}
+          width={dimensions.width}
+          height={dimensions.height}
+          enablePanInteraction={true}
+          enableZoomInteraction={true}
           graphData={data}
           nodeRelSize={NODE_R}
           autoPauseRedraw={false}
-          linkWidth={link => highlightLinks.has(link) ? 5 : 1}
-          linkColor={defaultLinkColor}  
+          linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
+          linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
@@ -140,9 +199,28 @@ export function DisplayGraph({ graph, width, height }) {
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
-          width={width}
-          height={height}
         />
+      </div>
+      
+      {/* Analysis Results */}
+      <div className="card mt-4 shadow-sm mx-auto" style={{ maxWidth: '800px' }}>
+          <div className="card-header bg-light fw-bold text-start">
+              Analýza hry
+          </div>
+          <div className="card-body text-start">
+              {analysisResult ? (
+                  <>
+                      <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
+                          {analysisResult.message}
+                      </div>
+                      <p className="text-muted small mb-0">
+                          Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
+                      </p>
+                  </>
+              ) : (
+                  <p className="text-muted">Probíhá analýza...</p>
+              )}
+          </div>
       </div>
     </>
   );
@@ -154,9 +232,7 @@ DisplayGraph.propTypes = {
     startingPosition: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     })
-  }),
-  width: PropTypes.number,
-  height: PropTypes.number
+  })
 };
 
 export default DisplayGraph;

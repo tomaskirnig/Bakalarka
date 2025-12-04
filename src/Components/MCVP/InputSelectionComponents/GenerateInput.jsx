@@ -3,7 +3,14 @@ import PropTypes from 'prop-types';
 import { generateTree } from '../Utils/Generator'; 
 import { printTree } from '../Utils/Parser'; 
 
-
+/**
+ * Component for generating a random MCVP tree based on user input.
+ * Allows the user to specify the number of gates and variables.
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {function} props.onTreeUpdate - Callback function called when a new tree is generated. Receives the root node of the generated tree.
+ */
 export function GenerateInput( {onTreeUpdate} ) {
   const [numGates, setNumGates] = useState(1);      
   const [numVariables, setNumVariables] = useState(1); 

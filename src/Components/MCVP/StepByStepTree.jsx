@@ -3,6 +3,14 @@ import PropTypes from 'prop-types';
 import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
 import { TreeCanvas } from './TreeRenderCanvas';
 
+/**
+ * Component for visualizing the step-by-step evaluation of an MCVP tree.
+ * Allows users to navigate through the evaluation process (step forward/backward).
+ * 
+ * @component
+ * @param {Object} props - The component props
+ * @param {Object} props.tree - The MCVP tree to evaluate
+ */
 export function StepByStepTree({ tree }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);

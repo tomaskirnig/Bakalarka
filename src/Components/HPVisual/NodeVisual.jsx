@@ -1,4 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
+import { useGraphColors } from '../../Hooks/useGraphColors';
 
 /**
  * NetworkVisual component renders a canvas with animated network visualization
@@ -6,9 +7,9 @@ import React, { useRef, useEffect, useState } from 'react';
 const NetworkVisual = ({
   nodeCount = 30,
   connectDistance = 300,
-  linkColor = "#ece5f0",
-  nodeColor = "#2C666E",
-  backgroundColor = "#F0EDEE",
+  linkColor,
+  nodeColor,
+  backgroundColor,
   overlayColor = "rgba(0, 0, 0, 0.3)",
   zIndex = -1,
 }) => {
@@ -18,20 +19,24 @@ const NetworkVisual = ({
   const [nodes, setNodes] = useState([]);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
+  const colors = useGraphColors();
+  const effectiveLinkColor = linkColor || colors.linkColor;
+  const effectiveNodeColor = nodeColor || colors.nodeColor;
+  const effectiveBgColor = backgroundColor || colors.backgroundColor;
+
   class Node {
-    constructor(x, y, radius, color, moveX, moveY) {
+    constructor(x, y, radius, moveX, moveY) {
       this.x = x;
       this.y = y;
       this.radius = radius;
-      this.color = color;
       this.moveX = moveX;
       this.moveY = moveY;
     }
 
-    draw(ctx) {
+    draw(ctx, color) {
       ctx.beginPath();
       ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
-      ctx.fillStyle = this.color;
+      ctx.fillStyle = color;
       ctx.fill();
 
       this.move();
@@ -79,7 +84,7 @@ const NetworkVisual = ({
       let moveX = ((Math.random() * 2) - 1);
       let moveY = ((Math.random() * 2) - 1);
       
-      newNodes.push(new Node(x, y, radius, nodeColor, moveX, moveY));
+      newNodes.push(new Node(x, y, radius, moveX, moveY));
     }
     
     setNodes(newNodes);
@@ -95,7 +100,7 @@ const NetworkVisual = ({
 
   // Draw all nodes
   const drawAll = (ctx) => {
-    nodes.forEach(node => node.draw(ctx));
+    nodes.forEach(node => node.draw(ctx, effectiveNodeColor));
   };
 
   // Draw edges between nodes
@@ -111,7 +116,7 @@ const NetworkVisual = ({
           ctx.beginPath();
           ctx.moveTo(nodes[i].x, nodes[i].y);
           ctx.lineTo(nodes[ii].x, nodes[ii].y);
-          ctx.strokeStyle = linkColor;
+          ctx.strokeStyle = effectiveLinkColor;
           ctx.lineWidth = 5 - ((dist / connectDistance) * 4);
           ctx.stroke();
         }
@@ -197,7 +202,7 @@ const NetworkVisual = ({
           display: 'block',
           padding: 0,
           margin: 0,
-          backgroundColor: backgroundColor,
+          backgroundColor: effectiveBgColor,
         }}
       />
       <div
