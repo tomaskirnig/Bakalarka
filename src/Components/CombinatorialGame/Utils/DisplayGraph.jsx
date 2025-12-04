@@ -21,6 +21,7 @@ export function DisplayGraph({ graph }) {
     if (!containerRef.current) return;
 
     const updateDimensions = () => {
+        if (!containerRef.current) return;
         const { width, height } = containerRef.current.getBoundingClientRect();
         setDimensions({ width, height });
     };
