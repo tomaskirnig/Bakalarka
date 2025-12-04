@@ -2,9 +2,7 @@ import { useRef, useEffect, useMemo, useCallback, useState } from "react";
 import PropTypes from 'prop-types';
 import ForceGraph2D from "react-force-graph-2d";
 import { useGraphColors } from "../../Hooks/useGraphColors";
-
-// Constants for visual consistency
-const NODE_R = 12;
+import { useGraphSettings } from "../../Hooks/useGraphSettings";
 
 // Constant accessor functions to prevent re-renders of the graph engine
 const MODE_REPLACE = () => "replace";
@@ -40,6 +38,8 @@ export function TreeCanvas({
   const highlightLinks = useRef(new Set());
 
   const colors = useGraphColors();
+  const settings = useGraphSettings();
+  const { mcvp } = settings;
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
@@ -196,7 +196,7 @@ export function TreeCanvas({
 
     // Draw Circle
     ctx.beginPath();
-    ctx.arc(node.x, node.y, NODE_R, 0, 2 * Math.PI, false);
+    ctx.arc(node.x, node.y, mcvp.nodeRadius, 0, 2 * Math.PI, false);
 
     // Fill Color
     if (isActive) {
@@ -233,19 +233,19 @@ export function TreeCanvas({
     ctx.fillStyle = colors.nodeText;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
-    ctx.font = `monospace`;
+    ctx.font = mcvp.labelFont;
     ctx.fillText(displayText, node.x, node.y);
     
     // Result Label (above node)
     if (node.evaluationResult !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - 1.8 * NODE_R);
+      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     } else if (node.rootLabel !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.rootLabel}`, node.x, node.y - 1.8 * NODE_R);
+      ctx.fillText(`${node.rootLabel}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     }
     
-  }, [highlightedNode, activeNode, colors]);
+  }, [highlightedNode, activeNode, colors, mcvp]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
@@ -268,12 +268,12 @@ export function TreeCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(NODE_R * 2).iterations(2)); 
+        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier).iterations(2)); 
       }
-      fgRef.current.d3Force('link').distance(100);
-      fgRef.current.d3Force('charge').strength(-200);
+      fgRef.current.d3Force('link').distance(mcvp.linkDistance);
+      fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
     }
-  }, [tree]); // Re-run if tree changes (new simulation)
+  }, [tree, mcvp]); // Re-run if tree changes (new simulation)
 
   // Focus Camera on Active Node
   useEffect(() => {
@@ -305,10 +305,10 @@ export function TreeCanvas({
         
         // Layout
         dagMode="td"
-        dagLevelDistance={100}
+        dagLevelDistance={mcvp.dagLevelDistance}
         
         // Physics
-        cooldownTime={3000}
+        cooldownTime={mcvp.cooldownTime}
         d3AlphaDecay={0.02}
         d3VelocityDecay={0.3}
         autoPauseRedraw={false}
@@ -321,7 +321,7 @@ export function TreeCanvas({
         maxZoom={8}
         
         // Rendering Props
-        nodeRelSize={NODE_R} // Matches paintNode radius
+        nodeRelSize={mcvp.nodeRadius} // Matches paintNode radius
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
         

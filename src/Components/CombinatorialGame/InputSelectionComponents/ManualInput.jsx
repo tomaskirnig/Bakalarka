@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { computeWinner, getOptimalMoves } from '../Utils/ComputeWinner';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
+import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
 export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
@@ -18,9 +19,9 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   const isInternalUpdate = useRef(false); // Track if update originated internally
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   
-  const NODE_R = 8;
-
   const colors = useGraphColors();
+  const settings = useGraphSettings();
+  const { game } = settings;
 
   // ResizeObserver for responsive graph and color updates
   useEffect(() => {
@@ -307,7 +308,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   // Highlighted node and edges styling
   const paintRing = useCallback((node, ctx) => {
     ctx.beginPath();
-    ctx.arc(node.x, node.y, NODE_R * 1.2, 0, 2 * Math.PI, false);
+    ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
     
     // Change color based on node state
     if (addingEdge && edgeSource && edgeSource.id === node.id) {
@@ -321,12 +322,12 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
     
     ctx.fill();
-    ctx.font = `8px monospace`;
+    ctx.font = game.labelFont;
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, addingEdge, edgeSource, colors, startingNodeId]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+  }, [hoverNode, addingEdge, edgeSource, colors, startingNodeId, game]);
 
   // Display the label for links
   const getLinkLabel = useCallback((link) => {
@@ -457,7 +458,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         enablePanInteraction={true}
         enableZoomInteraction={true}
         graphData={data}
-        nodeRelSize={NODE_R}
+        nodeRelSize={game.nodeRadius}
         autoPauseRedraw={false}
         linkWidth={link => highlightLinks.has(link) ? 5 : 3}
         linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 

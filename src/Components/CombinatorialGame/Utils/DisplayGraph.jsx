@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { computeWinner, getOptimalMoves } from './ComputeWinner';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
+import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
 export function DisplayGraph({ graph }) {
   // State for highlighted nodes and links, and for the hovered node.
@@ -10,11 +11,12 @@ export function DisplayGraph({ graph }) {
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const NODE_R = 8;
   const fgRef = useRef();
   const containerRef = useRef();
 
   const colors = useGraphColors();
+  const settings = useGraphSettings();
+  const { game } = settings;
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
@@ -140,7 +142,7 @@ export function DisplayGraph({ graph }) {
   const paintRing = useCallback((node, ctx) => {
     // Draw a ring around highlighted nodes.
     ctx.beginPath();
-    ctx.arc(node.x, node.y, NODE_R * 1.2, 0, 2 * Math.PI, false);
+    ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
     
     // Color nodes based on player and starting position
     let fillColor;
@@ -156,12 +158,12 @@ export function DisplayGraph({ graph }) {
     ctx.fill();
     
     // Draw the player label below the node.
-    ctx.font = `8px monospace`; 
+    ctx.font = game.labelFont; 
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, colors]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+  }, [hoverNode, colors, game]);
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -186,7 +188,7 @@ export function DisplayGraph({ graph }) {
           enablePanInteraction={true}
           enableZoomInteraction={true}
           graphData={data}
-          nodeRelSize={NODE_R}
+          nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
           linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 

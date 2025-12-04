@@ -4,8 +4,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
 import { Node } from './../Utils/NodeClass';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
-
-const NODE_R = 12; 
+import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -26,6 +25,8 @@ export function InteractiveMCVPGraph() {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const colors = useGraphColors();
+    const settings = useGraphSettings();
+    const { mcvp } = settings;
 
     // ResizeObserver for responsive graph and color updates
     useEffect(() => {
@@ -322,7 +323,7 @@ export function InteractiveMCVPGraph() {
     // --- Canvas/Rendering Functions ---
 
     const paintNode = useCallback((node, ctx) => {
-        const radius = NODE_R;
+        const radius = mcvp.nodeRadius;
         const isSelected = selectedNode && node.id === selectedNode.id;
         const isHovered = hoverNode && node.id === hoverNode.id;
         const isEdgeSource = edgeSource && node.id === edgeSource.id;
@@ -347,14 +348,13 @@ export function InteractiveMCVPGraph() {
             displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
         }
 
-        const fontSize = 12;
-        ctx.font = `monospace`;
+        ctx.font = mcvp.labelFont;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
 
-    }, [selectedNode, hoverNode, edgeSource, colors]);
+    }, [selectedNode, hoverNode, edgeSource, colors, mcvp]);
 
     return (
         <div>
@@ -383,12 +383,12 @@ export function InteractiveMCVPGraph() {
                     graphData={graphData}
                     // Layout
                     dagMode="td" // Top-down layout
-                    dagLevelDistance={70} // Distance between levels
-                    cooldownTime={2000} // Stop simulation sooner
+                    dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
+                    cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
                     d3AlphaDecay={0.05} // Faster decay
                     d3VelocityDecay={0.4}
                     // Nodes
-                    nodeRelSize={NODE_R} // Use fixed radius for consistency
+                    nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
                     nodeId="id"
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
