@@ -312,6 +312,7 @@ export function printTree(node, indent = 0) {
  */
 export function parseExpressionToTree(exprStr) {
   try {
+    Node.resetIdCounter(); // Reset IDs for clean numbering
     if (exprStr === '') {
       toast.error('Vstupní výraz je prázdný.');
       return null;

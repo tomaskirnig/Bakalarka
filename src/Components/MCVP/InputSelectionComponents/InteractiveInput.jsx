@@ -13,7 +13,7 @@ import { useGraphSettings } from '../../../Hooks/useGraphSettings';
  * 
  * @component
  */
-export function InteractiveMCVPGraph() {
+export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
@@ -57,7 +57,7 @@ export function InteractiveMCVPGraph() {
         return id;
     }, []);
     
-    const GraphDataToNodeClass = (graphData) => {
+    const GraphDataToNodeClass = useCallback((graphData) => {
         if (!graphData.nodes.length) return null;
         
         // Create a map of Node instances
@@ -70,9 +70,9 @@ export function InteractiveMCVPGraph() {
                 graphNode.varValue,
                 graphNode.type,
                 [], // Initialize empty children array
-                []  // Initialize empty parents array
+                [],  // Initialize empty parents array
+                graphNode.id // Pass the ID explicitly
             );
-            node.id = graphNode.id; // Keep the original ID for reference
             nodeMap.set(graphNode.id, node);
         }
         
@@ -103,11 +103,21 @@ export function InteractiveMCVPGraph() {
             console.warn("Multiple root nodes found - using the first one");
         }
         
-        console.log(`Graph converted to tree structure:`);
-        console.log(rootNodes[0]);
+        // console.log(`Graph converted to tree structure:`);
+        // console.log(rootNodes[0]);
         
         return rootNodes[0]; // Return the root node of the tree
-    };
+    }, []);
+
+    // Sync with parent component whenever graphData changes
+    useEffect(() => {
+        if (onTreeUpdate && graphData.nodes.length > 0) {
+            const tree = GraphDataToNodeClass(graphData);
+            if (tree) {
+                onTreeUpdate(tree);
+            }
+        }
+    }, [graphData, onTreeUpdate, GraphDataToNodeClass]);
 
     // Memoize evaluation result 
     const evaluationResult = useMemo(() => {
@@ -117,7 +127,7 @@ export function InteractiveMCVPGraph() {
         const tree = GraphDataToNodeClass(graphData);
         
         return tree ? evaluateTree(tree) : null;
-    }, [graphData]);
+    }, [graphData, GraphDataToNodeClass]);
 
     // Add initial node if graph is empty
     useEffect(() => {

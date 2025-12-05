@@ -1,6 +1,6 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { generateGrammar } from '../Utils/GrammarGenerator';
-import { Grammar } from '../Utils/Grammar';
 
 export function GenerateInput({ onGrammar }) {
     // Basic parameters
@@ -33,9 +33,6 @@ export function GenerateInput({ onGrammar }) {
         try {
             // Generate the grammar 
             const generatedGrammar = generateGrammar(config);
-
-            // Format the grammar as a text string for display
-            const grammarText = generatedGrammar.toText();
             
             // Pass the grammar to the parent component
             onGrammar(generatedGrammar);
@@ -181,3 +178,7 @@ export function GenerateInput({ onGrammar }) {
         </div>
     );
 }
+
+GenerateInput.propTypes = {
+    onGrammar: PropTypes.func.isRequired
+};

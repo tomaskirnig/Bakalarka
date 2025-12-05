@@ -67,6 +67,7 @@ function createGateNode(children = []) {
  * @throws {Error} If there are not enough nodes or if generation fails
  */
 export function generateTree(numGates, numVariables) {
+  Node.resetIdCounter(); // Reset IDs for clean numbering
   const nodes = [];
 
   // Create variable nodes

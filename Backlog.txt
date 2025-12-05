@@ -7,7 +7,6 @@
 - Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
 
 - (interactive) Display numbers on edges when node is selected and then use these numbers in the delete butons 
-- Optimize - make edge hitboxes bigger
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - space between nodes

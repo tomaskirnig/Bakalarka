@@ -81,7 +81,7 @@ export function TreeCanvas({
       if (!current) return;
       
       // Ensure ID exists on the node object itself
-      if (!current.id) {
+      if (current.id === undefined || current.id === null) {
         current.id = `n${idCounter.current++}`;
       }
       
