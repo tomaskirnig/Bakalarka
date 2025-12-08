@@ -202,8 +202,15 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
   }, [optimalMoves]);
 
+import { toast } from 'react-toastify';
+
   // Function to add a node
   const addNode = () => {
+    if (graph.nodes.length >= 750) {
+        toast.error("Dosažen limit 750 uzlů.");
+        return;
+    }
+
     const newId = graph.nodes.length.toString();
     const newNode = {
       id: newId,

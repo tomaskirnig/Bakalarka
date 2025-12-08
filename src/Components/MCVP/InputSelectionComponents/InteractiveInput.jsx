@@ -148,6 +148,11 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
      * @returns {Object} The newly created node object.
      */
     const addNode = (type, value = null, varValue = null) => {
+        if (graphData.nodes.length >= 750) {
+            toast.error("Dosažen limit 750 uzlů.");
+            return null;
+        }
+        
         const newId = generateNodeId();
         let newNode;
 
