@@ -140,6 +140,12 @@ export function DisplayGraph({ graph }) {
   }, []);
 
   const paintRing = useCallback((node, ctx) => {
+    // Determine opacity
+    const isHoverActive = hoverNode !== null;
+    const isHighlighted = hoverNode === node || (hoverNode && node.neighbors && node.neighbors.includes(hoverNode));
+    
+    ctx.globalAlpha = isHoverActive && !isHighlighted ? 0.15 : 1;
+
     // Draw a ring around highlighted nodes.
     ctx.beginPath();
     ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
@@ -163,6 +169,9 @@ export function DisplayGraph({ graph }) {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+    
+    // Reset alpha
+    ctx.globalAlpha = 1;
   }, [hoverNode, colors, game]);
 
   // Adjust link distance based on node count
@@ -207,7 +216,20 @@ export function DisplayGraph({ graph }) {
           nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
+          linkColor={link => {
+            // Base color logic
+            let color = link.isOptimal ? colors.optimalLink : colors.defaultLink;
+            
+            // Opacity logic
+            if (hoverNode) {
+                if (highlightLinks.has(link)) {
+                    return color; // Full opacity for highlighted
+                } else {
+                    return colors.dimmedLink; 
+                }
+            }
+            return color;
+          }} 
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
