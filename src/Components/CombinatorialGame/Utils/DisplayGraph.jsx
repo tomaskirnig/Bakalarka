@@ -165,6 +165,22 @@ export function DisplayGraph({ graph }) {
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
   }, [hoverNode, colors, game]);
 
+  // Adjust link distance based on node count
+  useEffect(() => {
+    if (fgRef.current && graph && graph.positions) {
+      const nodeCount = Object.keys(graph.positions).length;
+      // Heuristic: Base distance + (nodeCount * factor)
+      // This increases distance as the graph grows, preventing clusters.
+      // Capped at a reasonable max to avoid explosion.
+      const dynamicDistance = Math.min(20 + nodeCount / 10, 200); 
+      
+      fgRef.current.d3Force('link').distance(dynamicDistance);
+      
+      // Re-heat simulation to apply changes smoothly
+      fgRef.current.d3ReheatSimulation();
+    }
+  }, [graph]);
+
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
   }

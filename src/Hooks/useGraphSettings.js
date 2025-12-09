@@ -23,7 +23,7 @@ export function useGraphSettings() {
              labelFontSize: 8,
              labelFont: '8px monospace',
              highlightScale: 1.2,
-             dagLevelDistance: 70, 
+             linkDirectionalArrowLength: 1,
         }
     }), []);
 }
