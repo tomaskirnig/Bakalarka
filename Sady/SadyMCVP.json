@@ -1,5 +1,46 @@
 {
-    "Sada1 (4xPro, 3xOpe)" : "(x1[0] O x2[1]) A (x3[1] A x4[0])",
-    "Sada2 (4xPro, 3xOpe)" : "(x1[1] O x2[1]) O (x3[0] A x4[1])",
-    "Sada4 (1xPro)" : "x1[1]"
+    "Sada1 (4xPro, 3xOpe)": {
+      "nodes": [
+        { "id": 1, "type": "variable", "value": "x1", "varValue": 0 },
+        { "id": 2, "type": "variable", "value": "x2", "varValue": 1 },
+        { "id": 3, "type": "variable", "value": "x3", "varValue": 1 },
+        { "id": 4, "type": "variable", "value": "x4", "varValue": 0 },
+        { "id": 5, "type": "operation", "value": "O" },
+        { "id": 6, "type": "operation", "value": "A" },
+        { "id": 7, "type": "operation", "value": "A" }
+      ],
+      "edges": [
+        { "source": 5, "target": 1 },
+        { "source": 5, "target": 2 },
+        { "source": 6, "target": 3 },
+        { "source": 6, "target": 4 },
+        { "source": 7, "target": 5 },
+        { "source": 7, "target": 6 }
+      ]
+    },
+    "Sada2 (4xPro, 3xOpe)": {
+      "nodes": [
+        { "id": 1, "type": "variable", "value": "x1", "varValue": 1 },
+        { "id": 2, "type": "variable", "value": "x2", "varValue": 1 },
+        { "id": 3, "type": "variable", "value": "x3", "varValue": 0 },
+        { "id": 4, "type": "variable", "value": "x4", "varValue": 1 },
+        { "id": 5, "type": "operation", "value": "O" },
+        { "id": 6, "type": "operation", "value": "A" },
+        { "id": 7, "type": "operation", "value": "O" }
+      ],
+      "edges": [
+        { "source": 5, "target": 1 },
+        { "source": 5, "target": 2 },
+        { "source": 6, "target": 3 },
+        { "source": 6, "target": 4 },
+        { "source": 7, "target": 5 },
+        { "source": 7, "target": 6 }
+      ]
+    },
+    "Sada4 (1xPro)": {
+      "nodes": [
+        { "id": 1, "type": "variable", "value": "x1", "varValue": 1 }
+      ],
+      "edges": []
+    }
 }

@@ -1,5 +1,4 @@
 ---- MCVP ----
-- Finish the following of the steps in steb by step component
 - Store prepared sets as DAG
 
 - Fix (interactive) possible to connect two nodes in both directions at the same time  
