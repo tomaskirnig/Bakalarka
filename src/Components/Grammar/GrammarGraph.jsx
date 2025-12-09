@@ -10,10 +10,9 @@ export function GrammarGraph({ grammar }) {
     const [dimensions, setDimensions] = useState({ width: 800, height: 500 });
     const [showText, setShowText] = useState(false);
 
-    const colors = useGraphColors();
+    const colors = useGraphColors(); // Re-added colors definition
     const settings = useGraphSettings();
-    // Reuse MCVP settings for consistency in node sizing/font
-    const { mcvp } = settings;
+    const { mcvp, grammar: grammarSettings } = settings; // Destructure mcvp and new grammar settings
 
     // Resize observer
     useEffect(() => {
@@ -122,7 +121,7 @@ export function GrammarGraph({ grammar }) {
                     height: '500px', 
                     position: 'relative', 
                     overflow: 'hidden',
-                    backgroundColor: colors.backgroundColor
+                    backgroundColor: colors.canvasBackgroundColor // Use new unified background color
                 }}
             >
                 {graphData.nodes.length === 0 ? (
@@ -139,7 +138,7 @@ export function GrammarGraph({ grammar }) {
                             nodeCanvasObject={paintNode}
                             linkCanvasObject={paintLink}
                             nodeLabel="id"
-                            linkDirectionalArrowLength={6}
+                            linkDirectionalArrowLength={grammarSettings.linkDirectionalArrowLength} // Use grammar-specific setting
                             linkDirectionalArrowRelPos={1}
                             cooldownTime={2000}
                         />

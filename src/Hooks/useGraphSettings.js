@@ -23,7 +23,10 @@ export function useGraphSettings() {
              labelFontSize: 8,
              labelFont: '8px monospace',
              highlightScale: 1.2,
-             linkDirectionalArrowLength: 1,
+             linkDirectionalArrowLength: 1
+        },
+        grammar: {
+            linkDirectionalArrowLength: 100 // Specific setting for grammar graphs
         }
     }), []);
 }

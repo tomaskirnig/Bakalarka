@@ -196,7 +196,7 @@ export function DisplayGraph({ graph }) {
 
   return (
     <>
-      <div className="GraphDiv shadow-sm" ref={containerRef}>
+      <div className="GraphDiv shadow-sm" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
         <div className="graph-controls">
           <button 
             className="graph-btn" 

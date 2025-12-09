@@ -282,7 +282,7 @@ export function TreeCanvas({
   }, [activeNode, graphData]);
 
   return (
-    <div className="GraphDiv" ref={containerRef}>
+    <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
       <div className="graph-controls">
         <button 
           className="graph-btn" 
