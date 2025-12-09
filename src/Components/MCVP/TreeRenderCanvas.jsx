@@ -73,22 +73,19 @@ export function TreeCanvas({
     const nodes = [];
     const links = [];
     const visited = new Set();
-
-    // Reset ID counter only if we were to generate fresh IDs for a fresh tree, 
-    // but we write IDs to the tree objects, so they persist.
     
     function traverse(current, parent) {
       if (!current) return;
       
       // Ensure ID exists on the node object itself
       if (current.id === undefined || current.id === null) {
-        current.id = `n${idCounter.current++}`;
+        current.id = idCounter.current++;
       }
       
       if (visited.has(current.id)) return;
       visited.add(current.id);
       
-      // Reset ephemeral display properties
+      // Reset temporary display properties
       current.evaluationResult = undefined;
       
       nodes.push(current);
@@ -180,8 +177,6 @@ export function TreeCanvas({
   }, []);
 
   // 3. Paint Functions
-  // These depend on the interaction state (hoverNode, etc.)
-  // When state changes, these functions update. ForceGraph detects the prop change and repaints.
   
   const paintNode = useCallback((node, ctx) => {
     if (!node || typeof node.x !== "number" || typeof node.y !== "number") return;
@@ -192,7 +187,7 @@ export function TreeCanvas({
     const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
     const isActive = activeNode && node.id === activeNode.id;
     
-    const shouldHighlight = isHovered || isNeighbor || isExternalHighlight || isActive;
+    const Highlighted = isHovered || isNeighbor || isExternalHighlight || isActive;
 
     // Draw Circle
     ctx.beginPath();
@@ -214,8 +209,8 @@ export function TreeCanvas({
     ctx.fill();
 
     // Stroke
-    ctx.strokeStyle = shouldHighlight ? '#333' : colors.nodeStroke;
-    ctx.lineWidth = shouldHighlight ? 2 : 1;
+    ctx.strokeStyle = Highlighted ? '#333' : colors.nodeStroke;
+    ctx.lineWidth = Highlighted ? 2 : 1;
     ctx.stroke();
 
     // Text Label

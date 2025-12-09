@@ -1,9 +1,10 @@
-import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { computeWinner, getOptimalMoves } from '../Utils/ComputeWinner';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
+import { toast } from 'react-toastify';
 
 export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
@@ -94,7 +95,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
        // Only add default node if absolutely no data
        // addNode(); // Moved to a separate effect to avoid conflict
     }
-  }, [initialGraph]);
+  }, [initialGraph, graph.nodes.length]);
 
   // Effect to notify parent about graph updates (for conversion back etc)
   useEffect(() => {
@@ -194,15 +195,12 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   }, [graph.nodes]);
 
 
-
   // Refresh the graph when optimal moves change
   useEffect(() => {
     if (fgRef.current) {
       fgRef.current.d3ReheatSimulation();
     }
   }, [optimalMoves]);
-
-import { toast } from 'react-toastify';
 
   // Function to add a node
   const addNode = () => {

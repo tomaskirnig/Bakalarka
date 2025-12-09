@@ -11,7 +11,7 @@ export function useGraphSettings() {
             nodeRadius: 20,
             labelFontSize: 12,
             labelFont: '12px monospace',
-            resultLabelOffsetMultiplier: 1.2,
+            resultLabelOffsetMultiplier: 1.4,
             collisionRadiusMultiplier: 2,
             dagLevelDistance: 100,
             linkDistance: 100,
@@ -23,8 +23,7 @@ export function useGraphSettings() {
              labelFontSize: 8,
              labelFont: '8px monospace',
              highlightScale: 1.2,
-             dagLevelDistance: 70, // Default for layouts if used
-             // Physics defaults for games if needed
+             dagLevelDistance: 70, 
         }
     }), []);
 }
