@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { evaluateTree } from '../Utils/EvaluateTree';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
 import { Node } from './../Utils/NodeClass';
@@ -39,7 +39,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
         updateDimensions();
 
-        const resizeObserver = new ResizeObserver((entries) => {
+        const resizeObserver = new ResizeObserver(() => {
             updateDimensions();
         });
 
@@ -100,7 +100,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
         
         if (rootNodes.length > 1) {
-            console.warn("Multiple root nodes found - using the first one");
+            // console.warn("Multiple root nodes found - using the first one");
         }
         
         // console.log(`Graph converted to tree structure:`);
@@ -119,35 +119,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, [graphData, onTreeUpdate, GraphDataToNodeClass]);
 
-    // Memoize evaluation result 
-    const evaluationResult = useMemo(() => {
-        if (!graphData.nodes.length) return null;
-        
-        // Convert graph format to tree format for evaluation
-        const tree = GraphDataToNodeClass(graphData);
-        
-        return tree ? evaluateTree(tree) : null;
-    }, [graphData, GraphDataToNodeClass]);
-
-    // Add initial node if graph is empty
-    useEffect(() => {
-        if (graphData.nodes.length === 0) {
-            addNode('operation', 'O');
-        }
-    }, [graphData.nodes.length]);
-
-
-
     // --- Core Graph Functions ---
 
-    /**
-     * Adds a new node to the graph.
-     * @param {string} type - The type of node ('var' for variable, 'op' or other for operation).
-     * @param {string|null} [value=null] - The value/label of the node (e.g., 'A', 'O', 'x1').
-     * @param {number|null} [varValue=null] - The value of the variable (0 or 1), if applicable.
-     * @returns {Object} The newly created node object.
-     */
-    const addNode = (type, value = null, varValue = null) => {
+    const addNode = useCallback((type, value = null, varValue = null) => {
         if (graphData.nodes.length >= 750) {
             toast.error("Dosažen limit 750 uzlů.");
             return null;
@@ -177,7 +151,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             links: prevData.links,
         }));
         return newNode;
-    };
+    }, [generateNodeId, graphData.nodes.length]);
+
+    // Add initial node if graph is empty
+    useEffect(() => {
+        if (graphData.nodes.length === 0) {
+            addNode('operation', 'O');
+        }
+    }, [graphData.nodes.length, addNode]);
 
     /**
      * Deletes a node and all connected edges from the graph.
@@ -198,11 +179,11 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         setEdgeSource(null);
     };
 
-    const edgeExists = (sourceId, targetId) => {
+    const edgeExists = useCallback((sourceId, targetId) => {
         return graphData.links.some(link =>
             link.source.id === sourceId && link.target.id === targetId
         );
-    };
+    }, [graphData.links]);
 
     /**
      * Adds a directed edge between two nodes.
@@ -210,7 +191,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
      * @param {number|string} targetId - The ID of the target node (child).
      * @returns {boolean} True if the edge was added, false if it already exists or is invalid.
      */
-    const addEdge = (sourceId, targetId) => {
+    const addEdge = useCallback((sourceId, targetId) => {
         if (sourceId === targetId || edgeExists(sourceId, targetId)) {
             console.warn("Edge already exists or is a self-loop.");
             return false;
@@ -234,7 +215,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             links: [...prevData.links, newLink],
         }));
         return true;
-    };
+    }, [graphData.nodes, edgeExists]);
 
     /**
      * Deletes an edge between two nodes.
@@ -313,7 +294,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         } else {
             setSelectedNode(node);
         }
-    }, [addingEdge, edgeSource]);
+    }, [addingEdge, edgeSource, addEdge]);
 
     const handleBackgroundClick = useCallback(() => {
         if (addingEdge) {
@@ -504,25 +485,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                       </div>
                 </div>
             )}
-
-            {graphData && (
-                <div className="card h-100 mt-3">
-                    <div className="card-header">
-                        <h4>Výsledek obvodu</h4>
-                    </div>
-                    <div className="card-body">
-                        {evaluationResult !== null ? (
-                            <>
-                                <div className={`alert ${Boolean(evaluationResult) ? 'alert-success' : 'alert-warning'}`}>
-                                    {`Výsledek: ${evaluationResult}`}
-                                </div>
-                            </>
-                        ) : (
-                            <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
+
+InteractiveMCVPGraph.propTypes = {
+    onTreeUpdate: PropTypes.func
+};

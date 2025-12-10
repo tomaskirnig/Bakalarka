@@ -51,7 +51,7 @@ export function Grammar({ onNavigate, initialData }) {
             />
 
             {grammar && (
-                <div className='mt-4'>
+                <div className='mt-4 mb-4'>
                     <GrammarGraph grammar={grammar} />
                     
                     <div className="card mt-3">
@@ -65,10 +65,10 @@ export function Grammar({ onNavigate, initialData }) {
                         </div>
                     </div>
 
-                    <div className='mt-3'>
+                    {/* <div className='mt-3'>
                         <button className='btn btn-primary mx-2'>Převést na MCVP</button>
                         <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
-                    </div>
+                    </div> */}
                 </div>
             )}
         </div>

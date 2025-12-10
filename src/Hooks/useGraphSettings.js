@@ -26,7 +26,11 @@ export function useGraphSettings() {
              linkDirectionalArrowLength: 1
         },
         grammar: {
-            linkDirectionalArrowLength: 100 // Specific setting for grammar graphs
+             nodeRadius: 8,
+             labelFontSize: 8,
+             labelFont: '8px monospace',
+             highlightScale: 1.2,
+             linkDirectionalArrowLength: 7
         }
     }), []);
 }

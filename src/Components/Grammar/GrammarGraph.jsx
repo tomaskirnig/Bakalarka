@@ -37,15 +37,17 @@ export function GrammarGraph({ grammar }) {
             const nodes = [];
             const links = [];
             const addedNodes = new Set();
+            // Get all known symbols to valid references
             const allSymbols = new Set(grammar.getAllSymbols());
 
-            const addNode = (id, type) => {
+            const addNode = (id, type, label = null) => {
                 if (!addedNodes.has(id)) {
-                    nodes.push({ id, type });
+                    nodes.push({ id, type, label: label || id });
                     addedNodes.add(id);
                 }
             };
 
+            // Ensure all declared non-terminals and terminals exist as nodes
             if (grammar.nonTerminals) {
                 grammar.nonTerminals.forEach(nt => addNode(nt, 'non-terminal'));
             }
@@ -55,17 +57,39 @@ export function GrammarGraph({ grammar }) {
 
             if (grammar.productions) {
                 Object.entries(grammar.productions).forEach(([lhs, rhss]) => {
+                    // Ensure LHS node exists
                     addNode(lhs, 'non-terminal');
+                    
                     if (Array.isArray(rhss)) {
-                        rhss.forEach(rhs => {
+                        rhss.forEach((rhs, index) => {
+                            // Create a unique intermediate node for this specific production rule
+                            // ID format: LHS_index
+                            const prodNodeId = `${lhs}_prod_${index}`;
+                            addNode(prodNodeId, 'production', ''); // Empty label for production nodes
+                            
+                            // Link LHS -> Production Node
+                            links.push({ source: lhs, target: prodNodeId, type: 'rule' });
+
                             if (Array.isArray(rhs)) {
-                                rhs.forEach(symbol => {
-                                    if (allSymbols.has(symbol)) {
-                                        const isTerm = grammar.isTerminal(symbol);
-                                        addNode(symbol, isTerm ? 'terminal' : 'non-terminal');
-                                        links.push({ source: lhs, target: symbol });
-                                    }
-                                });
+                                if (rhs.length === 0) {
+                                    // Epsilon production
+                                    const epsId = 'ε';
+                                    addNode(epsId, 'terminal');
+                                    links.push({ source: prodNodeId, target: epsId });
+                                } else {
+                                    rhs.forEach(symbol => {
+                                        // Link Production Node -> Symbol
+                                        if (allSymbols.has(symbol)) {
+                                            const isTerm = grammar.isTerminal(symbol);
+                                            addNode(symbol, isTerm ? 'terminal' : 'non-terminal');
+                                            links.push({ source: prodNodeId, target: symbol });
+                                        } else if (symbol === 'ε') {
+                                             // Handle explicit epsilon if present in RHS array
+                                            addNode('ε', 'terminal');
+                                            links.push({ source: prodNodeId, target: 'ε' });
+                                        }
+                                    });
+                                }
                             }
                         });
                     }
@@ -79,7 +103,17 @@ export function GrammarGraph({ grammar }) {
     }, [grammar]);
 
     const paintNode = useCallback((node, ctx) => {
-        const radius = mcvp.nodeRadius;
+        if (node.type === 'production') {
+            // Draw small dot for production nodes
+            const radius = 3; 
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
+            ctx.fillStyle = '#999'; // Grey color for intermediate nodes
+            ctx.fill();
+            return;
+        }
+
+        const radius = grammarSettings.nodeRadius;
         
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
@@ -96,12 +130,12 @@ export function GrammarGraph({ grammar }) {
         ctx.lineWidth = 1;
         ctx.stroke();
         
-        ctx.font = mcvp.labelFont;
+        ctx.font = grammarSettings.labelFont;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = colors.nodeText;
-        ctx.fillText(node.id, node.x, node.y);
-    }, [colors, mcvp]);
+        ctx.fillText(node.label || node.id, node.x, node.y);
+    }, [colors, grammarSettings]);
 
     const paintLink = useCallback((link, ctx) => {
         ctx.strokeStyle = colors.defaultLink;
