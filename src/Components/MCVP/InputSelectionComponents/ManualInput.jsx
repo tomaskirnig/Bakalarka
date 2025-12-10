@@ -2,6 +2,8 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { parseExpressionToTree } from '../Utils/Parser'; 
 
+import { toast } from 'react-toastify';
+
 /**
  * Component for manually entering an MCVP expression string.
  * Parses the string into a tree structure.
@@ -13,8 +15,27 @@ import { parseExpressionToTree } from '../Utils/Parser';
 export function ManualInput( {onTreeUpdate} ) {
   const [expression, setExpression] = useState('');
 
+  const countNodes = (node) => {
+    if (!node) return 0;
+    let count = 1;
+    if (node.children) {
+      node.children.forEach(child => {
+         count += countNodes(child);
+      });
+    }
+    return count;
+  };
+
   const handleParse = () => {
-    onTreeUpdate(parseExpressionToTree(expression));
+    const tree = parseExpressionToTree(expression);
+    if (tree) {
+       const nodeCount = countNodes(tree);
+       if (nodeCount > 750) { // Limit for manual input (total nodes)
+          toast.error(`Překročen limit uzlů! (Detekováno: ${nodeCount}, Limit: 750)`);
+          return;
+       }
+       onTreeUpdate(tree);
+    }
   };
 
   return (

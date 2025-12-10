@@ -64,7 +64,7 @@ export function MCVP({ onNavigate, initialData }) {
                         case 'manual': return <ManualInput onTreeUpdate={setTree} />;
                         case 'generate': return <GenerateInput onTreeUpdate={setTree} />;
                         case 'sets': return <PreparedSetsInput onTreeUpdate={setTree} />;
-                        case 'interactive': return <InteractiveMCVPGraph />;
+                        case 'interactive': return <InteractiveMCVPGraph onTreeUpdate={setTree} />;
                         default: return null;
                     }
                 }}

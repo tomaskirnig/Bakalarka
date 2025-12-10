@@ -26,7 +26,9 @@ export function useGraphColors() {
         nodeColor: '#2C666E',
         backgroundColor: '#F0EDEE',
         color1: '#438c96',
-        color4: '#90DDF0'
+        color4: '#90DDF0',
+        dimmedLink: 'rgba(200,200,200,0.15)',
+        canvasBackgroundColor: 'white' // New background color for the canvas
     });
 
     useEffect(() => {
@@ -43,6 +45,8 @@ export function useGraphColors() {
                 starting: getVar('--color-accent-red', '#FF6347'),
                 defaultLink: getVar('--color-grey', '#999'),
                 optimalLink: getVar('--color-accent-yellow', '#FFD700'),
+                dimmedLink: 'rgba(200,200,200,0.15)',
+                canvasBackgroundColor: getVar('--canvas-background-color', 'white'), // CSS variable support
                 
                 // TreeRenderCanvas
                 highlightLink: getVar('--color-accent-red', 'red'),

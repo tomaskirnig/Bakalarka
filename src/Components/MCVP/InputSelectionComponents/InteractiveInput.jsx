@@ -1,11 +1,10 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import { evaluateTree } from '../Utils/EvaluateTree';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
 import { Node } from './../Utils/NodeClass';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
-
-const NODE_R = 12; 
+import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -14,7 +13,7 @@ const NODE_R = 12;
  * 
  * @component
  */
-export function InteractiveMCVPGraph() {
+export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const [graphData, setGraphData] = useState({ nodes: [], links: [] });
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
@@ -26,6 +25,8 @@ export function InteractiveMCVPGraph() {
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const colors = useGraphColors();
+    const settings = useGraphSettings();
+    const { mcvp } = settings;
 
     // ResizeObserver for responsive graph and color updates
     useEffect(() => {
@@ -38,7 +39,7 @@ export function InteractiveMCVPGraph() {
 
         updateDimensions();
 
-        const resizeObserver = new ResizeObserver((entries) => {
+        const resizeObserver = new ResizeObserver(() => {
             updateDimensions();
         });
 
@@ -56,7 +57,7 @@ export function InteractiveMCVPGraph() {
         return id;
     }, []);
     
-    const GraphDataToNodeClass = (graphData) => {
+    const GraphDataToNodeClass = useCallback((graphData) => {
         if (!graphData.nodes.length) return null;
         
         // Create a map of Node instances
@@ -69,9 +70,9 @@ export function InteractiveMCVPGraph() {
                 graphNode.varValue,
                 graphNode.type,
                 [], // Initialize empty children array
-                []  // Initialize empty parents array
+                [],  // Initialize empty parents array
+                graphNode.id // Pass the ID explicitly
             );
-            node.id = graphNode.id; // Keep the original ID for reference
             nodeMap.set(graphNode.id, node);
         }
         
@@ -99,44 +100,33 @@ export function InteractiveMCVPGraph() {
         }
         
         if (rootNodes.length > 1) {
-            console.warn("Multiple root nodes found - using the first one");
+            // console.warn("Multiple root nodes found - using the first one");
         }
         
-        console.log(`Graph converted to tree structure:`);
-        console.log(rootNodes[0]);
+        // console.log(`Graph converted to tree structure:`);
+        // console.log(rootNodes[0]);
         
         return rootNodes[0]; // Return the root node of the tree
-    };
+    }, []);
 
-    // Memoize evaluation result 
-    const evaluationResult = useMemo(() => {
-        if (!graphData.nodes.length) return null;
-        
-        // Convert graph format to tree format for evaluation
-        const tree = GraphDataToNodeClass(graphData);
-        
-        return tree ? evaluateTree(tree) : null;
-    }, [graphData]);
-
-    // Add initial node if graph is empty
+    // Sync with parent component whenever graphData changes
     useEffect(() => {
-        if (graphData.nodes.length === 0) {
-            addNode('operation', 'O');
+        if (onTreeUpdate && graphData.nodes.length > 0) {
+            const tree = GraphDataToNodeClass(graphData);
+            if (tree) {
+                onTreeUpdate(tree);
+            }
         }
-    }, [graphData.nodes.length]);
-
-
+    }, [graphData, onTreeUpdate, GraphDataToNodeClass]);
 
     // --- Core Graph Functions ---
 
-    /**
-     * Adds a new node to the graph.
-     * @param {string} type - The type of node ('var' for variable, 'op' or other for operation).
-     * @param {string|null} [value=null] - The value/label of the node (e.g., 'A', 'O', 'x1').
-     * @param {number|null} [varValue=null] - The value of the variable (0 or 1), if applicable.
-     * @returns {Object} The newly created node object.
-     */
-    const addNode = (type, value = null, varValue = null) => {
+    const addNode = useCallback((type, value = null, varValue = null) => {
+        if (graphData.nodes.length >= 750) {
+            toast.error("Dosažen limit 750 uzlů.");
+            return null;
+        }
+        
         const newId = generateNodeId();
         let newNode;
 
@@ -161,7 +151,14 @@ export function InteractiveMCVPGraph() {
             links: prevData.links,
         }));
         return newNode;
-    };
+    }, [generateNodeId, graphData.nodes.length]);
+
+    // Add initial node if graph is empty
+    useEffect(() => {
+        if (graphData.nodes.length === 0) {
+            addNode('operation', 'O');
+        }
+    }, [graphData.nodes.length, addNode]);
 
     /**
      * Deletes a node and all connected edges from the graph.
@@ -182,11 +179,11 @@ export function InteractiveMCVPGraph() {
         setEdgeSource(null);
     };
 
-    const edgeExists = (sourceId, targetId) => {
+    const edgeExists = useCallback((sourceId, targetId) => {
         return graphData.links.some(link =>
             link.source.id === sourceId && link.target.id === targetId
         );
-    };
+    }, [graphData.links]);
 
     /**
      * Adds a directed edge between two nodes.
@@ -194,7 +191,7 @@ export function InteractiveMCVPGraph() {
      * @param {number|string} targetId - The ID of the target node (child).
      * @returns {boolean} True if the edge was added, false if it already exists or is invalid.
      */
-    const addEdge = (sourceId, targetId) => {
+    const addEdge = useCallback((sourceId, targetId) => {
         if (sourceId === targetId || edgeExists(sourceId, targetId)) {
             console.warn("Edge already exists or is a self-loop.");
             return false;
@@ -218,7 +215,7 @@ export function InteractiveMCVPGraph() {
             links: [...prevData.links, newLink],
         }));
         return true;
-    };
+    }, [graphData.nodes, edgeExists]);
 
     /**
      * Deletes an edge between two nodes.
@@ -297,7 +294,7 @@ export function InteractiveMCVPGraph() {
         } else {
             setSelectedNode(node);
         }
-    }, [addingEdge, edgeSource]);
+    }, [addingEdge, edgeSource, addEdge]);
 
     const handleBackgroundClick = useCallback(() => {
         if (addingEdge) {
@@ -322,7 +319,7 @@ export function InteractiveMCVPGraph() {
     // --- Canvas/Rendering Functions ---
 
     const paintNode = useCallback((node, ctx) => {
-        const radius = NODE_R;
+        const radius = mcvp.nodeRadius;
         const isSelected = selectedNode && node.id === selectedNode.id;
         const isHovered = hoverNode && node.id === hoverNode.id;
         const isEdgeSource = edgeSource && node.id === edgeSource.id;
@@ -347,14 +344,13 @@ export function InteractiveMCVPGraph() {
             displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
         }
 
-        const fontSize = 12;
-        ctx.font = `monospace`;
+        ctx.font = mcvp.labelFont;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
 
-    }, [selectedNode, hoverNode, edgeSource, colors]);
+    }, [selectedNode, hoverNode, edgeSource, colors, mcvp]);
 
     return (
         <div>
@@ -383,12 +379,12 @@ export function InteractiveMCVPGraph() {
                     graphData={graphData}
                     // Layout
                     dagMode="td" // Top-down layout
-                    dagLevelDistance={70} // Distance between levels
-                    cooldownTime={2000} // Stop simulation sooner
+                    dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
+                    cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
                     d3AlphaDecay={0.05} // Faster decay
                     d3VelocityDecay={0.4}
                     // Nodes
-                    nodeRelSize={NODE_R} // Use fixed radius for consistency
+                    nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
                     nodeId="id"
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
@@ -489,25 +485,10 @@ export function InteractiveMCVPGraph() {
                       </div>
                 </div>
             )}
-
-            {graphData && (
-                <div className="card h-100 mt-3">
-                    <div className="card-header">
-                        <h4>Výsledek obvodu</h4>
-                    </div>
-                    <div className="card-body">
-                        {evaluationResult !== null ? (
-                            <>
-                                <div className={`alert ${Boolean(evaluationResult) ? 'alert-success' : 'alert-warning'}`}>
-                                    {`Výsledek: ${evaluationResult}`}
-                                </div>
-                            </>
-                        ) : (
-                            <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
-                        )}
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
+
+InteractiveMCVPGraph.propTypes = {
+    onTreeUpdate: PropTypes.func
+};

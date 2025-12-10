@@ -19,10 +19,15 @@ export function GenerateInput({ onGraphUpdate }) {
                     className='form-control'
                     type="number"
                     min="1"
-                    max="3000"
+                    max="750"
                     placeholder="Počet polí"
                     value={numGameFields}
-                    onChange={(e) => setNumGameFields(Number(e.target.value))}
+                    onChange={(e) => {
+                        let val = Number(e.target.value);
+                        if (val > 750) val = 750;
+                        if (val < 1) val = 1;
+                        setNumGameFields(val);
+                    }}
                 />
             </div>
             <div className="mb-3">
@@ -34,7 +39,12 @@ export function GenerateInput({ onGraphUpdate }) {
                     max="100"
                     placeholder="Pravděpodobnost hrany (%)"
                     value={edgePropability}
-                    onChange={(e) => setEdgePropability(Number(e.target.value))}
+                    onChange={(e) => {
+                        let val = Number(e.target.value);
+                        if (val > 100) val = 100;
+                        if (val < 1) val = 1;
+                        setEdgePropability(val);
+                    }}
                 />
             </div>
    

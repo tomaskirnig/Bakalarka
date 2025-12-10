@@ -6,6 +6,7 @@ import { GenerateInput } from './InputSelectionComponent/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponent/PreparedSetsInput';
 import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
+import { GrammarGraph } from './GrammarGraph';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -50,14 +51,24 @@ export function Grammar({ onNavigate, initialData }) {
             />
 
             {grammar && (
-                <div className='inputWindow'>
-                    <h2>Aktuální gramatika:</h2>
-                    <pre className='text-start w-auto mx-auto d-inline-block'>{grammar.toText ? grammar.toText() : JSON.stringify(grammar, null, 2)}</pre>
-                    <p>{String(isEmptyLanguage(grammar).isEmpty)}</p>
-                    <p>{isEmptyLanguage(grammar).explanation}</p>
+                <div className='mt-4 mb-4'>
+                    <GrammarGraph grammar={grammar} />
+                    
+                    <div className="card mt-3">
+                        <div className="card-header">
+                            <h4>Analýza gramatiky</h4>
+                        </div>
+                        <div className="card-body">
+                             <p className={`alert ${!isEmptyLanguage(grammar).isEmpty ? 'alert-success' : 'alert-warning'}`}>
+                                {isEmptyLanguage(grammar).explanation}
+                             </p>
+                        </div>
+                    </div>
 
-                    <button className='btn btn-primary mx-2'>Převést na MCVP</button>
-                    <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
+                    {/* <div className='mt-3'>
+                        <button className='btn btn-primary mx-2'>Převést na MCVP</button>
+                        <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
+                    </div> */}
                 </div>
             )}
         </div>

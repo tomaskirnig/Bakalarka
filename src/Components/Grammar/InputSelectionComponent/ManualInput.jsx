@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { parseGrammar } from '../Utils/GrammarParser';
 
@@ -64,3 +65,7 @@ export function ManualInput({ onGrammar }) {
     </div>
   );
 }
+
+ManualInput.propTypes = {
+    onGrammar: PropTypes.func.isRequired
+};

@@ -1,3 +1,4 @@
+import PropTypes from 'prop-types';
 import { Grammar } from '../Utils/Grammar';
 import Data from '../../../../Sady/SadyG.json'; 
 
@@ -25,3 +26,7 @@ export function PreparedSetsInput({ onGrammar }) {
     </div>
   );
 }
+
+PreparedSetsInput.propTypes = {
+    onGrammar: PropTypes.func.isRequired
+};

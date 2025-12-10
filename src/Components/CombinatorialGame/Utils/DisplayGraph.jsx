@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { computeWinner, getOptimalMoves } from './ComputeWinner';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
+import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
 export function DisplayGraph({ graph }) {
   // State for highlighted nodes and links, and for the hovered node.
@@ -10,11 +11,12 @@ export function DisplayGraph({ graph }) {
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const NODE_R = 8;
   const fgRef = useRef();
   const containerRef = useRef();
 
   const colors = useGraphColors();
+  const settings = useGraphSettings();
+  const { game } = settings;
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
@@ -138,9 +140,15 @@ export function DisplayGraph({ graph }) {
   }, []);
 
   const paintRing = useCallback((node, ctx) => {
+    // Determine opacity
+    const isHoverActive = hoverNode !== null;
+    const isHighlighted = hoverNode === node || (hoverNode && node.neighbors && node.neighbors.includes(hoverNode));
+    
+    ctx.globalAlpha = isHoverActive && !isHighlighted ? 0.15 : 1;
+
     // Draw a ring around highlighted nodes.
     ctx.beginPath();
-    ctx.arc(node.x, node.y, NODE_R * 1.2, 0, 2 * Math.PI, false);
+    ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
     
     // Color nodes based on player and starting position
     let fillColor;
@@ -156,12 +164,31 @@ export function DisplayGraph({ graph }) {
     ctx.fill();
     
     // Draw the player label below the node.
-    ctx.font = `8px monospace`; 
+    ctx.font = game.labelFont; 
     ctx.fillStyle = 'black';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + NODE_R + 10);
-  }, [hoverNode, colors]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+    
+    // Reset alpha
+    ctx.globalAlpha = 1;
+  }, [hoverNode, colors, game]);
+
+  // Adjust link distance based on node count
+  useEffect(() => {
+    if (fgRef.current && graph && graph.positions) {
+      const nodeCount = Object.keys(graph.positions).length;
+      // Heuristic: Base distance + (nodeCount * factor)
+      // This increases distance as the graph grows, preventing clusters.
+      // Capped at a reasonable max to avoid explosion.
+      const dynamicDistance = Math.min(20 + nodeCount / 10, 200); 
+      
+      fgRef.current.d3Force('link').distance(dynamicDistance);
+      
+      // Re-heat simulation to apply changes smoothly
+      fgRef.current.d3ReheatSimulation();
+    }
+  }, [graph]);
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -169,7 +196,7 @@ export function DisplayGraph({ graph }) {
 
   return (
     <>
-      <div className="GraphDiv shadow-sm" ref={containerRef}>
+      <div className="GraphDiv shadow-sm" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
         <div className="graph-controls">
           <button 
             className="graph-btn" 
@@ -186,10 +213,23 @@ export function DisplayGraph({ graph }) {
           enablePanInteraction={true}
           enableZoomInteraction={true}
           graphData={data}
-          nodeRelSize={NODE_R}
+          nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
+          linkColor={link => {
+            // Base color logic
+            let color = link.isOptimal ? colors.optimalLink : colors.defaultLink;
+            
+            // Opacity logic
+            if (hoverNode) {
+                if (highlightLinks.has(link)) {
+                    return color; // Full opacity for highlighted
+                } else {
+                    return colors.dimmedLink; 
+                }
+            }
+            return color;
+          }} 
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
