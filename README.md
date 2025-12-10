@@ -27,4 +27,4 @@ Pro spuštění a vývoj projektu postupujte podle následujících kroků:
 
 ## Odkaz na živou ukázku
 
-[Živá ukázka aplikace je dostupná zde](bakalarka-eight.vercel.app)
+[Živá ukázka aplikace je dostupná zde](https://bakalarka-eight.vercel.app)
