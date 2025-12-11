@@ -30,7 +30,7 @@ export function Grammar({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content position-relative'>
+        <div className='div-content'>
             <InfoButton title="Problém prázdnosti gramatiky">
                 <p>
                     Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.

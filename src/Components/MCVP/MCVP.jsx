@@ -48,7 +48,7 @@ export function MCVP({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content position-relative'>
+        <div className='div-content'>
             <InfoButton title="Monotónní obvody (MCVP)">
                 <p>
                     Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).

@@ -24,7 +24,7 @@ export function CombinatorialGame({ onNavigate, initialData }) {
     };
 
     return(
-        <div className='container text-center py-4 position-relative'>
+        <div className='container text-center py-4'>
             <InfoButton title="Kombinatorická hra na grafu">
                 <p>
                     Jedná se o nestrannou hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
