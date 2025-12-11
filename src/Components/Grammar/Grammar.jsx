@@ -8,6 +8,7 @@ import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
 import { GrammarGraph } from './GrammarGraph';
 import { InfoButton } from '../Common/InfoButton';
+import { FileTransferControls } from '../Common/FileTransferControls';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -29,8 +30,39 @@ export function Grammar({ onNavigate, initialData }) {
         setGrammar(null);
     };
 
+    const handleExport = () => {
+        if (!grammar) return null;
+        // Return the grammar object properties
+        return {
+            name: grammar.name || "Exported Grammar",
+            nonTerminals: grammar.nonTerminals,
+            terminals: grammar.terminals,
+            productions: grammar.productions
+        };
+    };
+
+    const handleImport = (data) => {
+        // Support both single object and array format (SadyG.json style)
+        let grammarData = data;
+        if (Array.isArray(data)) {
+            if (data.length > 0) {
+                grammarData = data[0]; // Take the first one
+            } else {
+                throw new Error("Prázdné pole v JSON souboru.");
+            }
+        }
+        setGrammar(new GrammarClass(grammarData));
+        setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
+    };
+
     return (
         <div className='div-content'>
+            <FileTransferControls 
+                onExport={handleExport}
+                onImport={handleImport}
+                instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
+                fileName="grammar.json"
+            />
             <InfoButton title="Problém prázdnosti gramatiky">
                 <p>
                     Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.

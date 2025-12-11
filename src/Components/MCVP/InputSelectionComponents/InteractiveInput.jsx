@@ -326,14 +326,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.innerCircle;
+        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.defaultNode;
         ctx.fill();
 
         ctx.strokeStyle = colors.outerCircle;
         ctx.stroke();
 
         if (isSelected || isHovered || isEdgeSource) {
-            ctx.strokeStyle = colors.hover;
+            ctx.strokeStyle = colors.highlightNode;
             ctx.stroke();
         }
 

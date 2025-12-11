@@ -89,8 +89,28 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       
       // Set starting position from initial graph
       if (initialGraph.startingPosition) {
-        setStartingNodeId(String(initialGraph.startingPosition.id));
+        setStartingNodeId(String(initialGraph.startingPosition.id || initialGraph.startingPosition));
       }
+    } else if (initialGraph && (initialGraph.nodes || initialGraph.edges)) {
+        // Handle flat format (nodes, edges/links)
+        const newNodes = (initialGraph.nodes || []).map(n => ({
+            ...n,
+            id: String(n.id),
+            player: n.player !== undefined ? n.player : 1, // Default to player 1 if missing
+            neighbors: []
+        }));
+        
+        const edges = initialGraph.edges || initialGraph.links || [];
+        const newLinks = edges.map(l => ({
+            source: String(l.source.id || l.source),
+            target: String(l.target.id || l.target)
+        }));
+
+        setGraph({ nodes: newNodes, links: newLinks });
+
+        if (initialGraph.startingPosition) {
+            setStartingNodeId(String(initialGraph.startingPosition.id || initialGraph.startingPosition));
+        }
     } else if (graph.nodes.length === 0 && !initialGraph) {
        // Only add default node if absolutely no data
        // addNode(); // Moved to a separate effect to avoid conflict
@@ -317,13 +337,13 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     
     // Change color based on node state
     if (addingEdge && edgeSource && edgeSource.id === node.id) {
-      ctx.fillStyle = colors.color4; 
+      ctx.fillStyle = colors.highlightNode; 
     } else if (node === hoverNode) {
-      ctx.fillStyle = colors.color4;
-    } else if (node.id === Number(startingNodeId)){
-      ctx.fillStyle = colors.starting; 
+      ctx.fillStyle = colors.highlightNode;
+    } else if (String(node.id) === String(startingNodeId)){
+      ctx.fillStyle = colors.accentRed; 
     }else {
-      ctx.fillStyle = colors.color1;
+      ctx.fillStyle = colors.defaultNode;
     }
     
     ctx.fill();
@@ -466,7 +486,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         nodeRelSize={game.nodeRadius}
         autoPauseRedraw={false}
         linkWidth={link => highlightLinks.has(link) ? 5 : 3}
-        linkColor={link => link.isOptimal ? colors.optimalLink : colors.defaultLink} 
+        linkColor={link => link.isOptimal ? colors.accentYellow : colors.defaultLink} 
         linkDirectionalParticles={3}
         linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
         linkDirectionalArrowLength={6}

@@ -155,7 +155,7 @@ export function DisplayGraph({ graph }) {
     if (node === hoverNode) {
       fillColor = colors.highlightNode;
     }else if (node.isStartingPosition) {
-      fillColor = colors.starting;
+      fillColor = colors.accentRed;
     }else {
       fillColor = colors.defaultNode;
     }
@@ -218,7 +218,7 @@ export function DisplayGraph({ graph }) {
           linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
           linkColor={link => {
             // Base color logic
-            let color = link.isOptimal ? colors.optimalLink : colors.defaultLink;
+            let color = link.isOptimal ? colors.accentYellow : colors.defaultLink;
             
             // Opacity logic
             if (hoverNode) {

@@ -195,9 +195,9 @@ export function TreeCanvas({
 
     // Fill Color
     if (isActive) {
-        ctx.fillStyle = colors.activeNode;
+        ctx.fillStyle = colors.accentYellow;
     } else if (isHovered) {
-        ctx.fillStyle = colors.activeNode;
+        ctx.fillStyle = colors.accentYellow;
     } else if (isExternalHighlight) {
         ctx.fillStyle = colors.highlightNode;
     } else if (isNeighbor) {
@@ -247,7 +247,7 @@ export function TreeCanvas({
     
     const isHighlighted = highlightLinks.current.has(link);
     
-    ctx.strokeStyle = isHighlighted ? colors.highlightLink : colors.defaultLink;
+    ctx.strokeStyle = isHighlighted ? colors.accentRed : colors.defaultLink;
     ctx.lineWidth = isHighlighted ? 3 : 1;
     
     ctx.beginPath();

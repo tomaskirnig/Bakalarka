@@ -12,6 +12,9 @@ import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
 import { InfoButton } from '../Common/InfoButton';
+import { FileTransferControls } from '../Common/FileTransferControls';
+import { treeToFlatGraph, flatGraphToTree } from './Utils/Serialization';
+import { toast } from 'react-toastify';
 
 /**
  * Main component for the Monotone Circuit Value Problem (MCVP) module.
@@ -47,8 +50,44 @@ export function MCVP({ onNavigate, initialData }) {
         setTree(null);
     };
 
+    const handleExport = () => {
+        if (!tree) return null;
+        return treeToFlatGraph(tree);
+    };
+
+    const handleImport = (data) => {
+        let graphData = data;
+        
+        // Handle SadyMCVP format (Object with keys)
+        if (!data.nodes && !data.edges && !data.links) {
+            const keys = Object.keys(data);
+            if (keys.length > 0) {
+                // Try to take the first set found
+                const firstSet = data[keys[0]];
+                if (firstSet && (firstSet.nodes || firstSet.edges || firstSet.links)) {
+                    graphData = firstSet;
+                    toast.info(`Importována sada: ${keys[0]}`);
+                }
+            }
+        }
+
+        const newTree = flatGraphToTree(graphData);
+        if (newTree) {
+            setTree(newTree);
+            setChosenOpt('manual'); // Switch to view/manual mode
+        } else {
+            toast.error("Nepodařilo se vytvořit strom z importovaných dat.");
+        }
+    };
+
     return (
         <div className='div-content'>
+            <FileTransferControls 
+                onExport={handleExport}
+                onImport={handleImport}
+                instructionText="Nahrajte soubor JSON s definicí obvodu ({nodes, edges/links})."
+                fileName="mcvp_circuit.json"
+            />
             <InfoButton title="Monotónní obvody (MCVP)">
                 <p>
                     Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).

@@ -9,26 +9,24 @@ export function useGraphColors() {
     const [colors, setColors] = useState({
         defaultNode: '#438c96',
         highlightNode: '#90DDF0',
-        starting: '#FF6347',
+        accentYellow: '#FFD700',
+        accentRed: '#FF6347',
+        selected: '#FFB74D',
+        
         defaultLink: '#999',
-        optimalLink: '#FFD700',
-        highlightLink: 'red',
-        activeNode: '#FFD700',
+        dimmedLink: 'rgba(200,200,200,0.15)',
+        
         nodeStroke: '#333',
         nodeText: '#fff',
         outerCircle: '#07393C',
-        innerCircle: '#438c96',
-        selected: '#FFB74D',
+        
         text: '#F0EDEE',
-        hover: '#90DDF0',
         instructionText: '#666',
+        
         linkColor: '#ece5f0',
         nodeColor: '#2C666E',
         backgroundColor: '#F0EDEE',
-        color1: '#438c96',
-        color4: '#90DDF0',
-        dimmedLink: 'rgba(200,200,200,0.15)',
-        canvasBackgroundColor: 'white' // New background color for the canvas
+        canvasBackgroundColor: 'white'
     });
 
     useEffect(() => {
@@ -39,46 +37,34 @@ export function useGraphColors() {
             const getVar = (name, fallback) => styles.getPropertyValue(name).trim() || fallback;
 
             setColors({
-                // Common
+                // Nodes
                 defaultNode: getVar('--color1', '#438c96'),
                 highlightNode: getVar('--color4', '#90DDF0'),
-                starting: getVar('--color-accent-red', '#FF6347'),
+                accentYellow: getVar('--color-accent-yellow', '#FFD700'),
+                accentRed: getVar('--color-accent-red', '#FF6347'),
+                selected: getVar('--color-accent-orange', '#FFB74D'),
+                nodeColor: getVar('--color2', '#2C666E'),
+                outerCircle: getVar('--color3', '#07393C'),
+
+                // Links
                 defaultLink: getVar('--color-grey', '#999'),
-                optimalLink: getVar('--color-accent-yellow', '#FFD700'),
                 dimmedLink: 'rgba(200,200,200,0.15)',
-                canvasBackgroundColor: getVar('--canvas-background-color', 'white'), // CSS variable support
+                linkColor: getVar('--color-grey-light-purple', '#ece5f0'),
                 
-                // TreeRenderCanvas
-                highlightLink: getVar('--color-accent-red', 'red'),
-                activeNode: getVar('--color-accent-yellow', '#FFD700'),
+                // Text & Stroke
                 nodeStroke: getVar('--color-grey-dark', '#333'),
                 nodeText: getVar('--color-white', '#fff'),
-                
-                // InteractiveInput
-                outerCircle: getVar('--color3', '#07393C'),
-                innerCircle: getVar('--color1', '#438c96'),
-                selected: getVar('--color-accent-orange', '#FFB74D'),
                 text: getVar('--root-background-color', '#F0EDEE'),
-                hover: getVar('--color4', '#90DDF0'),
                 instructionText: getVar('--color-grey-medium', '#666'),
 
-                // NodeVisual
-                linkColor: getVar('--color-grey-light-purple', '#ece5f0'),
-                nodeColor: getVar('--color2', '#2C666E'),
+                // Backgrounds
                 backgroundColor: getVar('--root-background-color', '#F0EDEE'),
-
-                // ManualInput (redundant aliases for clarity in component)
-                color1: getVar('--color1', '#438c96'),
-                color4: getVar('--color4', '#90DDF0')
+                canvasBackgroundColor: getVar('--canvas-background-color', 'white'),
             });
         };
 
         updateColors();
-
-        // Optional: Add listener for theme changes if implemented in future
-        
-        // Clean up
-    }, []);
+    }, []); // Empty dependency array as it depends on no external state/props
 
     return colors;
 }
