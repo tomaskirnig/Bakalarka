@@ -7,6 +7,7 @@ import { PreparedSetsInput } from './InputSelectionComponent/PreparedSetsInput';
 import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
 import { GrammarGraph } from './GrammarGraph';
+import { InfoButton } from '../Common/InfoButton';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -29,7 +30,23 @@ export function Grammar({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content'>
+        <div className='div-content position-relative'>
+            <InfoButton title="Problém prázdnosti gramatiky">
+                <p>
+                    Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
+                </p>
+                <hr />
+                <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
+                <ul className="ps-3 mb-0">
+                    <li>První řádek definuje počáteční symbol.</li>
+                    <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
+                    <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
+                    <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
+                    <li>Použijte <code>|</code> pro oddělení alternativ.</li>
+                    <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
+                </ul>
+            </InfoButton>
+
             <h1 className='display-4'>Gramatika</h1>
 
             <GenericInputMethodSelector

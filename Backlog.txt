@@ -12,6 +12,7 @@
 - Optimize - make hitboxes bigger
 - Optimize - initial placement of tree in canvas (tree is in upper left corner and not centered)
 - Optimize - ids of nodes icrement when AND or OR added 
+- Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----
 - Remake the isWinning property to hold players id

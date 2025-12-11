@@ -22,7 +22,7 @@ export function computeWinner(graph) {
 
   const memo = {};
   const processing = new Set();
-  const expanded = new Set();
+  const visited = new Set();
   const stack = [graph.startingPosition.id];
   
   const getResult = (id) => memo[id] === undefined ? false : memo[id];
@@ -35,9 +35,9 @@ export function computeWinner(graph) {
       continue;
     }
 
-    if (!expanded.has(u)) {
+    if (!visited.has(u)) {
       processing.add(u);
-      expanded.add(u);
+      visited.add(u);
       memo[u] = false; // Default/Cycle assumption
 
       const position = graph.positions[u];
