@@ -31,7 +31,7 @@ export function GenerateInput({ onGrammar }) {
         };
 
         try {
-            // Generate the grammar 
+            // Generate the grammar and pass it to the parent component
             const generatedGrammar = generateGrammar(config);
             
             // Pass the grammar to the parent component

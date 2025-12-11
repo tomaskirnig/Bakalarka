@@ -39,8 +39,8 @@ export function PreparedSetsInput({ onTreeUpdate }) {
         const target = nodeMap.get(edge.target);
 
         if (source && target) {
-          // In the JSON, source -> target usually means parent -> child for trees
-          // (e.g. n7(A) -> n5(O)).
+          // In the JSON format, edges represent parent -> child relationships
+          // (e.g., parent node n7(A) has child n5(O)).
           source.children.push(target);
           target.parents.push(source);
         }
