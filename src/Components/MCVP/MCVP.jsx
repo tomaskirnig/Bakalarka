@@ -11,6 +11,7 @@ import { Modal } from '../Common/Modal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
+import { InfoButton } from '../Common/InfoButton';
 
 /**
  * Main component for the Monotone Circuit Value Problem (MCVP) module.
@@ -47,7 +48,21 @@ export function MCVP({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content'>
+        <div className='div-content position-relative'>
+            <InfoButton title="Monotónní obvody (MCVP)">
+                <p>
+                    Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).
+                </p>
+                <ul className="ps-3">
+                    <li><strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.</li>
+                    <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
+                    <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
+                </ul>
+                <p className="mb-0">
+                    Tento problém je P-úplný, což znamená, že je těžké jej efektivně paralelizovat.
+                </p>
+            </InfoButton>
+
             <h1 className='display-4'>MCVP</h1>
 
             <GenericInputMethodSelector

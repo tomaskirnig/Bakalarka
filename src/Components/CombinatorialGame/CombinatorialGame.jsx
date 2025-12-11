@@ -5,6 +5,7 @@ import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { DisplayGraph } from './Utils/DisplayGraph';
+import { InfoButton } from '../Common/InfoButton';
 
 export function CombinatorialGame({ onNavigate, initialData }) {
     const [graph, setGraph] = useState(null); // Current tree
@@ -23,7 +24,19 @@ export function CombinatorialGame({ onNavigate, initialData }) {
     };
 
     return(
-        <div className='container text-center py-4'>
+        <div className='container text-center py-4 position-relative'>
+            <InfoButton title="Kombinatorická hra na grafu">
+                <p>
+                    Jedná se o nestrannou hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
+                </p>
+                <ul className="ps-3 text-start">
+                    <li><strong>Hráči:</strong> Hráč I (začíná) a Hráč II.</li>
+                    <li><strong>Pravidla:</strong> Hráči se střídají v tazích. V každém tahu hráč přesune žeton z aktuálního vrcholu do jednoho z jeho následníků.</li>
+                    <li><strong>Konec hry:</strong> Prohrává hráč, který nemůže provést tah (nachází se v listu).</li>
+                    <li><strong>Cíl:</strong> Určit, zda má Hráč I vyhrávající strategii (tj. dokáže vynutit výhru bez ohledu na tahy soupeře).</li>
+                </ul>
+            </InfoButton>
+
             <h1 className='display-4 mb-4'>Kombinatorická hra</h1>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
