@@ -32,3 +32,9 @@
 - Optimize using the useCallback 
 - Optimize using loaders  
 - Rewrite css to bootstrap
+
+export a import grafu
+zobrazit u kazdeho nodu hrace s vyherni pozici
+kdyz gramatika neco generuje, zobrazit derivacni strom, jinak jenom slovni vysledek
+
+-poslat link na live stranku
