@@ -64,7 +64,7 @@ export function useGraphColors() {
         };
 
         updateColors();
-    }, []); // Empty dependency array as it depends on no external state/props
+    }, []); 
 
     return colors;
 }

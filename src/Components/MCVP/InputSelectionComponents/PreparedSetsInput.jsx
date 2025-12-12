@@ -1,6 +1,7 @@
 import PropTypes from "prop-types";
 import Data from "../../../../Sady/SadyMCVP.json";
 import { Node } from "../Utils/NodeClass";
+import { toast } from "react-toastify";
 
 /**
  * Component for selecting a pre-defined MCVP problem set.
@@ -53,7 +54,9 @@ export function PreparedSetsInput({ onTreeUpdate }) {
     );
 
     if (rootNodes.length === 0) {
-      console.warn("No root node found in prepared set.");
+      const msg = "V připravené sadě nebyl nalezen kořenový uzel (možný cyklus).";
+      console.warn(msg);
+      toast.error(msg);
       return null; // Cycle or empty?
     }
 

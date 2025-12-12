@@ -52,7 +52,7 @@ export function flatGraphToTree(graphData) {
     );
     
     if (rootNodes.length === 0) {
-        console.warn("No root node found - graph may have cycles");
+        console.warn("Nenalezen kořenový uzel - graf může obsahovat cykly");
         return null;
     }
     

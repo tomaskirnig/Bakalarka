@@ -6,8 +6,8 @@ export function InfoButton({ title, children }) {
 
   return (
     <div 
-      className='legend position-absolute p-2'
-      style={{ zIndex: 1050, cursor: 'help', top: '100px', right: '30px' }}
+      className='legend position-absolute'
+      style={{ zIndex: 1050, cursor: 'help', top: '104px', right: '20px' }}
       onMouseEnter={() => setShowLegend(true)}
       onMouseLeave={() => setShowLegend(false)}
     >

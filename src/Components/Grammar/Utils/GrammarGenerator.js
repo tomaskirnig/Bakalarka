@@ -46,12 +46,12 @@ function validateConfig(config) {
     maxProductionsPerNonTerminal 
   } = config;
 
-  if (nonTerminalCount <= 0) throw new Error('Non-terminal count must be positive');
-  if (terminalCount <= 0) throw new Error('Terminal count must be positive');
-  if (maxRuleLength <= 0) throw new Error('Max rule length must be positive');
-  if (minProductionsPerNonTerminal <= 0) throw new Error('Min productions must be positive');
+  if (nonTerminalCount <= 0) throw new Error('Počet neterminálů musí být kladný.');
+  if (terminalCount <= 0) throw new Error('Počet terminálů musí být kladný.');
+  if (maxRuleLength <= 0) throw new Error('Maximální délka pravidla musí být kladná.');
+  if (minProductionsPerNonTerminal <= 0) throw new Error('Minimální počet produkcí musí být kladný.');
   if (minProductionsPerNonTerminal > maxProductionsPerNonTerminal) {
-    throw new Error('Min productions cannot exceed max productions');
+    throw new Error('Minimální počet produkcí nemůže překročit maximální počet produkcí.');
   }
 }
 

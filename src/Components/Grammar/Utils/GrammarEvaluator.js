@@ -22,7 +22,7 @@ export function isEmptyLanguage(grammar) {
       isEmpty: true,
       productive: [],
       nonproductive: nonTerminals,
-      explanation: "The grammar is empty: no start symbol is defined."
+      explanation: "Gramatika je prázdná: není definován počáteční symbol."
     };
   }
   

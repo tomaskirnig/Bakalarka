@@ -71,7 +71,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                 graphNode.type,
                 [], // Initialize empty children array
                 [],  // Initialize empty parents array
-                graphNode.id // Pass the ID explicitly
+                graphNode.id 
             );
             nodeMap.set(graphNode.id, node);
         }

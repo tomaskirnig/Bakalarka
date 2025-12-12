@@ -37,7 +37,7 @@ export function GenerateInput({ onGrammar }) {
             // Pass the grammar to the parent component
             onGrammar(generatedGrammar);
         } catch (error) {
-            alert(`Error generating grammar: ${error.message}`);
+            alert(`Chyba při generování gramatiky: ${error.message}`);
         }
     };
     

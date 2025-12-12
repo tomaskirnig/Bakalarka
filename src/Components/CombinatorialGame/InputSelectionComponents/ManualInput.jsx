@@ -267,13 +267,26 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   // Function to add an edge between two nodes
   const addEdge = (sourceId, targetId) => {
     // Don't allow self-loops or duplicate edges
-    if (sourceId === targetId || edgeExists(sourceId, targetId)) {
+    if (sourceId === targetId) {
+      toast.error("Nelze přidat hranu: Smyčky (hrany z uzlu na sebe sama) nejsou povoleny.");
+      return false;
+    }
+    if (edgeExists(sourceId, targetId)) {
+      toast.error("Nelze přidat hranu: Hrana mezi těmito uzly již existuje.");
       return false;
     }
 
+    const source = nodeMap[sourceId];
+    const target = nodeMap[targetId];
+
+    if (!source || !target) {
+        toast.error("Nelze přidat hranu: Zdrojový nebo cílový uzel nebyl nalezen.");
+        return false;
+    }
+
     const newLink = {
-      source: nodeMap[sourceId],
-      target: nodeMap[targetId],
+      source: source,
+      target: target,
     };
 
     setGraph(prevGraph => ({
@@ -485,13 +498,13 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         graphData={data}
         nodeRelSize={game.nodeRadius}
         autoPauseRedraw={false}
-        linkWidth={link => highlightLinks.has(link) ? 5 : 3}
-        linkColor={link => link.isOptimal ? colors.accentYellow : colors.defaultLink} 
+        linkWidth={graphLink => highlightLinks.has(graphLink) ? 5 : 3}
+        linkColor={graphLink => graphLink.isOptimal ? colors.accentYellow : colors.defaultLink} 
         linkDirectionalParticles={3}
-        linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
+        linkDirectionalParticleWidth={graphLink => highlightLinks.has(graphLink) ? 4 : 0}
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
-        linkDirectionalArrowColor={link => 'rgba(0,0,0,0.6)'}
+        linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
         linkLabel={getLinkLabel}
         linkCanvasObjectMode={() => 'after'}
         linkCanvasObject={paintLink}

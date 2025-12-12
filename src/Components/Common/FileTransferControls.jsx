@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
-import { Modal } from './Modal'; // Assuming generic Modal exists
+import { Modal } from './Modal';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 
 export function FileTransferControls({ onExport, onImport, instructionText, fileName = "data.json" }) {
@@ -90,8 +90,8 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
     return (
         <>
             <div 
-                className="position-absolute d-flex gap-2" 
-                style={{ top: '100px', right: '80px', zIndex: 1040 }}
+                className="position-absolute d-flex gap-2 align-items-center" 
+                style={{ top: '100px', right: '55px', zIndex: 1040 }}
             >
                 <button 
                     className="btn btn-sm btn-outline-secondary" 
