@@ -162,6 +162,10 @@ export function TreeCanvas({
         node.links.forEach(link => highlightLinks.current.add(link));
       }
     }
+
+    if (containerRef.current) {
+        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+    }
   }, []);
 
   const handleLinkHover = useCallback((link) => {
@@ -174,6 +178,10 @@ export function TreeCanvas({
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
+    
+    if (containerRef.current) {
+        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+    }
   }, []);
 
   // 3. Paint Functions

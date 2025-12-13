@@ -341,7 +341,17 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
     setHoverNode(node || null);
     setHighlightLinks(newHighlightLinks);
+
+    if (containerRef.current) {
+        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+    }
   }, [data]);
+
+  const handleLinkHover = useCallback((link) => {
+    if (containerRef.current) {
+        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+    }
+  }, []);
 
   // Highlighted node and edges styling
   const paintRing = useCallback((node, ctx) => {
@@ -511,7 +521,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         nodeCanvasObjectMode={() => 'after'}
         nodeCanvasObject={paintRing}
         onNodeHover={handleNodeHover}
-        onLinkHover={handleNodeHover}
+        onLinkHover={handleLinkHover}
         onNodeClick={handleNodeClick}  
         onBackgroundClick={handleBackgroundClick} 
       />

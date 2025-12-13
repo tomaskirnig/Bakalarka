@@ -125,6 +125,10 @@ export function DisplayGraph({ graph }) {
     setHoverNode(node || null);
     setHighlightNodes(newHighlightNodes);
     setHighlightLinks(newHighlightLinks);
+
+    if (containerRef.current) {
+        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+    }
   }, [data]);
 
   const handleLinkHover = useCallback((link) => {
@@ -137,6 +141,10 @@ export function DisplayGraph({ graph }) {
     }
     setHighlightNodes(newHighlightNodes);
     setHighlightLinks(newHighlightLinks);
+
+    if (containerRef.current) {
+        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+    }
   }, []);
 
   const paintRing = useCallback((node, ctx) => {

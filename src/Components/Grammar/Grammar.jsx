@@ -56,7 +56,7 @@ export function Grammar({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content'>
+        <div className='div-content mb-2'>
             <FileTransferControls 
                 onExport={handleExport}
                 onImport={handleImport}

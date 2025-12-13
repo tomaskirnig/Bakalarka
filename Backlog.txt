@@ -5,9 +5,6 @@
 - (interactive) Display numbers on edges when node is selected and then use these numbers in the delete butons 
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
-- Optimize - space between nodes
-- Optimize - make hitboxes bigger
-- Optimize - ids of nodes icrement when AND or OR added 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----

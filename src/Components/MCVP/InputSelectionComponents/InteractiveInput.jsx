@@ -22,6 +22,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
+    const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const colors = useGraphColors();
@@ -131,10 +132,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         let newNode;
 
         if (type === 'var') {
+            const varName = `x${nextVarIdRef.current}`;
+            nextVarIdRef.current += 1; // Increment for the next variable
             newNode = {
                 id: newId,
                 type: 'variable',
-                value: value || `x${newId}`, 
+                value: value || varName, 
                 varValue: varValue === null ? 0 : varValue, 
             };
         } else {
@@ -316,6 +319,19 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         return graphData.links.some(link => link.source.id === nodeId);
     };
 
+    const handleNodeHover = useCallback((node) => {
+        setHoverNode(node);
+        if (containerRef.current) {
+            containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+        }
+    }, []);
+
+    const handleLinkHover = useCallback((link) => {
+        if (containerRef.current) {
+            containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+        }
+    }, []);
+
     // --- Canvas/Rendering Functions ---
 
     const paintNode = useCallback((node, ctx) => {
@@ -397,7 +413,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     // Interaction
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
-                    onNodeHover={setHoverNode} // Update hover state
+                    onNodeHover={handleNodeHover} // Update hover state
+                    onLinkHover={handleLinkHover}
                     enablePanInteraction={true}
                     enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes

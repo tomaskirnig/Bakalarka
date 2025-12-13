@@ -146,6 +146,18 @@ export function GrammarGraph({ grammar }) {
         ctx.stroke();
     }, [colors]);
 
+    const handleNodeHover = useCallback((node) => {
+        if (containerRef.current) {
+            containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+        }
+    }, []);
+
+    const handleLinkHover = useCallback((link) => {
+        if (containerRef.current) {
+            containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+        }
+    }, []);
+
     return (
         <div className="grammar-graph-container">
             <div 
@@ -155,7 +167,8 @@ export function GrammarGraph({ grammar }) {
                     height: '500px', 
                     position: 'relative', 
                     overflow: 'hidden',
-                    backgroundColor: colors.canvasBackgroundColor // Use new unified background color
+                    backgroundColor: colors.canvasBackgroundColor, // Use new unified background color
+                    cursor: 'grab'
                 }}
             >
                 {graphData.nodes.length === 0 ? (
@@ -175,6 +188,8 @@ export function GrammarGraph({ grammar }) {
                             linkDirectionalArrowLength={grammarSettings.linkDirectionalArrowLength} // Use grammar-specific setting
                             linkDirectionalArrowRelPos={1}
                             cooldownTime={2000}
+                            onNodeHover={handleNodeHover}
+                            onLinkHover={handleLinkHover}
                         />
                         <button 
                             className="btn btn-sm btn-light position-absolute shadow-sm" 
