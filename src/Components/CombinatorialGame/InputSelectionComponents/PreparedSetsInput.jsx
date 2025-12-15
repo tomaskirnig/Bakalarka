@@ -2,7 +2,29 @@ import PropTypes from "prop-types";
 
 // Load all JSON files from the Sady/CombinatorialGame directory
 const modules = import.meta.glob('../../../../Sady/CombinatorialGame/*.json', { eager: true });
-const Data = Object.values(modules).map(mod => mod.default || mod);
+const Data = Object.entries(modules)
+    .map(([path, mod]) => {
+        const data = mod.default || mod;
+         // Validation
+        if (!data || typeof data !== 'object') {
+            console.warn(`Skipping invalid game file (not an object): ${path}`);
+            return null;
+        }
+        if (!data.name) {
+             console.warn(`Skipping invalid game file (missing name): ${path}`);
+             return null;
+        }
+        if (!Array.isArray(data.nodes)) {
+             console.warn(`Skipping invalid game file (missing nodes array): ${path}`);
+             return null;
+        }
+         if (data.startingPosition === undefined) {
+             console.warn(`Skipping invalid game file (missing startingPosition): ${path}`);
+             return null;
+        }
+        return data;
+    })
+    .filter(item => item !== null);
 
 export function PreparedSetsInput({ onGraphUpdate }) {
   const handleSelectChange = (event) => {

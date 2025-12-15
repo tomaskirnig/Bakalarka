@@ -76,7 +76,7 @@ export function MCVP({ onNavigate, initialData }) {
             setTree(newTree);
             setChosenOpt('manual'); // Switch to view/manual mode
         } else {
-            toast.error("Nepodařilo se vytvořit strom z importovaných dat.");
+            throw new Error("Nepodařilo se vytvořit strom z importovaných dat.");
         }
     };
 

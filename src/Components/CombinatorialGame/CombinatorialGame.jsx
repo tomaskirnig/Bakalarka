@@ -75,7 +75,7 @@ export function CombinatorialGame({ onNavigate, initialData }) {
             setGraph(graphData);
             setChosenOpt('manual'); 
         } else {
-            toast.error("Neplatný formát dat pro kombinatorickou hru.");
+            throw new Error("Neplatný formát dat pro kombinatorickou hru.");
         }
     };
 

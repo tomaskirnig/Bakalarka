@@ -4,7 +4,25 @@ import { toast } from "react-toastify";
 
 // Load all JSON files from the Sady/MCVP directory
 const modules = import.meta.glob('../../../../Sady/MCVP/*.json', { eager: true });
-const Data = Object.values(modules).map(mod => mod.default || mod);
+const Data = Object.entries(modules)
+    .map(([path, mod]) => {
+        const data = mod.default || mod;
+        // Validation
+        if (!data || typeof data !== 'object') {
+            console.warn(`Skipping invalid MCVP file (not an object): ${path}`);
+            return null;
+        }
+        if (!data.name) {
+             console.warn(`Skipping invalid MCVP file (missing name): ${path}`);
+             return null;
+        }
+        if (!Array.isArray(data.nodes)) {
+             console.warn(`Skipping invalid MCVP file (missing nodes array): ${path}`);
+             return null;
+        }
+        return data;
+    })
+    .filter(item => item !== null);
 
 /**
  * Component for selecting a pre-defined MCVP problem set.

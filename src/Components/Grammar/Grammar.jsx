@@ -51,6 +51,21 @@ export function Grammar({ onNavigate, initialData }) {
                 throw new Error("Prázdné pole v JSON souboru.");
             }
         }
+
+        // Basic validation
+        if (!grammarData || typeof grammarData !== 'object') {
+             throw new Error("Data musí být objekt.");
+        }
+        if (!Array.isArray(grammarData.nonTerminals)) {
+             throw new Error("Chybí pole 'nonTerminals'.");
+        }
+        if (!Array.isArray(grammarData.terminals)) {
+             throw new Error("Chybí pole 'terminals'.");
+        }
+        if (!grammarData.productions || typeof grammarData.productions !== 'object') {
+             throw new Error("Chybí objekt 'productions'.");
+        }
+
         setGrammar(new GrammarClass(grammarData));
         setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
     };

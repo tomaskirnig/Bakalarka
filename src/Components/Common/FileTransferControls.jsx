@@ -48,8 +48,13 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
                 setShowImportModal(false);
                 toast.success("Import úspěšný.");
             } catch (error) {
-                console.error("Import parsing error:", error);
-                toast.error("Chyba při čtení souboru: Neplatný JSON.");
+                console.error("Import error:", error);
+                // Differentiate between JSON parse errors and validation errors from onImport
+                if (error instanceof SyntaxError) {
+                    toast.error("Chyba při čtení souboru: Neplatný formát JSON.");
+                } else {
+                    toast.error(`Chyba importu: ${error.message}`);
+                }
             }
         };
         reader.readAsText(file);
