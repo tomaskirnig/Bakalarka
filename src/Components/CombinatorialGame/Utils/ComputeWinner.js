@@ -98,38 +98,40 @@ export function computeWinner(graph) {
 
 /**
  * Finds and returns optimal moves for Player 1's winning strategy.
+ * Includes all moves that preserve the winning state (Winning -> Winning).
+ * This covers Player 1's optimal choices and Player 2's forced moves (if any).
  * 
  * @param {Object} graph - The game graph with positions and startingPosition
  * @param {Object<string, Object>} graph.positions - Map of position IDs to position objects
  * @param {Object} [precomputedResult] - Optional result from computeWinner to avoid re-calculation
- * @returns {Object} Map of position IDs to optimal next move IDs for Player 1
+ * @returns {Set<string>} Set of optimal edge keys in format "sourceId-targetId"
  */
 export function getOptimalMoves(graph, precomputedResult = null) {
   if (!graph || !graph.positions) {
-    return {};
+    return new Set();
   }
   
   // Use precomputed result if available, otherwise compute
   const result = precomputedResult || computeWinner(graph);
   const winningPositions = result.winningPositions;
   
-  const optimalMoves = {};
+  const optimalEdges = new Set();
   
-  // Only calculate optimal moves for positions where Player 1 has a turn
   for (const posId in graph.positions) {
     const position = graph.positions[posId];
     
-    // Only consider positions where it's Player 1's turn and they have a winning strategy
-    if (position.player === 1 && winningPositions[posId]) {
+    // Check edges u -> v
+    // We only highlight edges starting from a Winning position for P1.
+    // If u is winning for P1, then a move is "optimal" (or part of the winning strategy)
+    // if it leads to a state v that is ALSO winning for P1.
+    if (winningPositions[posId]) {
       for (const childId of position.children || []) {
-        // A move is optimal if it leads to a position where Player 1 still has a winning strategy
         if (winningPositions[childId]) {
-          optimalMoves[posId] = childId;
-          break; // We only need one optimal move
+          optimalEdges.add(`${posId}-${childId}`);
         }
       }
     }
   }
   
-  return optimalMoves;
+  return optimalEdges;
 }

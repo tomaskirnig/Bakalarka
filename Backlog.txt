@@ -24,7 +24,6 @@
 
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici
-kdyz gramatika neco generuje, zobrazit derivacni strom, jinak jenom slovni vysledek
 MCVP->gramatika - dodelat fixni pozice nodu nebo nejaka idecka
 
 -poslat link na live stranku 

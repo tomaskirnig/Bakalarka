@@ -44,7 +44,7 @@ export function DisplayGraph({ graph }) {
 
   const { analysisResult, optimalMoves } = useMemo(() => {
     if (!graph || !graph.positions) {
-      return { analysisResult: null, optimalMoves: {} };
+      return { analysisResult: null, optimalMoves: new Set() };
     }
 
     const result = computeWinner(graph);
@@ -93,7 +93,7 @@ export function DisplayGraph({ graph }) {
     const linksWithOptimal = links.map(link => {
         const source = nodeMap[link.source];
         const target = nodeMap[link.target];
-        const isOptimal = optimalMoves[link.source] === link.target;
+        const isOptimal = optimalMoves.has(`${link.source}-${link.target}`);
         
         return {
             source,
@@ -180,16 +180,19 @@ export function DisplayGraph({ graph }) {
     
     // Reset alpha
     ctx.globalAlpha = 1;
-  }, [hoverNode, colors, game]);
+  }, [hoverNode, colors, game, analysisResult]);
 
-  // Adjust link distance based on node count
+  // Adjust link distance based on edge count
   useEffect(() => {
     if (fgRef.current && graph && graph.positions) {
-      const nodeCount = Object.keys(graph.positions).length;
-      // Heuristic: Base distance + (nodeCount * factor)
-      // This increases distance as the graph grows, preventing clusters.
-      // Capped at a reasonable max to avoid explosion.
-      const dynamicDistance = Math.min(20 + nodeCount / 10, 200); 
+      // Calculate total number of edges
+      const edgeCount = Object.values(graph.positions).reduce((sum, node) => {
+        return sum + (node.children ? node.children.length : 0);
+      }, 0);
+
+      // Heuristic: Base distance + (edgeCount * factor)
+      // This increases distance as the graph complexity grows.
+      const dynamicDistance = Math.min(20 + edgeCount / 5, 200); 
       
       fgRef.current.d3Force('link').distance(dynamicDistance);
       

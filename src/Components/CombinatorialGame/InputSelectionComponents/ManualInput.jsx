@@ -8,21 +8,57 @@ import { toast } from 'react-toastify';
 
 export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
-  const [nodeMap, setNodeMap] = useState({}); // Map to store node references to nodes
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);  // Track selected node
   const [addingEdge, setAddingEdge] = useState(false);     // Track if in edge adding mode
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
   const [startingNodeId, setStartingNodeId] = useState("0"); // Track starting node ID
-  const fgRef = useRef();
-  const containerRef = useRef();
+  const fgRef = useRef(); // Reference to ForceGraph component
+  const containerRef = useRef(); // Reference to the graph container div
   const isInternalUpdate = useRef(false); // Track if update originated internally
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   
   const colors = useGraphColors();
   const settings = useGraphSettings();
   const { game } = settings;
+
+  // Map to store node references
+  const nodeMap = useMemo(() => {
+    const map = {};
+    graph.nodes.forEach(node => {
+      map[node.id] = node;
+    });
+    return map;
+  }, [graph.nodes]);
+
+  // Derived state: Formatted graph for analysis and parent update
+  const formattedGraph = useMemo(() => {
+    if (!graph || graph.nodes.length === 0) return null;
+
+    return {
+      positions: graph.nodes.reduce((acc, node) => {
+        acc[node.id] = {
+          id: node.id,
+          player: node.player,
+          children: graph.links
+            .filter(link => {
+                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                return sourceId === node.id;
+            })
+            .map(link => typeof link.target === 'object' ? link.target.id : link.target),
+          parents: graph.links
+            .filter(link => {
+                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                return targetId === node.id;
+            })
+            .map(link => typeof link.source === 'object' ? link.source.id : link.source)
+        };
+        return acc;
+      }, {}),
+      startingPosition: graph.nodes.find(node => node.id === startingNodeId)
+    };
+  }, [graph, startingNodeId]);
 
   // ResizeObserver for responsive graph and color updates
   useEffect(() => {
@@ -115,80 +151,33 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
        // Only add default node if absolutely no data
        // addNode(); // Moved to a separate effect to avoid conflict
     }
-  }, [initialGraph, graph.nodes.length]);
+  }, [initialGraph]);
 
-  // Effect to notify parent about graph updates (for conversion back etc)
+  // Effect to notify parent about graph updates
   useEffect(() => {
-      if (onGraphUpdate && graph.nodes.length > 0) {
-          // Convert back to positions format for the parent component logic
-          const formattedGraph = {
-            positions: graph.nodes.reduce((acc, node) => {
-              acc[node.id] = {
-                id: node.id,
-                player: node.player,
-                children: graph.links
-                  .filter(link => {
-                    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                    return sourceId === node.id;
-                  })
-                  .map(link => typeof link.target === 'object' ? link.target.id : link.target),
-                parents: graph.links
-                  .filter(link => {
-                    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                    return targetId === node.id;
-                  })
-                  .map(link => typeof link.source === 'object' ? link.source.id : link.source)
-              };
-              return acc;
-            }, {}),
-            startingPosition: graph.nodes.find(node => node.id === startingNodeId) || graph.nodes[0]
-          };
-          
+      if (onGraphUpdate && formattedGraph) {
           isInternalUpdate.current = true; // Mark as internal update
           onGraphUpdate(formattedGraph);
       }
-  }, [graph, onGraphUpdate, startingNodeId]);
+  }, [formattedGraph, onGraphUpdate]);
 
   const { analysisResult, optimalMoves } = useMemo(() => {
-    if (!graph || graph.nodes.length === 0) {
-      return { analysisResult: null, optimalMoves: {} };
+    if (!formattedGraph) {
+      return { analysisResult: null, optimalMoves: new Set() };
     }
-
-    const formattedGraph = {
-      positions: graph.nodes.reduce((acc, node) => {
-        acc[node.id] = {
-          id: node.id,
-          player: node.player,
-          children: graph.links
-            .filter(link => {
-                const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-                return sourceId === node.id;
-            })
-            .map(link => typeof link.target === 'object' ? link.target.id : link.target),
-          parents: graph.links
-            .filter(link => {
-                const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-                return targetId === node.id;
-            })
-            .map(link => typeof link.source === 'object' ? link.source.id : link.source)
-        };
-        return acc;
-      }, {}),
-      startingPosition: graph.nodes.find(node => node.id === startingNodeId)
-    };
 
     const result = computeWinner(formattedGraph);
     const moves = getOptimalMoves(formattedGraph, result);
 
     return { analysisResult: result, optimalMoves: moves };
-  }, [graph, startingNodeId]);
+  }, [formattedGraph]);
 
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
     const linksWithOptimal = graph.links.map(link => {
-      const sourceId = link.source.id;
-      const targetId = link.target.id;
-      const isOptimal = optimalMoves[sourceId] === targetId;  // Check if this link represents an optimal move
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      const isOptimal = optimalMoves.has(`${sourceId}-${targetId}`);  // Check if this link represents an optimal move
       return { ...link, isOptimal };
     });
 
@@ -200,20 +189,20 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Add the first node when the component loads ONLY if empty and no initial graph
   useEffect(() => {
-    if (graph.nodes.length === 0 && !initialGraph) {
-      addNode(); // Add the first node for Player 1 on initial load
+    if (!initialGraph && graph.nodes.length === 0) {
+      setGraph(prevGraph => {
+        if (prevGraph.nodes.length === 0) { // Only add if it's still empty
+          const newId = "0"; // First node ID
+          const newNode = { id: newId, player: 1, neighbors: [] };
+          return {
+            nodes: [newNode],
+            links: []
+          };
+        }
+        return prevGraph;
+      });
     }
-  }, []); // Run once on mount
-
-  // Update the nodeMap whenever the graph nodes change
-  useEffect(() => {
-    const newNodeMap = {};
-    graph.nodes.forEach(node => {
-      newNodeMap[node.id] = node;
-    });
-    setNodeMap(newNodeMap);
-  }, [graph.nodes]);
-
+  }, [initialGraph, graph.nodes.length]); 
 
   // Refresh the graph when optimal moves change
   useEffect(() => {
@@ -224,12 +213,18 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Function to add a node
   const addNode = () => {
+    console.log("Adding node...");
     if (graph.nodes.length >= 750) {
         toast.error("Dosažen limit 750 uzlů.");
         return;
     }
 
-    const newId = graph.nodes.length.toString();
+    const maxId = graph.nodes.reduce((max, node) => {
+        const idNum = parseInt(node.id, 10);
+        return isNaN(idNum) ? max : Math.max(max, idNum);
+    }, -1);
+    const newId = (maxId + 1).toString();
+
     const newNode = {
       id: newId,
       player: 1, 
@@ -355,27 +350,48 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Highlighted node and edges styling
   const paintRing = useCallback((node, ctx) => {
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
+    const radius = game.nodeRadius; 
     
-    // Change color based on node state
-    if (addingEdge && edgeSource && edgeSource.id === node.id) {
-      ctx.fillStyle = colors.highlightNode; 
-    } else if (node === hoverNode) {
-      ctx.fillStyle = colors.highlightNode;
+    const isSelected = selectedNode && node.id === selectedNode.id;
+    const isHovered = hoverNode && node.id === hoverNode.id;
+    const isEdgeSource = addingEdge && edgeSource && edgeSource.id === node.id;
+
+    // 1. Draw the main node circle path
+    ctx.beginPath();
+    ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
+
+    // 2. Determine fill color
+    let fillColor;
+    if (isSelected || isEdgeSource) {
+        fillColor = colors.selected; // Fill if selected or is the source for adding an edge
     } else if (String(node.id) === String(startingNodeId)){
-      ctx.fillStyle = colors.accentRed; 
-    }else {
-      ctx.fillStyle = colors.defaultNode;
+        fillColor = colors.accentRed; // Red for starting position
+    } else {
+        fillColor = colors.defaultNode; // Default fill color
     }
     
+    ctx.fillStyle = fillColor;
     ctx.fill();
+
+    // 3. Always draw an outer circle stroke
+    ctx.strokeStyle = colors.outerCircle;
+    ctx.lineWidth = 0.5; 
+    ctx.stroke();
+
+    // 4. Override stroke for selected, hovered, or edge source (thicker, highlight color)
+    if (isSelected || isHovered || isEdgeSource) {
+        ctx.strokeStyle = colors.highlightNode; // Highlight color for border
+        ctx.lineWidth = 1; // Thicker border for highlight
+        ctx.stroke();
+    }
+    
+    // 5. Draw player label
     ctx.font = game.labelFont;
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'black'; 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
-  }, [hoverNode, addingEdge, edgeSource, colors, startingNodeId, game]);
+    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + radius + 10);
+  }, [hoverNode, addingEdge, edgeSource, colors, startingNodeId, game, selectedNode]);
 
   // Display the label for links
   const getLinkLabel = useCallback((link) => {
