@@ -1,0 +1,7 @@
+{
+  "name": "Sada4 (1xPro)",
+  "nodes": [
+    { "id": 1, "type": "variable", "value": "x1", "varValue": 1 }
+  ],
+  "edges": []
+}

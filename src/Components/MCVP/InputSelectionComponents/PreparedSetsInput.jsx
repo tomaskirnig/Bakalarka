@@ -1,7 +1,10 @@
 import PropTypes from "prop-types";
-import Data from "../../../../Sady/SadyMCVP.json";
 import { Node } from "../Utils/NodeClass";
 import { toast } from "react-toastify";
+
+// Load all JSON files from the Sady/MCVP directory
+const modules = import.meta.glob('../../../../Sady/MCVP/*.json', { eager: true });
+const Data = Object.values(modules).map(mod => mod.default || mod);
 
 /**
  * Component for selecting a pre-defined MCVP problem set.
@@ -12,8 +15,6 @@ import { toast } from "react-toastify";
  * @param {function} props.onTreeUpdate - Callback function called when a set is selected. Receives the parsed tree of the selected expression.
  */
 export function PreparedSetsInput({ onTreeUpdate }) {
-  const data = Data; // Load the data from the JSON file
-
   // Helper to convert graph data to Node structure
   const buildTreeFromGraphData = (graphData) => {
     if (!graphData || !graphData.nodes) return null;
@@ -66,9 +67,9 @@ export function PreparedSetsInput({ onTreeUpdate }) {
 
   // Handle set selection
   const handleSelectChange = (event) => {
-    const key = event.target.value;
-    if (key) {
-      const graphData = data[key];
+    const index = parseInt(event.target.value);
+    if (!isNaN(index) && index >= 0) {
+      const graphData = Data[index];
       const tree = buildTreeFromGraphData(graphData);
       if (tree) {
         onTreeUpdate(tree);
@@ -81,9 +82,9 @@ export function PreparedSetsInput({ onTreeUpdate }) {
       <label>Vybrat sadu:</label>
       <select className="form-select" onChange={handleSelectChange}>
         <option value="">Vybrat sadu</option>
-        {Object.keys(data).map((key) => (
-          <option key={key} value={key}>
-            {key}
+        {Data.map((set, index) => (
+          <option key={index} value={index}>
+            {set.name}
           </option>
         ))}
       </select>

@@ -1,13 +1,14 @@
-import Data from "../../../../Sady/SadyCG.json";
 import PropTypes from "prop-types";
 
-export function PreparedSetsInput({ onGraphUpdate }) {
-  const data = Data; // Data is imported JSON file
+// Load all JSON files from the Sady/CombinatorialGame directory
+const modules = import.meta.glob('../../../../Sady/CombinatorialGame/*.json', { eager: true });
+const Data = Object.values(modules).map(mod => mod.default || mod);
 
+export function PreparedSetsInput({ onGraphUpdate }) {
   const handleSelectChange = (event) => {
-    const key = event.target.value;
-    if (key) {
-      const graphData = data[key];
+    const index = parseInt(event.target.value);
+    if (!isNaN(index) && index >= 0) {
+      const graphData = Data[index];
 
       const positions = {};
 
@@ -57,9 +58,9 @@ export function PreparedSetsInput({ onGraphUpdate }) {
         <label className="form-label">Vybrat sadu:</label>
         <select className="form-select" onChange={handleSelectChange}>
           <option value="">Vybrat sadu</option>
-          {Object.keys(data).map((key) => (
-            <option key={key} value={key}>
-              {key}
+          {Data.map((set, index) => (
+            <option key={index} value={index}>
+              {set.name}
             </option>
           ))}
         </select>
