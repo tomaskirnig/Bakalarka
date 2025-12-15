@@ -17,15 +17,14 @@
 
 
 ---- Global ----
-- Add little bit of space to pages where content is touching the bottom of the page
 - Add autoscroll after selecting set or genererating and displaying some data 
-- Set grabing cursor on canvas and clickable on the node
 - Optimize using the useCallback 
 - Optimize using loaders  
 - Rewrite css to bootstrap
 
+krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici
 kdyz gramatika neco generuje, zobrazit derivacni strom, jinak jenom slovni vysledek
 MCVP->gramatika - dodelat fixni pozice nodu nebo nejaka idecka
 
--poslat link na live stranku
+-poslat link na live stranku 

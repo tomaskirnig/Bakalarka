@@ -6,9 +6,9 @@ import { GenerateInput } from './InputSelectionComponent/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponent/PreparedSetsInput';
 import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
-import { GrammarGraph } from './GrammarGraph';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
+import { DerivationTreeVisual } from './DerivationTreeVisual';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -55,8 +55,11 @@ export function Grammar({ onNavigate, initialData }) {
         setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
     };
 
+    // Calculate analysis result only once when grammar changes
+    const analysisResult = grammar ? isEmptyLanguage(grammar) : null;
+
     return (
-        <div className='div-content mb-2'>
+        <div className='div-content pb-2'>
             <FileTransferControls 
                 onExport={handleExport}
                 onImport={handleImport}
@@ -99,25 +102,37 @@ export function Grammar({ onNavigate, initialData }) {
                 }}
             />
 
-            {grammar && (
+            {grammar && analysisResult && (
                 <div className='mt-4 mb-4'>
-                    <GrammarGraph grammar={grammar} />
-                    
+                    <div className="card mb-3 text-center">
+                        <div className="card-header">
+                            <h5>Definice gramatiky</h5>
+                        </div>
+                        <div className="card-body bg-light text-center">
+                            <pre className="mb-0" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                                {grammar.toText ? grammar.toText() : JSON.stringify(grammar, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+
                     <div className="card mt-3">
                         <div className="card-header">
                             <h4>Analýza gramatiky</h4>
                         </div>
                         <div className="card-body">
-                             <p className={`alert ${!isEmptyLanguage(grammar).isEmpty ? 'alert-success' : 'alert-warning'}`}>
-                                {isEmptyLanguage(grammar).explanation}
+                             <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
+                                {analysisResult.explanation}
                              </p>
                         </div>
+                        
+                        {!analysisResult.isEmpty && analysisResult.derivationTree && (
+                            <div className="card-body border-top">
+                                <h5>Ukázkový derivační strom</h5>
+                                <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
+                                <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                            </div>
+                        )}
                     </div>
-
-                    {/* <div className='mt-3'>
-                        <button className='btn btn-primary mx-2'>Převést na MCVP</button>
-                        <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
-                    </div> */}
                 </div>
             )}
         </div>

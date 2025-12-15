@@ -205,12 +205,29 @@ This document provides a detailed overview of the JavaScript (`.js`) and React C
 ##### 📄 Grammar.jsx (src/Components/Grammar)
 **Description:** Main container for the Grammar module.
 **Key Functions:**
-- `Grammar({ onNavigate, initialData })`: Manages grammar state and displays the `GrammarGraph` and empty language analysis.
+            </div>
+        </div>
+    </div>
+    <div className="text-representation mt-3">
+        <button
+            className="btn btn-outline-secondary mb-2 w-100 text-start d-flex justify-content-between align-items-center"
+            onClick={() => setShowText(!showText)}
+            aria-expanded={showText}
+        >
+            <span>{showText ? 'Skrýt textový zápis' : 'Zobrazit textový zápis'}</span>
+            <span>{showText ? '▲' : '▼'}</span>
+        </button>
 
-##### 📄 GrammarGraph.jsx (src/Components/Grammar)
-**Description:** Visualizes the grammar as a graph where nodes are symbols (terminals/non-terminals) and edges represent production rules.
-**Key Functions:**
-- `GrammarGraph({ grammar })`: Transforms grammar rules into nodes and links for `react-force-graph-2d`. Displays text representation toggle.
+        {showText && (
+            <div className="card card-body bg-light border-top-0 rounded-0 rounded-bottom">
+                <pre className="mb-0" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                    {grammar.toText ? grammar.toText() : JSON.stringify(grammar, null, 2)}
+                </pre>
+            </div>
+        )}
+    </div>
+</div>
+
 
 #### Utils
 
