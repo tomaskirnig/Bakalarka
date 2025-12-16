@@ -11,6 +11,8 @@
 - Remake the isWinning property to hold players id
 - Add highlight of the selected node (in manual)
 
+- what should happen when there is a cycle and no player has winnig strategy, because there is no ending node that is dead end ?
+
 ---- Grammar ----
 
 - Optimize - (manual) make the text area as big as the content automaticly 

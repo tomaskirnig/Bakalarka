@@ -72,7 +72,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
     updateDimensions();
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(() => {
         updateDimensions();
     });
 
@@ -202,7 +202,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         return prevGraph;
       });
     }
-  }, [initialGraph, graph.nodes.length]); 
+  }, [initialGraph, graph]); 
 
   // Refresh the graph when optimal moves change
   useEffect(() => {
@@ -213,7 +213,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Function to add a node
   const addNode = () => {
-    console.log("Adding node...");
+    // console.log("Adding node...");
     if (graph.nodes.length >= 750) {
         toast.error("Dosažen limit 750 uzlů.");
         return;
