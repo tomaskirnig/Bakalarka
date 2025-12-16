@@ -81,6 +81,13 @@ export function TreeCanvas({
       if (current.id === undefined || current.id === null) {
         current.id = idCounter.current++;
       }
+
+      if (parent) {
+        links.push({
+          source: parent.id,
+          target: current.id
+        });
+      }
       
       if (visited.has(current.id)) return;
       visited.add(current.id);
@@ -89,13 +96,6 @@ export function TreeCanvas({
       current.evaluationResult = undefined;
       
       nodes.push(current);
-  
-      if (parent) {
-        links.push({
-          source: parent.id,
-          target: current.id
-        });
-      }
   
       if (current.children && Array.isArray(current.children)) {
         current.children.forEach(child => {
@@ -118,7 +118,7 @@ export function TreeCanvas({
     }
 
     // Pre-calculate neighbors for efficient hover lookup
-    // We map IDs to node objects first
+    // Map IDs to node objects first
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
     
     // Initialize neighbor arrays

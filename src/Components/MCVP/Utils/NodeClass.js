@@ -22,8 +22,8 @@ export class Node {
    * @param {string|number|null} id - Unique identifier for the node. Auto-generated if null.
    */
   constructor(value, varValue = null, type = "operation", children = null,  parents = null, id = null) {
-    // Use provided ID or generate a new incremental one
-    this.id = (id !== null && id !== undefined) ? id : globalIdCounter++;
+    // Use provided ID or generate a new incremental one, ensuring it's always a string.
+    this.id = (id !== null && id !== undefined) ? String(id) : String(globalIdCounter++);
     
     this.value = value;  // Operator ('A' or 'O') or variable name (like 'x1')
     this.varValue = varValue;  // For variable nodes, store the value inside []

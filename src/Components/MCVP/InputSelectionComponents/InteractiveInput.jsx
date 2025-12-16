@@ -55,7 +55,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const generateNodeId = useCallback(() => {
         const id = nextNodeIdRef.current;
         nextNodeIdRef.current += 1;
-        return id;
+        return String(id);
     }, []);
     
     const GraphDataToNodeClass = useCallback((graphData) => {
@@ -393,9 +393,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     width={dimensions.width}
                     height={dimensions.height}
                     graphData={graphData}
-                    // Layout
-                    dagMode="td" // Top-down layout
-                    dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
+                    // Physics
                     cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
                     d3AlphaDecay={0.05} // Faster decay
                     d3VelocityDecay={0.4}

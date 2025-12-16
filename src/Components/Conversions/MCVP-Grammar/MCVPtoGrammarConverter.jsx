@@ -44,6 +44,8 @@ class MCVPToGrammarConverter {
     this.grammar = new ConversionGrammar();
     this.symbolGenerator = new NonTerminalGenerator();
     this.steps = [];
+    this.processedNodes = new Set();
+    this.productionNodes = new Set();
   }
 
   /**
@@ -104,8 +106,9 @@ class MCVPToGrammarConverter {
     this.processNodeRecursively(this.mcvpTree);
   }
 
-  processNodeRecursively(node) { //, parentSymbol = null
-    if (!node) return;
+  processNodeRecursively(node) {
+    if (!node || this.processedNodes.has(node)) return;
+    this.processedNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
     
@@ -130,7 +133,7 @@ class MCVPToGrammarConverter {
     // Process children
     if (node.children && node.children.length > 0) {
       node.children.forEach(child => {
-        this.processNodeRecursively(child, nodeSymbol);
+        this.processNodeRecursively(child);
       });
     }
   }
@@ -140,7 +143,8 @@ class MCVPToGrammarConverter {
   }
 
   createProductionsRecursively(node) {
-    if (!node || node.type !== "operation") return;
+    if (!node || node.type !== "operation" || this.productionNodes.has(node)) return;
+    this.productionNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbol(node);
     if (!nodeSymbol) return;
