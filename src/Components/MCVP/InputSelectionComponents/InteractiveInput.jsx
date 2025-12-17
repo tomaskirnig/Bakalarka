@@ -22,6 +22,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
+    const nextLinkIdRef = useRef(0);
     const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -56,6 +57,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         const id = nextNodeIdRef.current;
         nextNodeIdRef.current += 1;
         return String(id);
+    }, []);
+
+    const generateLinkId = useCallback(() => {
+        const id = nextLinkIdRef.current;
+        nextLinkIdRef.current += 1;
+        return `link-${id}`;
     }, []);
     
     const GraphDataToNodeClass = useCallback((graphData) => {
@@ -209,6 +216,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
 
         const newLink = {
+            id: generateLinkId(),
             source: sourceNode, 
             target: targetNode,
         };
@@ -218,7 +226,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             links: [...prevData.links, newLink],
         }));
         return true;
-    }, [graphData.nodes, edgeExists]);
+    }, [graphData.nodes, edgeExists, generateLinkId]);
 
     /**
      * Deletes an edge between two nodes.
@@ -332,8 +340,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, []);
 
-    // --- Canvas/Rendering Functions ---
-
+        // --- Canvas/Rendering Functions ---
     const paintNode = useCallback((node, ctx) => {
         const radius = mcvp.nodeRadius;
         const isSelected = selectedNode && node.id === selectedNode.id;
@@ -365,8 +372,21 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         ctx.textBaseline = 'middle';
         ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
-
     }, [selectedNode, hoverNode, edgeSource, colors, mcvp]);
+
+    // Force setup for collision
+    useEffect(() => {
+      if (fgRef.current) {
+        // Add collision force to prevent overlap
+        if (window.d3 && window.d3.forceCollide) {
+          fgRef.current.d3Force('collision', 
+            window.d3.forceCollide().radius((_node) => mcvp.nodeRadius * 1.2) // Node radius plus a 20% buffer
+              .strength(0.8) // Strong collision detection
+              .iterations(2) // 2 iterations for stability
+          );
+        }
+      }
+    }, [mcvp]); // Re-run if mcvp settings change
 
     return (
         <div>
@@ -393,6 +413,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     width={dimensions.width}
                     height={dimensions.height}
                     graphData={graphData}
+                    // Layout
+                    dagMode="td" // Top-down layout
+                    dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
                     // Physics
                     cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
                     d3AlphaDecay={0.05} // Faster decay
@@ -470,24 +493,11 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                                   .map((link, index) => {
                                       const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
                                       
-                                      // Find the node object for display
-                                      const connectedNode = graphData.nodes.find(node => node.id === connectedNodeId);
-                                      
-                                      // Format display text based on node type
-                                      let displayText = connectedNodeId; // Fallback
-                                      if (connectedNode) {
-                                        if (connectedNode.type === 'variable') {
-                                          displayText = `${connectedNode.value}[${connectedNode.varValue}]`;
-                                        } else {
-                                          displayText = connectedNode.value === 'A' ? 'AND' : 'OR';
-                                        }
-                                      }
-                                      
                                       return (
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
                                               <button className="btn btn-outline-danger btn-sm"
                                                       onClick={() => deleteEdge(link.source.id, link.target.id)}>
-                                                  Hrana k {displayText} &times;
+                                                  Hrana k {connectedNodeId} &times;
                                               </button>
                                           </div>
                                       );

@@ -271,12 +271,12 @@ export function TreeCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier).iterations(2)); 
+        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * graphData.nodes.length * mcvp.collisionRadiusMultiplier).iterations(graphData.nodes.length)); 
       }
       fgRef.current.d3Force('link').distance(mcvp.linkDistance);
       fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
     }
-  }, [tree, mcvp]); // Re-run if tree changes (new simulation)
+  }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
 
   // Focus Camera on Active Node
   useEffect(() => {
