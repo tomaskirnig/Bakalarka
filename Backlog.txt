@@ -1,6 +1,5 @@
 ---- MCVP ----
 
-- Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end
 - MCVP -> Grammar - add some id to the MCVP structure so it is clear (maybe add the grammr ids to the MCVP nodes)
 - MCVP -> Grammar - variable conversion part is not in chronologival order
 

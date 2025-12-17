@@ -122,19 +122,23 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
 
             {showImportModal && (
                 <Modal onClose={() => setShowImportModal(false)} title="Importovat data">
-                    <div className="p-3">
-                        <p className="mb-3 text-muted">
-                            {instructionText || "Nahrajte soubor JSON s daty."}
+                    <div className="p-4 text-center">
+                        <p className="mb-4 text-muted small">
+                            {instructionText || "Nahrajte soubor JSON s daty pro aktualizaci grafu."}
                         </p>
                         
                         <div 
-                            className={`p-5 border-2 border-dashed rounded text-center cursor-pointer ${dragActive ? 'bg-light border-primary' : 'border-secondary'}`}
+                            className={`
+                                d-flex flex-column align-items-center justify-content-center
+                                p-4 border border-2 border-dashed rounded-3
+                                ${dragActive ? 'bg-light border-primary' : 'border-secondary-subtle'}
+                            `}
                             onDragEnter={handleDrag}
                             onDragLeave={handleDrag}
                             onDragOver={handleDrag}
                             onDrop={handleDrop}
                             onClick={() => fileInputRef.current?.click()}
-                            style={{ transition: 'all 0.2s ease', cursor: 'pointer' }}
+                            style={{ minHeight: '180px', cursor: 'pointer', transition: 'all 0.2s ease' }}
                         >
                             <input 
                                 ref={fileInputRef}
@@ -143,13 +147,17 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
                                 onChange={handleFileChange} 
                                 style={{ display: 'none' }} 
                             />
-                            <div className="mb-2">
-                                <i className="bi bi-cloud-upload fs-1 text-secondary"></i>
+                            
+                            <div className={`mb-2 p-3 rounded-circle ${dragActive ? 'bg-primary-subtle' : 'bg-light'}`}>
+                                <i className={`bi bi-cloud-arrow-up fs-2 ${dragActive ? 'text-primary' : 'text-secondary'}`}></i>
                             </div>
-                            <p className="mb-0">
-                                Klikněte pro výběr souboru nebo jej přetáhněte sem.
-                            </p>
-                            <small className="text-muted">Podporované formáty: .json</small>
+                            
+                            <h6 className="fw-semibold mb-1 text-dark">Přetáhněte soubor sem</h6>
+                            <span className="text-muted small">nebo klikněte pro výběr ze zařízení</span>
+                        </div>
+                        
+                        <div className="mt-3 text-center">
+                             <span className="badge bg-light text-secondary border fw-normal">.json</span>
                         </div>
                     </div>
                 </Modal>
