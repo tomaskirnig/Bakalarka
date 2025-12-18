@@ -145,7 +145,19 @@ export function TreeCanvas({
     });
 
     return { nodes, links };
-  }, [tree, completedSteps]);
+  }, [tree]);
+
+  // Map of evaluation results for quick lookup in paintNode
+  const resultsMap = useMemo(() => {
+    const map = new Map();
+    if (completedSteps && completedSteps.length > 0) {
+      completedSteps.forEach((step) => {
+        if (!step || !step.node) return;
+        map.set(step.node.id, step.result);
+      });
+    }
+    return map;
+  }, [completedSteps]);
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
@@ -240,15 +252,16 @@ export function TreeCanvas({
     ctx.fillText(displayText, node.x, node.y);
     
     // Result Label (above node)
-    if (node.evaluationResult !== undefined) {
+    const result = resultsMap.get(node.id);
+    if (result !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
+      ctx.fillText(`${result}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     } else if (node.rootLabel !== undefined) {
       ctx.fillStyle = 'red';
       ctx.fillText(`${node.rootLabel}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     }
     
-  }, [highlightedNode, activeNode, colors, mcvp]);
+  }, [highlightedNode, activeNode, colors, mcvp, resultsMap]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;

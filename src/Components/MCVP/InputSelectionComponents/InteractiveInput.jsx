@@ -62,7 +62,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const generateLinkId = useCallback(() => {
         const id = nextLinkIdRef.current;
         nextLinkIdRef.current += 1;
-        return `link-${id}`;
+        return id;
     }, []);
     
     const GraphDataToNodeClass = useCallback((graphData) => {
@@ -340,7 +340,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, []);
 
-        // --- Canvas/Rendering Functions ---
+    // --- Canvas/Rendering Functions ---
     const paintNode = useCallback((node, ctx) => {
         const radius = mcvp.nodeRadius;
         const isSelected = selectedNode && node.id === selectedNode.id;
@@ -373,6 +373,45 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
     }, [selectedNode, hoverNode, edgeSource, colors, mcvp]);
+
+    const paintLink = useCallback((link, ctx) => {
+        // Ensure source and target are valid and have x, y coordinates
+        if (!link.source || !link.target || typeof link.source.x === 'undefined' || typeof link.target.x === 'undefined') {
+            return;
+        }
+
+        const start = link.source;
+        const end = link.target;
+
+        // Draw the default link line
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'; // Default link color
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Calculate midpoint for text
+        const midX = (start.x + end.x) / 2;
+        const midY = (start.y + end.y) / 2;
+
+        // Determine if the link ID should be displayed
+        let shouldDisplayLinkId = false;
+        if (selectedNode) {
+            // Check if the link is connected to the selected node
+            if (link.source && link.target && (link.source.id === selectedNode.id || link.target.id === selectedNode.id)) {
+                shouldDisplayLinkId = true;
+            }
+        }
+
+        if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
+            ctx.font = '8px Sans-Serif'; // Smaller font for link ID
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'red'; // Color for link ID
+            ctx.fillText(link.id, midX, midY + 10); // Offset slightly
+        }
+    }, [selectedNode]);
 
     // Force setup for collision
     useEffect(() => {
@@ -426,8 +465,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
                     // Links
-                    linkColor={() => 'rgba(0,0,0,0.4)'}
-                    linkWidth={1}
+                    // linkColor={() => 'rgba(0,0,0,0.4)'} // This will be handled by paintLink
+                    // linkWidth={1} // This will be handled by paintLink
+                    linkCanvasObject={paintLink} // Custom link renderer
+                    linkCanvasObjectMode={() => "after"} // Draw custom object after link line
                     linkDirectionalArrowLength={3.5}
                     linkDirectionalArrowRelPos={1}
                     onDagError={handleDagError}
@@ -497,7 +538,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
                                               <button className="btn btn-outline-danger btn-sm"
                                                       onClick={() => deleteEdge(link.source.id, link.target.id)}>
-                                                  Hrana k {connectedNodeId} &times;
+                                                  Odstranit hranu {link.id} &times;
                                               </button>
                                           </div>
                                       );
