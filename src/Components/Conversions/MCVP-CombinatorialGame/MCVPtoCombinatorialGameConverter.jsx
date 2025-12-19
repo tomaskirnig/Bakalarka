@@ -89,9 +89,11 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                             <TreeCanvas 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
+                                activeNode={step.highlightNode}
                                 completedSteps={[]}
                                 width={mcvpDimensions.width}
                                 height={mcvpDimensions.height}
+                                fitToScreen={currentStep === steps.length - 1}
                             />
                         </div>
                     </div>
@@ -107,6 +109,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                                     graph={step.graph} 
                                     width={cgDimensions.width} 
                                     height={cgDimensions.height}
+                                    fitToScreen={currentStep === steps.length - 1}
                                 />
                             ) : (
                                 <div className="d-flex justify-content-center align-items-center h-100 text-muted">
@@ -151,10 +154,16 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             </div>
 
             {finalGraph && (
-                <div className="text-center mt-3">
-                    <button className="btn btn-success btn-lg" onClick={handleRedirect}>
-                        Otevřít v Kombinatorické hře
-                    </button>
+                <div className="d-flex justify-content-center flex-column align-items-center">
+                    <QuickNavigationControls 
+                        onGoToStart={() => setCurrentStep(0)}
+                        onGoToEnd={() => setCurrentStep(steps.length - 1)}
+                    />
+                    <div className="text-center mt-3">
+                        <button className="btn btn-success btn-lg" onClick={handleRedirect}>
+                            Otevřít v Kombinatorické hře
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
@@ -164,4 +173,32 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
 MCVPtoCombinatorialGameConverter.propTypes = {
     mcvpTree: PropTypes.object.isRequired,
     onNavigate: PropTypes.func
+};
+
+/**
+ * Component for quick navigation controls
+ */
+function QuickNavigationControls({ onGoToStart, onGoToEnd }) {
+  return (
+    <div className="quick-navigation my-4 d-flex justify-content-center gap-3">
+      <button 
+        onClick={onGoToStart}
+        className="btn btn-outline-secondary"
+      >
+        ⏮️ Jít na začátek
+      </button>
+      
+      <button 
+        onClick={onGoToEnd}
+        className="btn btn-outline-primary"
+      >
+        Jít na konec ⏭️
+      </button>
+    </div>
+  );
+}
+
+QuickNavigationControls.propTypes = {
+  onGoToStart: PropTypes.func.isRequired,
+  onGoToEnd: PropTypes.func.isRequired
 };

@@ -25,7 +25,8 @@ export function TreeCanvas({
   activeNode = null,      // Node currently being evaluated (step-by-step)
   completedSteps = [],    // Steps with results to display
   width,
-  height
+  height,
+  fitToScreen
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -308,6 +309,13 @@ export function TreeCanvas({
     }
   }, [activeNode, graphData]);
 
+  // Zoom to fit when triggered
+  useEffect(() => {
+    if (fitToScreen && fgRef.current) {
+        fgRef.current.zoomToFit(400, 50);
+    }
+  }, [fitToScreen]);
+
   return (
     <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
       <div className="graph-controls">
@@ -373,5 +381,6 @@ TreeCanvas.propTypes = {
   activeNode: PropTypes.object,
   completedSteps: PropTypes.array,
   width: PropTypes.number,
-  height: PropTypes.number
+  height: PropTypes.number,
+  fitToScreen: PropTypes.bool
 };

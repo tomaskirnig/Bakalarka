@@ -4,7 +4,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ graph, optimalMoves = new Set(), width, height }) {
+export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
   const highlightLinks = useRef(new Set());
@@ -202,6 +202,13 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height })
     }
   }, [graph]);
 
+  // Zoom to fit when triggered
+  useEffect(() => {
+    if (fitToScreen && fgRef.current) {
+        fgRef.current.zoomToFit(400, 50);
+    }
+  }, [fitToScreen]);
+
   const getLinkWidth = useCallback((link) => {
     return highlightLinks.current.has(link) ? 5 : (link.isOptimal ? 3 : 1);
   }, []);
@@ -273,7 +280,8 @@ DisplayGraph.propTypes = {
   }),
   optimalMoves: PropTypes.object,
   width: PropTypes.number,
-  height: PropTypes.number
+  height: PropTypes.number,
+  fitToScreen: PropTypes.bool
 };
 
 export default DisplayGraph;
