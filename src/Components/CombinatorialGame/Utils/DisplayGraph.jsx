@@ -1,16 +1,15 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
-import { computeWinner, getOptimalMoves } from './ComputeWinner';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ graph }) {
+export function DisplayGraph({ graph, optimalMoves = new Set(), width, height }) {
   // State for highlighted nodes and links, and for the hovered node.
-  const [, setHighlightNodes] = useState(new Set());
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
-  const [hoverNode, setHoverNode] = useState(null);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const highlightNodes = useRef(new Set());
+  const highlightLinks = useRef(new Set());
+  const hoverNode = useRef(null);
+  const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -20,18 +19,19 @@ export function DisplayGraph({ graph }) {
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
+    if (width && height) return; // specific dimensions provided, don't observe
     if (!containerRef.current) return;
 
     const updateDimensions = () => {
         if (!containerRef.current) return;
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
+        setInternalDimensions({ width, height });
     };
 
     // Initial call
     updateDimensions();
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(() => {
         updateDimensions();
     });
 
@@ -40,30 +40,31 @@ export function DisplayGraph({ graph }) {
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
-
-  const { analysisResult, optimalMoves } = useMemo(() => {
-    if (!graph || !graph.positions) {
-      return { analysisResult: null, optimalMoves: new Set() };
-    }
-
-    const result = computeWinner(graph);
-    const moves = getOptimalMoves(graph, result);
-
-    return { analysisResult: result, optimalMoves: moves };
-  }, [graph]);
+  }, [width, height]);
   
+  const graphWidth = width || internalDimensions.width;
+  const graphHeight = height || internalDimensions.height;
+  
+  const nodesRef = useRef([]);
+
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
+    const prevNodesMap = new Map(nodesRef.current.map(n => [n.id, n]));
+
     // Create nodes with a temporary "neighbors" as union of parents and children.
-    const nodes = Object.values(graph.positions).map(node => ({
-      id: node.id,
-      player: node.player,
-      x: node.x,
-      y: node.y,
-      isStartingPosition: node.id === graph.startingPosition.id,
-      neighbors: [...(node.parents || []), ...(node.children || [])]
-    }));
+    const nodes = Object.values(graph.positions).map(node => {
+      const prev = prevNodesMap.get(node.id);
+      return {
+        id: node.id,
+        player: node.player,
+        x: prev ? prev.x : node.x,
+        y: prev ? prev.y : node.y,
+        vx: prev ? prev.vx : undefined,
+        vy: prev ? prev.vy : undefined,
+        isStartingPosition: node.id === graph.startingPosition.id,
+        neighbors: [...(node.parents || []), ...(node.children || [])]
+      };
+    });
 
     // Build a mapping from node id to node object.
     const nodeMap = {};
@@ -101,30 +102,30 @@ export function DisplayGraph({ graph }) {
             isOptimal
         };
     });
-
-    return { nodes, links: linksWithOptimal };
+    
+    const newData = { nodes, links: linksWithOptimal };
+    nodesRef.current = newData.nodes;
+    return newData;
   }, [graph, optimalMoves]);
 
   // When a node is hovered, create new highlight sets.
   const handleNodeHover = useCallback((node) => {
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
 
     if (node) {
-      newHighlightNodes.add(node);
+      highlightNodes.current.add(node);
       if (node.neighbors) {
-        node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
+        node.neighbors.forEach(neighbor => highlightNodes.current.add(neighbor));
       }
       data.links.forEach(link => {
         if (link.source.id === node.id || link.target.id === node.id) {
-          newHighlightLinks.add(link);
+          highlightLinks.current.add(link);
         }
       });
     }
 
-    setHoverNode(node || null);
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
+    hoverNode.current = node || null;
 
     if (containerRef.current) {
         containerRef.current.style.cursor = node ? 'pointer' : 'grab';
@@ -132,15 +133,15 @@ export function DisplayGraph({ graph }) {
   }, [data]);
 
   const handleLinkHover = useCallback((link) => {
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
+    highlightNodes.current.clear();
+    highlightLinks.current.clear();
+
     if (link) {
-      newHighlightLinks.add(link);
-      newHighlightNodes.add(link.source);
-      newHighlightNodes.add(link.target);
+      highlightLinks.current.add(link);
+      if (link.source) highlightNodes.current.add(link.source);
+      if (link.target) highlightNodes.current.add(link.target);
     }
-    setHighlightNodes(newHighlightNodes);
-    setHighlightLinks(newHighlightLinks);
+    hoverNode.current = null;
 
     if (containerRef.current) {
         containerRef.current.style.cursor = link ? 'pointer' : 'grab';
@@ -149,8 +150,8 @@ export function DisplayGraph({ graph }) {
 
   const paintRing = useCallback((node, ctx) => {
     // Determine opacity
-    const isHoverActive = hoverNode !== null;
-    const isHighlighted = hoverNode === node || (hoverNode && node.neighbors && node.neighbors.includes(hoverNode));
+    const isHoverActive = hoverNode.current !== null;
+    const isHighlighted = highlightNodes.current.has(node);
     
     ctx.globalAlpha = isHoverActive && !isHighlighted ? 0.15 : 1;
 
@@ -160,7 +161,7 @@ export function DisplayGraph({ graph }) {
     
     // Color nodes based on player and starting position
     let fillColor;
-    if (node === hoverNode) {
+    if (hoverNode.current === node) {
       fillColor = colors.highlightNode;
     }else if (node.isStartingPosition) {
       fillColor = colors.accentRed;
@@ -180,7 +181,7 @@ export function DisplayGraph({ graph }) {
     
     // Reset alpha
     ctx.globalAlpha = 1;
-  }, [hoverNode, colors, game, analysisResult]);
+  }, [colors, game]);
 
   // Adjust link distance based on edge count
   useEffect(() => {
@@ -190,7 +191,7 @@ export function DisplayGraph({ graph }) {
         return sum + (node.children ? node.children.length : 0);
       }, 0);
 
-      // Heuristic: Base distance + (edgeCount * factor)
+      // Base distance + (edgeCount * factor)
       // This increases distance as the graph complexity grows.
       const dynamicDistance = Math.min(20 + edgeCount / 5, 200); 
       
@@ -200,6 +201,25 @@ export function DisplayGraph({ graph }) {
       fgRef.current.d3ReheatSimulation();
     }
   }, [graph]);
+
+  const getLinkWidth = useCallback((link) => {
+    return highlightLinks.current.has(link) ? 5 : (link.isOptimal ? 3 : 1);
+  }, []);
+
+  const getLinkColor = useCallback((link) => {
+    // Base color logic
+    let color = link.isOptimal ? colors.accentYellow : colors.defaultLink;
+    
+    // Opacity logic
+    if (hoverNode.current) {
+        if (highlightLinks.current.has(link)) {
+            return color; // Full opacity for highlighted
+        } else {
+            return colors.dimmedLink; 
+        }
+    }
+    return color;
+  }, [colors]);
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -219,30 +239,17 @@ export function DisplayGraph({ graph }) {
         </div>
         <ForceGraph2D
           ref={fgRef}
-          width={dimensions.width}
-          height={dimensions.height}
+          width={graphWidth}
+          height={graphHeight}
           enablePanInteraction={true}
           enableZoomInteraction={true}
           graphData={data}
           nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
-          linkWidth={link => highlightLinks.has(link) ? 5 : (link.isOptimal ? 3 : 1)}
-          linkColor={link => {
-            // Base color logic
-            let color = link.isOptimal ? colors.accentYellow : colors.defaultLink;
-            
-            // Opacity logic
-            if (hoverNode) {
-                if (highlightLinks.has(link)) {
-                    return color; // Full opacity for highlighted
-                } else {
-                    return colors.dimmedLink; 
-                }
-            }
-            return color;
-          }} 
+          linkWidth={getLinkWidth}
+          linkColor={getLinkColor} 
           linkDirectionalParticles={3}
-          linkDirectionalParticleWidth={link => highlightLinks.has(link) ? 4 : 0}
+          linkDirectionalParticleWidth={link => highlightLinks.current.has(link) ? 4 : 0}
           linkDirectionalArrowLength={6}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
@@ -252,27 +259,7 @@ export function DisplayGraph({ graph }) {
           onLinkHover={handleLinkHover}
         />
       </div>
-      
-      {/* Analysis Results */}
-      <div className="card mt-4 shadow-sm mx-auto" style={{ maxWidth: '800px' }}>
-          <div className="card-header bg-light fw-bold text-start">
-              Analýza hry
-          </div>
-          <div className="card-body text-start">
-              {analysisResult ? (
-                  <>
-                      <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
-                          {analysisResult.message}
-                      </div>
-                      <p className="text-muted small mb-0">
-                          Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
-                      </p>
-                  </>
-              ) : (
-                  <p className="text-muted">Probíhá analýza...</p>
-              )}
-          </div>
-      </div>
+
     </>
   );
 }
@@ -283,7 +270,10 @@ DisplayGraph.propTypes = {
     startingPosition: PropTypes.shape({
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
     })
-  })
+  }),
+  optimalMoves: PropTypes.object,
+  width: PropTypes.number,
+  height: PropTypes.number
 };
 
 export default DisplayGraph;

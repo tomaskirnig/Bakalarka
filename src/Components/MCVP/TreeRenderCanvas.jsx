@@ -24,13 +24,15 @@ export function TreeCanvas({
   highlightedNode = null, // Node to highlight (e.g. from converter)
   activeNode = null,      // Node currently being evaluated (step-by-step)
   completedSteps = [],    // Steps with results to display
+  width,
+  height
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
   const idCounter = useRef(0);
   
   // Dimensions State
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
 
   // Interaction State
   const hoverNode = useRef(null);
@@ -43,18 +45,19 @@ export function TreeCanvas({
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
+    if (width && height) return;
     if (!containerRef.current) return;
 
     const updateDimensions = () => {
         if (!containerRef.current) return;
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
+        setInternalDimensions({ width, height });
     };
 
     // Initial call
     updateDimensions();
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(() => {
         updateDimensions();
     });
 
@@ -63,7 +66,10 @@ export function TreeCanvas({
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [width, height]);
+
+  const canvasWidth = width || internalDimensions.width;
+  const canvasHeight = height || internalDimensions.height;
 
   // 1. Prepare Graph Data
   // useMemo ensures we only regenerate the graph topology when tree/steps change.
@@ -315,8 +321,8 @@ export function TreeCanvas({
       </div>
       <ForceGraph2D
         ref={fgRef}
-        width={dimensions.width}
-        height={dimensions.height}
+        width={canvasWidth}
+        height={canvasHeight}
         graphData={graphData}
         
         // Layout
@@ -365,5 +371,7 @@ TreeCanvas.propTypes = {
   }),
   highlightedNode: PropTypes.object,
   activeNode: PropTypes.object,
-  completedSteps: PropTypes.array
+  completedSteps: PropTypes.array,
+  width: PropTypes.number,
+  height: PropTypes.number
 };

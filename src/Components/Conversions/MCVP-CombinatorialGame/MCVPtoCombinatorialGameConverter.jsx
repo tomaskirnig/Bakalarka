@@ -7,7 +7,9 @@ import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
 export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [cgDimensions, setCgDimensions] = useState({ width: 400, height: 400 });
+    const [mcvpDimensions, setMcvpDimensions] = useState({ width: 400, height: 400 });
     const cgContainerRef = useRef(null);
+    const mcvpContainerRef = useRef(null);
 
     const steps = useMemo(() => {
         if (!mcvpTree) return [];
@@ -29,6 +31,19 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             }
         });
         resizeObserver.observe(cgContainerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    // Resize observer for MCVP graph
+    useEffect(() => {
+        if (!mcvpContainerRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                setMcvpDimensions({ width, height });
+            }
+        });
+        resizeObserver.observe(mcvpContainerRef.current);
         return () => resizeObserver.disconnect();
     }, []);
 
@@ -66,11 +81,17 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                 <div className="row flex-grow-1" style={{ minHeight: '0' }}>
                     <div className="col-md-6 d-flex flex-column">
                         <h4 className='text-center'>MCVP</h4>
-                        <div className="flex-grow-1" style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
+                        <div 
+                            ref={mcvpContainerRef}
+                            className="flex-grow-1" 
+                            style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}
+                        >
                             <TreeCanvas 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
                                 completedSteps={[]}
+                                width={mcvpDimensions.width}
+                                height={mcvpDimensions.height}
                             />
                         </div>
                     </div>

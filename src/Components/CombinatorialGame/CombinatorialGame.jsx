@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
@@ -6,6 +6,8 @@ import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { DisplayGraph } from './Utils/DisplayGraph';
+import { GameAnalysisDisplay } from './Utils/GameAnalysisDisplay';
+import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 
@@ -19,6 +21,16 @@ export function CombinatorialGame({ onNavigate, initialData }) {
             setGraph(initialData);
         }
     }, [initialData]);
+
+    const { analysisResult, optimalMoves } = useMemo(() => {
+        if (!graph || chosenOpt === 'manual' || !graph.positions) {
+            return { analysisResult: null, optimalMoves: null };
+        }
+
+        const result = computeWinner(graph);
+        const moves = getOptimalMoves(graph, result);
+        return { analysisResult: result, optimalMoves: moves };
+    }, [graph, chosenOpt]);
 
     const handleOptionChange = (option) => {
         setChosenOpt(option);
@@ -118,7 +130,12 @@ export function CombinatorialGame({ onNavigate, initialData }) {
                 }}
             />
 
-            {(graph && chosenOpt !== 'manual') && <DisplayGraph graph={graph} />}
+            {(graph && chosenOpt !== 'manual') && (
+                <>
+                    <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                    <GameAnalysisDisplay analysisResult={analysisResult} />
+                </>
+            )}
 
             {/* {graph && (
                 <div className="d-flex justify-content-center gap-3 my-4">

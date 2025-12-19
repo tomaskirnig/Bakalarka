@@ -127,9 +127,7 @@ export class MCVPToGameStepGenerator {
             id: nodeId,
             player: player,
             children: [],
-            parents: [],
-            x: node.x,
-            y: node.y
+            parents: []
         };
 
         this.addStep(description, node, `${typeDesc} -> Player ${player}`);
