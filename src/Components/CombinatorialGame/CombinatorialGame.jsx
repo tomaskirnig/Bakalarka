@@ -14,6 +14,7 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 export function CombinatorialGame({ onNavigate, initialData }) {
     const [graph, setGraph] = useState(null); // Current tree
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
+    const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
     
     // Handle initial data if provided
     useEffect(() => {
@@ -23,14 +24,44 @@ export function CombinatorialGame({ onNavigate, initialData }) {
     }, [initialData]);
 
     const { analysisResult, optimalMoves } = useMemo(() => {
-        if (!graph || chosenOpt === 'manual' || !graph.positions) {
+        if (!graph || chosenOpt === 'manual' || !graph.positions || !graph.startingPosition) {
             return { analysisResult: null, optimalMoves: null };
         }
 
-        const result = computeWinner(graph);
-        const moves = getOptimalMoves(graph, result);
-        return { analysisResult: result, optimalMoves: moves };
-    }, [graph, chosenOpt]);
+        const rawAnalysisResult = computeWinner(graph);
+        const playerAtStartNode = graph.positions[graph.startingPosition.id]?.player;
+
+        let finalAnalysisResult = { ...rawAnalysisResult }; // Copy original result
+        let actualWinningPlayer = null;
+        let analysisValid = true;
+
+        if (playerAtStartNode === undefined) {
+            finalAnalysisResult.hasWinningStrategy = false;
+            finalAnalysisResult.message = "Startovní pozice nemá definovaného hráče.";
+            analysisValid = false;
+        } else if (selectedStartingPlayer !== playerAtStartNode) {
+            finalAnalysisResult.hasWinningStrategy = false; // Or null, to indicate unanalyzable
+            finalAnalysisResult.message = "Nelze analyzovat: Zvolený začínající hráč se neshoduje s hráčem určeným pro startovní pozici.";
+            analysisValid = false;
+        } else {
+            // The selected starting player matches the player assigned to the starting node
+            if (rawAnalysisResult.hasWinningStrategy) {
+                // If raw result says P1 wins, and selectedStartingPlayer is P1, then P1 wins
+                actualWinningPlayer = selectedStartingPlayer;
+            } else {
+                // If raw result says P1 does not win, and selectedStartingPlayer is P1, then P2 wins
+                actualWinningPlayer = selectedStartingPlayer === 1 ? 2 : 1;
+            }
+            finalAnalysisResult.message = `Hráč ${actualWinningPlayer} má výherní strategii.`;
+            finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy; // Keep P1's winning status for optimal moves calculation
+        }
+        
+        // Optimal moves are still calculated based on Player 1's winning positions
+        const moves = analysisValid ? getOptimalMoves(graph, rawAnalysisResult) : new Set();
+        
+        // Pass the interpreted message and winning status to the display
+        return { analysisResult: finalAnalysisResult, optimalMoves: moves };
+    }, [graph, chosenOpt, selectedStartingPlayer]);
 
     const handleOptionChange = (option) => {
         setChosenOpt(option);
@@ -101,17 +132,47 @@ export function CombinatorialGame({ onNavigate, initialData }) {
             />
             <InfoButton title="Kombinatorická hra na grafu">
                 <p>
-                    Jedná se o nestrannou hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
+                    Jedná se o hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
                 </p>
                 <ul className="ps-3 text-start">
-                    <li><strong>Hráči:</strong> Hráč I (začíná) a Hráč II.</li>
-                    <li><strong>Pravidla:</strong> Hráči se střídají v tazích. V každém tahu hráč přesune žeton z aktuálního vrcholu do jednoho z jeho následníků.</li>
-                    <li><strong>Konec hry:</strong> Prohrává hráč, který nemůže provést tah (nachází se v listu).</li>
-                    <li><strong>Cíl:</strong> Určit, zda má Hráč I vyhrávající strategii (tj. dokáže vynutit výhru bez ohledu na tahy soupeře).</li>
+                    <li><strong>Hráči:</strong> Hráč 1 a Hráč 2.</li>
+                    <li><strong>Pravidla:</strong> Hráči se střídají v tazích. Každý vrchol je označen jménem hráče (Hráč 1 nebo Hráč 2), který má v daném vrcholu provést tah. V každém tahu hráč přesune žeton z aktuálního vrcholu do jednoho z jeho následníků.</li>
+                    <li><strong>Konec hry:</strong> Prohrává hráč, který má provést tah ve vrcholu, ze kterého nevedou žádné hrany, nebo pokud aktuální hráč není ten, kdo má v daném vrcholu hrát.</li>
+                    <li><strong>Cíl:</strong> Určit, zda má začínající hráč vyhrávající strategii (tj. dokáže vynutit výhru bez ohledu na tahy soupeře).</li>
+                    <li><strong>Začínající hráč:</strong> Uživatel si zvolí, který hráč začíná.</li>
                 </ul>
             </InfoButton>
 
             <h1 className='display-4 mb-4'>Kombinatorická hra</h1>
+            
+            <div className="mb-3 d-flex justify-content-center align-items-center">
+                <label className="form-label mb-0 me-3 fw-bold">Začínající hráč:</label>
+                <div className="form-check form-check-inline">
+                    <input 
+                        className="form-check-input" 
+                        type="radio" 
+                        name="startingPlayerOptions" 
+                        id="startingPlayer1" 
+                        value="1" 
+                        checked={selectedStartingPlayer === 1} 
+                        onChange={() => setSelectedStartingPlayer(1)} 
+                    />
+                    <label className="form-check-label" htmlFor="startingPlayer1">Hráč 1</label>
+                </div>
+                <div className="form-check form-check-inline">
+                    <input 
+                        className="form-check-input" 
+                        type="radio" 
+                        name="startingPlayerOptions" 
+                        id="startingPlayer2" 
+                        value="2" 
+                        checked={selectedStartingPlayer === 2} 
+                        onChange={() => setSelectedStartingPlayer(2)} 
+                    />
+                    <label className="form-check-label" htmlFor="startingPlayer2">Hráč 2</label>
+                </div>
+            </div>
+
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}

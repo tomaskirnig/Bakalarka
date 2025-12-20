@@ -1,6 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
-import { computeWinner, getOptimalMoves } from '../Utils/ComputeWinner';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
@@ -13,7 +12,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   const [selectedNode, setSelectedNode] = useState(null);  // Track selected node
   const [addingEdge, setAddingEdge] = useState(false);     // Track if in edge adding mode
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
-  const [startingNodeId, setStartingNodeId] = useState("0"); // Track starting node ID
+  const [startingNodeId, setStartingNodeId] = useState(null); // Track starting node ID, initialized to null
   const fgRef = useRef(); // Reference to ForceGraph component
   const containerRef = useRef(); // Reference to the graph container div
   const isInternalUpdate = useRef(false); // Track if update originated internally
@@ -34,7 +33,10 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Derived state: Formatted graph for analysis and parent update
   const formattedGraph = useMemo(() => {
-    if (!graph || graph.nodes.length === 0) return null;
+    if (!graph || graph.nodes.length === 0 || !startingNodeId) return null; // Require startingNodeId
+
+    const startNode = graph.nodes.find(node => node.id === startingNodeId);
+    if (!startNode) return null; // Starting node must exist
 
     return {
       positions: graph.nodes.reduce((acc, node) => {
@@ -56,7 +58,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         };
         return acc;
       }, {}),
-      startingPosition: graph.nodes.find(node => node.id === startingNodeId)
+      startingPosition: startNode // Pass the full starting node object
     };
   }, [graph, startingNodeId]);
 
@@ -147,9 +149,6 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         if (initialGraph.startingPosition) {
             setStartingNodeId(String(initialGraph.startingPosition.id || initialGraph.startingPosition));
         }
-    } else if (graph.nodes.length === 0 && !initialGraph) {
-       // Only add default node if absolutely no data
-       // addNode(); // Moved to a separate effect to avoid conflict
     }
   }, [initialGraph]);
 
@@ -158,34 +157,22 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       if (onGraphUpdate && formattedGraph) {
           isInternalUpdate.current = true; // Mark as internal update
           onGraphUpdate(formattedGraph);
+      } else if (onGraphUpdate && !formattedGraph) {
+          onGraphUpdate(null); // Notify parent if graph is not valid for analysis
       }
   }, [formattedGraph, onGraphUpdate]);
 
-  const { analysisResult, optimalMoves } = useMemo(() => {
-    if (!formattedGraph) {
-      return { analysisResult: null, optimalMoves: new Set() };
-    }
-
-    const result = computeWinner(formattedGraph);
-    const moves = getOptimalMoves(formattedGraph, result);
-
-    return { analysisResult: result, optimalMoves: moves };
-  }, [formattedGraph]);
-
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
+  // optimalMoves is passed down from CombinatorialGame component, not computed here.
   const data = useMemo(() => {
-    const linksWithOptimal = graph.links.map(link => {
-      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-      const isOptimal = optimalMoves.has(`${sourceId}-${targetId}`);  // Check if this link represents an optimal move
-      return { ...link, isOptimal };
-    });
-
+    // Link optimalMoves here, assuming it's available from a prop if needed for visualization,
+    // or if the component is redesigned to receive it.
+    // For now, removing direct dependency on optimalMoves being computed here.
     return { 
       nodes: graph.nodes, 
-      links: linksWithOptimal 
+      links: graph.links 
     };
-  }, [graph, optimalMoves]);
+  }, [graph]);
 
   // Add the first node when the component loads ONLY if empty and no initial graph
   useEffect(() => {
@@ -194,6 +181,8 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         if (prevGraph.nodes.length === 0) { // Only add if it's still empty
           const newId = "0"; // First node ID
           const newNode = { id: newId, player: 1, neighbors: [] };
+          // Automatically set the first node as starting node
+          setStartingNodeId(newId);
           return {
             nodes: [newNode],
             links: []
@@ -204,12 +193,12 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
   }, [initialGraph, graph]); 
 
-  // Refresh the graph when optimal moves change
+  // No longer directly dependent on optimalMoves for reheat, as it's not computed here
   useEffect(() => {
     if (fgRef.current) {
       fgRef.current.d3ReheatSimulation();
     }
-  }, [optimalMoves]);
+  }); // Removed optimalMoves from dependency array
 
   // Function to add a node
   const addNode = () => {
@@ -235,6 +224,11 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       nodes: [...prevGraph.nodes, newNode],
       links: [...prevGraph.links],
     }));
+
+    // If no starting node is set, set the first added node as starting
+    if (!startingNodeId) {
+        setStartingNodeId(newId);
+    }
   };
 
   // Function to delete a node and its associated edges
@@ -250,6 +244,15 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     });
     setSelectedNode(null);
     setAddingEdge(false);
+
+    // If the deleted node was the starting node, clear startingNodeId
+    if (startingNodeId === nodeId) {
+        setStartingNodeId(null);
+        // If there are other nodes, try to set a new starting node automatically
+        if (updatedNodes.length > 0) {
+            setStartingNodeId(updatedNodes[0].id);
+        }
+    }
   };
 
   // Function to check if an edge already exists between two nodes
@@ -327,20 +330,18 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       if (node.neighbors) {
         node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
       }
-      data.links.forEach(link => {
-        if (link.source.id === node.id || link.target.id === node.id) {
-          newHighlightLinks.add(link);
-        }
-      });
+      // Assuming optimalMoves is passed as a prop from CombinatorialGame, otherwise this part won't work
+      // For now, removing direct dependency here, as ManualInput should just handle graph editing.
+      // If visualization of optimal moves is needed here, it should be passed as a prop.
     }
 
     setHoverNode(node || null);
-    setHighlightLinks(newHighlightLinks);
+    setHighlightLinks(newHighlightLinks); // Clear highlight for now if optimalMoves is not passed
 
     if (containerRef.current) {
         containerRef.current.style.cursor = node ? 'pointer' : 'grab';
     }
-  }, [data]);
+  }, []); // Removed data, optimalMoves from dependencies as they are not computed here
 
   const handleLinkHover = useCallback((link) => {
     if (containerRef.current) {
@@ -397,8 +398,8 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   const getLinkLabel = useCallback((link) => {
     if (!selectedNode) return '';
     
-    const sourceId = link.source.id;
-    const targetId = link.target.id;
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
     if (sourceId === selectedNode.id) {
       return `${targetId}`;
@@ -411,8 +412,8 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
   // Paint link labels
   const paintLink = useCallback((link, ctx, globalScale) => {
-    const sourceId = link.source.id;
-    const targetId = link.target.id;
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
 
     // Only label links connected to selected node
     if (selectedNode && (sourceId === selectedNode.id || targetId === selectedNode.id)) {
@@ -498,6 +499,13 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
   };
 
+  const setAsStartingNode = () => {
+    if (selectedNode) {
+        setStartingNodeId(selectedNode.id);
+        toast.success(`Uzel ${selectedNode.id} nastaven jako startovní.`);
+    }
+  };
+
   return (
     <>
     <div className="GraphDiv mb-3 shadow-sm" ref={containerRef}>
@@ -524,10 +532,12 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         graphData={data}
         nodeRelSize={game.nodeRadius}
         autoPauseRedraw={false}
-        linkWidth={graphLink => highlightLinks.has(graphLink) ? 5 : 3}
-        linkColor={graphLink => graphLink.isOptimal ? colors.accentYellow : colors.defaultLink} 
+        // linkWidth={graphLink => highlightLinks.has(graphLink) ? 5 : 3} // Optimal moves not computed here
+        // linkColor={graphLink => graphLink.isOptimal ? colors.accentYellow : colors.defaultLink} 
+        linkWidth={3} // Default width
+        linkColor={colors.defaultLink} // Default color
         linkDirectionalParticles={3}
-        linkDirectionalParticleWidth={graphLink => highlightLinks.has(graphLink) ? 4 : 0}
+        linkDirectionalParticleWidth={0} // No particles for now, as optimal moves are not here
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
         linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
@@ -549,25 +559,16 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
     {/* Two-column layout container */}
     <div className="row g-4 mb-5">
-        {/* Left column: Analysis results */}
+        {/* Left column: Analysis results - this will be handled by the parent component */}
         <div className="col-md-6">
             <div className="card h-100 shadow-sm">
                 <div className="card-header bg-light fw-bold">
                     Analýza hry
                 </div>
                 <div className="card-body">
-                    {analysisResult ? (
-                        <>
-                            <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
-                                {analysisResult.message}
-                            </div>
-                            <p className="text-muted small mb-0">
-                                Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
-                            </p>
-                        </>
-                    ) : (
-                        <p className="text-muted text-center my-auto">Přidejte více uzlů a propojte je pro analýzu.</p>
-                    )}
+                    <p className="text-muted text-center my-auto">
+                        Analýza hry je zobrazena výše.
+                    </p>
                 </div>
             </div>
         </div>
@@ -584,6 +585,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
                             <h5 className="card-title mb-3">Vybraný uzel: {selectedNode.id}</h5>
                             <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
                                 <button className="btn btn-primary btn-sm" onClick={changePlayer}>Změnit hráče</button>
+                                <button className="btn btn-info btn-sm" onClick={setAsStartingNode}>Nastavit jako startovní</button>
                                 <button className="btn btn-danger btn-sm" onClick={() => deleteNode(selectedNode.id)}>Smazat uzel</button>
                                 <button className="btn btn-success btn-sm" onClick={startAddEdge}>Přidat hranu</button>
                             </div>
@@ -593,22 +595,32 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
                                 <h6 className="mb-2">Propojené uzly:</h6>
                                 <div className="d-flex flex-wrap gap-2 justify-content-center">
                                     {graph.links
-                                        .filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id)
+                                        .filter(link => {
+                                            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                                            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                                            return sourceId === selectedNode.id || targetId === selectedNode.id;
+                                        })
                                         .map((link, index) => {
-                                            const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
+                                            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                                            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                                            const connectedNodeId = sourceId === selectedNode.id ? targetId : sourceId;
                                             
                                             return (
                                                 <button 
                                                     key={index}
                                                     className="btn btn-outline-danger btn-sm" 
-                                                    onClick={() => deleteEdge(link.source.id, link.target.id)}
+                                                    onClick={() => deleteEdge(sourceId, targetId)}
                                                 >
                                                     Smazat hranu {connectedNodeId}
                                                 </button>
                                             );
                                         })
                                     }
-                                    {graph.links.filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id).length === 0 && 
+                                    {graph.links.filter(link => {
+                                        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+                                        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+                                        return sourceId === selectedNode.id || targetId === selectedNode.id;
+                                    }).length === 0 && 
                                         <span className="text-muted small">Žádné hrany</span>
                                     }
                                 </div>
