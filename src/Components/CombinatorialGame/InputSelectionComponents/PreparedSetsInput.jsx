@@ -1,4 +1,5 @@
 import PropTypes from "prop-types";
+import { useState } from "react";
 
 // Load all JSON files from the Sady/CombinatorialGame directory
 const modules = import.meta.glob('../../../../Sady/CombinatorialGame/*.json', { eager: true });
@@ -26,12 +27,11 @@ const Data = Object.entries(modules)
     })
     .filter(item => item !== null);
 
-export function PreparedSetsInput({ onGraphUpdate }) {
-  const handleSelectChange = (event) => {
-    const index = parseInt(event.target.value);
-    if (!isNaN(index) && index >= 0) {
-      const graphData = Data[index];
+export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSelectedStartingPlayer }) {
+  const [selectedSetIndex, setSelectedSetIndex] = useState(null);
 
+  const loadGraph = (index, playerOverride) => {
+      const graphData = Data[index];
       const positions = {};
 
       // 1. Initialize positions from nodes
@@ -61,6 +61,11 @@ export function PreparedSetsInput({ onGraphUpdate }) {
       }
 
       const startingPositionId = String(graphData.startingPosition);
+      
+      // Override starting position player if requested
+      if (playerOverride !== undefined && positions[startingPositionId]) {
+          positions[startingPositionId].player = playerOverride;
+      }
 
       const parsedGraph = {
         positions,
@@ -68,7 +73,39 @@ export function PreparedSetsInput({ onGraphUpdate }) {
       };
 
       onGraphUpdate(parsedGraph);
+  };
+
+  const handleSelectChange = (event) => {
+    const val = event.target.value;
+    if (val === "") {
+        setSelectedSetIndex(null);
+        return;
     }
+
+    const index = parseInt(val);
+    if (!isNaN(index) && index >= 0) {
+      setSelectedSetIndex(index);
+      
+      // Determine the natural starting player from the set
+      const graphData = Data[index];
+      const startId = String(graphData.startingPosition);
+      const startNode = graphData.nodes.find(n => String(n.id) === startId);
+      const naturalPlayer = startNode ? startNode.player : 1;
+
+      // Update the selector to match the set
+      setSelectedStartingPlayer(naturalPlayer);
+      
+      // Load the graph using the natural player
+      loadGraph(index, naturalPlayer);
+    }
+  };
+
+  const handlePlayerChange = (player) => {
+      setSelectedStartingPlayer(player);
+      if (selectedSetIndex !== null) {
+          // If a set is loaded, reload it with the new player override
+          loadGraph(selectedSetIndex, player);
+      }
   };
 
   return (
@@ -77,8 +114,36 @@ export function PreparedSetsInput({ onGraphUpdate }) {
       style={{ maxWidth: "600px" }}
     >
       <div className="mb-3">
+        <label className="form-label d-block fw-bold">Začínající hráč:</label>
+        <div className="form-check form-check-inline">
+            <input 
+                className="form-check-input" 
+                type="radio" 
+                name="setsStartingPlayer" 
+                id="setsPlayer1" 
+                value="1" 
+                checked={selectedStartingPlayer === 1} 
+                onChange={() => handlePlayerChange(1)} 
+            />
+            <label className="form-check-label" htmlFor="setsPlayer1">Hráč 1</label>
+        </div>
+        <div className="form-check form-check-inline">
+            <input 
+                className="form-check-input" 
+                type="radio" 
+                name="setsStartingPlayer" 
+                id="setsPlayer2" 
+                value="2" 
+                checked={selectedStartingPlayer === 2} 
+                onChange={() => handlePlayerChange(2)} 
+            />
+            <label className="form-check-label" htmlFor="setsPlayer2">Hráč 2</label>
+        </div>
+      </div>
+
+      <div className="mb-3">
         <label className="form-label">Vybrat sadu:</label>
-        <select className="form-select" onChange={handleSelectChange}>
+        <select className="form-select" onChange={handleSelectChange} value={selectedSetIndex === null ? "" : selectedSetIndex}>
           <option value="">Vybrat sadu</option>
           {Data.map((set, index) => (
             <option key={index} value={index}>
@@ -93,4 +158,6 @@ export function PreparedSetsInput({ onGraphUpdate }) {
 
 PreparedSetsInput.propTypes = {
   onGraphUpdate: PropTypes.func.isRequired,
+  selectedStartingPlayer: PropTypes.number,
+  setSelectedStartingPlayer: PropTypes.func
 };
