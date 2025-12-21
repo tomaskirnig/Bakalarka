@@ -193,13 +193,6 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
   }, [initialGraph, graph]); 
 
-  // No longer directly dependent on optimalMoves for reheat, as it's not computed here
-  useEffect(() => {
-    if (fgRef.current) {
-      fgRef.current.d3ReheatSimulation();
-    }
-  }); // Removed optimalMoves from dependency array
-
   // Function to add a node
   const addNode = () => {
     // console.log("Adding node...");
