@@ -111,13 +111,9 @@ export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSe
   };
 
   return (
-    <div
-      className="card p-4 mb-4 mx-auto shadow-sm text-start"
-      style={{ maxWidth: "600px" }}
-    >
-      <div className="mb-3">
-        <label className="form-label d-block fw-bold">Začínající hráč:</label>
-        <div className="tabs mb-3">
+    <div className="inputWindow">
+        <label>Začínající hráč:</label>
+        <div className="tabs no-border mb-0">
             <input 
                 type="radio" 
                 id="setsPlayer1" 
@@ -138,10 +134,8 @@ export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSe
             />
             <label htmlFor="setsPlayer2" className="btn btn-outline-primary">Hráč 2</label>
         </div>
-      </div>
 
-      <div className="mb-3">
-        <label className="form-label">Vybrat sadu:</label>
+        <label>Vybrat sadu:</label>
         <select className="form-select" onChange={handleSelectChange} value={selectedSetIndex === null ? "" : selectedSetIndex}>
           <option value="">Vybrat sadu</option>
           {Data.map((set, index) => (
@@ -150,7 +144,6 @@ export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSe
             </option>
           ))}
         </select>
-      </div>
     </div>
   );
 }

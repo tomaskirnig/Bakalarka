@@ -11,7 +11,7 @@ import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 
-export function CombinatorialGame({ onNavigate, initialData }) {
+export function CombinatorialGame({ initialData }) {
     const [graph, setGraph] = useState(null); // Current tree
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
@@ -32,12 +32,8 @@ export function CombinatorialGame({ onNavigate, initialData }) {
         const playerAtStartNode = graph.positions[graph.startingPosition.id]?.player;
 
         let finalAnalysisResult = { ...rawAnalysisResult }; // Copy original result
-        let actualWinningPlayer = null;
         let analysisValid = true;
         
-        // For manual input, we infer the starting player from the graph itself
-        const effectiveStartingPlayer = chosenOpt === 'manual' ? playerAtStartNode : selectedStartingPlayer;
-
         if (playerAtStartNode === undefined) {
             finalAnalysisResult.hasWinningStrategy = false;
             finalAnalysisResult.message = "Startovní pozice nemá definovaného hráče.";
@@ -48,15 +44,14 @@ export function CombinatorialGame({ onNavigate, initialData }) {
             analysisValid = false;
         } else {
             // The selected starting player matches the player assigned to the starting node
+            
+            finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy;
+            
             if (rawAnalysisResult.hasWinningStrategy) {
-                // If raw result says P1 wins, and effectiveStartingPlayer is P1, then P1 wins
-                actualWinningPlayer = effectiveStartingPlayer;
+                finalAnalysisResult.message = "Hráč 1 má výherní strategii.";
             } else {
-                // If raw result says P1 does not win, and effectiveStartingPlayer is P1, then P2 wins
-                actualWinningPlayer = effectiveStartingPlayer === 1 ? 2 : 1;
+                finalAnalysisResult.message = "Hráč 1 nemá výherní strategii.";
             }
-            finalAnalysisResult.message = `Hráč ${actualWinningPlayer} má výherní strategii.`;
-            finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy; // Keep P1's winning status for optimal moves calculation
         }
         
         // Optimal moves are still calculated based on Player 1's winning positions

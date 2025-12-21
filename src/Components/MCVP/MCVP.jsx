@@ -127,11 +127,11 @@ export function MCVP({ onNavigate, initialData }) {
             {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
 
             {tree && (
-                <div className="card h-100 mt-3">
-                    <div className="card-header">
-                        <h4>Výsledek obvodu</h4>
+                <div className="card mt-3 mx-auto shadow-sm" style={{ maxWidth: '600px' }}>
+                    <div className="card-header bg-light fw-bold text-center">
+                        Výsledek obvodu
                     </div>
-                    <div className="card-body">
+                    <div className="card-body text-center">
                         {evaluationResult !== null ? (
                             <>
                                 <div className={`alert ${evaluationResult ? 'alert-success' : 'alert-warning'}`}>

@@ -19,6 +19,11 @@
     --color-black: #000;
 }
 
+.no-border {
+    border: none !important;
+    box-shadow: none !important;
+}
+
 /* Control Buttons - Unified Look (Matching Active Nav) */
 .btn-control {
   /* Dimensions */
@@ -413,7 +418,8 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 0.5rem;
-  background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
+  /* background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%); */
+  background: var(--color3);
   border-radius: 16px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);

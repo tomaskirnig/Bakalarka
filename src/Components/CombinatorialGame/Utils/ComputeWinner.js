@@ -91,8 +91,8 @@ export function computeWinner(graph) {
     hasWinningStrategy: playerIWins,
     winningPositions: memo,
     message: playerIWins 
-      ? "Hráč I má výherní strategii"
-      : "Hráč I nemá výherní strategii",
+      ? "Hráč 1 má výherní strategii"
+      : "Hráč 1 nemá výherní strategii",
   };
 }
 
@@ -121,7 +121,7 @@ export function getOptimalMoves(graph, precomputedResult = null) {
     const position = graph.positions[posId];
     
     // Check edges u -> v
-    // We only highlight edges starting from a Winning position for P1.
+    // Only highlight edges starting from a Winning position for P1.
     // If u is winning for P1, then a move is "optimal" (or part of the winning strategy)
     // if it leads to a state v that is ALSO winning for P1.
     if (winningPositions[posId]) {

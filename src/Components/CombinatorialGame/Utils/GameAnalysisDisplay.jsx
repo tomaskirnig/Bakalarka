@@ -2,11 +2,11 @@ import PropTypes from 'prop-types';
 
 export function GameAnalysisDisplay({ analysisResult }) {
     return (
-        <div className="card mt-4 shadow-sm mx-auto" style={{ maxWidth: '800px' }}>
-            <div className="card-header bg-light fw-bold text-start">
+        <div className="card mt-4 shadow-sm mx-auto" style={{ maxWidth: '600px' }}>
+            <div className="card-header bg-light fw-bold text-center">
                 Analýza hry
             </div>
-            <div className="card-body text-start">
+            <div className="card-body text-center">
                 {analysisResult ? (
                     <>
                         <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
