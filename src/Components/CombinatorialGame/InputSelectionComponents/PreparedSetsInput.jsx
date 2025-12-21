@@ -79,6 +79,8 @@ export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSe
     const val = event.target.value;
     if (val === "") {
         setSelectedSetIndex(null);
+        // Also clear the graph if no set is selected
+        onGraphUpdate(null);
         return;
     }
 
@@ -115,29 +117,26 @@ export function PreparedSetsInput({ onGraphUpdate, selectedStartingPlayer, setSe
     >
       <div className="mb-3">
         <label className="form-label d-block fw-bold">Začínající hráč:</label>
-        <div className="form-check form-check-inline">
+        <div className="tabs mb-3">
             <input 
-                className="form-check-input" 
                 type="radio" 
-                name="setsStartingPlayer" 
                 id="setsPlayer1" 
+                name="setsStartingPlayer" 
                 value="1" 
                 checked={selectedStartingPlayer === 1} 
                 onChange={() => handlePlayerChange(1)} 
             />
-            <label className="form-check-label" htmlFor="setsPlayer1">Hráč 1</label>
-        </div>
-        <div className="form-check form-check-inline">
+            <label htmlFor="setsPlayer1" className="btn btn-outline-primary">Hráč 1</label>
+
             <input 
-                className="form-check-input" 
                 type="radio" 
-                name="setsStartingPlayer" 
                 id="setsPlayer2" 
+                name="setsStartingPlayer" 
                 value="2" 
                 checked={selectedStartingPlayer === 2} 
                 onChange={() => handlePlayerChange(2)} 
             />
-            <label className="form-check-label" htmlFor="setsPlayer2">Hráč 2</label>
+            <label htmlFor="setsPlayer2" className="btn btn-outline-primary">Hráč 2</label>
         </div>
       </div>
 

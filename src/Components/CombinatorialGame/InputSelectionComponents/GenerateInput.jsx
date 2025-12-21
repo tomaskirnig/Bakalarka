@@ -22,31 +22,28 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
 
     return (
         <div className="card p-4 mb-4 mx-auto shadow-sm text-start" style={{ maxWidth: '600px' }}>
-             <div className="mb-3">
-                <label className="form-label d-block fw-bold">Začínající hráč:</label>
-                <div className="form-check form-check-inline">
+            <div className="mb-3">
+                <label className="form-label d-block">Začínající hráč:</label>
+                <div className="tabs mb-3">
                     <input 
-                        className="form-check-input" 
                         type="radio" 
-                        name="genStartingPlayer" 
                         id="genPlayer1" 
+                        name="genStartingPlayer" 
                         value="1" 
                         checked={selectedStartingPlayer === 1} 
                         onChange={() => setSelectedStartingPlayer(1)} 
                     />
-                    <label className="form-check-label" htmlFor="genPlayer1">Hráč 1</label>
-                </div>
-                <div className="form-check form-check-inline">
+                    <label htmlFor="genPlayer1" className="btn btn-outline-primary">Hráč 1</label>
+
                     <input 
-                        className="form-check-input" 
                         type="radio" 
-                        name="genStartingPlayer" 
                         id="genPlayer2" 
+                        name="genStartingPlayer" 
                         value="2" 
                         checked={selectedStartingPlayer === 2} 
                         onChange={() => setSelectedStartingPlayer(2)} 
                     />
-                    <label className="form-check-label" htmlFor="genPlayer2">Hráč 2</label>
+                    <label htmlFor="genPlayer2" className="btn btn-outline-primary">Hráč 2</label>
                 </div>
             </div>
 
