@@ -10,11 +10,14 @@ import { GameAnalysisDisplay } from './Utils/GameAnalysisDisplay';
 import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
+import { Modal } from '../Common/Modal';
+import { StepByStepGame } from './StepByStepGame';
 
 export function CombinatorialGame({ initialData }) {
     const [graph, setGraph] = useState(null); // Current tree
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
+    const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
     
     // Handle initial data if provided
     useEffect(() => {
@@ -164,7 +167,20 @@ export function CombinatorialGame({ initialData }) {
                 <>
                     <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
                     <GameAnalysisDisplay analysisResult={analysisResult} />
+                    <div className="mt-3">
+                        <button className='btn btn-primary' onClick={() => setExplain(true)}>
+                            Vysvětlit
+                        </button>
+                    </div>
                 </>
+            )}
+
+            {explain && (
+                <Modal onClose={() => setExplain(false)}>
+                    {graph && (
+                        <StepByStepGame graph={graph} />
+                    )}
+                </Modal>
             )}
 
             {/* {graph && (

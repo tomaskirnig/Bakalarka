@@ -4,7 +4,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen }) {
+export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen, highlightedNode = null }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
   const highlightLinks = useRef(new Set());
@@ -163,9 +163,12 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     let fillColor;
     if (hoverNode.current === node) {
       fillColor = colors.highlightNode;
-    }else if (node.isStartingPosition) {
+    } else if (highlightedNode && node.id === highlightedNode) {
+      // Step-by-step highlighted node
+      fillColor = colors.accentBlue;
+    } else if (node.isStartingPosition) {
       fillColor = colors.accentRed;
-    }else {
+    } else {
       fillColor = colors.defaultNode;
     }
     
@@ -181,7 +184,7 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     
     // Reset alpha
     ctx.globalAlpha = 1;
-  }, [colors, game]);
+  }, [colors, game, highlightedNode]);
 
   // Adjust link distance based on edge count
   useEffect(() => {
@@ -281,7 +284,8 @@ DisplayGraph.propTypes = {
   optimalMoves: PropTypes.object,
   width: PropTypes.number,
   height: PropTypes.number,
-  fitToScreen: PropTypes.bool
+  fitToScreen: PropTypes.bool,
+  highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
 };
 
 export default DisplayGraph;

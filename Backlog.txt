@@ -30,3 +30,4 @@ zobrazit u kazdeho nodu hrace s vyherni pozici
 MCVP->gramatika - dodelat fixni pozice nodu nebo nejaka idecka
 
 -poslat link na live stranku 
+-udelat novou vetev s omezenout fyzikou

@@ -117,6 +117,8 @@
 
 .step-controls-info {
   margin: 0 !important;
+  justify-self: center;
+  width: 97%;
 }
 
 .bg-trans-color {
@@ -618,9 +620,9 @@ select {
 
 .GraphDiv {
   margin: 0 auto;
-  max-width: 1800px;
-  max-height: 1000px;
-  width: 100%;
+  /* max-width: 1800px;
+  max-height: 1000px; */
+  width: 98%;
   height: 70vh;
   border: 2px solid #eee;
   border-radius: 4px;
