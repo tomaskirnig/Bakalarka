@@ -24,23 +24,29 @@ export function generateGraph(numGameFields, edgeProbability) {
     positions[id] = new GamePosition(id, player, [], [], null);
   }
 
-  // First, connect all nodes in a chain to ensure connectivity.
-  for (let i = 0; i < numGameFields - 1; i++) {
+  // First, ensure connectivity by building a random spanning tree (DAG).
+  // For every node i > 0, connect it to a random predecessor j < i.
+  // This ensures 0 can reach everyone (indirectly) and the graph is acyclic.
+  for (let i = 1; i < numGameFields; i++) {
     const currentId = i.toString();
-    const nextId = (i + 1).toString();
-    positions[currentId].children.push(nextId);
-    positions[nextId].parents.push(currentId);
+    // Pick a random parent index from 0 to i-1
+    const parentIndex = Math.floor(Math.random() * i);
+    const parentId = parentIndex.toString();
+    
+    positions[parentId].children.push(currentId);
+    positions[currentId].parents.push(parentId);
   }
 
-  // Now, add some extra random edges.
+  // Now, add some extra random edges based on probability.
   // Only add edges from a node with lower index to a node with higher index to avoid cycles.
   const extraEdgeProbability = edgeProbability / 100 
   for (let i = 0; i < numGameFields; i++) {
-    for (let j = i + 2; j < numGameFields; j++) {
+    for (let j = i + 1; j < numGameFields; j++) {
       if (Math.random() < extraEdgeProbability) {
         const currentId = i.toString();
         const targetId = j.toString();
-        // Avoid duplicate edges
+        
+        // Avoid duplicate edges (already added by tree generation or previous loop)
         if (!positions[currentId].children.includes(targetId)) {
           positions[currentId].children.push(targetId);
           positions[targetId].parents.push(currentId);

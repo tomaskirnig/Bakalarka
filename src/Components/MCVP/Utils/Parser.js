@@ -40,8 +40,10 @@ function tokenize(s) {
       tokens.push([match.kind, match.value]);
       pos += match.value.length;
     } else {
-      // toast.error('Neočekávaný znak ' + s[pos] + ' na pozici ' + pos);
-      throw new SyntaxError(`Neočekávaný znak "${s[pos]}" na pozici ${pos}`);
+      const contextStart = Math.max(0, pos - 3);
+      const contextEnd = Math.min(s.length, pos + 3);
+      const context = s.slice(contextStart, contextEnd);
+      throw new SyntaxError(`Neočekávaný znak "${s[pos]}" na pozici ${pos}. Okolí chyby: "...${context}..."`);
     }
   }
   
@@ -71,7 +73,8 @@ class Parser {
   parse() {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
-      throw new SyntaxError('Neočekávané tokeny na konci vstupu.');
+      const current = this.currentToken();
+      throw new SyntaxError(`Neočekávané tokeny na konci vstupu: "${current[1]}". Očekával se konec výrazu.`);
     }
     return node;
   }
@@ -184,8 +187,9 @@ class Parser {
       return node;
     } 
     else {
-      // toast.error('Očekávala se proměnná nebo levá závorka, místo ' + this.currentToken()[0]);
-      throw new SyntaxError(`Očekávala se PROMĚNNÁ nebo "(", místo toho ${this.currentToken()[0] == 'EOF' ? 'KONEC VSTUPU' : `"${this.currentToken()[1]}"`}`);
+      const current = this.currentToken();
+      const found = current[0] === 'EOF' ? 'KONEC VSTUPU' : `"${current[1]}"`;
+      throw new SyntaxError(`Chyba syntaxe: Očekávala se proměnná (např. x1[0]) nebo levá závorka "(", ale nalezeno: ${found}.`);
     }
   }
 
@@ -203,8 +207,7 @@ class Parser {
       const varValue = Number(match[2]) !== 0 ? 1 : 0;
       return [varName, varValue];
     } else {
-      // toast.error('Neplatný formát proměnné: ' + varStr);
-      throw new SyntaxError(`Neplatná proměnná ${varStr}`);
+      throw new SyntaxError(`Neplatný formát proměnné: "${varStr}". Očekávaný formát je xN[H], kde N je číslo proměnné a H je hodnota (0 nebo 1).`);
     }
   }
 
@@ -248,15 +251,15 @@ class Parser {
   convertToString(kind) {
     switch (kind) {
       case 'LPAREN':
-        return '"("';
+        return 'levá závorka "("';
       case 'RPAREN':
-        return '")"';
+        return 'pravá závorka ")"';
       case 'EOF':
         return 'KONEC VSTUPU';
       case 'OPERATOR':
-        return 'A|O';
+        return 'operátor (A nebo O)';
       case 'VARIABLE':
-        return 'x';
+        return 'proměnná (xN[H])';
       default:
         return kind;
     }
@@ -273,10 +276,11 @@ class Parser {
   consume(kind, value = null) {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
-      throw new SyntaxError(`Očekával se ${this.convertToString(kind)}, místo ${this.convertToString(tok[0])}`);
+      const found = tok[0] === 'EOF' ? 'KONEC VSTUPU' : `"${tok[1]}"`;
+      throw new SyntaxError(`Chyba syntaxe: Očekával se ${this.convertToString(kind)}, ale nalezeno: ${found}.`);
     }
     if (value !== null && tok[1] !== value) {
-      throw new SyntaxError(`Očekávaná hodnota ${value}, místo ${tok[1]}`);
+      throw new SyntaxError(`Chyba syntaxe: Očekávána hodnota "${value}", ale nalezena "${tok[1]}".`);
     }
     this.pos += 1;
     return tok;
@@ -320,7 +324,7 @@ export function parseExpressionToTree(exprStr) {
     const tokens = tokenize(exprStr);
     const parser = new Parser(tokens);
     const tree = parser.parse();
-    console.log("Parsed tree:");
+    // console.log("Parsed tree:");
     //printTree(tree); 
     return tree;
   } 

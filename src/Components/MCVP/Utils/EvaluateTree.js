@@ -103,7 +103,7 @@ export function evaluateTreeWithSteps(node) {
         }
 
         if (visiting.has(currentNode.id)) {
-            throw new Error("Cyklus detekován during step-by-step evaluation");
+            throw new Error("Během postupného vyhodnocování byl detekován cyklus.");
         }
         visiting.add(currentNode.id);
 

@@ -1,0 +1,14 @@
+{
+  "name": "Basic Addition Grammar",
+  "nonTerminals": ["S", "E"],
+  "terminals": ["+", "id"],
+  "productions": {
+    "S": [
+      ["E"]
+    ],
+    "E": [
+      ["E", "+", "id"],
+      ["id"]
+    ]
+  }
+}

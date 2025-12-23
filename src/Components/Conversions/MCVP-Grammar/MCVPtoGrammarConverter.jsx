@@ -21,7 +21,7 @@ class NonTerminalGenerator {
     if (startSymbol) {
       symbol = startSymbol;
     } else if (node.type === "variable") {
-      symbol = `X${this.counter++}`;
+      symbol = node.value;
     } else {
       symbol = `${node.value}${this.counter++}`;
     }
@@ -32,6 +32,13 @@ class NonTerminalGenerator {
 
   getSymbol(node) {
     return this.nodeMap.get(node);
+  }
+
+  getAllSymbols() {
+    return Array.from(this.nodeMap.entries()).map(([node, symbol]) => ({
+      node: node,
+      result: symbol
+    }));
   }
 }
 
@@ -44,6 +51,8 @@ class MCVPToGrammarConverter {
     this.grammar = new ConversionGrammar();
     this.symbolGenerator = new NonTerminalGenerator();
     this.steps = [];
+    this.processedNodes = new Set();
+    this.productionNodes = new Set();
   }
 
   /**
@@ -66,7 +75,8 @@ class MCVPToGrammarConverter {
         description: "Konverze selhala",
         mcvpHighlight: null,
         grammar: new ConversionGrammar().serialize(),
-        visualNote: "Během konverze došlo k chybě"
+        visualNote: "Během konverze došlo k chybě",
+        symbols: []
       }];
     }
   }
@@ -76,7 +86,8 @@ class MCVPToGrammarConverter {
       description: "Inicializace gramatiky s počátečním symbolem S",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: "Začínáme s gramatikou obsahující pouze počáteční symbol S"
+      visualNote: "Začínáme s gramatikou obsahující pouze počáteční symbol S",
+      symbols: this.symbolGenerator.getAllSymbols()
     });
   }
 
@@ -85,7 +96,8 @@ class MCVPToGrammarConverter {
       description: "Konverze dokončena",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku"
+      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku",
+      symbols: this.symbolGenerator.getAllSymbols()
     });
   }
 
@@ -94,7 +106,8 @@ class MCVPToGrammarConverter {
       description,
       mcvpHighlight: highlightNode,
       grammar: this.grammar.serialize(),
-      visualNote
+      visualNote,
+      symbols: this.symbolGenerator.getAllSymbols()
     });
   }
 
@@ -104,8 +117,9 @@ class MCVPToGrammarConverter {
     this.processNodeRecursively(this.mcvpTree);
   }
 
-  processNodeRecursively(node) { //, parentSymbol = null
-    if (!node) return;
+  processNodeRecursively(node) {
+    if (!node || this.processedNodes.has(node)) return;
+    this.processedNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
     
@@ -130,7 +144,7 @@ class MCVPToGrammarConverter {
     // Process children
     if (node.children && node.children.length > 0) {
       node.children.forEach(child => {
-        this.processNodeRecursively(child, nodeSymbol);
+        this.processNodeRecursively(child);
       });
     }
   }
@@ -140,7 +154,8 @@ class MCVPToGrammarConverter {
   }
 
   createProductionsRecursively(node) {
-    if (!node || node.type !== "operation") return;
+    if (!node || node.type !== "operation" || this.productionNodes.has(node)) return;
+    this.productionNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbol(node);
     if (!nodeSymbol) return;
@@ -239,7 +254,9 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
               <TreeCanvas 
                 tree={mcvpTree} 
                 highlightedNode={step.mcvpHighlight}
-                completedSteps={[]}
+                activeNode={step.mcvpHighlight}
+                completedSteps={step.symbols || []}
+                fitToScreen={currentStep === steps.length - 1}
               />
             </div>
           </div>

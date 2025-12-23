@@ -7,11 +7,13 @@ import { Grammar } from './Grammar';
  *   isEmpty: boolean,
  *   productive: string[],
  *   nonproductive: string[],
- *   explanation: string
+ *   explanation: string,
+ *   derivationTree: Object|null
  * }}
  */
 export function isEmptyLanguage(grammar) {
   const productive = new Set();
+  const witnesses = new Map(); // Stores the production body used to prove productivity: NonTerminal -> Symbol[]
   const { nonTerminals, terminals, productions } = grammar;
   
   // Determine the start symbol (first non-terminal if not explicitly defined)
@@ -22,7 +24,8 @@ export function isEmptyLanguage(grammar) {
       isEmpty: true,
       productive: [],
       nonproductive: nonTerminals,
-      explanation: "The grammar is empty: no start symbol is defined."
+      explanation: "Gramatika je prázdná: není definován počáteční symbol.",
+      derivationTree: null
     };
   }
   
@@ -43,6 +46,7 @@ export function isEmptyLanguage(grammar) {
   for (const { left, right } of rules) {
     if (!productive.has(left) && rightIsProductive(right)) {
       productive.add(left);
+      witnesses.set(left, right);
       queue.push(left);
     }
   }
@@ -57,6 +61,7 @@ export function isEmptyLanguage(grammar) {
     for (const { left, right } of rules) {
       if (!productive.has(left) && right.includes(newlyProd) && rightIsProductive(right)) {
         productive.add(left);
+        witnesses.set(left, right);
         queue.push(left);
         // Also exit early if it's the start symbol
         if (left === start) { queue.length = 0; break; }
@@ -65,13 +70,53 @@ export function isEmptyLanguage(grammar) {
   }
 
   const isEmpty = !productive.has(start);
+  
+  // Construct Derivation Tree if not empty
+  let derivationTree = null;
+  if (!isEmpty) {
+      let idCounter = 0;
+      const buildNode = (symbol) => {
+          const node = { 
+              name: symbol,
+              id: `node_${idCounter++}`, // Unique ID for visualization
+              attributes: {}
+          };
+          
+          if (terminals.includes(symbol)) {
+              node.attributes.type = 'terminal';
+          } else if (symbol === 'ε') {
+              node.attributes.type = 'epsilon';
+          } else if (witnesses.has(symbol)) {
+              node.attributes.type = 'non-terminal';
+              const rhs = witnesses.get(symbol);
+              if (rhs.length === 0) {
+                  // Implicit epsilon
+                  node.children = [{ 
+                      name: 'ε', 
+                      id: `node_${idCounter++}`, 
+                      attributes: { type: 'epsilon' } 
+                  }];
+              } else {
+                  node.children = rhs.map(s => buildNode(s));
+              }
+          } else {
+              // Fallback for symbols that might be in RHS but not in terminals list explicitly?
+              // Or if logic is slightly off. Assume terminal or error.
+              node.attributes.type = 'terminal'; 
+          }
+          return node;
+      };
+      derivationTree = buildNode(start);
+  }
+
   return {
     isEmpty,
     productive: [...productive],
     nonproductive: nonTerminals.filter(nt => !productive.has(nt)),
     explanation: isEmpty
       ? `Gramatika definuje prázdný jazyk: počáteční symbol "${start}" nemůže derivovat žádný terminální řetězec.`
-      : `Gramatika definuje neprázdný jazyk: počáteční symbol "${start}" může derivovat alespoň jeden terminální řetězec.`
+      : `Gramatika definuje neprázdný jazyk: počáteční symbol "${start}" může derivovat alespoň jeden terminální řetězec.`,
+    derivationTree
   };
 }
 

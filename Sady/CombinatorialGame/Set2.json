@@ -1,0 +1,20 @@
+{
+  "name": "Set 2 (5 uzly 7 hrany)",
+  "nodes": [
+    { "id": "1", "player": 1 },
+    { "id": "2", "player": 2 },
+    { "id": "3", "player": 1 },
+    { "id": "4", "player": 2 },
+    { "id": "5", "player": 1 }
+  ],
+  "edges": [
+    { "source": "1", "target": "2" },
+    { "source": "1", "target": "3" },
+    { "source": "2", "target": "4" },
+    { "source": "3", "target": "4" },
+    { "source": "4", "target": "5" },
+    { "source": "2", "target": "3" },
+    { "source": "3", "target": "5" }
+  ],
+  "startingPosition": "3"
+}
