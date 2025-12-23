@@ -181,6 +181,11 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+
+    // Draw node ID above the node
+    ctx.font = '10px monospace';
+    ctx.fillStyle = 'red';
+    ctx.fillText(node.id, node.x, node.y - game.nodeRadius - 12);
     
     // Reset alpha
     ctx.globalAlpha = 1;

@@ -90,7 +90,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
                                 activeNode={step.highlightNode}
-                                completedSteps={[]}
+                                completedSteps={step.labels || []}
                                 width={mcvpDimensions.width}
                                 height={mcvpDimensions.height}
                                 fitToScreen={currentStep === steps.length - 1}

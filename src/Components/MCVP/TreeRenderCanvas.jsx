@@ -108,7 +108,7 @@ export function TreeCanvas({
         current.children.forEach(child => {
           if (child) traverse(child, current);
         });
-      } 
+      }
     }
 
     traverse(tree, null);
@@ -153,7 +153,6 @@ export function TreeCanvas({
 
     return { nodes, links };
   }, [tree]);
-
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
