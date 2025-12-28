@@ -186,7 +186,7 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     if (winningPlayerMap && winningPlayerMap[node.id]) {
         ctx.font = 'bold 10px monospace';
         ctx.fillStyle = '#198754'; // Bootstrap success green
-        ctx.fillText(`Win: P${winningPlayerMap[node.id]}`, node.x, node.y - game.nodeRadius - 10);
+        ctx.fillText(winningPlayerMap[node.id] === 1 ? 'I' : 'II', node.x, node.y - game.nodeRadius - 10);
     }
 
     // Draw node ID above the node
