@@ -22,6 +22,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
+    const nextLinkIdRef = useRef(0);
+    const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
     const colors = useGraphColors();
@@ -54,6 +56,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const generateNodeId = useCallback(() => {
         const id = nextNodeIdRef.current;
         nextNodeIdRef.current += 1;
+        return String(id);
+    }, []);
+
+    const generateLinkId = useCallback(() => {
+        const id = nextLinkIdRef.current;
+        nextLinkIdRef.current += 1;
         return id;
     }, []);
     
@@ -71,7 +79,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                 graphNode.type,
                 [], // Initialize empty children array
                 [],  // Initialize empty parents array
-                graphNode.id // Pass the ID explicitly
+                graphNode.id 
             );
             nodeMap.set(graphNode.id, node);
         }
@@ -131,10 +139,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         let newNode;
 
         if (type === 'var') {
+            const varName = `x${nextVarIdRef.current}`;
+            nextVarIdRef.current += 1; // Increment for the next variable
             newNode = {
                 id: newId,
                 type: 'variable',
-                value: value || `x${newId}`, 
+                value: value || varName, 
                 varValue: varValue === null ? 0 : varValue, 
             };
         } else {
@@ -206,6 +216,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
 
         const newLink = {
+            id: generateLinkId(),
             source: sourceNode, 
             target: targetNode,
         };
@@ -215,7 +226,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             links: [...prevData.links, newLink],
         }));
         return true;
-    }, [graphData.nodes, edgeExists]);
+    }, [graphData.nodes, edgeExists, generateLinkId]);
 
     /**
      * Deletes an edge between two nodes.
@@ -316,8 +327,20 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         return graphData.links.some(link => link.source.id === nodeId);
     };
 
-    // --- Canvas/Rendering Functions ---
+    const handleNodeHover = useCallback((node) => {
+        setHoverNode(node);
+        if (containerRef.current) {
+            containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+        }
+    }, []);
 
+    const handleLinkHover = useCallback((link) => {
+        if (containerRef.current) {
+            containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+        }
+    }, []);
+
+    // --- Canvas/Rendering Functions ---
     const paintNode = useCallback((node, ctx) => {
         const radius = mcvp.nodeRadius;
         const isSelected = selectedNode && node.id === selectedNode.id;
@@ -326,14 +349,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.innerCircle;
+        ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.defaultNode;
         ctx.fill();
 
         ctx.strokeStyle = colors.outerCircle;
         ctx.stroke();
 
         if (isSelected || isHovered || isEdgeSource) {
-            ctx.strokeStyle = colors.hover;
+            ctx.strokeStyle = colors.highlightNode;
             ctx.stroke();
         }
 
@@ -349,8 +372,57 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         ctx.textBaseline = 'middle';
         ctx.fillStyle = colors.text;
         ctx.fillText(displayText, node.x, node.y);
-
     }, [selectedNode, hoverNode, edgeSource, colors, mcvp]);
+
+    const paintLink = useCallback((link, ctx) => {
+        // Ensure source and target are valid and have x, y coordinates
+        if (!link.source || !link.target || typeof link.source.x === 'undefined' || typeof link.target.x === 'undefined') {
+            return;
+        }
+
+        const start = link.source;
+        const end = link.target;
+
+        // Draw the default link line
+        ctx.beginPath();
+        ctx.moveTo(start.x, start.y);
+        ctx.lineTo(end.x, end.y);
+        ctx.strokeStyle = 'rgba(0,0,0,0.4)'; // Default link color
+        ctx.lineWidth = 1;
+        ctx.stroke();
+
+        // Calculate midpoint for text
+        const midX = (start.x + end.x) / 2;
+        const midY = (start.y + end.y) / 2;
+
+        // Determine if the link ID should be displayed
+        let shouldDisplayLinkId = false;
+        if (selectedNode && link.id !== undefined && link.id !== null) {
+            shouldDisplayLinkId = true;
+        }
+
+        if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
+            ctx.font = '8px Sans-Serif'; // Smaller font for link ID
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'red'; // Color for link ID
+            ctx.fillText(link.id, midX, midY + 10); // Offset slightly
+        }
+    }, [selectedNode]);
+
+    // Force setup for collision
+    useEffect(() => {
+      if (fgRef.current) {
+        // Add collision force to prevent overlap
+        if (window.d3 && window.d3.forceCollide) {
+          fgRef.current.d3Force('collision', 
+            window.d3.forceCollide().radius((_node) => mcvp.nodeRadius * 1.2) // Node radius plus a 20% buffer
+              .strength(0.8) // Strong collision detection
+              .iterations(2) // 2 iterations for stability
+          );
+        }
+      }
+    }, [mcvp]); // Re-run if mcvp settings change
 
     return (
         <div>
@@ -380,6 +452,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     // Layout
                     dagMode="td" // Top-down layout
                     dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
+                    // Physics
                     cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
                     d3AlphaDecay={0.05} // Faster decay
                     d3VelocityDecay={0.4}
@@ -389,15 +462,18 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
                     // Links
-                    linkColor={() => 'rgba(0,0,0,0.4)'}
-                    linkWidth={1}
+                    // linkColor={() => 'rgba(0,0,0,0.4)'} // This will be handled by paintLink
+                    // linkWidth={1} // This will be handled by paintLink
+                    linkCanvasObject={paintLink} // Custom link renderer
+                    linkCanvasObjectMode={() => "after"} // Draw custom object after link line
                     linkDirectionalArrowLength={3.5}
                     linkDirectionalArrowRelPos={1}
                     onDagError={handleDagError}
                     // Interaction
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
-                    onNodeHover={setHoverNode} // Update hover state
+                    onNodeHover={handleNodeHover} // Update hover state
+                    onLinkHover={handleLinkHover}
                     enablePanInteraction={true}
                     enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
@@ -451,28 +527,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                           <h6>Spojené hrany:</h6>
                           <div className="d-flex flex-wrap justify-content-center">
                               {graphData.links
-                                  .filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id)
+                                  .filter(link => String(link.source.id) === String(selectedNode.id) || String(link.target.id) === String(selectedNode.id))
                                   .map((link, index) => {
-                                      const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
-                                      
-                                      // Find the node object for display
-                                      const connectedNode = graphData.nodes.find(node => node.id === connectedNodeId);
-                                      
-                                      // Format display text based on node type
-                                      let displayText = connectedNodeId; // Fallback
-                                      if (connectedNode) {
-                                        if (connectedNode.type === 'variable') {
-                                          displayText = `${connectedNode.value}[${connectedNode.varValue}]`;
-                                        } else {
-                                          displayText = connectedNode.value === 'A' ? 'AND' : 'OR';
-                                        }
-                                      }
                                       
                                       return (
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
                                               <button className="btn btn-outline-danger btn-sm"
                                                       onClick={() => deleteEdge(link.source.id, link.target.id)}>
-                                                  Hrana k {displayText} &times;
+                                                  Odstranit hranu {link.id} &times;
                                               </button>
                                           </div>
                                       );

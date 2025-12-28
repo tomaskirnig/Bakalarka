@@ -24,13 +24,16 @@ export function TreeCanvas({
   highlightedNode = null, // Node to highlight (e.g. from converter)
   activeNode = null,      // Node currently being evaluated (step-by-step)
   completedSteps = [],    // Steps with results to display
+  width,
+  height,
+  fitToScreen
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
   const idCounter = useRef(0);
   
   // Dimensions State
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
 
   // Interaction State
   const hoverNode = useRef(null);
@@ -43,18 +46,19 @@ export function TreeCanvas({
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
+    if (width && height) return;
     if (!containerRef.current) return;
 
     const updateDimensions = () => {
         if (!containerRef.current) return;
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ width, height });
+        setInternalDimensions({ width, height });
     };
 
     // Initial call
     updateDimensions();
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(() => {
         updateDimensions();
     });
 
@@ -63,7 +67,10 @@ export function TreeCanvas({
     return () => {
       resizeObserver.disconnect();
     };
-  }, []);
+  }, [width, height]);
+
+  const canvasWidth = width || internalDimensions.width;
+  const canvasHeight = height || internalDimensions.height;
 
   // 1. Prepare Graph Data
   // useMemo ensures we only regenerate the graph topology when tree/steps change.
@@ -81,6 +88,13 @@ export function TreeCanvas({
       if (current.id === undefined || current.id === null) {
         current.id = idCounter.current++;
       }
+
+      if (parent) {
+        links.push({
+          source: parent.id,
+          target: current.id
+        });
+      }
       
       if (visited.has(current.id)) return;
       visited.add(current.id);
@@ -90,18 +104,11 @@ export function TreeCanvas({
       
       nodes.push(current);
   
-      if (parent) {
-        links.push({
-          source: parent.id,
-          target: current.id
-        });
-      }
-  
       if (current.children && Array.isArray(current.children)) {
         current.children.forEach(child => {
           if (child) traverse(child, current);
         });
-      } 
+      }
     }
 
     traverse(tree, null);
@@ -118,7 +125,7 @@ export function TreeCanvas({
     }
 
     // Pre-calculate neighbors for efficient hover lookup
-    // We map IDs to node objects first
+    // Map IDs to node objects first
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
     
     // Initialize neighbor arrays
@@ -145,7 +152,18 @@ export function TreeCanvas({
     });
 
     return { nodes, links };
-  }, [tree, completedSteps]);
+  }, [tree]);
+  // Map of evaluation results for quick lookup in paintNode
+  const resultsMap = useMemo(() => {
+    const map = new Map();
+    if (completedSteps && completedSteps.length > 0) {
+      completedSteps.forEach((step) => {
+        if (!step || !step.node) return;
+        map.set(step.node.id, step.result);
+      });
+    }
+    return map;
+  }, [completedSteps]);
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
@@ -162,6 +180,10 @@ export function TreeCanvas({
         node.links.forEach(link => highlightLinks.current.add(link));
       }
     }
+
+    if (containerRef.current) {
+        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
+    }
   }, []);
 
   const handleLinkHover = useCallback((link) => {
@@ -174,6 +196,10 @@ export function TreeCanvas({
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
+    
+    if (containerRef.current) {
+        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
+    }
   }, []);
 
   // 3. Paint Functions
@@ -195,9 +221,9 @@ export function TreeCanvas({
 
     // Fill Color
     if (isActive) {
-        ctx.fillStyle = colors.activeNode;
+        ctx.fillStyle = colors.accentYellow;
     } else if (isHovered) {
-        ctx.fillStyle = colors.activeNode;
+        ctx.fillStyle = colors.accentYellow;
     } else if (isExternalHighlight) {
         ctx.fillStyle = colors.highlightNode;
     } else if (isNeighbor) {
@@ -232,22 +258,23 @@ export function TreeCanvas({
     ctx.fillText(displayText, node.x, node.y);
     
     // Result Label (above node)
-    if (node.evaluationResult !== undefined) {
+    const result = resultsMap.get(node.id);
+    if (result !== undefined) {
       ctx.fillStyle = 'red';
-      ctx.fillText(`${node.evaluationResult}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
+      ctx.fillText(`${result}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     } else if (node.rootLabel !== undefined) {
       ctx.fillStyle = 'red';
       ctx.fillText(`${node.rootLabel}`, node.x, node.y - mcvp.resultLabelOffsetMultiplier * mcvp.nodeRadius);
     }
     
-  }, [highlightedNode, activeNode, colors, mcvp]);
+  }, [highlightedNode, activeNode, colors, mcvp, resultsMap]);
 
   const paintLink = useCallback((link, ctx) => {
     if (!link.source || !link.target) return;
     
     const isHighlighted = highlightLinks.current.has(link);
     
-    ctx.strokeStyle = isHighlighted ? colors.highlightLink : colors.defaultLink;
+    ctx.strokeStyle = isHighlighted ? colors.accentRed : colors.defaultLink;
     ctx.lineWidth = isHighlighted ? 3 : 1;
     
     ctx.beginPath();
@@ -263,12 +290,12 @@ export function TreeCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier).iterations(2)); 
+        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * graphData.nodes.length * mcvp.collisionRadiusMultiplier).iterations(graphData.nodes.length)); 
       }
       fgRef.current.d3Force('link').distance(mcvp.linkDistance);
       fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
     }
-  }, [tree, mcvp]); // Re-run if tree changes (new simulation)
+  }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
 
   // Focus Camera on Active Node
   useEffect(() => {
@@ -280,6 +307,13 @@ export function TreeCanvas({
          }
     }
   }, [activeNode, graphData]);
+
+  // Zoom to fit when triggered
+  useEffect(() => {
+    if (fitToScreen && fgRef.current) {
+        fgRef.current.zoomToFit(400, 50);
+    }
+  }, [fitToScreen]);
 
   return (
     <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
@@ -294,8 +328,8 @@ export function TreeCanvas({
       </div>
       <ForceGraph2D
         ref={fgRef}
-        width={dimensions.width}
-        height={dimensions.height}
+        width={canvasWidth}
+        height={canvasHeight}
         graphData={graphData}
         
         // Layout
@@ -344,5 +378,8 @@ TreeCanvas.propTypes = {
   }),
   highlightedNode: PropTypes.object,
   activeNode: PropTypes.object,
-  completedSteps: PropTypes.array
+  completedSteps: PropTypes.array,
+  width: PropTypes.number,
+  height: PropTypes.number,
+  fitToScreen: PropTypes.bool
 };

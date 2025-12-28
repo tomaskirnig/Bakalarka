@@ -22,7 +22,7 @@ export function computeWinner(graph) {
 
   const memo = {};
   const processing = new Set();
-  const expanded = new Set();
+  const visited = new Set();
   const stack = [graph.startingPosition.id];
   
   const getResult = (id) => memo[id] === undefined ? false : memo[id];
@@ -35,9 +35,9 @@ export function computeWinner(graph) {
       continue;
     }
 
-    if (!expanded.has(u)) {
+    if (!visited.has(u)) {
       processing.add(u);
-      expanded.add(u);
+      visited.add(u);
       memo[u] = false; // Default/Cycle assumption
 
       const position = graph.positions[u];
@@ -91,45 +91,47 @@ export function computeWinner(graph) {
     hasWinningStrategy: playerIWins,
     winningPositions: memo,
     message: playerIWins 
-      ? "Hráč I má výherní strategii"
-      : "Hráč I nemá výherní strategii",
+      ? "Hráč 1 má výherní strategii"
+      : "Hráč 1 nemá výherní strategii",
   };
 }
 
 /**
  * Finds and returns optimal moves for Player 1's winning strategy.
+ * Includes all moves that preserve the winning state (Winning -> Winning).
+ * This covers Player 1's optimal choices and Player 2's forced moves (if any).
  * 
  * @param {Object} graph - The game graph with positions and startingPosition
  * @param {Object<string, Object>} graph.positions - Map of position IDs to position objects
  * @param {Object} [precomputedResult] - Optional result from computeWinner to avoid re-calculation
- * @returns {Object} Map of position IDs to optimal next move IDs for Player 1
+ * @returns {Set<string>} Set of optimal edge keys in format "sourceId-targetId"
  */
 export function getOptimalMoves(graph, precomputedResult = null) {
   if (!graph || !graph.positions) {
-    return {};
+    return new Set();
   }
   
   // Use precomputed result if available, otherwise compute
   const result = precomputedResult || computeWinner(graph);
   const winningPositions = result.winningPositions;
   
-  const optimalMoves = {};
+  const optimalEdges = new Set();
   
-  // Only calculate optimal moves for positions where Player 1 has a turn
   for (const posId in graph.positions) {
     const position = graph.positions[posId];
     
-    // Only consider positions where it's Player 1's turn and they have a winning strategy
-    if (position.player === 1 && winningPositions[posId]) {
+    // Check edges u -> v
+    // Only highlight edges starting from a Winning position for P1.
+    // If u is winning for P1, then a move is "optimal" (or part of the winning strategy)
+    // if it leads to a state v that is ALSO winning for P1.
+    if (winningPositions[posId]) {
       for (const childId of position.children || []) {
-        // A move is optimal if it leads to a position where Player 1 still has a winning strategy
         if (winningPositions[childId]) {
-          optimalMoves[posId] = childId;
-          break; // We only need one optimal move
+          optimalEdges.add(`${posId}-${childId}`);
         }
       }
     }
   }
   
-  return optimalMoves;
+  return optimalEdges;
 }
