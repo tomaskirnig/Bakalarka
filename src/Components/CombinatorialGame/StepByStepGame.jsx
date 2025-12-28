@@ -168,6 +168,20 @@ export function StepByStepGame({ graph }) {
     return optimalEdges;
   };
 
+  // Get winning player map for current step
+  const getWinningPlayerMap = () => {
+    if (!steps[currentStep]) return {};
+    
+    const winningPositions = steps[currentStep].winningPositions;
+    const map = {};
+    
+    for (const [nodeId, p1Wins] of Object.entries(winningPositions)) {
+      map[nodeId] = p1Wins ? 1 : 2;
+    }
+    
+    return map;
+  };
+
   return (
     <div className="step-by-step-container">
       <h2 className="text-center mb-3">Postupná analýza výherní strategie</h2> 
@@ -177,6 +191,7 @@ export function StepByStepGame({ graph }) {
             graph={graph} 
             optimalMoves={getOptimalMovesUpToStep()}
             highlightedNode={steps[currentStep]?.positionId}
+            winningPlayerMap={getWinningPlayerMap()}
           />
           
           <div className='step-controls-info container'>

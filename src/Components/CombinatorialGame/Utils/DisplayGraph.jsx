@@ -4,7 +4,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen, highlightedNode = null }) {
+export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen, highlightedNode = null, winningPlayerMap = {} }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
   const highlightLinks = useRef(new Set());
@@ -181,15 +181,22 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+    
+    // Draw winning player info if available
+    if (winningPlayerMap && winningPlayerMap[node.id]) {
+        ctx.font = 'bold 10px monospace';
+        ctx.fillStyle = '#198754'; // Bootstrap success green
+        ctx.fillText(`Win: P${winningPlayerMap[node.id]}`, node.x, node.y - game.nodeRadius - 10);
+    }
 
     // Draw node ID above the node
-    ctx.font = '10px monospace';
-    ctx.fillStyle = 'red';
-    ctx.fillText(node.id, node.x, node.y - game.nodeRadius - 12);
+    // ctx.font = '10px monospace';
+    // ctx.fillStyle = 'red';
+    // ctx.fillText(node.id, node.x, node.y - game.nodeRadius - 12);
     
     // Reset alpha
     ctx.globalAlpha = 1;
-  }, [colors, game, highlightedNode]);
+  }, [colors, game, highlightedNode, winningPlayerMap]);
 
   // Adjust link distance based on edge count
   useEffect(() => {
