@@ -82,8 +82,21 @@ export function generateTree(numGates, numVariables) {
         throw new Error("Nedostatek uzlů!");
       }
 
-      // Decide how many child nodes to use (1 or 2)
-      const childCount = Math.min(2, nodes.length);
+      // Decide how many child nodes to use
+      let childCount;
+      // If this is the last gate, it must connect all remaining nodes to form a single tree
+      if (i === numGates - 1) {
+          childCount = nodes.length;
+      } else {
+          // Randomly choose between 2 and nodes.length children (if possible)
+          // allowing gates to have > 2 children
+          if (nodes.length > 1) {
+             childCount = Math.floor(Math.random() * (nodes.length - 1)) + 2;
+          } else {
+             childCount = 1;
+          }
+      }
+      
       const children = [];
       
       // Select random nodes to be children of new gate
