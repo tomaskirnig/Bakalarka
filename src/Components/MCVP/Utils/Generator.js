@@ -84,17 +84,33 @@ export function generateTree(numGates, numVariables) {
 
       // Decide how many child nodes to use
       let childCount;
+      const remainingGates = numGates - i;
+
       // If this is the last gate, it must connect all remaining nodes to form a single tree
-      if (i === numGates - 1) {
+      if (remainingGates === 1) {
           childCount = nodes.length;
       } else {
-          // Randomly choose between 2 and nodes.length children (if possible)
-          // allowing gates to have > 2 children
-          if (nodes.length > 1) {
-             childCount = Math.floor(Math.random() * (nodes.length - 1)) + 2;
-          } else {
-             childCount = 1;
-          }
+          // Calculate target number of children to distribute variables more evenly
+          // We need to reduce 'nodes.length' to 1 over 'remainingGates' steps.
+          // Average reduction per step = (nodes.length - 1) / remainingGates
+          // Average children per gate = Average reduction + 1
+          const targetChildren = (nodes.length - 1) / remainingGates + 1;
+          
+          // Define a random range around the target. 
+          // Using 2x target allows for variation while keeping it centered near the average.
+          let maxChildren = Math.ceil(targetChildren * 2);
+          
+          // Clamp maxChildren to available nodes and at least 2 (unless only 1 node exists)
+          if (maxChildren > nodes.length) maxChildren = nodes.length;
+          if (maxChildren < 2) maxChildren = 2;
+          
+          let minChildren = 2;
+          if (nodes.length < 2) minChildren = 1;
+
+          // Ensure valid range
+          if (maxChildren < minChildren) maxChildren = minChildren;
+
+          childCount = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
       }
       
       const children = [];
