@@ -5,6 +5,7 @@ import PropTypes from 'prop-types';
 export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelectedStartingPlayer }) {
     const [numGameFields, setNumGameFields] = useState(1);
     const [edgePropability, setEdgePropability] = useState(1);
+    const [localStartingPlayer, setLocalStartingPlayer] = useState(selectedStartingPlayer || 1);
 
     const handleGenerateGraph = () => {
         const generatedGraph = generateGraph(numGameFields, edgePropability);
@@ -13,8 +14,12 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
         if (generatedGraph && generatedGraph.startingPosition) {
             const startId = generatedGraph.startingPosition.id;
             if (generatedGraph.positions[startId]) {
-                generatedGraph.positions[startId].player = selectedStartingPlayer;
+                generatedGraph.positions[startId].player = localStartingPlayer;
             }
+        }
+        
+        if (setSelectedStartingPlayer) {
+            setSelectedStartingPlayer(localStartingPlayer);
         }
         
         onGraphUpdate(generatedGraph);
@@ -29,8 +34,8 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
                     id="genPlayer1" 
                     name="genStartingPlayer" 
                     value="1" 
-                    checked={selectedStartingPlayer === 1} 
-                    onChange={() => setSelectedStartingPlayer(1)} 
+                    checked={localStartingPlayer === 1} 
+                    onChange={() => setLocalStartingPlayer(1)} 
                 />
                 <label htmlFor="genPlayer1" className="btn btn-outline-primary">Hráč 1</label>
 
@@ -39,8 +44,8 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
                     id="genPlayer2" 
                     name="genStartingPlayer" 
                     value="2" 
-                    checked={selectedStartingPlayer === 2} 
-                    onChange={() => setSelectedStartingPlayer(2)} 
+                    checked={localStartingPlayer === 2} 
+                    onChange={() => setLocalStartingPlayer(2)} 
                 />
                 <label htmlFor="genPlayer2" className="btn btn-outline-primary">Hráč 2</label>
             </div>

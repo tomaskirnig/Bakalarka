@@ -1,5 +1,5 @@
 ---- MCVP ----
-
+- Optimize - the nodes are still overlaping, when there are more children
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same

@@ -297,7 +297,8 @@ DisplayGraph.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,
-  highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+  highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+  winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2]))
 };
 
 export default DisplayGraph;
