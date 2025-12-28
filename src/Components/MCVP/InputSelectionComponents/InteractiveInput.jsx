@@ -397,11 +397,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
         // Determine if the link ID should be displayed
         let shouldDisplayLinkId = false;
-        if (selectedNode) {
-            // Check if the link is connected to the selected node
-            if (link.source && link.target && (link.source.id === selectedNode.id || link.target.id === selectedNode.id)) {
-                shouldDisplayLinkId = true;
-            }
+        if (selectedNode && link.id !== undefined && link.id !== null) {
+            shouldDisplayLinkId = true;
         }
 
         if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
@@ -530,9 +527,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                           <h6>Spojené hrany:</h6>
                           <div className="d-flex flex-wrap justify-content-center">
                               {graphData.links
-                                  .filter(link => link.source.id === selectedNode.id || link.target.id === selectedNode.id)
+                                  .filter(link => String(link.source.id) === String(selectedNode.id) || String(link.target.id) === String(selectedNode.id))
                                   .map((link, index) => {
-                                      const connectedNodeId = link.source.id === selectedNode.id ? link.target.id : link.source.id;
                                       
                                       return (
                                           <div key={`${link.source}-${link.target}-${index}`} className="m-1">
