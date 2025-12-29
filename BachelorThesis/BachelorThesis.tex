@@ -6,6 +6,8 @@
 \usepackage{dcolumn} % sloupce tabulky s ciselnymi hodnotami
 \usepackage{subfig} % makra pro "podobrazky" a "podtabulky"
 \usepackage[cpp]{diplomalst}
+\usepackage[utf8]{inputenc} % Set input encoding to UTF-8
+\usepackage[T1]{fontenc} % Use T1 font encoding for better support of special characters
 
 % Zadame pozadovane vstupy pro generovani titulnich stran.
 \ThesisAuthor{Tomáš Kirnig}
@@ -26,11 +28,11 @@
 % Pokud nechceme nikomu dekovat makro zapoznamkujeme.
 % \Acknowledgement{Rád bych na tomto místě poděkoval všem, kteří mi s prací pomohli, protože bez nich by tato práce nevznikla.}
 
-\CzechAbstract{Tato bakalářská práce se zabývá vývojem výukové webové aplikace pro demonstraci P-úplných problémů. Hlavním cílem je usnadnit studentům pochopení a procvičení takových úloh, mezi které patří například \emph{Monotone Circuit Value Problem} (MCVP) a dvě další vybrané P-úplné úlohy. V rámci práce jsou implementovány moduly pro interaktivní zadávání vstupů uživatelem (ručně, náhodnou generací nebo výběrem z připravené sady) a simulaci výpočtu řešení. Uživatel má rovněž možnost sledovat krokový převod instance MCVP na jiné P-úplné problémy a následně i jejich samotné řešení. Výsledná aplikace demonstruje principy teoretické informatiky včetně pojmu P-úplnosti a poskytuje rozšiřitelný základ pro výukové účely.}
+\CzechAbstract{Tato bakalářská práce se zabývá vývojem výukové webové aplikace pro demonstraci P-úplných problémů. Hlavním cílem je usnadnit studentům pochopení a procvičení takových úloh. Aplikace se zaměřuje na \emph{Monotone Circuit Value Problem} (MCVP), \emph{prázdnou gramatiku} a \emph{kombinatorickou hru}. V rámci práce jsou implementovány moduly pro interaktivní zadávání vstupů uživatelem (ručně, náhodnou generací nebo výběrem z připravené sady) a simulaci výpočtu řešení. Uživatel má rovněž možnost sledovat krokovatelný převod instance MCVP na ostatní zmíněné problémy a následně i jejich samotné řešení.}
 
 \CzechKeywords{Teoretická informatika, P-úplné problémy, Monotone Circuit Value Problem, webová aplikace, simulace, převod instancí}
 
-\EnglishAbstract{This bachelor’s thesis focuses on the development of a teaching-oriented web application for illustrating P-complete problems. The main goal is to facilitate students’ understanding and practice of such tasks, including the \emph{Monotone Circuit Value Problem} (MCVP) and two additional P-complete problems. The project implements modules for interactive input of problem instances (manually, via random generation, or by selecting from a pre-defined set) and provides a simulation of their solutions. Users can also observe a step-by-step reduction from an MCVP instance to other P-complete problems and subsequently explore how those are solved. The resulting application demonstrates key concepts of theoretical computer science, including the notion of P-completeness, and provides a flexible basis for educational use.}
+\EnglishAbstract{This bachelor's thesis focuses on the development of a teaching-oriented web application for illustrating P-complete problems. The main goal is to facilitate students' understanding and practice of such tasks. The application focuses on the \emph{Monotone Circuit Value Problem} (MCVP), \emph{Empty Grammar}, and the \emph{Combinatorial Game}. The project implements modules for interactive input of problem instances (manually, via random generation, or by selecting from a pre-defined set) and provides a simulation of their solutions. Users can also observe a step-by-step reduction from an MCVP instance to the other mentioned problems and subsequently explore how those are solved. The resulting application demonstrates key concepts of theoretical computer science, including the notion of P-completeness, and provides a flexible basis for educational use.}
 
 \EnglishKeywords{Theoretical computer science, P-complete problems, Monotone Circuit Value Problem, web application, simulation, instance reduction}
 
@@ -64,10 +66,12 @@
 
 % A nasleduje text zaverecne prace.
 \input{Chapters/Introduction.tex}
-% \input{Chapters/SampleChapter1.tex}
-% \input{Chapters/SampleChapter2.tex}
-\input{Chapters/TechnicalDetails.tex}
-% \input{Chapters/Conclusion.tex}
+
+\input{Chapters/Technologies.tex}
+\input{Chapters/MCVP.tex}
+\input{Chapters/Games.tex}
+\input{Chapters/Grammars.tex}
+\input{Chapters/Conclusion.tex}
 
 % Seznam literatury
 \printbibliography[title={Literatura}, heading=bibintoc]
