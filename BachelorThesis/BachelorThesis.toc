@@ -4,21 +4,43 @@
 \babel@toc {czech}{}\relax 
 \babel@toc {english}{}\relax 
 \babel@toc {czech}{}\relax 
-\contentsline {chapter}{Seznam použitých symbolů a zkratek}{6}{chapter*.2}%
-\contentsline {chapter}{Seznam obr\'azk\r {u}}{7}{chapter*.3}%
-\contentsline {chapter}{Seznam tabulek}{8}{chapter*.4}%
-\contentsline {chapter}{\numberline {1}Úvod}{9}{chapter.1}%
-\contentsline {chapter}{\numberline {2}Použité technologie a architektura}{11}{chapter.2}%
-\contentsline {chapter}{\numberline {3}Monotone Circuit Value Problem}{12}{chapter.3}%
-\contentsline {chapter}{\numberline {4}Kombinatorické hry na grafu}{13}{chapter.4}%
-\contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{14}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Závěr}{15}{chapter.6}%
-\contentsline {chapter}{Literatura}{16}{chapter*.5}%
+\contentsline {chapter}{Seznam použitých symbolů a zkratek}{7}{chapter*.2}%
+\contentsline {chapter}{Seznam obr\'azk\r {u}}{8}{chapter*.3}%
+\contentsline {chapter}{Seznam tabulek}{9}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}Úvod}{10}{chapter.1}%
+\contentsline {chapter}{\numberline {2}Použité technologie a architektura}{12}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Webové technologie}{12}{section.2.1}%
+\contentsline {section}{\numberline {2.2}React a Vite}{12}{section.2.2}%
+\contentsline {section}{\numberline {2.3}Správa stavu a komponentová architektura}{13}{section.2.3}%
+\contentsline {section}{\numberline {2.4}Vizualizace grafů}{13}{section.2.4}%
+\contentsline {subsection}{\numberline {2.4.1}Force-directed layout}{14}{subsection.2.4.1}%
+\contentsline {subsection}{\numberline {2.4.2}Vlastní vykreslování}{14}{subsection.2.4.2}%
+\contentsline {section}{\numberline {2.5}Stylování a responzivita}{14}{section.2.5}%
+\contentsline {section}{\numberline {2.6}Správa vstupů a výstupů}{15}{section.2.6}%
+\contentsline {section}{\numberline {2.7}Notifikace a zpětná vazba}{15}{section.2.7}%
+\contentsline {section}{\numberline {2.8}Struktura kódu a modularita}{16}{section.2.8}%
+\contentsline {section}{\numberline {2.9}Vývojové nástroje a kontrola kvality}{16}{section.2.9}%
+\contentsline {section}{\numberline {2.10}Nasazení a distribuce}{16}{section.2.10}%
+\contentsline {chapter}{\numberline {3}Monotone Circuit Value Problem}{17}{chapter.3}%
+\contentsline {chapter}{\numberline {4}Kombinatorické hry na grafu}{18}{chapter.4}%
+\contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{19}{chapter.5}%
+\contentsline {chapter}{\numberline {6}Závěr}{20}{chapter.6}%
+\contentsline {chapter}{Literatura}{21}{chapter*.5}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
-\contentsline {chapter}{Přílohy}{16}{chapter*.5}%
-\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{17}{appendix.A}%
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\contentsline {chapter}{Přílohy}{21}{chapter*.5}%
+\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{22}{appendix.A}%
