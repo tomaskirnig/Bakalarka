@@ -164,36 +164,6 @@
       \verb https://vitejs.dev/
       \endverb
     \endentry
-    \entry{reactforcegraph2024}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=3d5b1e1c356dc3c6f979e9abb1bef63e}{%
-           family={Asturiano},
-           familyi={A\bibinitperiod},
-           given={Vasco},
-           giveni={V\bibinitperiod}}}%
-      }
-      \strng{namehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{fullhash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{fullhashraw}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{bibnamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{authorbibnamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{authornamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{authorfullhash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \strng{authorfullhashraw}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \field{sortinit}{9}
-      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{react-force-graph -- React component for 2D, 3D, VR and AR force directed graphs}
-      \field{year}{2024}
-      \verb{urlraw}
-      \verb https://github.com/vasturiano/react-force-graph
-      \endverb
-      \verb{url}
-      \verb https://github.com/vasturiano/react-force-graph
-      \endverb
-    \endentry
     \entry{d3js2024}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=3a56f801778dd81bf67b8f9cdccacb12}{%
@@ -210,8 +180,8 @@
       \strng{authornamehash}{3a56f801778dd81bf67b8f9cdccacb12}
       \strng{authorfullhash}{3a56f801778dd81bf67b8f9cdccacb12}
       \strng{authorfullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{9}
+      \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}

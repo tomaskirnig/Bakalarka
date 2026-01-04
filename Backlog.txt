@@ -16,6 +16,7 @@
 
 
 ---- Global ----
+- Fix mobile navigation - dark overlay overlays the navigation 
 - Add autoscroll after selecting set or genererating and displaying some data 
 - Optimize using the useCallback 
 - Optimize using loaders  

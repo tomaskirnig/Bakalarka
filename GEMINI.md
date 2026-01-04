@@ -47,13 +47,16 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 ## 📄 Document Structure
 *   **Main File:** `BachelorThesis/BachelorThesis.tex`
 *   **Language:** Czech (Main text), English (Abstract).
+*   **Images:** All figures are loaded from `BachelorThesis/Figures/` directory.
+*   **Chapter Structure:** 
+    > The thesis is structured into several parts. After the introduction follows a chapter dedicated to the technologies used and the application architecture. The core of the thesis consists of three chapters, each focusing in detail on one of the implemented problems: first the Monotone Circuit Value Problem (MCVP), then combinatorial games on graphs, and finally the emptiness problem for context-free grammars. The conclusion summarizes the achieved results and suggests possibilities for further extension.
 *   **Chapter Order:**
-    1.  `Introduction.tex` (Motivation, P-completeness context)
-    2.  `Technologies.tex` (React, D3, Architecture details)
-    3.  `MCVP.tex` (Theory, Implementation, Reductions)
-    4.  `Games.tex` (Theory, Minimax/Retrograde analysis, Implementation)
-    5.  `Grammars.tex` (Theory, Emptiness check, Derivation trees)
-    6.  `Conclusion.tex` (Summary, Future work)
+    1.  `Introduction.tex` - Úvod (Motivation, P-completeness context, thesis goals)
+    2.  `Technologies.tex` - Použité technologie a architektura (React, Vite, D3, Bootstrap, Architecture details)
+    3.  `MCVP.tex` - Monotone Circuit Value Problem (Theory, Implementation, Reductions to other problems)
+    4.  `Games.tex` - Kombinatorické hry (Theory, Minimax/Retrograde analysis, Implementation)
+    5.  `Grammars.tex` - Bezkontextové gramatiky (Theory, Emptiness check, Derivation trees)
+    6.  `Conclusion.tex` - Závěr (Summary, Future work)
 
 ## 🛠️ LaTeX Specifics
 *   **Encoding:** UTF-8 (`\usepackage[utf8]{inputenc}`).

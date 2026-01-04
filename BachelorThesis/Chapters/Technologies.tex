@@ -1,30 +1,28 @@
 \chapter{Použité technologie a architektura}
 \label{sec:Technologies}
 
-Tato kapitola popisuje technologický základ vytvořené aplikace a její architekturu. Výběr technologií byl veden požadavky na moderní, interaktivní a snadno rozšiřitelné řešení vhodné pro výukové účely.
+Tato kapitola popisuje technologický základ vytvořené aplikace a její architekturu.
 
 \section{Webové technologie}
 \label{sec:WebTechnologies}
 
-Pro implementaci výukové aplikace jsme zvolili webové technologie, které nabízejí řadu výhod oproti desktopovým nebo mobilním aplikacím. Webová aplikace nevyžaduje instalaci a běží v libovolném moderním webovém prohlížeči, což zajišťuje maximální dostupnost pro uživatele napříč různými platformami a operačními systémy. Dalším přínosem je snadná údržba – aktualizace aplikace se projeví okamžitě u všech uživatelů bez nutnosti distribuce nových verzí.
+Pro nejjednodušší distribuci výukové aplikace byly zvoleny webové technologie, které nabízejí řadu výhod oproti desktopovým nebo mobilním aplikacím. Webová aplikace nevyžaduje instalaci a běží v libovolném moderním webovém prohlížeči, což zajišťuje maximální dostupnost pro uživatele napříč různými platformami a operačními systémy. Dalším přínosem je snadná údržba – aktualizace aplikace se projeví u všech uživatelů bez nutnosti instalace nových verzí koncovým uživatelem.
 
 \section{React a Vite}
 \label{sec:ReactVite}
 
-Jako hlavní framework pro vývoj uživatelského rozhraní byl zvolen \emph{React} \cite{react2024}. React je moderní JavaScriptová knihovna vyvinutá společností Meta (dříve Facebook), která umožňuje vytvářet interaktivní uživatelská rozhraní na bázi komponent. Hlavní výhodou Reactu je koncept \emph{reaktivity} – uživatelské rozhraní se automaticky aktualizuje při změně dat bez nutnosti manuální manipulace s DOM (Document Object Model).
+Jako hlavní framework (aplikační rámec) pro vývoj uživatelského rozhraní byl zvolen \emph{React} \cite{react2024}. React je moderní JavaScriptová knihovna vyvinutá společností Meta (dříve Facebook), která umožňuje vytvářet interaktivní uživatelská rozhraní na bázi komponent. Hlavní výhodou Reactu je koncept \emph{reaktivity} – uživatelské rozhraní se automaticky aktualizuje při změně dat bez nutnosti manuální manipulace s DOM (Document Object Model).
 
 React využívá deklarativní přístup k tvorbě UI. Na rozdíl od tradičního imperativního programování, kde vývojář musí krok za krokem instruovat prohlížeč, jak upravit rozhraní, v Reactu stačí popsat, jak má výsledné rozhraní vypadat, a React se postará o potřebné změny v DOM. Tento přístup výrazně zjednodušuje vývoj komplexnějších aplikací a minimalizuje chyby spojené s nekonzistentním stavem.
 
-Pro sestavení a vývoj aplikace jsme použili \emph{Vite} \cite{vite2024}. Vite je moderní \emph{bundler} – tedy nástroj, který spojuje všechny zdrojové soubory aplikace (JavaScript, CSS, obrázky) do optimalizované podoby připravené pro odeslání do prohlížeče. Během vývoje Vite nabízí významnou výhodu: místo zdlouhavého spojování všech souborů do jednoho velkého balíku servíruje jednotlivé moduly přímo do prohlížeče v jejich původní podobě. To výrazně urychluje spouštění vývojového serveru a umožňuje okamžité promítnutí změn v kódu (tzv. hot module replacement). Pro produkční nasazení pak Vite vytvoří klasický optimalizovaný build, kde jsou všechny soubory sloučeny, zmenšeny a připraveny pro rychlé načítání.
+Pro sestavení aplikace byl použit nástroj (bundler) \emph{Vite} \cite{vite2024}. Vite zajišťuje přípravu všech souborů aplikace (kódu, stylů, obrázků) pro běh v prohlížeči. Během vývoje Vite umožňuje vidět změny v kódu okamžitě po uložení souboru bez nutnosti obnovovat stránku. Pro finální verzi aplikace Vite veškeré soubory optimalizuje a zmenší pro rychlejší načítání.
 
-\section{Správa stavu a komponentová architektura}
+\section{Architektura a struktura kódu}
 \label{sec:ComponentArchitecture}
 
 Aplikace je strukturována jako \emph{Single Page Application} (SPA), kde celá aplikace běží v rámci jedné HTML stránky a navigace mezi jednotlivými moduly probíhá bez opětovného načítání stránky. Hlavní komponenta \texttt{App.jsx} funguje jako kořen aplikační struktury a spravuje globální stav aplikace pomocí React Hooks, především \texttt{useState} pro udržení aktuální stránky a předávaných dat.
 
-Architektura je založena na principu \emph{unidirectional data flow} (jednosměrný tok dat), kdy data tečou z rodičovské komponenty do potomků prostřednictvím properties (props), zatímco akce a události se propagují zpět nahoru pomocí callback funkcí. Tento přístup zajišťuje předvídatelné chování aplikace a usnadňuje ladění.
-
-Aplikace je rozdělena do logických modulů podle jednotlivých problémů (viz kapitoly \ref{sec:MCVP}, \ref{sec:Games} a \ref{sec:Grammars}). Každý modul je organizován do vlastní složky obsahující:
+Zdrojový kód je rozdělen do tří hlavních modulů podle řešených problémů – MCVP, kombinatorické hry a bezkontextové gramatiky (viz kapitoly \ref{sec:MCVP}, \ref{sec:Games} a \ref{sec:Grammars}). Každý modul obsahuje vlastní logiku a vizualizační komponenty a je organizován do separátních složek podle funckionality:
 \begin{itemize}
     \item \textbf{Hlavní komponentu} – kontejnerovou komponentu řídící celý modul
     \item \textbf{Utils} – pomocné funkce obsahující algoritmy (parsery, generátory, evaluátory)
@@ -32,98 +30,49 @@ Aplikace je rozdělena do logických modulů podle jednotlivých problémů (viz
     \item \textbf{Vizualizační komponenty} – komponenty pro grafické zobrazení problémů a jejich řešení
 \end{itemize}
 
-Pro sdílení společné funkcionality mezi moduly byly vytvořeny \emph{custom hooks} (vlastní React Hooks) v adresáři \texttt{src/Hooks}. Hook \texttt{useGraphColors} centralizuje správu barev používaných ve vizualizacích a načítá je z CSS proměnných, což umožňuje snadnou změnu barevného schématu. Hook \texttt{useGraphSettings} poskytuje konfigurační parametry pro force-directed grafy, jako jsou poloměry uzlů, síly odpudivosti a vzdálenosti hran.
+Společné prvky jako tlačítka nebo modální okna jsou sdíleny mezi všemi moduly. Pro jendotné nastavení grafů byly vytvořeny pomocné moduly v adresáři \texttt{src/Hooks} – modul \texttt{useGraphColors} spravuje barvy použité v grafických vizualizacích a modul \texttt{useGraphSettings} obshahuje parametry pro vzhled grafů (velikost uzlů, vzdálenosti apod.).
+
+Tato struktura umožňuje snadné úpravy na jednom místě. 
 
 \section{Vizualizace grafů}
 \label{sec:GraphVisualization}
 
-Pro vizualizaci stromových a grafových struktur používá aplikace knihovnu \emph{react-force-graph-2d} \cite{reactforcegraph2024}, která je React wrapperem nad výkonnou knihovnou \emph{D3.js} (Data-Driven Documents) \cite{d3js2024}. D3.js je de facto standardem pro tvorbu datových vizualizací ve webovém prostředí a poskytuje rozsáhlé možnosti pro manipulaci s DOM na základě dat.
+Pro vizualizaci grafů používá aplikace knihovnu \emph{D3.js} \cite{d3js2024}. Grafy jsou automaticky rozmístěny – uzly se vzájemně odpuzují a hrany je přitahují k sobě. Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) jsou uzly uspořádány do úrovní shora dolů, s kořenem nahoře a listy dole.
 
-\subsection{Force-directed layout}
-\label{sec:ForceDirectedLayout}
-
-Klíčovým konceptem využívaným pro rozmístění uzlů v grafu je \emph{force-directed layout} (rozložení řízené silami). Tento algoritmus modeluje graf jako fyzikální systém, kde uzly představují nabitá tělesa odpudící se navzájem a hrany fungují jako pružiny přitahující spojené uzly k sobě. Simulace běží iterativně, dokud systém nedosáhne stavu s minimální energií, tedy vizuálně příjemného a čitelného rozložení.
-
-Konkrétně aplikace využívá následující síly:
-\begin{itemize}
-    \item \textbf{Link force} – síla pružin mezi spojenými uzly, udržuje požadovanou vzdálenost hran
-    \item \textbf{Charge force} – odpudivá síla mezi všemi uzly, zabraňuje jejich překrývání
-    \item \textbf{Collision force} – detekuje a řeší kolize mezi uzly na základě jejich poloměrů
-    \item \textbf{Center force} – udržuje celý graf vycentrovaný v zobrazovací ploše
-\end{itemize}
-
-Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) je aktivován speciální \emph{DAG mód} (Directed Acyclic Graph), který automaticky organizuje uzly do hierarchických úrovní shora dolů (\texttt{dagMode="td"}). To zajišťuje, že výraz je vizualizován tak, jak je běžné v teoretické informatice – kořen nahoře, listy dole.
-
-\subsection{Vlastní vykreslování}
-\label{sec:CustomRendering}
-
-Knihovna react-force-graph-2d umožňuje definovat vlastní vykreslovací funkce (\texttt{nodeCanvasObject}, \texttt{linkCanvasObjectMode}), což aplikace využívá pro vizualizaci stavů uzlů a hran během evaluace. Například v MCVP modulu se uzly vybarvují podle jejich typu (proměnné vs. operátory) a vyhodnoceného stavu (0 nebo 1), zatímco hrany mění barvu podle toho, zda již byly zpracovány v průchodu stromem.
-
-Vykreslování probíhá na HTML5 Canvas elementu, který nabízí vysoký výkon i pro grafy s desítkami či stovkami uzlů. Oproti SVG přístupu je Canvas renderování efektivnější pro časté překreslování, což je klíčové pro animace krokování algoritmy.
+Během vyhodnocování se uzly a hrany v grafu vybarvují podle aktuálního stavu, což uživateli umožňuje sledovat průběh výpočtu.
 
 \section{Stylování a responzivita}
 \label{sec:Styling}
 
-Pro stylování uživatelského rozhraní aplikace využívá framework \emph{Bootstrap 5} \cite{bootstrap2024}. Bootstrap poskytuje předpřipravené CSS třídy pro tvorbu responzivního layoutu, komponent jako jsou tlačítka, formuláře, modální okna a navigační prvky. Použití Bootstrapu výrazně urychlilo vývoj a zajistilo konzistentní vzhled napříč celou aplikací.
-
-Responzivita je implementována pomocí Bootstrapového grid systému založeného na Flexboxu. Layout se automaticky přizpůsobuje velikosti obrazovky, přičemž na mobilních zařízeních se navigace transformuje do off-canvas menu, které se vysouvá ze strany obrazovky. Toto řešení zajišťuje dobrou použitelnost aplikace i na tabletech a smartphonech.
-
-Vedle Bootstrapu jsou specifické styly definovány v centrálním souboru \texttt{style.css}, který využívá CSS custom properties (proměnné) pro správu barevného schématu. Tento přístup umožňuje snadnou změnu celého vzhledu aplikace změnou několika proměnných.
+Pro vzhled uživatelského rozhraní aplikace využívá framework \emph{Bootstrap 5} \cite{bootstrap2024}. Bootstrap poskytuje předpřipravené styly pro tlačítka, formuláře a další prvky rozhraní. Použití Bootstrapu urychlilo vývoj a zajistilo jednotný vzhled.
 
 \section{Správa vstupů a výstupů}
 \label{sec:InputOutput}
 
-Každý modul aplikace implementuje tři základní způsoby zadání vstupu:
+Každý modul aplikace nabízí tři způsoby zadání vstupu:
 \begin{enumerate}
-    \item \textbf{Manuální zadání} – uživatel zadává vstup prostřednictvím textového pole (např. výraz v notaci pro MCVP) nebo interaktivního grafického editoru
-    \item \textbf{Náhodné generování} – algoritmus generuje náhodnou instanci problému na základě parametrů zadaných uživatelem
-    \item \textbf{Připravené sady} – výběr z předpřipravených příkladů uložených ve formátu JSON v adresáři \texttt{Sady/}
+    \item \textbf{Manuální zadání} – uživatel zadává vstup pomocí textového pole nebo grafického editoru
+    \item \textbf{Náhodné generování} – aplikace vygeneruje náhodný příklad podle zadaných parametrů
+    \item \textbf{Připravené příklady} – výběr z předpřipravených ukázkových příkladů
 \end{enumerate}
 
-Pro import a export dat aplikace používá formát JSON, který je standardním formátem pro výměnu dat ve webových aplikacích. Komponenta \texttt{FileTransferControls} (viz oddíl \ref{sec:ComponentArchitecture}) poskytuje jednotné rozhraní pro stahování dat jako JSON soubory a jejich načítání pomocí drag-and-drop nebo výběru souboru.
+Aplikace umožňuje ukládání a načítání dat pomocí souborů ve formátu JSON. Soubory lze načíst přetažením do aplikace nebo výběrem ze složky. Formát nahraného souboru je validován, aby nedošlo k chybám při zpracování neplatných dat.
 
 \section{Notifikace a zpětná vazba}
 \label{sec:Notifications}
 
-Pro zobrazení upozornění, chybových hlášek a potvrzení úspěšných akcí aplikace využívá knihovnu \emph{react-toastify} \cite{reacttoastify2024}. Tato knihovna poskytuje elegantní toast notifikace, které se objevují v rohu obrazovky a automaticky mizí po nastavené době. Notifikace jsou použity zejména při:
-\begin{itemize}
-    \item Chybách při parsování vstupů
-    \item Úspěšném importu/exportu dat
-    \item Varováních při nevalidních operacích
-\end{itemize}
+Pro zobrazení upozornění a chybových hlášek aplikace používá knihovnu \emph{react-toastify} \cite{reacttoastify2024}. Notifikace se objevují v rohu obrazovky a automaticky mizí po chvíli. Aplikace zobrazuje notifikace zejména při chybách ve vstupu, úspěšném uložení dat nebo varováních při neplatných operacích.
 
-Toast notifikace poskytují okamžitou, nenápadnou zpětnou vazbu bez přerušení práce uživatele, což je v souladu s doporučenými praktikami UX designu.
+Notifikace poskytují okamžitou zpětnou vazbu pro uživatele.
 
-\section{Struktura kódu a modularita}
-\label{sec:CodeStructure}
-
-Zdrojový kód aplikace je organizován v adresáři \texttt{src/} následovně:
-\begin{itemize}
-    \item \textbf{src/} – kořenový adresář obsahující \texttt{App.jsx}, \texttt{main.jsx} a globální styly
-    \item \textbf{src/Components/} – všechny React komponenty rozdělené do podadresářů podle účelu:
-    \begin{itemize}
-        \item \textbf{MCVP/} – modul pro Monotone Circuit Value Problem
-        \item \textbf{CombinatorialGame/} – modul pro kombinatorické hry
-        \item \textbf{Grammar/} – modul pro bezkontextové gramatiky
-        \item \textbf{Conversions/} – komponenty pro vizualizaci převodů mezi problémy
-        \item \textbf{Common/} – sdílené komponenty (modální okna, tlačítka, file handling)
-        \item \textbf{HPVisual/} – komponenty pro vizualizaci na úvodní stránce
-    \end{itemize}
-    \item \textbf{src/Hooks/} – custom React hooks pro sdílenou logiku
-\end{itemize}
-
-Tato struktura zajišťuje jasné oddělení odpovědností a usnadňuje orientaci v kódu. Každý modul je relativně nezávislý a může být modifikován nebo rozšiřován bez dopadu na ostatní části aplikace.
-
-\section{Vývojové nástroje a kontrola kvality}
+\section{Vývojové nástroje}
 \label{sec:DevTools}
 
-Pro zajištění kvality kódu aplikace využívá \emph{ESLint} \cite{eslint2024} – nástroj pro statickou analýzu JavaScriptového kódu. ESLint kontroluje dodržování kódovacích standardů, detekuje potenciální chyby a anti-patterny. Konfigurační soubor \texttt{eslint.config.js} obsahuje pravidla specifická pro React aplikace, včetně doporučení pro používání Hooks a správu závislostí.
+Pro zajištění kvality kódu aplikace používá nástroj \emph{ESLint} \cite{eslint2024}, který kontroluje dodržování standardů a detekuje potenciální chyby v kódu.
 
-Během vývoje je využíván Vite development server s podporou Hot Module Replacement, který umožňuje okamžité promítnutí změn v kódu do běžící aplikace bez nutnosti manuálního obnovení stránky. To výrazně zrychluje vývojový cyklus a umožňuje rychlejší iterace.
-
-\section{Nasazení a distribuce}
+\section{Nasazení aplikace}
 \label{sec:Deployment}
 
-Pro produkční nasazení aplikace Vite vytvoří optimalizovaný build pomocí příkazu \texttt{npm run build}. Výsledné soubory v adresáři \texttt{dist/} obsahují minifikovaný JavaScript, CSS a další statické assety. Tyto soubory mohou být nahrány na libovolný webový server nebo hosting platformu podporující statické webové stránky.
+Pro zveřejnění aplikace nástroj Vite připraví a optimalizuje všechny soubory. Protože veškerá logika aplikace běží přímo v prohlížeči uživatele, není potřeba žádný speciální server.
 
-Vzhledem k tomu, že aplikace je čistě client-side (veškerá logika běží v prohlížeči uživatele), nevyžaduje serverovou infrastrukturu pro zpracování požadavků. To výrazně zjednodušuje nasazení a hosting, který může být realizován například pomocí služeb GitHub Pages, Netlify, Vercel nebo klasického webového hostingu.
+Aplikace je nasazena pomocí služby \emph{Vercel}, která je přímo propojena s GitHub repozitářem. Při každé změně v hlavní větvi repozitáře dojde automaticky k novému nasazení aplikace. Toto řešení výrazně zjednodušuje proces aktualizace a zajišťuje, že živá verze aplikace je vždy aktuální.
