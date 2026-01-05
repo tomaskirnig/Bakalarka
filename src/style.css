@@ -6,7 +6,7 @@
     --color4: #90DDF0;
     --text-color: #0A090C;
 
-    /* New unified colors */
+    /* Unified colors */
     --color-accent-yellow: #FFD700;
     --color-accent-red: #FF6347;
     --color-accent-orange: #FFB74D;
@@ -24,7 +24,7 @@
     box-shadow: none !important;
 }
 
-/* Control Buttons - Unified Look (Matching Active Nav) */
+/* Control Buttons */
 .btn-control {
   /* Dimensions */
   padding: 10px 20px;
@@ -53,7 +53,7 @@
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-/* Update existing stock classes to match theme if used */
+/* Bootstrap Overrides */
 .btn-primary {
   background-color: var(--color2);
   color: white;
@@ -82,12 +82,12 @@
   background-color: #1f4e53 !important; /* A darker shade of the primary color */
   border-color: #1f4e53 !important;
   color: white !important;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important; /* Add shadow for emphasis */
-  font-weight: bold !important; /* Make the active button's text bold */
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3) !important; 
+  font-weight: bold !important; 
 }
 
 .btn-primary:not(.active):hover {
-  background-color: #24595e !important; /* Slightly darker shade */
+  background-color: #24595e !important; 
   color: white !important;
 }
 
@@ -142,7 +142,7 @@
 @media (max-width: 768px) {
   #home-page {
     width: 95%;
-    padding: 1.5rem !important; /* Overriding bootstrap p-5 if needed via CSS, though class change is better */
+    padding: 1.5rem !important; 
   }
 }
 
@@ -157,7 +157,7 @@
 }
 
 /* Modern Navigation */
-.modern-navbar {
+.navbar {
   background: #07393c;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
@@ -169,7 +169,7 @@
   transition: all 0.3s ease;
 }
 
-.modern-navbar:hover {
+.navbar:hover {
   box-shadow: 0 12px 40px rgba(255, 255, 255, 0.2);
 }
 
@@ -291,7 +291,7 @@
 }
 
 /* Modern Hamburger Menu */
-.modern-navbar-toggler {
+.navbar-toggler {
   background: none;
   border: none;
   cursor: pointer;
@@ -311,7 +311,7 @@
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-.modern-navbar-toggler:hover .hamburger-line {
+.navbar-toggler:hover .hamburger-line {
   background: var(--color4);
   transform: scale(1.1);
 }
@@ -417,9 +417,9 @@
   pointer-events: auto;
 }
 
-/* Responsive improvements */
+/* Mobile Controls Layout */
 @media (max-width: 991px) {
-  .modern-navbar {
+  .navbar {
     padding: 1rem;
   }
 

@@ -12,7 +12,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
   // Handle offcanvas functionality
   useEffect(() => {
     const handleOffcanvas = () => {
-      const toggler = document.querySelector('.modern-navbar-toggler');
+      const toggler = document.querySelector('.navbar-toggler');
       const offcanvas = document.querySelector('.modern-offcanvas');
       const backdrop = document.createElement('div');
       backdrop.className = 'offcanvas-backdrop fade';
@@ -91,11 +91,11 @@ export function Navigation({ selectedOption, onNavSelect }) {
 
   return (
     <>
-      <nav className="modern-navbar">
+      <nav className="navbar">
         {/* Mobile toggle */}
         <div className="mobile-nav-container">
           <button
-            className="modern-navbar-toggler"
+            className="navbar-toggler"
             type="button"
             aria-label="Přepnout navigaci"
           >
@@ -122,8 +122,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
       >
         <div className="offcanvas-header-modern">
           <h5 className="offcanvas-title-modern" id="offcanvasNavbarLabel">
-            <span className="title-icon">📚</span>
-            Bakalářka Menu
+            Menu
           </h5>
           <button
             type="button"
