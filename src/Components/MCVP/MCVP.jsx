@@ -104,7 +104,7 @@ export function MCVP({ onNavigate, initialData }) {
                 </InfoButton>
             </div>
 
-            <h1 className='display-4 mt-4 page-title'>MCVP</h1>
+            <h1 className='display-4 mt-4 mb-lg-4'>MCVP</h1>
 
             <div className='page-content'>
             <GenericInputMethodSelector

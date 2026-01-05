@@ -99,7 +99,7 @@ export function Grammar({ onNavigate, initialData }) {
                 </InfoButton>
             </div>
 
-            <h1 className='display-4 mt-4 page-title'>Gramatika</h1>
+            <h1 className='display-4 mt-4 mb-lg-4'>Gramatika</h1>
 
             <div className='page-content'>
             <GenericInputMethodSelector

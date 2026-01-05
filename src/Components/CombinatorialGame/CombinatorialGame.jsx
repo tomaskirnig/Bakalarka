@@ -145,7 +145,7 @@ export function CombinatorialGame({ initialData }) {
                 </InfoButton>
             </div>
 
-            <h1 className='display-4 mt-4 mb-4 page-title'>Kombinatorická hra</h1>
+            <h1 className='display-4 mt-4 mb-lg-4'>Kombinatorická hra</h1>
             
             <div className='page-content'>
             <GenericInputMethodSelector
