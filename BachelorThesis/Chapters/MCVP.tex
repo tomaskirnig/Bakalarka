@@ -18,7 +18,7 @@ Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly předs
 
 MCVP je P-úplný problém \cite{arora2009}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. Přestože je problém v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus pro jeho řešení – problém vyžaduje sekvenční zpracování.
 
-\section{Reprezentace a parsování výrazů}
+\section{Formát vstupu a parsování výrazů}
 \label{sec:MCVPParsing}
 
 Aplikace umožňuje zadat monotónní obvod několika způsoby. Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
@@ -35,7 +35,6 @@ Vstupní výrazy odpovídají jednoduché gramatice:
 \end{itemize}
 
 Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
-
 
 %clear po sem 
 

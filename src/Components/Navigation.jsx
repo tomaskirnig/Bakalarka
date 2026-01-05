@@ -73,26 +73,28 @@ export function Navigation({ selectedOption, onNavSelect }) {
   );
 
   return (
-    <nav className="modern-navbar">
-      {/* Mobile toggle */}
-      <div className="mobile-nav-container">
-        <button
-          className="modern-navbar-toggler"
-          type="button"
-          aria-label="Přepnout navigaci"
-        >
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-          <span className="hamburger-line"></span>
-        </button>
-      </div>
-
-      {/* Desktop menu */}
-      <div className="desktop-nav-container">
-        <div className="nav-items-container">
-          {navItems.map(item => renderButton({ ...item, label: item.labelDesktop }))}
+    <>
+      <nav className="modern-navbar">
+        {/* Mobile toggle */}
+        <div className="mobile-nav-container">
+          <button
+            className="modern-navbar-toggler"
+            type="button"
+            aria-label="Přepnout navigaci"
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
         </div>
-      </div>
+
+        {/* Desktop menu */}
+        <div className="desktop-nav-container">
+          <div className="nav-items-container">
+            {navItems.map(item => renderButton({ ...item, label: item.labelDesktop }))}
+          </div>
+        </div>
+      </nav>
 
       {/* Mobile offcanvas */}
       <div
@@ -120,7 +122,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
           </div>
         </div>
       </div>
-    </nav>
+    </>
   );
 }
 

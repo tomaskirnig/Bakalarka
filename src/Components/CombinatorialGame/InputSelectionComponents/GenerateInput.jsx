@@ -9,14 +9,9 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
 
     const handleGenerateGraph = () => {
         const generatedGraph = generateGraph(numGameFields, edgePropability);
-        
-        // Force the starting position's player to match the selected starting player
-        if (generatedGraph && generatedGraph.startingPosition) {
-            const startId = generatedGraph.startingPosition.id;
-            if (generatedGraph.positions[startId]) {
-                generatedGraph.positions[startId].player = localStartingPlayer;
-            }
-        }
+
+        // Set the starting position's player to the selected starting player
+        generatedGraph.positions[generatedGraph.startingPosition.id].player = localStartingPlayer;
         
         if (setSelectedStartingPlayer) {
             setSelectedStartingPlayer(localStartingPlayer);

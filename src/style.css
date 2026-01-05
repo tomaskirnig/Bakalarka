@@ -310,7 +310,7 @@
   background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
   backdrop-filter: blur(20px);
   transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1050;
+  z-index: 2000;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -383,8 +383,22 @@
 
 /* Offcanvas backdrop */
 .offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  z-index: 1900;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Responsive improvements */
