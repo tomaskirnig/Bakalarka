@@ -124,27 +124,30 @@ export function CombinatorialGame({ initialData }) {
     };
 
     return(
-        <div className='container text-center py-4'>
-            <FileTransferControls 
-                onExport={handleExport}
-                onImport={handleImport}
-                instructionText="Nahrajte soubor JSON s definicí hry (uzly, hrany, startovní pozice)."
-                fileName="combinatorial_game.json"
-            />
-            <InfoButton title="Kombinatorická hra na grafu">
-                <p>
-                    Jedná se o hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
-                </p>
-                <ul className="ps-3 text-start">
-                    <li><strong>Pravidla:</strong> Každý vrchol je označen I (Hráč 1) nebo II (Hráč 2), podle tohoto označení se určuje, který hráč má v daném vrcholu provést tah. V každém tahu se hráč, který je na tahu, přesune z aktuálního vrcholu do jednoho z jeho následníků.</li>
-                    <li><strong>Konec hry:</strong> Prohrává hráč, který má provést tah ve vrcholu, ze kterého nevedou žádné hrany.</li>
-                    <li><strong>Cíl:</strong> Určit, zda má začínající hráč vyhrávající strategii (tj. dokáže vynutit výhru bez ohledu na tahy soupeře).</li>
-                    <li><strong>Začínající hráč:</strong> Uživatel si zvolí, který hráč začíná.</li>
-                </ul>
-            </InfoButton>
+        <div className='div-content pb-2 page-container'>
+            <div className='page-controls'>
+                <FileTransferControls 
+                    onExport={handleExport}
+                    onImport={handleImport}
+                    instructionText="Nahrajte soubor JSON s definicí hry (uzly, hrany, startovní pozice)."
+                    fileName="combinatorial_game.json"
+                />
+                <InfoButton title="Kombinatorická hra na grafu">
+                    <p>
+                        Jedná se o hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
+                    </p>
+                    <ul className="ps-3 text-start">
+                        <li><strong>Pravidla:</strong> Každý vrchol je označen I (Hráč 1) nebo II (Hráč 2), podle tohoto označení se určuje, který hráč má v daném vrcholu provést tah. V každém tahu se hráč, který je na tahu, přesune z aktuálního vrcholu do jednoho z jeho následníků.</li>
+                        <li><strong>Konec hry:</strong> Prohrává hráč, který má provést tah ve vrcholu, ze kterého nevedou žádné hrany.</li>
+                        <li><strong>Cíl:</strong> Určit, zda má začínající hráč vyhrávající strategii (tj. dokáže vynutit výhru bez ohledu na tahy soupeře).</li>
+                        <li><strong>Začínající hráč:</strong> Uživatel si zvolí, který hráč začíná.</li>
+                    </ul>
+                </InfoButton>
+            </div>
 
-            <h1 className='display-4 mb-4'>Kombinatorická hra</h1>
+            <h1 className='display-4 mt-4 mb-4 page-title'>Kombinatorická hra</h1>
             
+            <div className='page-content'>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}
@@ -189,6 +192,7 @@ export function CombinatorialGame({ initialData }) {
                     <button className='btn-control'>Převést na Kombinatorickou hru</button>
                 </div>
             )} */}
+            </div>
         </div>  
     );
 }

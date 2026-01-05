@@ -95,7 +95,7 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
     return (
         <>
             <div 
-                className="position-absolute d-flex gap-2 align-items-center" 
+                className="FileTransferControls-container position-absolute d-flex gap-2 align-items-center" 
                 style={{ top: '100px', right: '55px', zIndex: 1040 }}
             >
                 <button 

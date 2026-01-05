@@ -74,31 +74,34 @@ export function Grammar({ onNavigate, initialData }) {
     const analysisResult = grammar ? isEmptyLanguage(grammar) : null;
 
     return (
-        <div className='div-content pb-2'>
-            <FileTransferControls 
-                onExport={handleExport}
-                onImport={handleImport}
-                instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
-                fileName="grammar.json"
-            />
-            <InfoButton title="Problém prázdnosti gramatiky">
-                <p>
-                    Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
-                </p>
-                <hr />
-                <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
-                <ul className="ps-3 mb-0">
-                    <li>První řádek definuje počáteční symbol.</li>
-                    <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
-                    <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
-                    <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
-                    <li>Použijte <code>|</code> pro oddělení alternativ.</li>
-                    <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
-                </ul>
-            </InfoButton>
+        <div className='div-content pb-2 page-container'>
+            <div className='page-controls'>
+                <FileTransferControls 
+                    onExport={handleExport}
+                    onImport={handleImport}
+                    instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
+                    fileName="grammar.json"
+                />
+                <InfoButton title="Problém prázdnosti gramatiky">
+                    <p>
+                        Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
+                    </p>
+                    <hr />
+                    <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
+                    <ul className="ps-3 mb-0">
+                        <li>První řádek definuje počáteční symbol.</li>
+                        <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
+                        <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
+                        <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
+                        <li>Použijte <code>|</code> pro oddělení alternativ.</li>
+                        <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
+                    </ul>
+                </InfoButton>
+            </div>
 
-            <h1 className='display-4'>Gramatika</h1>
+            <h1 className='display-4 mt-4 page-title'>Gramatika</h1>
 
+            <div className='page-content'>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}
@@ -150,6 +153,7 @@ export function Grammar({ onNavigate, initialData }) {
                     </div>
                 </div>
             )}
+            </div>
         </div>
     );
 }

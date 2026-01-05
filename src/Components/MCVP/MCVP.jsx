@@ -81,29 +81,32 @@ export function MCVP({ onNavigate, initialData }) {
     };
 
     return (
-        <div className='div-content'>
-            <FileTransferControls 
-                onExport={handleExport}
-                onImport={handleImport}
-                instructionText="Nahrajte soubor JSON s definicí obvodu ({nodes, edges/links})."
-                fileName="mcvp_circuit.json"
-            />
-            <InfoButton title="Monotónní obvody (MCVP)">
-                <p>
-                    Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).
-                </p>
-                <ul className="ps-3">
-                    <li><strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.</li>
-                    <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
-                    <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
-                </ul>
-                <p className="mb-0">
-                    Tento problém je P-úplný, což znamená, že je těžké jej efektivně paralelizovat.
-                </p>
-            </InfoButton>
+        <div className='div-content page-container'>
+            <div className='page-controls'>
+                <FileTransferControls 
+                    onExport={handleExport}
+                    onImport={handleImport}
+                    instructionText="Nahrajte soubor JSON s definicí obvodu ({nodes, edges/links})."
+                    fileName="mcvp_circuit.json"
+                />
+                <InfoButton title="Monotónní obvody (MCVP)">
+                    <p>
+                        Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).
+                    </p>
+                    <ul className="ps-3">
+                        <li><strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.</li>
+                        <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
+                        <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
+                    </ul>
+                    <p className="mb-0">
+                        Tento problém je P-úplný, což znamená, že je těžké jej efektivně paralelizovat.
+                    </p>
+                </InfoButton>
+            </div>
 
-            <h1 className='display-4'>MCVP</h1>
+            <h1 className='display-4 mt-4 page-title'>MCVP</h1>
 
+            <div className='page-content'>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}
@@ -176,6 +179,7 @@ export function MCVP({ onNavigate, initialData }) {
                     )}
                 </Modal>
             )}
+            </div>
         </div>
     );
 }

@@ -61,11 +61,28 @@ export function Navigation({ selectedOption, onNavSelect }) {
     return cleanup;
   }, []);
 
-  const renderButton = ({ key, label, icon }) => (
+  const closeMobileMenu = () => {
+    const offcanvas = document.querySelector('.modern-offcanvas');
+    const backdrop = document.querySelector('.offcanvas-backdrop');
+    
+    offcanvas?.classList.remove('show');
+    backdrop?.classList.remove('show');
+    
+    setTimeout(() => {
+      if (backdrop && document.body.contains(backdrop)) {
+        document.body.removeChild(backdrop);
+      }
+    }, 400);
+  };
+
+  const renderButton = ({ key, label, icon, isMobile }) => (
     <button
       key={key}
       className={`modern-nav-link ${selectedOption === key ? 'active' : ''}`}
-      onClick={() => onNavSelect(key)}
+      onClick={() => {
+        onNavSelect(key);
+        if (isMobile) closeMobileMenu();
+      }}
     >
       <span className="nav-icon">{icon}</span>
       <span className="nav-text">{label}</span>
@@ -91,7 +108,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
         {/* Desktop menu */}
         <div className="desktop-nav-container">
           <div className="nav-items-container">
-            {navItems.map(item => renderButton({ ...item, label: item.labelDesktop }))}
+            {navItems.map(item => renderButton({ ...item, label: item.labelDesktop, isMobile: false }))}
           </div>
         </div>
       </nav>
@@ -118,7 +135,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
         </div>
         <div className="offcanvas-body-modern">
           <div className="mobile-nav-items">
-            {navItems.map(item => renderButton({ ...item, label: item.labelMobile }))}
+            {navItems.map(item => renderButton({ ...item, label: item.labelMobile, isMobile: true }))}
           </div>
         </div>
       </div>

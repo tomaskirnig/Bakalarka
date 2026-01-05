@@ -815,3 +815,50 @@ select {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
 }
+
+/* Page Layout - Desktop First */
+.page-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop: Controls at top with absolute positioning */
+.page-controls {
+  order: 1;
+}
+
+.page-title {
+  order: 2;
+}
+
+.page-content {
+  order: 3;
+}
+
+/* Mobile: Reorder and center controls between title and content */
+@media (max-width: 768px) {
+  .page-title {
+    order: 1;
+  }
+
+  .page-controls {
+    order: 2;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .page-controls .FileTransferControls-container,
+  .page-controls .legend {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+  }
+
+  .page-content {
+    order: 3;
+  }
+}
