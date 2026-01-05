@@ -20,7 +20,7 @@ export function GenericInputMethodSelector({
                 checked={selectedOption === opt.value}
                 onChange={() => onOptionSelect(opt.value)}
               />
-              <label className="btn btn-outline-primary m-1" htmlFor={`btnradio-${opt.value}`}>
+              <label className="btn btn-outline-primary" htmlFor={`btnradio-${opt.value}`}>
                 {opt.label}
               </label>
           </div>
