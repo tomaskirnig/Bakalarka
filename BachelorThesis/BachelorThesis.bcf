@@ -2397,36 +2397,21 @@
   <bcf:section number="0">
     <bcf:citekey order="1" intorder="1">papadimitriou1993</bcf:citekey>
     <bcf:citekey order="2" intorder="1">arora2009</bcf:citekey>
-    <bcf:citekey order="3" intorder="1">miyano1990</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">sawa</bcf:citekey>
     <bcf:citekey order="4" intorder="1">sawa</bcf:citekey>
-    <bcf:citekey order="5" intorder="1">arora2009</bcf:citekey>
-    <bcf:citekey order="6" intorder="1">herrmann</bcf:citekey>
-    <bcf:citekey order="6" intorder="2">bertram</bcf:citekey>
-    <bcf:citekey order="6" intorder="3">moore</bcf:citekey>
-    <bcf:citekey order="6" intorder="4">yoon</bcf:citekey>
-    <bcf:citekey order="6" intorder="5">sigfridsson</bcf:citekey>
-    <bcf:citekey order="6" intorder="6">baez/article</bcf:citekey>
-    <bcf:citekey order="7" intorder="1">wilde</bcf:citekey>
-    <bcf:citekey order="7" intorder="2">nietzsche:ksa1</bcf:citekey>
-    <bcf:citekey order="7" intorder="3">averroes/bland</bcf:citekey>
-    <bcf:citekey order="7" intorder="4">hammond</bcf:citekey>
-    <bcf:citekey order="7" intorder="5">cotton</bcf:citekey>
-    <bcf:citekey order="7" intorder="6">knuth:ct:a</bcf:citekey>
-    <bcf:citekey order="7" intorder="7">gerhardt</bcf:citekey>
-    <bcf:citekey order="7" intorder="8">gonzalez</bcf:citekey>
-    <bcf:citekey order="7" intorder="9">companion</bcf:citekey>
-    <bcf:citekey order="8" intorder="1">jcg</bcf:citekey>
-    <bcf:citekey order="9" intorder="1">geer</bcf:citekey>
-    <bcf:citekey order="10" intorder="1">kowalik</bcf:citekey>
-    <bcf:citekey order="10" intorder="2">almendro</bcf:citekey>
-    <bcf:citekey order="10" intorder="3">sorace</bcf:citekey>
-    <bcf:citekey order="10" intorder="4">laufenberg</bcf:citekey>
-    <bcf:citekey order="11" intorder="1">ctan</bcf:citekey>
-    <bcf:citekey order="11" intorder="2">wassenberg</bcf:citekey>
-    <bcf:citekey order="11" intorder="3">itzhaki</bcf:citekey>
-    <bcf:citekey order="11" intorder="4">markey</bcf:citekey>
-    <bcf:citekey order="11" intorder="5">baez/online</bcf:citekey>
-    <bcf:citekey order="12" intorder="1">cms</bcf:citekey>
+    <bcf:citekey order="5" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="6" intorder="1">arora2009</bcf:citekey>
+    <bcf:citekey order="7" intorder="1">react2024</bcf:citekey>
+    <bcf:citekey order="8" intorder="1">vite2024</bcf:citekey>
+    <bcf:citekey order="9" intorder="1">d3js2024</bcf:citekey>
+    <bcf:citekey order="10" intorder="1">bootstrap2024</bcf:citekey>
+    <bcf:citekey order="11" intorder="1">reacttoastify2024</bcf:citekey>
+    <bcf:citekey order="12" intorder="1">eslint2024</bcf:citekey>
+    <bcf:citekey order="13" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="14" intorder="1">papadimitriou1993</bcf:citekey>
+    <bcf:citekey order="15" intorder="1">arora2009</bcf:citekey>
+    <bcf:citekey order="16" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="17" intorder="1">sawa</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

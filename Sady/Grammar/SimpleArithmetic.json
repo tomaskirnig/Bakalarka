@@ -1,0 +1,21 @@
+{
+  "name": "Simple Arithmetic Grammar",
+  "nonTerminals": ["E", "T", "F"],
+  "terminals": ["+", "-", "*", "/", "(", ")", "number"],
+  "productions": {
+    "E": [
+      ["E", "+", "T"],
+      ["E", "-", "T"],
+      ["T"]
+    ],
+    "T": [
+      ["T", "*", "F"],
+      ["T", "/", "F"],
+      ["F"]
+    ],
+    "F": [
+      ["(", "E", ")"],
+      ["number"]
+    ]
+  }
+}

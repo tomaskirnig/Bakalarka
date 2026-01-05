@@ -6,7 +6,9 @@ import { GenerateInput } from './InputSelectionComponent/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponent/PreparedSetsInput';
 import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
-import { GrammarGraph } from './GrammarGraph';
+import { InfoButton } from '../Common/InfoButton';
+import { FileTransferControls } from '../Common/FileTransferControls';
+import { DerivationTreeVisual } from './DerivationTreeVisual';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -28,10 +30,78 @@ export function Grammar({ onNavigate, initialData }) {
         setGrammar(null);
     };
 
-    return (
-        <div className='div-content'>
-            <h1 className='display-4'>Gramatika</h1>
+    const handleExport = () => {
+        if (!grammar) return null;
+        // Return the grammar object properties
+        return {
+            name: grammar.name || "Exported Grammar",
+            nonTerminals: grammar.nonTerminals,
+            terminals: grammar.terminals,
+            productions: grammar.productions
+        };
+    };
 
+    const handleImport = (data) => {
+        // Support both single object and array format (SadyG.json style)
+        let grammarData = data;
+        if (Array.isArray(data)) {
+            if (data.length > 0) {
+                grammarData = data[0]; // Take the first one
+            } else {
+                throw new Error("Prázdné pole v JSON souboru.");
+            }
+        }
+
+        // Basic validation
+        if (!grammarData || typeof grammarData !== 'object') {
+             throw new Error("Data musí být objekt.");
+        }
+        if (!Array.isArray(grammarData.nonTerminals)) {
+             throw new Error("Chybí pole 'nonTerminals'.");
+        }
+        if (!Array.isArray(grammarData.terminals)) {
+             throw new Error("Chybí pole 'terminals'.");
+        }
+        if (!grammarData.productions || typeof grammarData.productions !== 'object') {
+             throw new Error("Chybí objekt 'productions'.");
+        }
+
+        setGrammar(new GrammarClass(grammarData));
+        setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
+    };
+
+    // Calculate analysis result only once when grammar changes
+    const analysisResult = grammar ? isEmptyLanguage(grammar) : null;
+
+    return (
+        <div className='div-content pb-2 page-container'>
+            <div className='page-controls'>
+                <FileTransferControls 
+                    onExport={handleExport}
+                    onImport={handleImport}
+                    instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
+                    fileName="grammar.json"
+                />
+                <InfoButton title="Problém prázdnosti gramatiky">
+                    <p>
+                        Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
+                    </p>
+                    <hr />
+                    <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
+                    <ul className="ps-3 mb-0">
+                        <li>První řádek definuje počáteční symbol.</li>
+                        <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
+                        <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
+                        <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
+                        <li>Použijte <code>|</code> pro oddělení alternativ.</li>
+                        <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
+                    </ul>
+                </InfoButton>
+            </div>
+
+            <h1 className='display-4 mt-4 mb-lg-4'>Gramatika</h1>
+
+            <div className='page-content'>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
                 onOptionSelect={handleOptionChange}
@@ -50,27 +120,40 @@ export function Grammar({ onNavigate, initialData }) {
                 }}
             />
 
-            {grammar && (
+            {grammar && analysisResult && (
                 <div className='mt-4 mb-4'>
-                    <GrammarGraph grammar={grammar} />
-                    
+                    <div className="card mb-3 text-center">
+                        <div className="card-header">
+                            <h5>Definice gramatiky</h5>
+                        </div>
+                        <div className="card-body bg-light text-center">
+                            <pre className="mb-0" style={{ whiteSpace: 'pre-wrap', fontFamily: 'monospace' }}>
+                                {grammar.toText ? grammar.toText() : JSON.stringify(grammar, null, 2)}
+                            </pre>
+                        </div>
+                    </div>
+
                     <div className="card mt-3">
                         <div className="card-header">
                             <h4>Analýza gramatiky</h4>
                         </div>
                         <div className="card-body">
-                             <p className={`alert ${!isEmptyLanguage(grammar).isEmpty ? 'alert-success' : 'alert-warning'}`}>
-                                {isEmptyLanguage(grammar).explanation}
+                             <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
+                                {analysisResult.explanation}
                              </p>
                         </div>
+                        
+                        {!analysisResult.isEmpty && analysisResult.derivationTree && (
+                            <div className="card-body border-top">
+                                <h5>Ukázkový derivační strom</h5>
+                                <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
+                                <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                            </div>
+                        )}
                     </div>
-
-                    {/* <div className='mt-3'>
-                        <button className='btn btn-primary mx-2'>Převést na MCVP</button>
-                        <button className='btn btn-primary mx-2'>Převést na Kombinatorickou hru</button>
-                    </div> */}
                 </div>
             )}
+            </div>
         </div>
     );
 }

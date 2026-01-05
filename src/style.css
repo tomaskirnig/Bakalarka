@@ -19,6 +19,11 @@
     --color-black: #000;
 }
 
+.no-border {
+    border: none !important;
+    box-shadow: none !important;
+}
+
 /* Control Buttons - Unified Look (Matching Active Nav) */
 .btn-control {
   /* Dimensions */
@@ -93,8 +98,11 @@
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
   color: var(--text-color);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .div-content {
@@ -112,6 +120,8 @@
 
 .step-controls-info {
   margin: 0 !important;
+  justify-self: center;
+  width: 97%;
 }
 
 .bg-trans-color {
@@ -121,6 +131,19 @@
 
 #home-page {
   width: 60%;
+}
+
+@media (max-width: 992px) {
+  #home-page {
+    width: 80%;
+  }
+}
+
+@media (max-width: 768px) {
+  #home-page {
+    width: 95%;
+    padding: 1.5rem !important; /* Overriding bootstrap p-5 if needed via CSS, though class change is better */
+  }
 }
 
 .add-btn {
@@ -303,7 +326,7 @@
   background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
   backdrop-filter: blur(20px);
   transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  z-index: 1050;
+  z-index: 2000;
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -376,8 +399,22 @@
 
 /* Offcanvas backdrop */
 .offcanvas-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.5);
   backdrop-filter: blur(4px);
+  z-index: 1900;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+
+.offcanvas-backdrop.show {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* Responsive improvements */
@@ -413,7 +450,8 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   padding: 0.5rem;
-  background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%);
+  /* background: linear-gradient(135deg, var(--color2) 0%, var(--color3) 100%); */
+  background: var(--color3);
   border-radius: 16px;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -612,18 +650,19 @@ select {
 
 .GraphDiv {
   margin: 0 auto;
-  max-width: 1800px;
-  max-height: 1000px;
-  width: 100%;
+  /* max-width: 1800px;
+  max-height: 1000px; */
+  width: 98%;
   height: 70vh;
   border: 2px solid #eee;
   border-radius: 4px;
   position: relative;
   overflow: hidden;
+  cursor: grab;
 }
 
-canvas:hover {
-  cursor: default;
+.GraphDiv:active {
+  cursor: grabbing;
 }
 
 /* ManualInput */
@@ -775,4 +814,51 @@ canvas:hover {
 .graph-btn:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Page Layout - Desktop First */
+.page-container {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Desktop: Controls at top with absolute positioning */
+.page-controls {
+  order: 1;
+}
+
+.page-title {
+  order: 2;
+}
+
+.page-content {
+  order: 3;
+}
+
+/* Mobile: Reorder and center controls between title and content */
+@media (max-width: 768px) {
+  .page-title {
+    order: 1;
+  }
+
+  .page-controls {
+    order: 2;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 1rem 0;
+  }
+
+  .page-controls .FileTransferControls-container,
+  .page-controls .legend {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+  }
+
+  .page-content {
+    order: 3;
+  }
 }

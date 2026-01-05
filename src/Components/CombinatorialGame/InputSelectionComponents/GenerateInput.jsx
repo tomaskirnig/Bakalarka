@@ -2,57 +2,88 @@ import { useState } from 'react';
 import { generateGraph } from '../Utils/Generator';
 import PropTypes from 'prop-types';
 
-export function GenerateInput({ onGraphUpdate }) {
+export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelectedStartingPlayer }) {
     const [numGameFields, setNumGameFields] = useState(1);
     const [edgePropability, setEdgePropability] = useState(1);
+    const [localStartingPlayer, setLocalStartingPlayer] = useState(selectedStartingPlayer || 1);
 
     const handleGenerateGraph = () => {
         const generatedGraph = generateGraph(numGameFields, edgePropability);
+
+        // Set the starting position's player to the selected starting player
+        generatedGraph.positions[generatedGraph.startingPosition.id].player = localStartingPlayer;
+        
+        if (setSelectedStartingPlayer) {
+            setSelectedStartingPlayer(localStartingPlayer);
+        }
+        
         onGraphUpdate(generatedGraph);
     }
 
     return (
-        <div className="card p-4 mb-4 mx-auto shadow-sm text-start" style={{ maxWidth: '600px' }}>
-            <div className="mb-3">
-                <label className="form-label">Počet polí:</label>
-                <input
-                    className='form-control'
-                    type="number"
-                    min="1"
-                    max="750"
-                    placeholder="Počet polí"
-                    value={numGameFields}
-                    onChange={(e) => {
-                        let val = Number(e.target.value);
-                        if (val > 750) val = 750;
-                        if (val < 1) val = 1;
-                        setNumGameFields(val);
-                    }}
+        <div className="inputWindow">
+            <label>Začínající hráč:</label>
+            <div className="tabs no-border mb-0">
+                <input 
+                    type="radio" 
+                    id="genPlayer1" 
+                    name="genStartingPlayer" 
+                    value="1" 
+                    checked={localStartingPlayer === 1} 
+                    onChange={() => setLocalStartingPlayer(1)} 
                 />
-            </div>
-            <div className="mb-3">
-                <label className="form-label">Pravděpodobnost hrany (%):</label>
-                <input
-                    className='form-control'
-                    type="number"
-                    min="1"
-                    max="100"
-                    placeholder="Pravděpodobnost hrany (%)"
-                    value={edgePropability}
-                    onChange={(e) => {
-                        let val = Number(e.target.value);
-                        if (val > 100) val = 100;
-                        if (val < 1) val = 1;
-                        setEdgePropability(val);
-                    }}
+                <label htmlFor="genPlayer1" className="btn btn-outline-primary">Hráč 1</label>
+
+                <input 
+                    type="radio" 
+                    id="genPlayer2" 
+                    name="genStartingPlayer" 
+                    value="2" 
+                    checked={localStartingPlayer === 2} 
+                    onChange={() => setLocalStartingPlayer(2)} 
                 />
+                <label htmlFor="genPlayer2" className="btn btn-outline-primary">Hráč 2</label>
             </div>
+
+            <label>Počet polí:</label>
+            <input
+                className='form-control'
+                type="number"
+                min="1"
+                max="750"
+                placeholder="Počet polí"
+                value={numGameFields}
+                onChange={(e) => {
+                    let val = Number(e.target.value);
+                    if (val > 750) val = 750;
+                    if (val < 1) val = 1;
+                    setNumGameFields(val);
+                }}
+            />
+            
+            <label>Pravděpodobnost hrany (%):</label>
+            <input
+                className='form-control'
+                type="number"
+                min="1"
+                max="100"
+                placeholder="Pravděpodobnost hrany (%)"
+                value={edgePropability}
+                onChange={(e) => {
+                    let val = Number(e.target.value);
+                    if (val > 100) val = 100;
+                    if (val < 1) val = 1;
+                    setEdgePropability(val);
+                }}
+            />
    
-            <button className='btn-control mt-2' onClick={handleGenerateGraph}>Generovat</button> 
+            <button className='btn btn-primary mt-3' onClick={handleGenerateGraph}>Generovat</button> 
         </div>
     );
 }
 
 GenerateInput.propTypes = {
   onGraphUpdate: PropTypes.func.isRequired,
+  selectedStartingPlayer: PropTypes.number,
+  setSelectedStartingPlayer: PropTypes.func
 };

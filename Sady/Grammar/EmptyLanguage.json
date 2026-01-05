@@ -1,0 +1,9 @@
+{
+  "name": "Empty Language Example",
+  "nonTerminals": ["S", "A"],
+  "terminals": ["a", "b"],
+  "productions": {
+    "S": [["A"]],
+    "A": [["A"]]
+  }
+}

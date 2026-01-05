@@ -1,23 +1,14 @@
 ---- MCVP ----
-- Store prepared sets as DAG
-
-- Fix (interactive) possible to connect two nodes in both directions at the same time  
-- Fix (interactive) max children 2 - check if this constrain is valid 
-- Fix (manual) error messages -> missing parentasises, but not on the end gives error wrong chars at the end,  
-
-- (interactive) Display numbers on edges when node is selected and then use these numbers in the delete butons 
+- Optimize - the nodes are still overlaping, when there are more children
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
-- Optimize - space between nodes
-- Optimize - make hitboxes bigger
-- Optimize - initial placement of tree in canvas (tree is in upper left corner and not centered)
-- Optimize - ids of nodes icrement when AND or OR added 
+- Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----
 - Remake the isWinning property to hold players id
 - Add highlight of the selected node (in manual)
-- Add center button
-- Allow edges to be longer
+
+- what should happen when there is a cycle and no player has winnig strategy, because there is no ending node that is dead end ?
 
 ---- Grammar ----
 
@@ -25,10 +16,14 @@
 
 
 ---- Global ----
-- Add little bit of space to pages where content is touching the bottom of the page
-- Optimize display structure in the center of the canvas (propably when window is open in some size and user changes the size, the position in the canvas is calculated with the old window size)
+- Fix mobile navigation - dark overlay overlays the navigation 
 - Add autoscroll after selecting set or genererating and displaying some data 
-- Set grabing cursor on canvas and clickable on the node
 - Optimize using the useCallback 
 - Optimize using loaders  
 - Rewrite css to bootstrap
+
+krokovani Gramatiky a CG
+zobrazit u kazdeho nodu hrace s vyherni pozici
+
+-poslat link na live stranku 
+-udelat novou vetev s omezenout fyzikou

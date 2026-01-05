@@ -7,7 +7,9 @@ import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
 export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [cgDimensions, setCgDimensions] = useState({ width: 400, height: 400 });
+    const [mcvpDimensions, setMcvpDimensions] = useState({ width: 400, height: 400 });
     const cgContainerRef = useRef(null);
+    const mcvpContainerRef = useRef(null);
 
     const steps = useMemo(() => {
         if (!mcvpTree) return [];
@@ -29,6 +31,19 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             }
         });
         resizeObserver.observe(cgContainerRef.current);
+        return () => resizeObserver.disconnect();
+    }, []);
+
+    // Resize observer for MCVP graph
+    useEffect(() => {
+        if (!mcvpContainerRef.current) return;
+        const resizeObserver = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect;
+                setMcvpDimensions({ width, height });
+            }
+        });
+        resizeObserver.observe(mcvpContainerRef.current);
         return () => resizeObserver.disconnect();
     }, []);
 
@@ -66,11 +81,19 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                 <div className="row flex-grow-1" style={{ minHeight: '0' }}>
                     <div className="col-md-6 d-flex flex-column">
                         <h4 className='text-center'>MCVP</h4>
-                        <div className="flex-grow-1" style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}>
+                        <div 
+                            ref={mcvpContainerRef}
+                            className="flex-grow-1" 
+                            style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}
+                        >
                             <TreeCanvas 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
-                                completedSteps={[]}
+                                activeNode={step.highlightNode}
+                                completedSteps={step.labels || []}
+                                width={mcvpDimensions.width}
+                                height={mcvpDimensions.height}
+                                fitToScreen={currentStep === steps.length - 1}
                             />
                         </div>
                     </div>
@@ -86,6 +109,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                                     graph={step.graph} 
                                     width={cgDimensions.width} 
                                     height={cgDimensions.height}
+                                    fitToScreen={currentStep === steps.length - 1}
                                 />
                             ) : (
                                 <div className="d-flex justify-content-center align-items-center h-100 text-muted">
@@ -130,10 +154,16 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             </div>
 
             {finalGraph && (
-                <div className="text-center mt-3">
-                    <button className="btn btn-success btn-lg" onClick={handleRedirect}>
-                        Otevřít v Kombinatorické hře
-                    </button>
+                <div className="d-flex justify-content-center flex-column align-items-center">
+                    <QuickNavigationControls 
+                        onGoToStart={() => setCurrentStep(0)}
+                        onGoToEnd={() => setCurrentStep(steps.length - 1)}
+                    />
+                    <div className="text-center mt-3">
+                        <button className="btn btn-success btn-lg" onClick={handleRedirect}>
+                            Otevřít v Kombinatorické hře
+                        </button>
+                    </div>
                 </div>
             )}
         </div>
@@ -143,4 +173,32 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
 MCVPtoCombinatorialGameConverter.propTypes = {
     mcvpTree: PropTypes.object.isRequired,
     onNavigate: PropTypes.func
+};
+
+/**
+ * Component for quick navigation controls
+ */
+function QuickNavigationControls({ onGoToStart, onGoToEnd }) {
+  return (
+    <div className="quick-navigation my-4 d-flex justify-content-center gap-3">
+      <button 
+        onClick={onGoToStart}
+        className="btn btn-outline-secondary"
+      >
+        ⏮️ Jít na začátek
+      </button>
+      
+      <button 
+        onClick={onGoToEnd}
+        className="btn btn-outline-primary"
+      >
+        Jít na konec ⏭️
+      </button>
+    </div>
+  );
+}
+
+QuickNavigationControls.propTypes = {
+  onGoToStart: PropTypes.func.isRequired,
+  onGoToEnd: PropTypes.func.isRequired
 };

@@ -33,19 +33,30 @@ export class MCVPToGameStepGenerator {
         this.positions = {}; // Accumulate positions here
         this.visited = new Set();
         this.idCounter = 0;
+        this.labelMap = new Map(); // node -> label string
+        this.labelCounter = 0;
     }
 
     getUniqueId(node) {
-        if (node.id === undefined || node.id === null) {
-            node.id = `node_${this.idCounter++}`;
+        if (!this.labelMap.has(node)) {
+            this.labelMap.set(node, `V${this.labelCounter++}`);
         }
-        return node.id;
+        return this.labelMap.get(node);
+    }
+
+    getNodeLabels() {
+        return Array.from(this.labelMap.entries()).map(([node, label]) => ({
+            node,
+            result: label
+        }));
     }
 
     generate() {
         this.steps = [];
         this.positions = {};
         this.visited = new Set();
+        this.labelMap = new Map();
+        this.labelCounter = 0;
 
         if (!this.tree) return [];
 
@@ -83,12 +94,14 @@ export class MCVPToGameStepGenerator {
                 positions: positionsCopy,
                 startingPosition: startingPos
             },
-            visualNote: note
+            visualNote: note,
+            labels: this.getNodeLabels()
         });
     }
 
     traverse(node) {
         const nodeId = this.getUniqueId(node);
+
         if (this.visited.has(nodeId)) return;
         this.visited.add(nodeId);
 
@@ -127,9 +140,7 @@ export class MCVPToGameStepGenerator {
             id: nodeId,
             player: player,
             children: [],
-            parents: [],
-            x: node.x,
-            y: node.y
+            parents: []
         };
 
         this.addStep(description, node, `${typeDesc} -> Player ${player}`);
