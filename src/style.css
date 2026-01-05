@@ -98,8 +98,11 @@
 }
 
 #root {
-  height: 100vh;
+  min-height: 100vh;
   color: var(--text-color);
+  position: relative;
+  display: flex;
+  flex-direction: column;
 }
 
 .div-content {
@@ -128,6 +131,19 @@
 
 #home-page {
   width: 60%;
+}
+
+@media (max-width: 992px) {
+  #home-page {
+    width: 80%;
+  }
+}
+
+@media (max-width: 768px) {
+  #home-page {
+    width: 95%;
+    padding: 1.5rem !important; /* Overriding bootstrap p-5 if needed via CSS, though class change is better */
+  }
 }
 
 .add-btn {
