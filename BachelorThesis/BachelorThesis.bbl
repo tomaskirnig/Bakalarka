@@ -164,34 +164,34 @@
       \verb https://vitejs.dev/
       \endverb
     \endentry
-    \entry{d3js2024}{misc}{}{}
+    \entry{reactforcegraph2024}{misc}{}{}
       \name{author}{1}{}{%
-        {{hash=3a56f801778dd81bf67b8f9cdccacb12}{%
-           family={Bostock},
-           familyi={B\bibinitperiod},
-           given={Mike},
-           giveni={M\bibinitperiod}}}%
+        {{hash=3d5b1e1c356dc3c6f979e9abb1bef63e}{%
+           family={Asturiano},
+           familyi={A\bibinitperiod},
+           given={Vasco},
+           giveni={V\bibinitperiod}}}%
       }
-      \strng{namehash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{fullhash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{fullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{bibnamehash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{authorbibnamehash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{authornamehash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{authorfullhash}{3a56f801778dd81bf67b8f9cdccacb12}
-      \strng{authorfullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{namehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{fullhash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{fullhashraw}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{bibnamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{authorbibnamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{authornamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{authorfullhash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
+      \strng{authorfullhashraw}{3d5b1e1c356dc3c6f979e9abb1bef63e}
       \field{sortinit}{9}
       \field{sortinithash}{0a5ebc79d83c96b6579069544c73c7d4}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
-      \field{title}{D3.js -- Data-Driven Documents}
+      \field{title}{react-force-graph -- React component for 2D, 3D, VR and AR force directed graphs}
       \field{year}{2024}
       \verb{urlraw}
-      \verb https://d3js.org/
+      \verb https://github.com/vasturiano/react-force-graph
       \endverb
       \verb{url}
-      \verb https://d3js.org/
+      \verb https://github.com/vasturiano/react-force-graph
       \endverb
     \endentry
     \entry{bootstrap2024}{misc}{}{}

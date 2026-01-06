@@ -51,11 +51,11 @@ function tokenize(s) {
 }
 
 /**
- * Parser class for converting tokens into an MCVP expression tree.
+ * Parser class for converting tokens into MCVP tree structure.
  */
 class Parser {
   /**
-   * Creates a new Parser instance.
+   * Creates a new Parser instance
    * 
    * @param {Array<Array<string>>} tokens - Array of tokens to parse
    */
@@ -196,9 +196,9 @@ class Parser {
   /**
    * Parses a variable token into name and value.
    * 
-   * @param {string} varStr - The variable string to parse (e.g., "x1[0]")
+   * @param {string} varStr - The variable string to parse ("x1[0]")
    * @returns {Array} A pair of [variableName, variableValue]
-   * @throws {SyntaxError} If the variable format is invalid
+   * @throws {SyntaxError} If the variable format is not valid
    */
   parseVariable(varStr) {
     const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
@@ -290,7 +290,7 @@ class Parser {
 }
 
 /**
- * Prints a tree to the console with indentation.
+ * Prints a tree to the console with indentation (debug).
  * 
  * @param {Node} node - The root node of the tree to print
  * @param {number} indent - The indentation level (default: 0)
@@ -299,7 +299,6 @@ export function printTree(node, indent = 0) {
   if (node !== null) {
     console.log(' '.repeat(indent) + node.value + (node.varValue !== null ? `[${node.varValue}]` : ''));
     
-    // Use children array instead of left/right
     if (node.children && node.children.length > 0) {
       node.children.forEach(child => {
         if (child) printTree(child, indent + 2);

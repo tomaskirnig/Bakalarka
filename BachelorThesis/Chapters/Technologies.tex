@@ -37,7 +37,7 @@ Tato struktura umožňuje snadné úpravy na jednom místě.
 \section{Vizualizace grafů}
 \label{sec:GraphVisualization}
 
-Pro vizualizaci grafů používá aplikace knihovnu \emph{D3.js} \cite{d3js2024}. Grafy jsou automaticky rozmístěny – uzly se vzájemně odpuzují a hrany je přitahují k sobě. Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) jsou uzly uspořádány do úrovní shora dolů, s kořenem nahoře a listy dole.
+Pro vizualizaci grafů používá aplikace knihovnu \emph{react-force-graph} \cite{reactforcegraph2024}, která je postavena na knihovně \emph{D3.js}. Grafy jsou automaticky rozmístěny pomocí force-directed layoutu – uzly se vzájemně odpuzují a hrany je přitahují k sobě, což vytváří vizuálně přehledné uspořádání. Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) jsou uzly uspořádány do úrovní shora dolů, s kořenem nahoře a listy dole.
 
 Během vyhodnocování se uzly a hrany v grafu vybarvují podle aktuálního stavu, což uživateli umožňuje sledovat průběh výpočtu.
 
@@ -64,6 +64,13 @@ Aplikace umožňuje ukládání a načítání dat pomocí souborů ve formátu 
 Pro zobrazení upozornění a chybových hlášek aplikace používá knihovnu \emph{react-toastify} \cite{reacttoastify2024}. Notifikace se objevují v rohu obrazovky a automaticky mizí po chvíli. Aplikace zobrazuje notifikace zejména při chybách ve vstupu, úspěšném uložení dat nebo varováních při neplatných operacích.
 
 Notifikace poskytují okamžitou zpětnou vazbu pro uživatele.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{IMGs/ToastifyMessage.png}
+    \caption{Příklad notifikační zprávy v aplikaci}
+    \label{fig:toastify-message}
+\end{figure}
 
 \section{Vývojové nástroje}
 \label{sec:DevTools}

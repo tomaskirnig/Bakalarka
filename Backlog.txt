@@ -1,5 +1,6 @@
 ---- MCVP ----
-- Optimize - the nodes are still overlaping, when there are more children
+- Optimize - (generated) more eqal distribution of children
+- Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
@@ -16,11 +17,7 @@
 
 
 ---- Global ----
-- Fix mobile navigation - dark overlay overlays the navigation 
 - Add autoscroll after selecting set or genererating and displaying some data 
-- Optimize using the useCallback 
-- Optimize using loaders  
-- Rewrite css to bootstrap
 
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici

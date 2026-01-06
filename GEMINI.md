@@ -38,6 +38,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 1.  **CITATIONS ARE MANDATORY:**
     *   Every definition, theorem, claim, or external concept **must** be cited using `\cite{...}`.
     *   If a source is missing from `bibliography.bib`, ask the user to provide it or suggest adding it.
+    *   If possible use the citation from VSB-TUO materials (school from Czech republic).
 2.  **WRITING STYLE:**
     *   **Human yet Formal:** Avoid robotic or overly passive text.
     *   **Sentence Variety:** Mix short, punchy sentences with longer, explanatory ones to maintain rhythm.
@@ -47,7 +48,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 ## 📄 Document Structure
 *   **Main File:** `BachelorThesis/BachelorThesis.tex`
 *   **Language:** Czech (Main text), English (Abstract).
-*   **Images:** All figures are loaded from `BachelorThesis/Figures/` directory.
+*   **Images:** All figures are loaded from `BachelorThesis/IMGs/` directory.
 *   **Chapter Structure:** 
     > The thesis is structured into several parts. After the introduction follows a chapter dedicated to the technologies used and the application architecture. The core of the thesis consists of three chapters, each focusing in detail on one of the implemented problems: first the Monotone Circuit Value Problem (MCVP), then combinatorial games on graphs, and finally the emptiness problem for context-free grammars. The conclusion summarizes the achieved results and suggests possibilities for further extension.
 *   **Chapter Order:**

@@ -23,6 +23,13 @@ MCVP je P-úplný problém \cite{arora2009}. Vyhodnocení monotónního obvodu l
 
 Aplikace umožňuje zadat monotónní obvod několika způsoby. Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/InputSelectorMCVP.png}
+    \caption{Výběr způsobu zadání vstupu pro MCVP}
+    \label{fig:input-selector-mcvp}
+\end{figure}
+
 \subsection{Gramatika vstupního jazyka}
 \label{sec:MCVPGrammar}
 
@@ -36,9 +43,6 @@ Vstupní výrazy odpovídají jednoduché gramatice:
 
 Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
 
-%clear po sem 
-
-
 \subsection{Lexikální a syntaktická analýza}
 \label{sec:MCVPLexer}
 
@@ -47,25 +51,25 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
     
-    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Metody odpovídají pravidlům gramatiky: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky nebo proměnné. Parser vytváří uzly typu \texttt{Node}, které tvoří strom reprezentující strukturu obvodu.
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node}, které tvoří stromovou strukturu reprezentující zadaný obvod.
 \end{enumerate}
 
-Výsledkem parsování je binární strom, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+Výsledkem parsování je stromová struktura, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
 \section{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluation}
 
-Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem stromu implementovaným v modulu \texttt{EvaluateTree.js}.
+Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem stromové struktury, který je implementován v modulu \texttt{EvaluateTree.js}.
 
 \subsection{Algoritmus vyhodnocení}
 \label{sec:MCVPAlgorithm}
 
-Funkce \texttt{evaluateTree()} používá algoritmus do hloubky (DFS) s memoizací:
+Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) s memoizací:
 
 \begin{enumerate}
     \item \textbf{Listy (proměnné):} Pro uzly typu \texttt{variable} funkce vrací přímo přiřazenou hodnotu (0 nebo 1).
     
-    \item \textbf{Vnitřní uzly (operace):} Pro operační uzly funkce rekurzivně vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 právě tehdy, když alespoň jeden potomek má hodnotu 1.
+    \item \textbf{Vnitřní uzly (operace):} Pro uzly reprezentující logické operace funkce nejdříve vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 pouze tehdy, když alespoň jeden potomek má hodnotu 1.
     
     \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných podstromů.
     
@@ -77,7 +81,7 @@ Funkce \texttt{evaluateTree()} používá algoritmus do hloubky (DFS) s memoizac
 \subsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStep}
 
-Pro vzdělávací účely aplikace nabízí krokové vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává každý vyhodnocený uzel spolu s hodnotami jeho potomků do pole kroků. Uživatel tak může sledovat, jak se hodnoty šíří od listů k~kořeni stromu, a lépe pochopit princip vyhodnocování.
+Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku stromové struktury. Uživatel tak může sledovat, jak se hodnoty šíří od listů ke kořeni stromové struktury a lépe pochopit princip vyhodnocování.
 
 Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace.
 
@@ -87,29 +91,40 @@ Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuáln�
 Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může:
 
 \begin{itemize}
-    \item \textbf{Přidávat uzly:} Kliknutím do prázdné oblasti grafu lze vytvořit nový uzel. Uživatel vybere typ uzlu (proměnná s hodnotou 0, proměnná s hodnotou 1, hradlo AND nebo hradlo OR).
+    \item \textbf{Přidávat uzly:} Pomocí tlačítek pod grafem lze vložit nové uzly typu AND, OR nebo vstupní proměnnou s hodnotou 0 nebo 1. Nový uzel se umístí do grafu, ale není propojen s ostatními uzly.
     
-    \item \textbf{Vytvářet hrany:} Táhnutím myši z jednoho uzlu do druhého vytvoří hranu reprezentující tok dat v obvodu.
-    
-    \item \textbf{Odstraňovat prvky:} Pravým kliknutím na uzel nebo hranu lze prvek odstranit z obvodu.
-    
+    \item \textbf{Vytvářet hrany:} Označit uzel, ten následně může:
+    \begin{itemize}
+        \item Nastavit na AND nebo OR operaci.
+        \item Nastavit na proměnnou s hodnotou 0 nebo 1.
+        \item Odstranit uzel z grafu.
+        \item Vytvořit nebo odstranit hranu s dalším uzlem.
+    \end{itemize}
+        
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání obvodu.
 \end{itemize}
 
-Grafický editor využívá knihovnu D3.js pro vykreslování a interakci. Force-directed layout automaticky rozmísťuje uzly tak, aby byl graf přehledný.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{IMGs/ControlsForInteractiveMCVP.png}
+    \caption{Ovládací prvky pro interaktivní editor obvodů MCVP}
+    \label{fig:controls-interactive-mcvp}
+\end{figure}
+
+Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz kapitola \ref{sec:GraphVisualization}). Aplikace průběžně aktualizuje interní stromovou strukturu odpovídající aktuálnímu stavu grafu.
 
 \section{Generování náhodných obvodů}
 \label{sec:MCVPGeneration}
 
-Aplikace obsahuje generátor náhodných monotónních obvodů v modulu \texttt{Generator.js}. Uživatel může specifikovat:
+Aplikace obsahuje generátor náhodných monotónních obvodů v modulu \texttt{Generator.js}. Uživatel zadává dva parametry:
 
 \begin{itemize}
-    \item \textbf{Počet proměnných:} Určuje, kolik vstupních uzlů bude obvod obsahovat.
-    \item \textbf{Počet operací:} Určuje, kolik vnitřních uzlů (hradel) bude obvod obsahovat.
-    \item \textbf{Strukturu:} Algoritmus zajišťuje, že výsledný obvod je platný orientovaný acyklický graf s jedním kořenovým uzlem.
+    \item \textbf{Počet hradel:} Určuje, kolik vnitřních uzlů (hradel AND a OR) bude obvod obsahovat.
+    \item \textbf{Počet proměnných:} Určuje, kolik vstupních uzlů (listů) bude obvod obsahovat.
 \end{itemize}
 
-Generátor pracuje následovně: nejprve vytvoří zadaný počet proměnných s náhodnými hodnotami, poté postupně přidává operační uzly. Každý operační uzel náhodně vybere dva existující uzly jako potomky a náhodně zvolí operaci (AND nebo OR). Výsledkem je náhodný, ale vždy vyhodnotitelný obvod.
+Generátor postupně vytváří náhodný obvod: nejprve vygeneruje zadaný počet proměnných s náhodnými hodnotami (0 nebo 1), poté přidává operační uzly. Každý nový operační uzel náhodně vybere dva existující uzly jako potomky a náhodně zvolí operaci (AND nebo OR). Algoritmus zajišťuje, že výsledný obvod je platný orientovaný acyklický graf.
 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}
