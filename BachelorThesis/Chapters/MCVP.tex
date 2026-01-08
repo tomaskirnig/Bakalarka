@@ -117,14 +117,16 @@ Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování
 \section{Generování náhodných obvodů}
 \label{sec:MCVPGeneration}
 
-Aplikace obsahuje generátor náhodných monotónních obvodů v modulu \texttt{Generator.js}. Uživatel zadává dva parametry:
+Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}. Uživatel může upravit dva parametry:
 
 \begin{itemize}
-    \item \textbf{Počet hradel:} Určuje, kolik vnitřních uzlů (hradel AND a OR) bude obvod obsahovat.
-    \item \textbf{Počet proměnných:} Určuje, kolik vstupních uzlů (listů) bude obvod obsahovat.
+    \item \textbf{Počet hradel:} Kolik vnitřních uzlů (hradel AND a OR) bude obvod obsahovat.
+    \item \textbf{Počet proměnných:} Kolik vstupních uzlů (listů) bude obvod obsahovat.
 \end{itemize}
 
-Generátor postupně vytváří náhodný obvod: nejprve vygeneruje zadaný počet proměnných s náhodnými hodnotami (0 nebo 1), poté přidává operační uzly. Každý nový operační uzel náhodně vybere dva existující uzly jako potomky a náhodně zvolí operaci (AND nebo OR). Algoritmus zajišťuje, že výsledný obvod je platný orientovaný acyklický graf.
+%clear po sem
+
+Generování probíhá ve třech fázích. Nejprve algoritmus vytvoří zadaný počet proměnných, každou s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo vypočítáme cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě přidáme náhodnou odchylku $\pm 20\%$ – tak dosáhneme vyváženosti mezi rovnoměrnou distribucí a strukturální variabilitou. Hradlo pak náhodně vybere příslušný počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR). Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}

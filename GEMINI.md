@@ -4,7 +4,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 
 ---
 
-# 💻 Programming (Web Application)
+# 💻 Programming (Web Application) - CODING
 
 ## 🛑 Critical Rules
 1.  **NO GIT COMMITS:** 
@@ -32,7 +32,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 
 ---
 
-# 🎓 Bachelor Thesis
+# 🎓 Bachelor Thesis - TEXT WRITING
 
 ## 🛑 Critical Rules
 1.  **CITATIONS ARE MANDATORY:**
@@ -58,6 +58,10 @@ This document serves as the primary context for the AI agent ("Gemini") working 
     4.  `Games.tex` - Kombinatorické hry (Theory, Minimax/Retrograde analysis, Implementation)
     5.  `Grammars.tex` - Bezkontextové gramatiky (Theory, Emptiness check, Derivation trees)
     6.  `Conclusion.tex` - Závěr (Summary, Future work)
+    **Natural flow:** It's fine to start sentences with "and," "but," or "so".
+    **Real voice:** Don't force friendliness or fake excitement.
+    **Cut fluff:** Remove unnecessary adjectives and adverbs.
+    **Be honest:** Admit limitations, don't oversell or hype.
 
 ## 🛠️ LaTeX Specifics
 *   **Encoding:** UTF-8 (`\usepackage[utf8]{inputenc}`).

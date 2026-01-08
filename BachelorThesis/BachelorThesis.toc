@@ -30,14 +30,14 @@
 \contentsline {section}{\numberline {3.4}Interaktivní editace obvodu}{17}{section.3.4}%
 \contentsline {section}{\numberline {3.5}Generování náhodných obvodů}{18}{section.3.5}%
 \contentsline {section}{\numberline {3.6}Vizualizace obvodu}{18}{section.3.6}%
-\contentsline {subsection}{\numberline {3.6.1}Hierarchické rozložení}{18}{subsection.3.6.1}%
+\contentsline {subsection}{\numberline {3.6.1}Hierarchické rozložení}{19}{subsection.3.6.1}%
 \contentsline {subsection}{\numberline {3.6.2}Barevné kódování}{19}{subsection.3.6.2}%
 \contentsline {section}{\numberline {3.7}Převod na kombinatorickou hru}{19}{section.3.7}%
 \contentsline {subsection}{\numberline {3.7.1}Pravidla převodu}{19}{subsection.3.7.1}%
 \contentsline {subsection}{\numberline {3.7.2}Implementace převodu}{20}{subsection.3.7.2}%
 \contentsline {section}{\numberline {3.8}Převod na bezkontextovou gramatiku}{20}{section.3.8}%
 \contentsline {subsection}{\numberline {3.8.1}Princip převodu}{20}{subsection.3.8.1}%
-\contentsline {subsection}{\numberline {3.8.2}Implementace převodu}{20}{subsection.3.8.2}%
+\contentsline {subsection}{\numberline {3.8.2}Implementace převodu}{21}{subsection.3.8.2}%
 \contentsline {section}{\numberline {3.9}Ukládání a načítání obvodů}{21}{section.3.9}%
 \contentsline {chapter}{\numberline {4}Kombinatorické hry na grafu}{22}{chapter.4}%
 \contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{23}{chapter.5}%

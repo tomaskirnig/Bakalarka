@@ -85,26 +85,19 @@ export function generateTree(numGates, numVariables) {
       // Decide how many child nodes to use
       let childCount;
       const remainingGates = numGates - i;
-
-      // If this is the last gate, it must connect all remaining nodes to form a single tree
+      
+      // If this is the last gate, it must connect all remaining nodes
       if (remainingGates === 1) {
           childCount = nodes.length;
       } else {
-          // Calculate target number of children to distribute variables more evenly
-          // We need to reduce 'nodes.length' to 1 over 'remainingGates' steps.
-          const targetChildren = (nodes.length - 1) / remainingGates + 1;
+          // Calculate equal distribution of children
+          const targetChildren = Math.ceil(nodes.length / remainingGates);
           
-          // Use a tight range around target to prevent early gates from taking too few children
-          // This ensures more balanced distribution throughout the tree
-          const variance = Math.max(1, Math.floor(targetChildren * 0.25)); // ±25% variance
-          let minChildren = Math.max(2, Math.floor(targetChildren - variance));
-          let maxChildren = Math.ceil(targetChildren + variance);
+          // Add random variance: ±20% of target
+          const variance = Math.max(1, Math.floor(targetChildren * 0.2));
+          const randomVariance = Math.floor(Math.random() * (2 * variance + 1)) - variance;
           
-          // Clamp to available nodes
-          if (maxChildren > nodes.length) maxChildren = nodes.length;
-          if (minChildren > nodes.length) minChildren = nodes.length;
-
-          childCount = Math.floor(Math.random() * (maxChildren - minChildren + 1)) + minChildren;
+          childCount = Math.max(2, Math.min(nodes.length, targetChildren + randomVariance));
       }
       
       const children = [];
