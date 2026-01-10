@@ -127,75 +127,111 @@ export function GenerateInput({ onGrammar }) {
             
             {/* Advanced options */}
             {showAdvanced && (
-                <div className="mt-3">
-                    <div className="form-check mb-2">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="leftRecursion"
-                            checked={allowLeftRecursion}
-                            onChange={(e) => setAllowLeftRecursion(e.target.checked)}
-                        />
-                        <label className="form-check-label" htmlFor="leftRecursion">
-                            Povolit levou rekurzi
+                <div className="mt-3 p-3 rounded" style={{ 
+                    backgroundColor: 'rgba(13, 110, 110, 0.2)',
+                    border: '1px solid rgba(13, 202, 240, 0.3)'
+                }}>
+                    <h6 className="mb-3 text-center" style={{ 
+                        fontSize: '0.95rem', 
+                        fontWeight: '500', 
+                        color: '#0dcaf0',
+                        letterSpacing: '0.5px'
+                    }}>
+                        Pokročilé možnosti
+                    </h6>
+                    
+                    {/* Recursion Options */}
+                    <div className="mb-4">
+                        <label className="form-label mb-3 text-center d-block" style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: '500',
+                            color: 'rgba(255, 255, 255, 0.9)'
+                        }}>
+                            Rekurze
                         </label>
+                        <div className="d-flex gap-4 justify-content-center">
+                            <div className="form-check form-switch">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="leftRecursion"
+                                    checked={allowLeftRecursion}
+                                    onChange={(e) => setAllowLeftRecursion(e.target.checked)}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                                <label className="form-check-label" htmlFor="leftRecursion" style={{ cursor: 'pointer' }}>
+                                    Levá
+                                </label>
+                            </div>
+                            
+                            <div className="form-check form-switch">
+                                <input
+                                    className="form-check-input"
+                                    type="checkbox"
+                                    role="switch"
+                                    id="rightRecursion"
+                                    checked={allowRightRecursion}
+                                    onChange={(e) => setAllowRightRecursion(e.target.checked)}
+                                    style={{ cursor: 'pointer' }}
+                                />
+                                <label className="form-check-label" htmlFor="rightRecursion" style={{ cursor: 'pointer' }}>
+                                    Pravá
+                                </label>
+                            </div>
+                        </div>
                     </div>
                     
-                    <div className="form-check mb-3">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="rightRecursion"
-                            checked={allowRightRecursion}
-                            onChange={(e) => setAllowRightRecursion(e.target.checked)}
-                        />
-                        <label className="form-check-label" htmlFor="rightRecursion">
-                            Povolit pravou rekurzi
-                        </label>
-                    </div>
-                    
+                    {/* Epsilon Options */}
                     <div>
-                        <label className="form-label">Epsilon pravidla (ε):</label>
-                        <div className="form-check">
+                        <label className="form-label mb-3 text-center d-block" style={{ 
+                            fontSize: '0.9rem', 
+                            fontWeight: '500',
+                            color: 'rgba(255, 255, 255, 0.9)'
+                        }}>
+                            Generovat epsilon (ε)
+                        </label>
+                        <div className="btn-group d-flex" role="group">
                             <input
-                                className="form-check-input"
                                 type="radio"
+                                className="btn-check"
                                 id="epsilonNever"
                                 name="epsilonMode"
                                 value="never"
                                 checked={epsilonMode === 'never'}
                                 onChange={(e) => setEpsilonMode(e.target.value)}
+                                autoComplete="off"
                             />
-                            <label className="form-check-label" htmlFor="epsilonNever">
-                                Nikdy negenerovat
+                            <label className="btn btn-outline-info" htmlFor="epsilonNever" style={{ cursor: 'pointer' }}>
+                                Ne
                             </label>
-                        </div>
-                        <div className="form-check">
+                            
                             <input
-                                className="form-check-input"
                                 type="radio"
+                                className="btn-check"
                                 id="epsilonRandom"
                                 name="epsilonMode"
                                 value="random"
                                 checked={epsilonMode === 'random'}
                                 onChange={(e) => setEpsilonMode(e.target.value)}
+                                autoComplete="off"
                             />
-                            <label className="form-check-label" htmlFor="epsilonRandom">
-                                Náhodně generovat
+                            <label className="btn btn-outline-info" htmlFor="epsilonRandom" style={{ cursor: 'pointer' }}>
+                                Náhodně
                             </label>
-                        </div>
-                        <div className="form-check">
+                            
                             <input
-                                className="form-check-input"
                                 type="radio"
+                                className="btn-check"
                                 id="epsilonAlways"
                                 name="epsilonMode"
                                 value="always"
                                 checked={epsilonMode === 'always'}
                                 onChange={(e) => setEpsilonMode(e.target.value)}
+                                autoComplete="off"
                             />
-                            <label className="form-check-label" htmlFor="epsilonAlways">
-                                Častěji generovat
+                            <label className="btn btn-outline-info" htmlFor="epsilonAlways" style={{ cursor: 'pointer' }}>
+                                Vždy
                             </label>
                         </div>
                     </div>

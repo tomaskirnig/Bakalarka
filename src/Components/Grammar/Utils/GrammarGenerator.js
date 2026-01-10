@@ -120,9 +120,9 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   
   // Create regular rule
   const ruleLength = getRandomInt(1, config.maxRuleLength);
-  let rule = generateRuleSymbols(ruleLength, nonTerminals, terminals);
+  let rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals, config);
   
-  // Apply recursion if configured
+  // Apply additional recursion at start/end if configured
   rule = applyRecursion(rule, nonTerminal, config);
   
   return rule;
@@ -131,20 +131,38 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
 /**
  * Generates the symbols for a rule's right-hand side
  * @param {number} length - Number of symbols to generate
+ * @param {string} currentNonTerminal - The non-terminal being defined (to avoid unwanted recursion)
  * @param {string[]} nonTerminals - Available non-terminals
  * @param {string[]} terminals - Available terminals
+ * @param {GrammarConfig} config - Configuration parameters
  * @returns {string[]} Array of symbols for the rule
  */
-function generateRuleSymbols(length, nonTerminals, terminals) {
+function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals, config) {
   const rule = [];
   
+  // Determine which non-terminals can be used
+  let availableNonTerminals = nonTerminals;
+  
+  // If recursion is completely disabled, exclude the current non-terminal
+  if (!config.allowLeftRecursion && !config.allowRightRecursion) {
+    availableNonTerminals = nonTerminals.filter(nt => nt !== currentNonTerminal);
+    
+    // If no other non-terminals available, we must use terminals only
+    if (availableNonTerminals.length === 0) {
+      availableNonTerminals = [];
+    }
+  }
+  
   for (let j = 0; j < length; j++) {
-    if (Math.random() < 0.5) {
+    // If no non-terminals are available, always use terminal
+    if (availableNonTerminals.length === 0) {
+      rule.push(getRandomElement(terminals));
+    } else if (Math.random() < 0.5) {
       // Add a terminal
       rule.push(getRandomElement(terminals));
     } else {
       // Add a non-terminal
-      rule.push(getRandomElement(nonTerminals));
+      rule.push(getRandomElement(availableNonTerminals));
     }
   }
   
@@ -161,11 +179,12 @@ function generateRuleSymbols(length, nonTerminals, terminals) {
 function applyRecursion(rule, nonTerminal, config) {
   let result = [...rule];
   
-  if (config.allowLeftRecursion && Math.random() < 0.3) {
+  // Only apply recursion if explicitly allowed
+  if (config.allowLeftRecursion === true && Math.random() < 0.3) {
     result.unshift(nonTerminal); // Add left recursion
   }
   
-  if (config.allowRightRecursion && Math.random() < 0.3) {
+  if (config.allowRightRecursion === true && Math.random() < 0.3) {
     result.push(nonTerminal); // Add right recursion
   }
   

@@ -192,15 +192,18 @@ Výsledná gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhod
 \subsection{Implementace převodu}
 \label{sec:MCVPtoGrammarImplementation}
 
-Převod implementuje třída \texttt{MCVPToGrammarConverter} (soubor \texttt{MCVPtoGrammarConverter.jsx}) ve dvou fázích. Nejprve \texttt{NonTerminalGenerator} přiřadí každému uzlu obvodu unikátní symbol – kořen dostane počáteční symbol $S$, ostatní uzly postupně symboly $A$, $B$, $C$, atd. Poté funkce \texttt{createProductionsRecursively()} rekurzivně prochází strom a generuje gramatická pravidla podle typu jednotlivých uzlů.
+Převod implementuje třída \texttt{MCVPToGrammarConverter} (modul \texttt{MCVPtoGrammarConverter.jsx}). Nejprve \texttt{NonTerminalGenerator} přiřadí každému uzlu obvodu unikátní symbol – kořen dostane počáteční symbol $S$, ostatní uzly postupně symboly $A$, $B$, $C$, atd. Poté funkce \texttt{createProductionsRecursively()} rekurzivně prochází strom a generuje gramatická pravidla podle typu jednotlivých uzlů.
 
-Pro plynulou konstrukci gramatiky používáme pomocnou třídu \texttt{ConversionGrammar} (soubor \texttt{ConversionGrammar.js}), která rozšiřuje standardní třídu \texttt{Grammar} o metody pro inkrementální přidávání symbolů a pravidel.
+Pro konstrukci gramatiky používáme pomocnou třídu \texttt{ConversionGrammar} (soubor \texttt{ConversionGrammar.js}), která rozšiřuje standardní třídu \texttt{Grammar} o metody pro přidávání symbolů a pravidel.
 
-Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu. Uživatel sleduje, jak obvod postupně přechází na gramatiku, a vidí přesně, která pravidla vznikají z~konkrétních uzlů.
+Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu. Uživatel tak může sledovat, jak obvod postupně přechází na gramatiku, a vidět, která pravidla vznikají z~konkrétních uzlů.
 
-\section{Ukládání a načítání obvodů}
+\section{Ukládání a načítání MCVP obvodů}
 \label{sec:MCVPSerialization}
 
-Pro práci se zajímavými příklady podporuje aplikace export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje dvě klíčové funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu. Opačný převod zajišťuje \texttt{flatGraphToTree()}, která ze serializovaného formátu rekonstruuje stromovou strukturu včetně referenčních vazeb mezi uzly.
+Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
 
-Aplikace nabízí sadu předpřipravených příkladů ve složce \texttt{Sady/MCVP}, které demonstrují různé konfigurace obvodů a slouží jako výukový materiál.
+\subsection{Předpřipravené sady}
+\label{sec:MCVPPreparedSets}
+
+Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \texttt{Sady/MCVP}. Tyto sady slouží jako základní ukázkové příklady. Tyto uložené obvody jsou taktéž ve formatu JSON.
