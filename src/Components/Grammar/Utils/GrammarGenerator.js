@@ -10,7 +10,7 @@ import { Grammar } from './Grammar.js';
  * @property {number} maxProductionsPerNonTerminal - Maximum productions per non-terminal
  * @property {boolean} allowLeftRecursion - Whether to allow left recursion
  * @property {boolean} allowRightRecursion - Whether to allow right recursion
- * @property {boolean} allowEpsilonRules - Whether to allow empty productions
+ * @property {string} epsilonMode - Epsilon generation mode: 'always', 'never', or 'random'
  */
 
 /**
@@ -109,11 +109,15 @@ function generateProductions(nonTerminals, terminals, config) {
  * @returns {string[]} Production rule right-hand side
  */
 function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
-  // Handle epsilon rule case
-  if (config.allowEpsilonRules && Math.random() < 0.1) {
-    return [];
+  // Handle epsilon rule based on mode
+  const epsilonMode = config.epsilonMode || 'never';
+  
+  if (epsilonMode === 'always' && Math.random() < 0.15) {
+    return ['ε'];
+  } else if (epsilonMode === 'random' && Math.random() < 0.08) {
+    return ['ε'];
   }
-
+  
   // Create regular rule
   const ruleLength = getRandomInt(1, config.maxRuleLength);
   let rule = generateRuleSymbols(ruleLength, nonTerminals, terminals);

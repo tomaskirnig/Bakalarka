@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
+import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 import ConversionGrammar from './ConversionGrammar';
 
 /**
@@ -123,22 +123,29 @@ class MCVPToGrammarConverter {
 
     const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
     
-    // Add non-terminal for operation nodes, terminal for variable nodes
-    if (node.type === "operation") {
-      this.grammar.addNonTerminal(nodeSymbol);
-    } else {
-      this.grammar.addTerminal(node.value);
+    // All nodes become non-terminals
+    this.grammar.addNonTerminal(nodeSymbol);
+    
+    // For variable nodes with value 1, we'll add epsilon production later
+    // For variable nodes with value 0, we add a terminal that won't have a production
+    if (node.type === "variable" && node.varValue === 0) {
+      const terminal = `${node.value}_0`;
+      this.grammar.addTerminal(terminal);
     }
 
     // Add step for this node
     const nodeTypeDisplay = node.type === "operation" 
       ? (node.value === "A" ? "AND" : "OR") 
-      : "proměnná";
+      : `proměnná ${node.value}[${node.varValue}]`;
+    
+    const nodeDescription = node.type === "operation" 
+      ? "neterminál" 
+      : (node.varValue === 1 ? "neterminál s epsilon pravidlem" : "neterminál s terminálem");
     
     this.addStep(
-      `Přidat ${node.type === "operation" ? "neterminál" : "terminál"} ${nodeSymbol} pro ${nodeTypeDisplay} uzel ${node.value}`,
+      `Přidat ${nodeDescription} ${nodeSymbol} pro ${nodeTypeDisplay}`,
       node,
-      `Vytvořen ${node.type === "operation" ? "neterminál" : "terminál"} ${nodeSymbol} pro uzel ${node.value}`
+      `Vytvořen ${nodeDescription} ${nodeSymbol} pro uzel ${node.type === "variable" ? `${node.value}[${node.varValue}]` : node.value}`
     );
 
     // Process children
@@ -154,12 +161,36 @@ class MCVPToGrammarConverter {
   }
 
   createProductionsRecursively(node) {
-    if (!node || node.type !== "operation" || this.productionNodes.has(node)) return;
+    if (!node || this.productionNodes.has(node)) return;
     this.productionNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbol(node);
     if (!nodeSymbol) return;
 
+    // Handle variable nodes
+    if (node.type === "variable") {
+      if (node.varValue === 1) {
+        // Variable with value 1 generates epsilon
+        this.grammar.setProductions(nodeSymbol, [['ε']]);
+        this.addStep(
+          `Přidat epsilon pravidlo pro ${nodeSymbol}: ${nodeSymbol} → ε`,
+          node,
+          `Proměnná ${node.value}[1] generuje prázdný řetězec`
+        );
+      } else {
+        // Variable with value 0 generates a terminal (no production from the terminal itself)
+        const terminal = `${node.value}_0`;
+        this.grammar.setProductions(nodeSymbol, [[terminal]]);
+        this.addStep(
+          `Přidat pravidlo pro ${nodeSymbol}: ${nodeSymbol} → ${terminal}`,
+          node,
+          `Proměnná ${node.value}[0] generuje terminál ${terminal}, který nemá další odvození`
+        );
+      }
+      return;
+    }
+
+    // Handle operation nodes
     const childSymbols = node.children
       .map(child => this.getProductionSymbolForChild(child))
       .filter(Boolean);
@@ -186,9 +217,7 @@ class MCVPToGrammarConverter {
   }
 
   getProductionSymbolForChild(child) {
-    return child.type === "variable" 
-      ? child.value 
-      : this.symbolGenerator.getSymbol(child);
+    return this.symbolGenerator.getSymbol(child);
   }
 }
 
@@ -251,7 +280,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
           <div className="col-md-7">
             <h4>MCVP</h4>
             <div>
-              <TreeCanvas 
+              <TreeRenderCanvas 
                 tree={mcvpTree} 
                 highlightedNode={step.mcvpHighlight}
                 activeNode={step.mcvpHighlight}

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { MCVPToGameStepGenerator } from './ConversionCombinatorialGame';
 import { DisplayGraph } from '../../CombinatorialGame/Utils/DisplayGraph';
-import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
+import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 
 export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate }) {
     const [currentStep, setCurrentStep] = useState(0);
@@ -86,7 +86,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                             className="flex-grow-1" 
                             style={{ border: '1px solid var(--color-grey-light)', position: 'relative', overflow: 'hidden', borderRadius: '8px' }}
                         >
-                            <TreeCanvas 
+                            <TreeRenderCanvas 
                                 tree={mcvpTree} 
                                 highlightedNode={step.highlightNode}
                                 activeNode={step.highlightNode}

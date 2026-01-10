@@ -19,7 +19,7 @@ const MODE_AFTER = () => "after";
  * @param {Object} [props.activeNode] - The node currently being evaluated (for step-by-step)
  * @param {Array} [props.completedSteps] - Array of evaluation steps to display intermediate results
  */
-export function TreeCanvas({
+export function TreeRenderCanvas({
   tree,
   highlightedNode = null, // Node to highlight (e.g. from converter)
   activeNode = null,      // Node currently being evaluated (step-by-step)
@@ -368,7 +368,7 @@ export function TreeCanvas({
   );
 }
 
-TreeCanvas.propTypes = {
+TreeRenderCanvas.propTypes = {
   tree: PropTypes.shape({
     id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     type: PropTypes.string,

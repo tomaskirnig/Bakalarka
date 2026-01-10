@@ -13,7 +13,7 @@ export function GenerateInput({ onGrammar }) {
     // Advanced options
     const [allowLeftRecursion, setAllowLeftRecursion] = useState(true);
     const [allowRightRecursion, setAllowRightRecursion] = useState(true);
-    const [allowEpsilonRules, setAllowEpsilonRules] = useState(false);
+    const [epsilonMode, setEpsilonMode] = useState('never');
     const [showAdvanced, setShowAdvanced] = useState(false);
 
     // Handler for generating the grammar when the button is clicked
@@ -27,7 +27,7 @@ export function GenerateInput({ onGrammar }) {
             maxProductionsPerNonTerminal: maxProductions,
             allowLeftRecursion: allowLeftRecursion,
             allowRightRecursion: allowRightRecursion,
-            allowEpsilonRules: allowEpsilonRules
+            epsilonMode: epsilonMode
         };
 
         try {
@@ -128,7 +128,7 @@ export function GenerateInput({ onGrammar }) {
             {/* Advanced options */}
             {showAdvanced && (
                 <div className="mt-3">
-                    <div className="form-check">
+                    <div className="form-check mb-2">
                         <input
                             className="form-check-input"
                             type="checkbox"
@@ -141,7 +141,7 @@ export function GenerateInput({ onGrammar }) {
                         </label>
                     </div>
                     
-                    <div className="form-check">
+                    <div className="form-check mb-3">
                         <input
                             className="form-check-input"
                             type="checkbox"
@@ -154,17 +154,50 @@ export function GenerateInput({ onGrammar }) {
                         </label>
                     </div>
                     
-                    <div className="form-check">
-                        <input
-                            className="form-check-input"
-                            type="checkbox"
-                            id="epsilonRules"
-                            checked={allowEpsilonRules}
-                            onChange={(e) => setAllowEpsilonRules(e.target.checked)}
-                        />
-                        <label className="form-check-label" htmlFor="epsilonRules">
-                            Povolit ε-pravidla
-                        </label>
+                    <div>
+                        <label className="form-label">Epsilon pravidla (ε):</label>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                id="epsilonNever"
+                                name="epsilonMode"
+                                value="never"
+                                checked={epsilonMode === 'never'}
+                                onChange={(e) => setEpsilonMode(e.target.value)}
+                            />
+                            <label className="form-check-label" htmlFor="epsilonNever">
+                                Nikdy negenerovat
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                id="epsilonRandom"
+                                name="epsilonMode"
+                                value="random"
+                                checked={epsilonMode === 'random'}
+                                onChange={(e) => setEpsilonMode(e.target.value)}
+                            />
+                            <label className="form-check-label" htmlFor="epsilonRandom">
+                                Náhodně generovat
+                            </label>
+                        </div>
+                        <div className="form-check">
+                            <input
+                                className="form-check-input"
+                                type="radio"
+                                id="epsilonAlways"
+                                name="epsilonMode"
+                                value="always"
+                                checked={epsilonMode === 'always'}
+                                onChange={(e) => setEpsilonMode(e.target.value)}
+                            />
+                            <label className="form-check-label" htmlFor="epsilonAlways">
+                                Častěji generovat
+                            </label>
+                        </div>
                     </div>
                 </div>
             )}

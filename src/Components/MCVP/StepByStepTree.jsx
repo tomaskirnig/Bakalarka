@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
-import { TreeCanvas } from './TreeRenderCanvas';
+import { TreeRenderCanvas } from './TreeRenderCanvas';
 
 /**
  * Component for visualizing the step-by-step evaluation of an MCVP tree.
@@ -49,7 +49,7 @@ export function StepByStepTree({ tree }) {
       <h2 className="text-center mb-3">Postupné vyhodnocení</h2> 
       {steps.length > 0 ? (
         <>
-          <TreeCanvas 
+          <TreeRenderCanvas 
             tree={tree}
             activeNode={steps[currentStep]?.node}
             completedSteps={steps.slice(0, currentStep + 1)}
