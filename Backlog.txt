@@ -18,6 +18,7 @@
 
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
+- Add fixed positions for nodes when exporting some graph + position the graph when provided with fixed positions
 
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici

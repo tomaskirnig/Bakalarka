@@ -131,6 +131,13 @@ Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný 
 
 Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole, takže hodnoty se šíří zdola nahoru.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/TreeRenderCanvas.png}
+    \caption{Vizualizace MCVP obvodu pomocí TreeRenderCanvas}
+    \label{fig:tree-render-canvas}
+\end{figure}
+
 \subsection{Hierarchické rozložení}
 \label{sec:MCVPLayout}
 
@@ -202,6 +209,13 @@ Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nab
 \label{sec:MCVPSerialization}
 
 Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.3\textwidth]{IMGs/ImportExportControls.png}
+    \caption{Ovládací prvky pro import a export MCVP obvodů}
+    \label{fig:import-export-controls}
+\end{figure}
 
 \subsection{Předpřipravené sady}
 \label{sec:MCVPPreparedSets}
