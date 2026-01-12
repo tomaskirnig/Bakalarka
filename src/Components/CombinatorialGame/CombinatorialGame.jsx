@@ -158,7 +158,12 @@ export function CombinatorialGame({ initialData }) {
                 ]}
                 renderContent={(opt) => {
                     switch (opt) {
-                        case 'manual': return <ManualInput initialGraph={graph} onGraphUpdate={setGraph} />;
+                        case 'manual': return <ManualInput 
+                            initialGraph={graph} 
+                            onGraphUpdate={setGraph} 
+                            analysisResult={analysisResult}
+                            optimalMoves={optimalMoves}
+                        />;
                         case 'generate': return <GenerateInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
                         case 'sets': return <PreparedSetsInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
                         default: return null;

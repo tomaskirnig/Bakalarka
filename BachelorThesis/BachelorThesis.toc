@@ -42,19 +42,17 @@
 \contentsline {chapter}{\numberline {4}Kombinatorická hra}{23}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Teoretický základ}{23}{section.4.1}%
 \contentsline {subsection}{\numberline {4.1.1}P-úplnost problému}{23}{subsection.4.1.1}%
-\contentsline {section}{\numberline {4.2}Formát vstupu a reprezentace}{24}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Textový formát}{24}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Parsování vstupu}{24}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Algoritmus analýzy}{24}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Vyhodnocení výherních pozic}{25}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Optimální tahy}{25}{subsection.4.3.2}%
-\contentsline {section}{\numberline {4.4}Krokové vyhodnocení}{25}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Interaktivní editace grafu}{26}{section.4.5}%
-\contentsline {section}{\numberline {4.6}Generování náhodných her}{26}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Vizualizace grafu}{27}{section.4.7}%
-\contentsline {section}{\numberline {4.8}Propojení s MCVP}{27}{section.4.8}%
-\contentsline {section}{\numberline {4.9}Ukládání a načítání her}{28}{section.4.9}%
-\contentsline {subsection}{\numberline {4.9.1}Předpřipravené sady}{28}{subsection.4.9.1}%
+\contentsline {section}{\numberline {4.2}Formát vstupu}{24}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Interaktivní editace grafu}{24}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Generování náhodných her}{25}{section.4.4}%
+\contentsline {section}{\numberline {4.5}Vizualizace grafu}{25}{section.4.5}%
+\contentsline {section}{\numberline {4.6}Propojení s MCVP}{26}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Ukládání a načítání her}{26}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Předpřipravené sady}{26}{subsection.4.7.1}%
+\contentsline {section}{\numberline {4.8}Algoritmus analýzy}{26}{section.4.8}%
+\contentsline {subsection}{\numberline {4.8.1}Vyhodnocení výherních pozic}{27}{subsection.4.8.1}%
+\contentsline {subsection}{\numberline {4.8.2}Optimální tahy}{27}{subsection.4.8.2}%
+\contentsline {section}{\numberline {4.9}Krokové vyhodnocení}{27}{section.4.9}%
 \contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{29}{chapter.5}%
 \contentsline {chapter}{\numberline {6}Závěr}{30}{chapter.6}%
 \contentsline {chapter}{Literatura}{31}{chapter*.11}%

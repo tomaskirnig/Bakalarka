@@ -5,7 +5,7 @@ import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 import { toast } from 'react-toastify';
 
-export function ManualInput({ initialGraph, onGraphUpdate }) {
+export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optimalMoves }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
   const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
@@ -163,11 +163,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
   }, [formattedGraph, onGraphUpdate]);
 
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
-  // optimalMoves is passed down from CombinatorialGame component, not computed here.
   const data = useMemo(() => {
-    // Link optimalMoves here, assuming it's available from a prop if needed for visualization,
-    // or if the component is redesigned to receive it.
-    // For now, removing direct dependency on optimalMoves being computed here.
     return { 
       nodes: graph.nodes, 
       links: graph.links 
@@ -323,18 +319,15 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
       if (node.neighbors) {
         node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
       }
-      // Assuming optimalMoves is passed as a prop from CombinatorialGame, otherwise this part won't work
-      // For now, removing direct dependency here, as ManualInput should just handle graph editing.
-      // If visualization of optimal moves is needed here, it should be passed as a prop.
     }
 
     setHoverNode(node || null);
-    setHighlightLinks(newHighlightLinks); // Clear highlight for now if optimalMoves is not passed
+    setHighlightLinks(newHighlightLinks); 
 
     if (containerRef.current) {
         containerRef.current.style.cursor = node ? 'pointer' : 'grab';
     }
-  }, []); // Removed data, optimalMoves from dependencies as they are not computed here
+  }, []);
 
   const handleLinkHover = useCallback((link) => {
     if (containerRef.current) {
@@ -499,6 +492,13 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
     }
   };
 
+  const isEdgeOptimal = useCallback((link) => {
+      if (!optimalMoves) return false;
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      return optimalMoves.has(`${sourceId}-${targetId}`);
+  }, [optimalMoves]);
+
   return (
     <>
     <div className="GraphDiv mb-3 shadow-sm" ref={containerRef}>
@@ -525,12 +525,10 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
         graphData={data}
         nodeRelSize={game.nodeRadius}
         autoPauseRedraw={false}
-        // linkWidth={graphLink => highlightLinks.has(graphLink) ? 5 : 3} // Optimal moves not computed here
-        // linkColor={graphLink => graphLink.isOptimal ? colors.accentYellow : colors.defaultLink} 
-        linkWidth={3} // Default width
-        linkColor={colors.defaultLink} // Default color
+        linkWidth={link => isEdgeOptimal(link) ? 5 : 3}
+        linkColor={link => isEdgeOptimal(link) ? colors.accentYellow : colors.defaultLink} 
         linkDirectionalParticles={3}
-        linkDirectionalParticleWidth={0} // No particles for now, as optimal moves are not here
+        linkDirectionalParticleWidth={0} 
         linkDirectionalArrowLength={6}
         linkDirectionalArrowRelPos={1}
         linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
@@ -552,16 +550,27 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
     {/* Two-column layout container */}
     <div className="row g-4 mb-5">
-        {/* Left column: Analysis results - this will be handled by the parent component */}
+        {/* Left column: Analysis results */}
         <div className="col-md-6">
             <div className="card h-100 shadow-sm">
                 <div className="card-header bg-light fw-bold">
                     Analýza hry
                 </div>
-                <div className="card-body">
-                    <p className="text-muted text-center my-auto">
-                        Analýza hry je zobrazena výše.
-                    </p>
+                <div className="card-body text-center d-flex flex-column justify-content-center">
+                    {analysisResult ? (
+                        <>
+                            <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
+                                {analysisResult.message}
+                            </div>
+                            <p className="text-muted small mb-0">
+                                Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
+                            </p>
+                        </>
+                    ) : (
+                        <p className="text-muted text-center my-auto">
+                           Definujte graf a startovní pozici pro zobrazení analýzy.
+                        </p>
+                    )}
                 </div>
             </div>
         </div>
@@ -634,5 +643,7 @@ export function ManualInput({ initialGraph, onGraphUpdate }) {
 
 ManualInput.propTypes = {
   initialGraph: PropTypes.object,
-  onGraphUpdate: PropTypes.func
+  onGraphUpdate: PropTypes.func,
+  analysisResult: PropTypes.object,
+  optimalMoves: PropTypes.object
 };
