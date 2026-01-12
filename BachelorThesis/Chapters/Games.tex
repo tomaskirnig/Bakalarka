@@ -63,7 +63,7 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání.
 \end{itemize}
 
-Aplikace průběžně validuje graf – upozorní uživatele, pokud není nastaven počáteční uzel nebo pokud graf obsahuje cykly (což by porušilo požadavek na DAG).
+Aplikace průběžně validuje graf a zabraňuje vytvoření neplatných struktur. Pokud uživatel zkusí přidat hranu, která by vytvořila cyklus, aplikace tuto akci zablokuje a zobrazí chybovou zprávu. Dále upozorní uživatele, pokud není nastaven počáteční uzel, což je nutné pro spuštění analýzy.
 
 \section{Generování náhodných her}
 \label{sec:GamesGeneration}

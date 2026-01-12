@@ -7,7 +7,6 @@ import { toast } from 'react-toastify';
 
 export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optimalMoves }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
-  const [highlightLinks, setHighlightLinks] = useState(new Set());
   const [hoverNode, setHoverNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);  // Track selected node
   const [addingEdge, setAddingEdge] = useState(false);     // Track if in edge adding mode
@@ -251,6 +250,61 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
     );
   };
 
+  // Function to check if adding an edge would create a cycle
+  const wouldCreateCycle = (sourceId, targetId) => {
+    // Build adjacency list from current links plus the proposed new edge
+    const adjacency = {};
+    graph.nodes.forEach(node => {
+      adjacency[node.id] = [];
+    });
+    
+    // Add existing edges
+    graph.links.forEach(link => {
+      const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+      const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+      if (!adjacency[srcId]) adjacency[srcId] = [];
+      adjacency[srcId].push(tgtId);
+    });
+    
+    // Add the proposed new edge
+    if (!adjacency[sourceId]) adjacency[sourceId] = [];
+    adjacency[sourceId].push(targetId);
+    
+    // DFS to detect cycle
+    const visited = new Set();
+    const recStack = new Set();
+    
+    const hasCycleDFS = (nodeId) => {
+      visited.add(nodeId);
+      recStack.add(nodeId);
+      
+      const neighbors = adjacency[nodeId] || [];
+      for (const neighbor of neighbors) {
+        if (!visited.has(neighbor)) {
+          if (hasCycleDFS(neighbor)) {
+            return true;
+          }
+        } else if (recStack.has(neighbor)) {
+          return true; // Back edge found - cycle detected
+        }
+      }
+      
+      recStack.delete(nodeId);
+      return false;
+    };
+    
+    // Check all nodes as potential starting points
+    for (const nodeId of Object.keys(adjacency)) {
+      if (!visited.has(nodeId)) {
+        if (hasCycleDFS(nodeId)) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  };
+
   // Function to add an edge between two nodes
   const addEdge = (sourceId, targetId) => {
     // Don't allow self-loops or duplicate edges
@@ -260,6 +314,12 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
     }
     if (edgeExists(sourceId, targetId)) {
       toast.error("Nelze přidat hranu: Hrana mezi těmito uzly již existuje.");
+      return false;
+    }
+
+    // Check if adding this edge would create a cycle
+    if (wouldCreateCycle(sourceId, targetId)) {
+      toast.error("Nelze přidat hranu: Byl by vytvořen cyklus. Graf musí zůstat acyklický (DAG).");
       return false;
     }
 
@@ -283,21 +343,20 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
     return true;
   };
 
-  // Function to delete an edge between two nodes
-  const deleteEdge = (sourceId, targetId) => {
-    const updatedLinks = graph.links.filter(link =>
-      !(link.source.id === sourceId && link.target.id === targetId)
-    );
-  
-    setGraph({
-      nodes: graph.nodes,
-      links: updatedLinks,
-    });
-  };
-
-  // Start the edge adding process
-  const startAddEdge = () => {
-    if (selectedNode) {
+      // Function to delete an edge between two nodes
+      const deleteEdge = (sourceId, targetId) => {
+        const updatedLinks = graph.links.filter(link =>
+          !(link.source.id === sourceId && link.target.id === targetId)
+        );
+      
+        setGraph({
+          nodes: graph.nodes,
+          links: updatedLinks,
+        });
+      };
+    
+      // Start the edge adding process
+      const startAddEdge = () => {    if (selectedNode) {
       setAddingEdge(true);
       setEdgeSource(selectedNode);
     }
@@ -311,18 +370,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
 
   // Handle hover on nodes
   const handleNodeHover = useCallback((node) => {
-    const newHighlightNodes = new Set();
-    const newHighlightLinks = new Set();
-
-    if (node) {
-      newHighlightNodes.add(node);
-      if (node.neighbors) {
-        node.neighbors.forEach(neighbor => newHighlightNodes.add(neighbor));
-      }
-    }
-
     setHoverNode(node || null);
-    setHighlightLinks(newHighlightLinks); 
 
     if (containerRef.current) {
         containerRef.current.style.cursor = node ? 'pointer' : 'grab';
@@ -488,7 +536,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   const setAsStartingNode = () => {
     if (selectedNode) {
         setStartingNodeId(selectedNode.id);
-        toast.success(`Uzel ${selectedNode.id} nastaven jako startovní.`);
+        // toast.success(`Uzel ${selectedNode.id} nastaven jako startovní.`);
     }
   };
 
@@ -540,7 +588,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
         onNodeClick={handleNodeClick}  
-        onBackgroundClick={handleBackgroundClick} 
+        onBackgroundClick={handleBackgroundClick}
       />
     </div>
     

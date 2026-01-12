@@ -6,8 +6,8 @@
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----
+- Fix display of the optimal moves (the whole path should be highlighted)
 - Remake the isWinning property to hold players id
-- Add highlight of the selected node (in manual)
 
 - what should happen when there is a cycle and no player has winnig strategy, because there is no ending node that is dead end ?
 
