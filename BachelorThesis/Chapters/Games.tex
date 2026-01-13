@@ -25,8 +25,6 @@ Hráč I vyhrává, pokud se dostane do pozice, kde Hráč II nemá žádný mo�
 
 Tento problém je P-úplný \cite{arora2009}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
 
-%clean 
-
 \section{Formát vstupu}
 \label{sec:GamesInput}
 
@@ -38,32 +36,30 @@ Aplikace nabízí tři způsoby zadávání herního grafu:
     \item \textbf{Předpřipravené sady:} Načtení ukázkových připravených příkladů(viz sekce \ref{sec:GamesPreparedSets}).
 \end{itemize}
 
-Všechny metody využívají komponentu \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualization}). Vnitřní struktura dat je realizována pomocí tříd \texttt{GamePosition} a \texttt{GameGraph} definovaných v modulu \texttt{NodeClasses.js}.
+Všechny metody využívají komponentu \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualization}).  
 
 \section{Interaktivní editace grafu}
 \label{sec:GamesInteractive}
 
-Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy pomocí interaktivního editoru. Uživatel může:
+Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy pomocí interaktivního grafického editoru. Uživatel může:
 
 \begin{itemize}
-    \item \textbf{Přidávat uzly:} Vytvořit novou pozici pro Hráče 1 nebo Hráče 2 pomocí tlačítek pod grafem.
+    \item \textbf{Přidávat uzly:} Vytvořit novou pozici.
     
     \item \textbf{Upravovat uzly:} Kliknutím na uzel ho označíme. Označený uzel můžeme:
     \begin{itemize}
-        \item Změnit na pozici Hráče 1 nebo Hráče 2
-        \item Odstranit z grafu
+        \item Změnit hráče který je na tahu (Hráč I nebo Hráč II)
+        \item Odstranit pozici z grafu
         \item Nastavit jako počáteční pozici
         \item Použít jako zdroj nebo cíl pro vytvoření hrany
+        \item Vytvořit hranu z nebo do tohoto uzlu
+        \item Odstranit hrany k nebo od tohoto uzlu
     \end{itemize}
-    
-    \item \textbf{Vytvářet hrany:} Po označení prvního uzlu aktivujeme režim přidávání hrany. Následným kliknutím na druhý uzel vytvoříme hranu z prvního označeného uzlu do druhého.
-    
-    \item \textbf{Odstraňovat hrany:} Označíme uzel, aktivujeme režim odstranění hrany a klikneme na cílový uzel.
-    
+            
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání.
 \end{itemize}
 
-Aplikace průběžně validuje graf a zabraňuje vytvoření neplatných struktur. Pokud uživatel zkusí přidat hranu, která by vytvořila cyklus, aplikace tuto akci zablokuje a zobrazí chybovou zprávu. Dále upozorní uživatele, pokud není nastaven počáteční uzel, což je nutné pro spuštění analýzy.
+Aplikace průběžně validuje graf a zabraňuje vytvoření neplatných struktur. Pokud uživatel zkusí přidat hranu, která by vytvořila cyklus, aplikace tuto akci zablokuje a zobrazí chybovou zprávu. Dále upozorní uživatele, pokud není nastavena počáteční pozice, což je nutné pro spuštění analýzy.
 
 \section{Generování náhodných her}
 \label{sec:GamesGeneration}
@@ -72,51 +68,18 @@ Modul \texttt{Generator.js} obsahuje funkci \texttt{generateGraph()} pro vytvá�
 
 \begin{itemize}
     \item \textbf{Počet pozic:} Kolik uzlů (herních pozic) bude graf obsahovat.
-    \item \textbf{Pravděpodobnost hrany:} Hodnota 0--100 určující, jak pravděpodobné je vytvoření hrany mezi dvěma uzly.
+    \item \textbf{Pravděpodobnost hrany:} Hodnota 0\% -- 100\% určující, jak pravděpodobné je vytvoření hrany mezi dvěma uzly.
 \end{itemize}
 
 Algoritmus generování probíhá ve dvou fázích:
 
 \begin{enumerate}
-    \item \textbf{Vytvoření kostry:} Nejprve vytvoříme uzly očíslované od 0 do \( n-1 \), kde \( n \) je počet pozic. Každému uzlu náhodně přiřadíme Hráče 1 nebo 2. Poté pro každý uzel \( i > 0 \) vytvoříme hranu z náhodného uzlu \( j < i \) do uzlu \( i \). To zajistí, že výsledný graf je acyklický (DAG) a souvislý – z uzlu 0 lze dosáhnout všech ostatních uzlů.
+    \item \textbf{Vytvoření kostry:} Vytvoříme uzly očíslované 0 až \( n-1 \) a každému náhodně přiřadíme hráče. Pro každý uzel \( i > 0 \) pak vytvoříme hranu z náhodného předchozího uzlu do uzlu \( i \). Tím zajistíme souvislý acyklický graf – hrany vedou vždy od nižších čísel k vyšším, takže cyklus vzniknout nemůže.
     
-    \item \textbf{Přidání dalších hran:} Procházíme všechny dvojice uzlů \( (i, j) \), kde \( i < j \), a s pravděpodobností odpovídající vstupu přidáme hranu \( i \to j \), pokud tato hrana ještě neexistuje. Směr je vždy z nižšího indexu k vyššímu, což zachovává acykličnost.
+    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \), kde \( i < j \), podle dané pravděpodobnosti přidáme hranu \( i \to j \), pokud ještě neexistuje.
 \end{enumerate}
 
 Výsledný graf je vždy platný DAG s uzlem 0 jako počáteční pozicí.
-
-\section{Vizualizace grafu}
-\label{sec:GamesVisualization}
-
-Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}, která je postavena na knihovně \emph{react-force-graph-2d}. Graf zobrazuje:
-
-\begin{itemize}
-    \item \textbf{Uzly:} Pozice jsou obarveny podle přiřazeného hráče – modrá pro Hráče 1, červená pro Hráče 2. Výherní pozice mají světlejší odstín, prohrávající tmavší.
-    
-    \item \textbf{Počáteční pozice:} Označena výrazným rámečkem a nápisem „START".
-    
-    \item \textbf{Hrany:} Možné tahy jsou zobrazeny jako šipky. Hrany patřící do optimální strategie jsou zvýrazněny tlustší čarou a jasnější barvou.
-    
-    \item \textbf{Popisky:} Každý uzel zobrazuje své ID a přiřazeného hráče.
-\end{itemize}
-
-Graf používá fyzikální simulaci pro automatické rozmístění uzlů. Uživatel může uzly přesouvat myší a graf přibližovat nebo oddalovat kolečkem myši.
-
-\section{Propojení s MCVP}
-\label{sec:GamesMCVPConnection}
-
-Aplikace demonstruje P-úplnost implementací převodu z MCVP na kombinatorickou hru (viz kapitola \ref{sec:MCVPtoGame}). Tento převod je realizován v modulu \texttt{ConversionCombinatorialGame.js}.
-
-Princip převodu mapuje hradla MCVP obvodu na herní pozice:
-
-\begin{itemize}
-    \item Hradlo OR odpovídá pozici Hráče I – Hráč I si volí, kterou větev následovat
-    \item Hradlo AND odpovídá pozici Hráče II – Hráč II volí větev
-    \item Proměnná s hodnotou 1 vytváří pozici Hráče II bez tahů (Hráč I vyhrává)
-    \item Proměnná s hodnotou 0 vytváří pozici Hráče I bez tahů (Hráč I prohrává)
-\end{itemize}
-
-Výsledná hra zachovává sémantiku – Hráč I má výherní strategii právě tehdy, když MCVP obvod vyhodnotí na hodnotu 1.
 
 \section{Ukládání a načítání her}
 \label{sec:GamesSerialization}
@@ -129,27 +92,44 @@ Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \te
     \item \texttt{startingPosition} určující ID počáteční pozice
 \end{itemize}
 
-Tento formát umožňuje sdílení her mezi uživateli a vytváření knihovny příkladů.
+Tento formát umožňuje sdílení her mezi uživateli a vytváření knihovny předpřipravených příkladů.
 
 \subsection{Předpřipravené sady}
 \label{sec:GamesPreparedSets}
 
-Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti. Tyto sady slouží jako ukázkové příklady a výchozí bod pro experimentování s algoritmem.
+Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti.
+
+\section{Vizualizace grafu}
+\label{sec:GamesVisualization}
+
+Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}, která využívá knihovnu \emph{react-force-graph-2d}. Graf zobrazuje:
+
+\begin{itemize}
+    \item \textbf{Uzly:} Každý uzel reprezentuje herní pozici. Pod uzlem je zobrazen hráč, který je na tahu (I nebo II).
+    
+    \item \textbf{Počáteční pozice:} Označena oranžovou barvou.
+    
+    \item \textbf{Hrany:} Možné tahy jsou zobrazeny jako směrované hrany mezi uzly. Hrany patřící do výherní strategie jsou zvýrazněny tlustší čarou a žlutou barvou.
+\end{itemize}
+
+Graf používá fyzikální simulaci pro automatické rozmístění uzlů. Uživatel může uzly přesouvat myší a graf přibližovat nebo oddalovat kolečkem myši.
 
 \section{Algoritmus analýzy}
 \label{sec:GamesAlgorithm}
 
-Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus je technicky velmi podobný vyhodnocování MCVP stromu – používá průchod do hloubky s memoizací. Rozdíl spočívá v logice, kterou určujeme výsledek každé pozice.
+Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus je technicky velmi podobný vyhodnocování MCVP stromu – používá průchod do hloubky (DFS) s memoizací. Rozdíl spočívá v logice, kterou určujeme výsledek každé pozice.
+
+%clean
 
 \subsection{Vyhodnocení výherních pozic}
 \label{sec:GamesRetrograde}
 
-Algoritmus \texttt{computeWinner()} používá průchod do hloubky (DFS) s memoizací pro určení výherních pozic. Pro každou pozici \( p \) určuje, zda je výherní pro Hráče I:
+Algoritmus pro každou pozici \( p \) určuje, zda je výherní pro Hráče I:
 
 \begin{itemize}
     \item \textbf{Koncová pozice Hráče II:} Pokud je Hráč II na tahu a nemá žádné možné tahy, Hráč I vyhrává. Taková pozice je výherní.
     
-    \item \textbf{Pozice Hráče I:} Hráč I vyhrává, pokud existuje alespoň jeden tah do výherní pozice. Stačí jedna výherní možnost.
+    \item \textbf{Pozice Hráče I:} Hráč I vyhrává, pokud existuje alespoň jedna cesta do výherní pozice. 
     
     \item \textbf{Pozice Hráče II:} Hráč I vyhrává pouze tehdy, když všechny možné tahy Hráče II vedou do výherních pozic pro Hráče I. Jinak Hráč II může zvolit tah do prohrávající pozice a zabránit výhře Hráče I.
 \end{itemize}
