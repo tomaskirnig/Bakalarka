@@ -114,7 +114,6 @@ export function getOptimalMoves(graph, precomputedResult = null) {
   // Use precomputed result if available, otherwise compute
   const result = precomputedResult || computeWinner(graph);
   const winningPositions = result.winningPositions;
-  
   const optimalEdges = new Set();
   
   for (const posId in graph.positions) {

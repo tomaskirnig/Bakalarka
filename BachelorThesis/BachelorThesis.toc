@@ -50,7 +50,7 @@
 \contentsline {section}{\numberline {4.6}Vizualizace grafu}{26}{section.4.6}%
 \contentsline {section}{\numberline {4.7}Algoritmus analýzy}{26}{section.4.7}%
 \contentsline {subsection}{\numberline {4.7.1}Vyhodnocení výherních pozic}{26}{subsection.4.7.1}%
-\contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{27}{subsection.4.7.2}%
+\contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{26}{subsection.4.7.2}%
 \contentsline {section}{\numberline {4.8}Krokové vyhodnocení}{27}{section.4.8}%
 \contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{28}{chapter.5}%
 \contentsline {chapter}{\numberline {6}Závěr}{29}{chapter.6}%

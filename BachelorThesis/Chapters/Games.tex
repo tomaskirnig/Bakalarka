@@ -105,7 +105,7 @@ Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní graf
 Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}, která využívá knihovnu \emph{react-force-graph-2d}. Graf zobrazuje:
 
 \begin{itemize}
-    \item \textbf{Uzly:} Každý uzel reprezentuje herní pozici. Pod uzlem je zobrazen hráč, který je na tahu (I nebo II).
+    \item \textbf{Uzly:} Každý uzel reprezentuje herní pozici. Pod uzlem je zobrazen hráč, který je na tahu (I nebo II). Při najetí myší na libovolný uzel se v centrech všech uzlů zobrazí jejich ID pro snadnější orientaci.
     
     \item \textbf{Počáteční pozice:} Označena oranžovou barvou.
     
@@ -119,33 +119,10 @@ Graf používá fyzikální simulaci pro automatické rozmístění uzlů. Uživ
 
 Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus je technicky velmi podobný vyhodnocování MCVP stromu – používá průchod do hloubky (DFS) s memoizací. Rozdíl spočívá v logice, kterou určujeme výsledek každé pozice.
 
-%clean
-
 \subsection{Vyhodnocení výherních pozic}
 \label{sec:GamesRetrograde}
 
-Algoritmus pro každou pozici \( p \) určuje, zda je výherní pro Hráče I:
-
-\begin{itemize}
-    \item \textbf{Koncová pozice Hráče II:} Pokud je Hráč II na tahu a nemá žádné možné tahy, Hráč I vyhrává. Taková pozice je výherní.
-    
-    \item \textbf{Pozice Hráče I:} Hráč I vyhrává, pokud existuje alespoň jedna cesta do výherní pozice. 
-    
-    \item \textbf{Pozice Hráče II:} Hráč I vyhrává pouze tehdy, když všechny možné tahy Hráče II vedou do výherních pozic pro Hráče I. Jinak Hráč II může zvolit tah do prohrávající pozice a zabránit výhře Hráče I.
-\end{itemize}
-
-Formálně můžeme zapsat:
-
-\begin{itemize}
-    \item Pozice \( p \) je výherní pro Hráče I, pokud:
-    \begin{itemize}
-        \item \( p \) patří Hráči II a nemá následníky, nebo
-        \item \( p \) patří Hráči I a existuje následník \( q \) takový, že \( q \) je výherní, nebo
-        \item \( p \) patří Hráči II a všichni následníci \( q \) jsou výherní.
-    \end{itemize}
-\end{itemize}
-
-Algoritmus používá zásobník pro iterativní průchod grafem a slovník \texttt{memo} pro ukládání již vyhodnocených pozic. Detekuje také cykly pomocí množiny \texttt{processing} – cyklické pozice jsou považovány za prohrávající.
+Algoritmus rozhoduje, zda je daná pozice výherní pro Hráče I. Koncové pozice (listové uzly) bez dalších tahů jsou výherní pro Hráče I, když je na tahu Hráč II (nemá možnost pokračovat). U ostatních pozic záleží na tom, kdo je na tahu: pokud je to Hráč I, stačí mu jedna výherní možnost pokračování – může si ji vybrat. Pokud je na tahu Hráč II, musí všechny možné tahy vést do výherních pozic Hráče I, protože Hráč II si vybere nejlepší tah pro sebe.
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran, protože každá pozice a hrana je zpracována právě jednou.
 
@@ -157,13 +134,13 @@ Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí v�
 \section{Krokové vyhodnocení}
 \label{sec:GamesStepByStep}
 
-Pro vzdělávací účely implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Funkce \texttt{computeWinningStrategySteps()} zaznamenává každý krok vyhodnocení:
+Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Funkce \texttt{computeWinningStrategySteps()} zaznamenává každý krok v celkovém vyhodnocení:
 
 \begin{itemize}
-    \item ID analyzované pozice
+    \item Hráč na tahu v dané pozici
     \item Výsledky vyhodnocení všech potomků
-    \item Finální rozhodnutí, zda je pozice výherní
+    \item Finální rozhodnutí, zda je pozice výherní pro Hráče I
     \item Textové vysvětlení rozhodnutí
 \end{itemize}
 
-Uživatel může procházet kroky analýzy pomocí navigačních tlačítek. Aktuálně analyzovaný uzel je ve vizualizaci zvýrazněn a vedle grafu se zobrazuje detailní vysvětlení logiky rozhodnutí. Tato funkce pomáhá pochopit, jak algoritmus postupně buduje znalost o výherních pozicích od listů ke kořeni.
+Uživatel může procházet kroky analýzy pomocí navigačních tlačítek – kromě standardních tlačítek „Předchozí" a „Další" jsou k dispozici také tlačítka „Začátek" a „Konec" pro rychlý přesun na první nebo poslední krok analýzy. Aktuálně analyzovaný uzel je ve zvýrazněn světle modrou barvou (stejnou jako při najetí myší) a pod grafem jse slovní popis rozhodnutí. Tato funkce pomáhá pochopit, jak algoritmus postupně buduje cesty z výherních pozicic od listů ke kořeni.

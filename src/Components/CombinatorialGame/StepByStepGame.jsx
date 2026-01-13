@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { DisplayGraph } from './Utils/DisplayGraph';
 
@@ -51,7 +51,7 @@ function computeWinningStrategySteps(graph) {
          explanation = 'Pozice neexistuje';
       } else if (position.player === 2 && (!position.children || position.children.length === 0)) {
          result = true;
-         explanation = 'Hráč 2 nemá žádný tah → Hráč 1 vyhrává';
+         explanation = 'H2 nemá žádný tah → H1 vyhrává';
       } else if (position.player === 1) {
          // Player 1: wins if at least one child is winning
          if (position.children && position.children.length > 0) {
@@ -64,19 +64,19 @@ function computeWinningStrategySteps(graph) {
            
            if (result) {
              const winningChildren = position.children.filter(childId => getResult(childId));
-             explanation = `Hráč 1 může vyhrát přesunem do ${winningChildren.length > 1 ? 'pozic' : 'pozice'}: ${winningChildren.join(', ')}`;
+             explanation = `H1 může vyhrát přesunem do ${winningChildren.length > 1 ? 'pozic' : 'pozice'}: ${winningChildren.join(', ')}`;
            } else {
-             explanation = 'Hráč 1 nemá výherní tah (všechny následníci jsou prohrávající)';
+             explanation = 'H1 nemá výherní tah (všechny následníci jsou prohrávající)';
            }
          } else {
            result = false;
-           explanation = 'Hráč 1 nemá žádný tah → Hráč 1 prohrává';
+           explanation = 'H1 nemá žádný tah → H1 prohrává';
          }
       } else if (position.player === 2) {
          // Player 2: wins (for P1) if ALL children are winning
          if (!position.children || position.children.length === 0) {
             result = true; 
-            explanation = 'Hráč 2 nemá žádný tah → Hráč 1 vyhrává';
+            explanation = 'H2 nemá žádný tah → H1 vyhrává';
          } else {
             const childStatuses = position.children.map(childId => {
               childResults[childId] = getResult(childId);
@@ -86,10 +86,10 @@ function computeWinningStrategySteps(graph) {
             result = childStatuses.every(status => status);
             
             if (result) {
-              explanation = 'Všechny tahy Hráče 2 vedou k výhře Hráče 1';
+              explanation = 'Všechny tahy H2 vedou k výhře H1';
             } else {
               const losingChildren = position.children.filter(childId => !getResult(childId));
-              explanation = `Hráč 2 může přesunout do prohrávající pozice: ${losingChildren.join(', ')}`;
+              explanation = `H2 může přesunout do prohrávající pozice: ${losingChildren.join(', ')}`;
             }
          }
       }
@@ -146,8 +146,16 @@ export function StepByStepGame({ graph }) {
     }
   };
 
+  const goToFirstStep = () => {
+    setCurrentStep(0);
+  };
+
+  const goToLastStep = () => {
+    setCurrentStep(steps.length - 1);
+  };
+
   // Get optimal moves up to current step
-  const getOptimalMovesUpToStep = () => {
+  const optimalMoves = useMemo(() => {
     if (!steps[currentStep]) return new Set();
     
     const winningPositions = steps[currentStep].winningPositions;
@@ -166,10 +174,10 @@ export function StepByStepGame({ graph }) {
     }
     
     return optimalEdges;
-  };
+  }, [currentStep, steps, graph.positions]);
 
   // Get winning player map for current step
-  const getWinningPlayerMap = () => {
+  const winningPlayerMap = useMemo(() => {
     if (!steps[currentStep]) return {};
     
     const winningPositions = steps[currentStep].winningPositions;
@@ -180,7 +188,7 @@ export function StepByStepGame({ graph }) {
     }
     
     return map;
-  };
+  }, [currentStep, steps]);
 
   return (
     <div className="step-by-step-container">
@@ -189,28 +197,27 @@ export function StepByStepGame({ graph }) {
         <>
           <DisplayGraph 
             graph={graph} 
-            optimalMoves={getOptimalMovesUpToStep()}
+            optimalMoves={optimalMoves}
             highlightedNode={steps[currentStep]?.positionId}
-            winningPlayerMap={getWinningPlayerMap()}
+            winningPlayerMap={winningPlayerMap}
           />
           
           <div className='step-controls-info container'>
           <div className='row align-items-center mt-3'>
             <div className='step-info col-md-7'>
-              <div className="card p-3 bg-light">
-                <p className="mb-1"><strong>Analyzovaná pozice:</strong> {steps[currentStep].positionId}</p>
+              <div className="card p-3 bg-light" style={{ minHeight: '140px' }}>
                 <p className="mb-1"><strong>Hráč na tahu:</strong> Hráč {steps[currentStep].position.player}</p>
                 {Object.keys(steps[currentStep].childResults).length > 0 && (
                   <p className="mb-1">
-                    <strong>Výsledky následníků:</strong>{' '}
+                    <strong>Výsledky potomků:</strong>{' '}
                     {Object.entries(steps[currentStep].childResults).map(([childId, result]) => 
-                      `${childId}: ${result ? 'Výhra P1' : 'Prohra P1'}`
+                      `${childId}: ${result ? 'Výhra H1' : 'Prohra H1'}`
                     ).join(', ')}
                   </p>
                 )}
                 <p className="mb-1"><strong>Vysvětlení:</strong> {steps[currentStep].explanation}</p>
                 <p className="mb-0">
-                  <strong>Výsledek pro P1:</strong>{' '}
+                  <strong>Výsledek pro H1:</strong>{' '}
                   <span className={steps[currentStep].result ? 'text-success fw-bold' : 'text-danger fw-bold'}>
                     {steps[currentStep].result ? 'Výherní pozice' : 'Prohrávající pozice'}
                   </span>
@@ -219,12 +226,18 @@ export function StepByStepGame({ graph }) {
             </div>
             <div className='step-controls col-md-5 d-flex flex-column align-items-center justify-content-center'>
               <p className="text-center mb-2">Krok {currentStep + 1} z {steps.length}</p>
-              <div>
-                <button className='btn btn-secondary mx-1' onClick={goToPreviousStep} disabled={currentStep === 0}>
+              <div className="d-flex gap-2">
+                <button className='btn btn-secondary btn-sm' onClick={goToFirstStep} disabled={currentStep === 0}>
+                  &#x23EE; Začátek
+                </button>
+                <button className='btn btn-secondary' onClick={goToPreviousStep} disabled={currentStep === 0}>
                   &larr; Předchozí
                 </button>
-                <button className='btn btn-primary mx-1' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
+                <button className='btn btn-primary' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
                   Další &rarr;
+                </button>
+                <button className='btn btn-primary btn-sm' onClick={goToLastStep} disabled={currentStep === steps.length - 1}>
+                  Konec &#x23ED;
                 </button>
               </div>
             </div>
