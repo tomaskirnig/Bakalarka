@@ -1,4 +1,77 @@
 \chapter{Prázdnost bezkontextových gramatik}
 \label{sec:Grammars}
 
-% Zde bude teorie ke gramatikám, algoritmus prázdnosti a vizualizace.
+Třetím a posledním implementovaným problémem v této práci je rozhodování o prázdnosti jazyka generovaného bezkontextovou gramatikou. Tento problém úzce souvisí s předchozími kapitolami, neboť jej lze efektivně převést na vyhodnocování MCVP obvodů nebo řešení her na grafech.
+
+\section{Teoretický základ}
+\label{sec:GrammarsTheory}
+
+Bezkontextová gramatika (CFG) je formální systém pro generování jazyka, který hraje klíčovou roli v definici syntaxe programovacích jazyků i v analýze přirozeného jazyka. Formálně je gramatika definována jako čtveřice \( G = (N, \Sigma, P, S) \), kde:
+
+\begin{itemize}
+    \item \( N \) je konečná množina neterminálních symbolů (neterminálů).
+    \item \( \Sigma \) je konečná množina terminálních symbolů (terminálů), disjunktní s \( N \).
+    \item \( P \) je konečná množina přepisovacích pravidel tvaru \( A \to \alpha \), kde \( A \in N \) a \( \alpha \in (N \cup \Sigma)^* \).
+    \item \( S \in N \) je počáteční symbol (start symbol).
+\end{itemize}
+
+Problém prázdnosti bezkontextových gramatik (Context-Free Grammar Emptiness Problem) spočívá v rozhodnutí, zda daná gramatika generuje alespoň jedno slovo složené pouze z terminálních symbolů. Tedy ptáme se, zda:
+\[ L(G) = \{ w \in \Sigma^* \mid S \Rightarrow^* w \} = \emptyset \]
+
+kde \( \Rightarrow^* \) značí relaci derivace v několika krocích \cite{papadimitriou1993}.
+
+\subsection{P-úplnost problému}
+\label{sec:GrammarsCompleteness}
+
+Problém prázdnosti bezkontextových gramatik je P-úplný \cite{miyano1990}. To znamená, že jej lze vyřešit v polynomiálním čase, ale je obtížné jej efektivně paralelizovat (v třídě NC). Algoritmus pro testování prázdnosti je založen na iterativním označování tzv. \uv{produktivních} (generating) neterminálů – tedy těch, ze kterých lze derivovat terminální řetězec. Tento proces je svou podstatou sekvenční, neboť produktivita jednoho neterminálu může záviset na produktivitě jiných, což připomíná vyhodnocování vrstev v MCVP obvodu.
+
+\section{Algoritmus pro testování prázdnosti}
+\label{sec:GrammarsAlgorithm}
+
+Jádrem implementace je algoritmus, který zjišťuje, zda je počáteční symbol \( S \) produktivní. Algoritmus pracuje iterativně:
+
+\begin{enumerate}
+    \item Inicializujeme množinu produktivních symbolů \( \mathcal{P} \). Na začátku je prázdná.
+    \item V prvním průchodu do \( \mathcal{P} \) přidáme všechny neterminály, které mají pravidlo \( A \to w \), kde \( w \in \Sigma^* \) (pravá strana obsahuje pouze terminály nebo je prázdná).
+    \item V dalších krocích opakovaně procházíme pravidla. Pokud existuje pravidlo \( A \to X_1 X_2 \dots X_k \), kde všechny symboly \( X_i \) jsou buď terminály, nebo již jsou v množině \( \mathcal{P} \), přidáme \( A \) do \( \mathcal{P} \).
+    \item Opakujeme krok 3, dokud se množina \( \mathcal{P} \) mění.
+    \item Pokud \( S \in \mathcal{P} \), pak jazyk není prázdný. V opačném případě je \( L(G) = \emptyset \).
+\end{enumerate}
+
+Implementace v souboru \texttt{GrammarEvaluator.js} používá optimalizovanou verzi s frontou (work-list algorithm). Místo procházení všech pravidel v každém cyklu udržujeme frontu nově označených produktivních neterminálů a kontrolujeme pouze ta pravidla, která tyto neterminály obsahují na pravé straně.
+
+\section{Formát vstupu a editace}
+\label{sec:GrammarsInput}
+
+Aplikace poskytuje flexibilní rozhraní pro definici gramatiky, které je rozděleno do logických sekcí:
+
+\begin{itemize}
+    \item \textbf{Terminály a Neterminály:} Uživatel definuje množiny symbolů. Aplikace automaticky rozlišuje velká písmena jako neterminály, ale uživatel může toto chování upravit.
+    \item \textbf{Pravidla:} Pravidla se zadávají ve formátu \texttt{LHS -> RHS}. Pro zápis prázdného řetězce (\( \epsilon \)) se používá speciální znak nebo prázdné pole.
+    \item \textbf{Startovní symbol:} Výběr jednoho z definovaných neterminálů.
+\end{itemize}
+
+Podobně jako u předchozích problémů je k dispozici generátor náhodných gramatik (kde lze nastavit počet pravidel a pravděpodobnost terminálů) a sada předpřipravených příkladů (např. gramatika pro aritmetické výrazy nebo palindromy).
+
+\section{Vizualizace a derivační stromy}
+\label{sec:GrammarsVisualization}
+
+Pokud gramatika není prázdná, aplikace nejen potvrdí tento fakt, ale také vizuálně demonstruje důkaz – vykreslí \emph{derivační strom} pro jedno z možných slov.
+
+\subsection{Konstrukce stromu}
+Během běhu algoritmu si pro každý produktivní neterminál pamatujeme tzv. \uv{svědka} (witness) – konkrétní pravidlo, které poprvé umožnilo označit tento neterminál za produktivní. Po skončení analýzy, pokud je \( S \) produktivní, rekurzivně rekonstruujeme strom:
+\begin{itemize}
+    \item Kořenem je \( S \).
+    \item Pro každý uzel (neterminál) najdeme jeho svědecké pravidlo a vytvoříme potomky odpovídající symbolům na pravé straně tohoto pravidla.
+    \item Terminály tvoří listy stromu.
+\end{itemize}
+
+\subsection{Grafická reprezentace}
+Pro vykreslení stromu je využita komponenta \texttt{DerivationTreeVisual}, postavená opět na knihovně \emph{react-force-graph-2d}. Na rozdíl od obecných grafů je zde použito rozvržení \texttt{dagMode="td"} (Top-Down), které automaticky uspořádá uzly do hierarchických vrstev:
+\begin{itemize}
+    \item \textbf{Neterminály:} Zobrazeny standardní barvou uzlu.
+    \item \textbf{Terminály:} Zvýrazněny žlutou barvou, aby bylo na první pohled zřejmé vygenerované slovo (listy stromu čtené zleva doprava).
+    \item \textbf{Epsilon (\( \epsilon \)):} Zobrazeny šedě pro reprezentaci prázdného řetězce.
+\end{itemize}
+
+Tato vizualizace pomáhá studentům pochopit nejen výsledek (prázdná/neprázdná), ale i strukturu generovaných slov a vztahy mezi pravidly.
