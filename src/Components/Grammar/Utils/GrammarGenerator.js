@@ -56,21 +56,33 @@ function validateConfig(config) {
 }
 
 /**
- * Generates an array of non-terminal symbols
+ * Generates an array of non-terminal symbols using uppercase letters (A-Z, then AA-ZZ)
  * @param {number} count - Number of non-terminals to generate
  * @returns {string[]} Array of non-terminal symbols
  */
 function generateNonTerminals(count) {
-  return Array.from({ length: count }, (_, i) => `N${i + 1}`);
+  const symbols = [];
+  for (let i = 0; i < count; i++) {
+    if (i < 26) {
+      // Single letters A-Z
+      symbols.push(String.fromCharCode(65 + i));
+    } else {
+      // Double letters AA, AB, ..., ZZ
+      const firstChar = Math.floor((i - 26) / 26);
+      const secondChar = (i - 26) % 26;
+      symbols.push(String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar));
+    }
+  }
+  return symbols;
 }
 
 /**
- * Generates an array of terminal symbols
+ * Generates an array of terminal symbols using lowercase letters
  * @param {number} count - Number of terminals to generate
  * @returns {string[]} Array of terminal symbols
  */
 function generateTerminals(count) {
-  return Array.from({ length: count }, (_, i) => `t${i + 1}`);
+  return Array.from({ length: count }, (_, i) => String.fromCharCode(97 + (i % 26)));
 }
 
 /**

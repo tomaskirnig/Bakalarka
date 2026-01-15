@@ -87,14 +87,14 @@ export function Grammar({ onNavigate, initialData }) {
                         Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
                     </p>
                     <hr />
-                    <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
-                    <ul className="ps-3 mb-0">
-                        <li>První řádek definuje počáteční symbol.</li>
-                        <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
-                        <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
-                        <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
-                        <li>Použijte <code>|</code> pro oddělení alternativ.</li>
-                        <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
+                    <h6 className="mb-2">Pravidla formátu gramatiky</h6>
+                    <ul className="ps-3 mb-2">
+                        <li><strong>Oddělte symboly mezerami:</strong> <code>S → a S</code> (správně) vs <code>S → aS</code> (špatně)</li>
+                        <li><strong>Velká písmena = neterminály:</strong> S, A, AA, ABC</li>
+                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number</li>
+                        <li>První neterminál na prvním řádku je počáteční symbol</li>
+                        <li>Použijte <code>|</code> pro oddělení alternativ</li>
+                        <li>Použijte <code>ε</code> nebo <code>epsilon</code> pro prázdný řetězec</li>
                     </ul>
                 </InfoButton>
             </div>
@@ -122,7 +122,7 @@ export function Grammar({ onNavigate, initialData }) {
 
             {grammar && analysisResult && (
                 <div className='mt-4 mb-4'>
-                    <div className="card mb-3 text-center">
+                    <div className="card mb-3 text-center" style={{ maxWidth: '600px', margin: 'auto', marginBottom: '30px' }}>
                         <div className="card-header">
                             <h5>Definice gramatiky</h5>
                         </div>
@@ -146,7 +146,14 @@ export function Grammar({ onNavigate, initialData }) {
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
                             <div className="card-body border-top">
                                 <h5>Ukázkový derivační strom</h5>
-                                <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
+                                {analysisResult.derivedWord && (
+                                    <p className="text-muted small">
+                                        Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
+                                    </p>
+                                )}
+                                {!analysisResult.derivedWord && (
+                                    <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
+                                )}
                                 <DerivationTreeVisual tree={analysisResult.derivationTree} />
                             </div>
                         )}

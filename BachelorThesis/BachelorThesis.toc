@@ -53,8 +53,21 @@
 \contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{26}{subsection.4.7.2}%
 \contentsline {section}{\numberline {4.8}Krokové vyhodnocení}{27}{section.4.8}%
 \contentsline {chapter}{\numberline {5}Prázdnost bezkontextových gramatik}{28}{chapter.5}%
-\contentsline {chapter}{\numberline {6}Závěr}{29}{chapter.6}%
-\contentsline {chapter}{Literatura}{30}{chapter*.11}%
+\contentsline {section}{\numberline {5.1}Teoretický základ}{28}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}P-úplnost problému}{28}{subsection.5.1.1}%
+\contentsline {section}{\numberline {5.2}Formát vstupu}{29}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Manuální zadání gramatiky}{29}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Generování náhodných gramatik}{30}{section.5.4}%
+\contentsline {section}{\numberline {5.5}Ukládání a načítání gramatik}{30}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Předpřipravené sady}{31}{subsection.5.5.1}%
+\contentsline {section}{\numberline {5.6}Algoritmus vyhodnocení}{31}{section.5.6}%
+\contentsline {subsection}{\numberline {5.6.1}Identifikace produktivních neterminálů}{31}{subsection.5.6.1}%
+\contentsline {subsection}{\numberline {5.6.2}Rekonstrukce svědka}{32}{subsection.5.6.2}%
+\contentsline {section}{\numberline {5.7}Vizualizace derivačního stromu}{32}{section.5.7}%
+\contentsline {subsection}{\numberline {5.7.1}Komponenta pro vykreslení}{32}{subsection.5.7.1}%
+\contentsline {section}{\numberline {5.8}Krokové vyhodnocení}{33}{section.5.8}%
+\contentsline {chapter}{\numberline {6}Závěr}{34}{chapter.6}%
+\contentsline {chapter}{Literatura}{35}{chapter*.11}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
@@ -71,5 +84,9 @@
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
-\contentsline {chapter}{Přílohy}{30}{chapter*.11}%
-\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{31}{appendix.A}%
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\contentsline {chapter}{Přílohy}{35}{chapter*.11}%
+\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{36}{appendix.A}%

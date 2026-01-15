@@ -2417,6 +2417,9 @@
     <bcf:citekey order="21" intorder="1">sawa</bcf:citekey>
     <bcf:citekey order="22" intorder="1">papadimitriou1993</bcf:citekey>
     <bcf:citekey order="23" intorder="1">arora2009</bcf:citekey>
+    <bcf:citekey order="24" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">papadimitriou1993</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">miyano1990</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

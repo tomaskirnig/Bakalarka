@@ -310,6 +310,50 @@
       \verb https://eslint.org/
       \endverb
     \endentry
+    \entry{miyano1990}{report}{}{}
+      \name{author}{3}{}{%
+        {{hash=eba35d4e67c7aff0966e5baf7d086d5d}{%
+           family={Miyano},
+           familyi={M\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=4edde8adf05342dcf0377adf8a33ca9c}{%
+           family={Shiraishi},
+           familyi={S\bibinitperiod},
+           given={S.},
+           giveni={S\bibinitperiod}}}%
+        {{hash=94f7f94019bf79b226f74664d773cdfa}{%
+           family={Shoudai},
+           familyi={S\bibinitperiod},
+           given={T.},
+           giveni={T\bibinitperiod}}}%
+      }
+      \list{institution}{1}{%
+        {Kyushu University}%
+      }
+      \strng{namehash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{fullhash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{fullhashraw}{3376965f345a123e0b2a3b4701b07070}
+      \strng{bibnamehash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{authorbibnamehash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{authornamehash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{authorfullhash}{3376965f345a123e0b2a3b4701b07070}
+      \strng{authorfullhashraw}{3376965f345a123e0b2a3b4701b07070}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{number}{RIFIS-TR-CS-17}
+      \field{title}{A List of P-Complete Problems}
+      \field{type}{techreport}
+      \field{year}{1990}
+      \verb{urlraw}
+      \verb https://catalog.lib.kyushu-u.ac.jp/opac_download_md/3123/rifis-tr-17.pdf
+      \endverb
+      \verb{url}
+      \verb https://catalog.lib.kyushu-u.ac.jp/opac_download_md/3123/rifis-tr-17.pdf
+      \endverb
+    \endentry
   \enddatalist
 \endrefsection
 \endinput

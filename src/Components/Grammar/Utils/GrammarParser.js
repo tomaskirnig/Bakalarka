@@ -12,7 +12,7 @@ export function parseGrammar(inputText) {
                 throw new Error(`Neplatný formát pravidla: ${rule}`);
             } 
             
-            if(!ls.match(/^[A-Z]$/)) {
+            if(!ls.match(/^[A-Z]+$/)) {
                 console.warn(`Invalid non-terminal symbol: ${ls}`);
                 throw new Error(`Neplatný neterminál: ${ls}`);
             }
@@ -36,19 +36,38 @@ export function parseGrammar(inputText) {
                     throw new Error(`Pravidlo pro ${ls} obsahuje prázdnou alternativu.`);
                 }
                 // Handle epsilon as special case - represent as empty array
-                if (alt === 'ε') {
+                if (alt === 'ε' || alt === 'epsilon') {
                     grammar.productions[ls].push([]);
                     continue;
                 }
                 
-                // Split into symbols
-                const symbols = alt.split('');
+                // Normalize whitespace: collapse multiple spaces to single space
+                alt = alt.replace(/\s+/g, ' ').trim();
+                
+                // Split by spaces - each token is one symbol
+                const symbols = alt.split(' ').filter(token => token.length > 0);
+                
+                if (symbols.length === 0) {
+                    throw new Error(`Pravidlo pro ${ls} neobsahuje žádné symboly.`);
+                }
+                
+                // Validate tokens - detect likely missing spaces
+                for (let symbol of symbols) {
+                    // Check for mixed case (likely missing space between symbols)
+                    if (symbol.match(/[A-Z]/) && symbol.match(/[^A-Z]/)) {
+                        throw new Error(
+                            `Symbol "${symbol}" obsahuje velká i jiná písmena. ` +
+                            `Pravděpodobně chybí mezera. Použijte mezery pro oddělení symbolů: "${symbol}" → např. "${symbol.replace(/([A-Z])/g, ' $1').trim()}"`
+                        );
+                    }
+                }
+                
                 grammar.productions[ls].push(symbols);
                 
                 // Categorize symbols
                 for (let sym of symbols) {
-                    if (sym.match(/^[A-Z]$/)) {
-                        // It is a Non-Terminal
+                    if (sym.match(/^[A-Z]+$/)) {
+                        // It is a Non-Terminal (one or more uppercase letters)
                         if (!grammar.nonTerminals.includes(sym)) {
                             grammar.nonTerminals.push(sym);
                         }
@@ -57,7 +76,7 @@ export function parseGrammar(inputText) {
                             grammar.productions[sym] = [];
                         }
                     } else {
-                        // It is a Terminal
+                        // It is a Terminal (anything else)
                         if (!grammar.terminals.includes(sym)) {
                             grammar.terminals.push(sym);
                         }
