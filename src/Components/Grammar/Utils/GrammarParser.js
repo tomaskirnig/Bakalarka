@@ -25,7 +25,7 @@ export function parseGrammar(inputText) {
                 grammar.nonTerminals.push(ls);
             }
             
-            // Initialize productions for this non-terminal
+            // Initialize rules for this non-terminal
             if (!grammar.productions[ls]) {
                 grammar.productions[ls] = [];
             }
@@ -71,7 +71,7 @@ export function parseGrammar(inputText) {
                         if (!grammar.nonTerminals.includes(sym)) {
                             grammar.nonTerminals.push(sym);
                         }
-                        // Initialize productions for this new non-terminal if not exists
+                        // Initialize rules for this new non-terminal if not exists
                         if (!grammar.productions[sym]) {
                             grammar.productions[sym] = [];
                         }

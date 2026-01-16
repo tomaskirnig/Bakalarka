@@ -13,7 +13,7 @@ import { Grammar } from './Grammar';
  */
 export function isEmptyLanguage(grammar) {
   const productive = new Set();
-  const allWitnesses = new Map(); // Stores ALL productive productions: NonTerminal -> [Symbol[][]]
+  const allWitnesses = new Map(); // Stores ALL productive rules: NonTerminal -> [Symbol[][]]
   const { nonTerminals, terminals, productions } = grammar;
   
   // Determine the start symbol (first non-terminal if not explicitly defined)
@@ -29,7 +29,7 @@ export function isEmptyLanguage(grammar) {
     };
   }
   
-  // Normalize productions into a flat list [{ left, right }]
+  // Normalize rules into a flat list [{ left, right }]
   const rules = Array.isArray(productions)
     ? productions
     : Object.entries(productions).flatMap(([left, rights]) =>
@@ -41,7 +41,7 @@ export function isEmptyLanguage(grammar) {
     return right.length === 0 || right.every(sym => terminals.includes(sym) || productive.has(sym));
   }
 
-  // 1) Seed the queue with any nonterminal that has a terminal-only (or ε) production
+  // 1) Seed the queue with any nonterminal that has a terminal-only (or ε) rule
   const queue = [];
   for (const { left, right } of rules) {
     if (!productive.has(left) && rightIsProductive(right)) {
@@ -49,7 +49,7 @@ export function isEmptyLanguage(grammar) {
       allWitnesses.set(left, [right]);
       queue.push(left);
     } else if (productive.has(left) && rightIsProductive(right)) {
-      // Add additional productive productions for already productive nonterminals
+      // Add additional productive rules for already productive nonterminals
       allWitnesses.get(left).push(right);
     }
   }
@@ -65,7 +65,7 @@ export function isEmptyLanguage(grammar) {
         allWitnesses.set(left, [right]);
         queue.push(left);
       } else if (productive.has(left) && right.includes(newlyProd) && rightIsProductive(right)) {
-        // Add additional productive productions
+        // Add additional productive rules
         const currentWitnesses = allWitnesses.get(left) || [];
         if (!currentWitnesses.some(w => JSON.stringify(w) === JSON.stringify(right))) {
           currentWitnesses.push(right);

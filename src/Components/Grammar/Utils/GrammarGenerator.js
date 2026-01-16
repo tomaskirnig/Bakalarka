@@ -6,8 +6,8 @@ import { Grammar } from './Grammar.js';
  * @property {number} nonTerminalCount - Number of non-terminal symbols
  * @property {number} terminalCount - Number of terminal symbols
  * @property {number} maxRuleLength - Maximum length of production rule right-hand side
- * @property {number} minProductionsPerNonTerminal - Minimum productions per non-terminal
- * @property {number} maxProductionsPerNonTerminal - Maximum productions per non-terminal
+ * @property {number} [minProductionsPerNonTerminal=1] - Minimum productions per non-terminal
+ * @property {number} [maxProductionsPerNonTerminal=3] - Maximum productions per non-terminal
  * @property {boolean} allowLeftRecursion - Whether to allow left recursion
  * @property {boolean} allowRightRecursion - Whether to allow right recursion
  * @property {string} epsilonMode - Epsilon generation mode: 'always', 'never', or 'random'
@@ -41,17 +41,20 @@ function validateConfig(config) {
   const { 
     nonTerminalCount, 
     terminalCount, 
-    maxRuleLength, 
-    minProductionsPerNonTerminal, 
-    maxProductionsPerNonTerminal 
+    maxRuleLength,
+    minProductionsPerNonTerminal,
+    maxProductionsPerNonTerminal
   } = config;
 
   if (nonTerminalCount <= 0) throw new Error('Počet neterminálů musí být kladný.');
   if (terminalCount <= 0) throw new Error('Počet terminálů musí být kladný.');
   if (maxRuleLength <= 0) throw new Error('Maximální délka pravidla musí být kladná.');
-  if (minProductionsPerNonTerminal <= 0) throw new Error('Minimální počet produkcí musí být kladný.');
-  if (minProductionsPerNonTerminal > maxProductionsPerNonTerminal) {
-    throw new Error('Minimální počet produkcí nemůže překročit maximální počet produkcí.');
+  
+  if (minProductionsPerNonTerminal !== undefined && maxProductionsPerNonTerminal !== undefined) {
+    if (minProductionsPerNonTerminal <= 0) throw new Error('Minimální počet pravidel musí být kladný.');
+    if (minProductionsPerNonTerminal > maxProductionsPerNonTerminal) {
+      throw new Error('Minimální počet pravidel nemůže překročit maximální počet pravidel.');
+    }
   }
 }
 
@@ -86,20 +89,20 @@ function generateTerminals(count) {
 }
 
 /**
- * Generates production rules for the grammar
+ * Generates rules for the grammar
  * @param {string[]} nonTerminals - Array of non-terminal symbols
  * @param {string[]} terminals - Array of terminal symbols
  * @param {GrammarConfig} config - Configuration parameters
- * @returns {Object<string, string[][]>} Object mapping non-terminals to their production rules
+ * @returns {Object<string, string[][]>} Object mapping non-terminals to their rules
  */
 function generateProductions(nonTerminals, terminals, config) {
   const productions = {};
   
   nonTerminals.forEach(nonTerminal => {
-    const productionCount = getRandomInt(
-      config.minProductionsPerNonTerminal, 
-      config.maxProductionsPerNonTerminal
-    );
+    // Use config values or default to 1-3
+    const min = config.minProductionsPerNonTerminal || 1;
+    const max = config.maxProductionsPerNonTerminal || 3;
+    const productionCount = getRandomInt(min, max);
 
     productions[nonTerminal] = [];
     
@@ -113,12 +116,12 @@ function generateProductions(nonTerminals, terminals, config) {
 }
 
 /**
- * Creates a single production rule
+ * Creates a single rule
  * @param {string} nonTerminal - Left-hand side non-terminal
  * @param {string[]} nonTerminals - All available non-terminals
  * @param {string[]} terminals - All available terminals
  * @param {GrammarConfig} config - Configuration parameters
- * @returns {string[]} Production rule right-hand side
+ * @returns {string[]} Rule right-hand side
  */
 function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   // Handle epsilon rule based on mode
@@ -155,14 +158,9 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   // Determine which non-terminals can be used
   let availableNonTerminals = nonTerminals;
   
-  // If recursion is completely disabled, exclude the current non-terminal
+  // If both recursions are completely disabled, use terminals only (no nonterminals at all)
   if (!config.allowLeftRecursion && !config.allowRightRecursion) {
-    availableNonTerminals = nonTerminals.filter(nt => nt !== currentNonTerminal);
-    
-    // If no other non-terminals available, we must use terminals only
-    if (availableNonTerminals.length === 0) {
-      availableNonTerminals = [];
-    }
+    availableNonTerminals = [];
   }
   
   for (let j = 0; j < length; j++) {
