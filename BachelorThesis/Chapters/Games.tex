@@ -23,7 +23,7 @@ Hráč I vyhrává, pokud se dostane do pozice, kde Hráč II nemá žádný mo�
 \subsection{P-úplnost problému}
 \label{sec:GamesCompleteness}
 
-Tento problém je P-úplný \cite{arora2009}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
+Tento problém je P-úplný \cite{arora2009}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
 
 \section{Formát vstupu}
 \label{sec:GamesInput}
@@ -81,7 +81,12 @@ Algoritmus generování probíhá ve dvou fázích:
 
 Výsledný graf je vždy platný DAG s uzlem 0 jako počáteční pozicí.
 
-\section{Ukládání a načítání her}
+\section{Předpřipravené sady}
+\label{sec:GamesPreparedSets}
+
+Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti.
+
+\subsection{Ukládání a načítání her}
 \label{sec:GamesSerialization}
 
 Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \texttt{FileTransferControls}. Formát obsahuje:
@@ -93,11 +98,6 @@ Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \te
 \end{itemize}
 
 Tento formát umožňuje sdílení her mezi uživateli a vytváření knihovny předpřipravených příkladů.
-
-\subsection{Předpřipravené sady}
-\label{sec:GamesPreparedSets}
-
-Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti.
 
 \section{Vizualizace grafu}
 \label{sec:GamesVisualization}

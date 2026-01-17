@@ -2396,8 +2396,8 @@
   </bcf:bibdata>
   <bcf:section number="0">
     <bcf:citekey order="2" intorder="1">papadimitriou1993</bcf:citekey>
-    <bcf:citekey order="3" intorder="1">bernardes2023bigO</bcf:citekey>
-    <bcf:citekey order="4" intorder="1">bernardes2023bigO</bcf:citekey>
+    <bcf:citekey order="3" intorder="1">sawa_bigo</bcf:citekey>
+    <bcf:citekey order="4" intorder="1">sawa_bigo</bcf:citekey>
     <bcf:citekey order="5" intorder="1">arora2009</bcf:citekey>
     <bcf:citekey order="6" intorder="1">sawa</bcf:citekey>
     <bcf:citekey order="7" intorder="1">sawa</bcf:citekey>
@@ -2418,8 +2418,11 @@
     <bcf:citekey order="22" intorder="1">papadimitriou1993</bcf:citekey>
     <bcf:citekey order="23" intorder="1">arora2009</bcf:citekey>
     <bcf:citekey order="24" intorder="1">sawa</bcf:citekey>
-    <bcf:citekey order="25" intorder="1">papadimitriou1993</bcf:citekey>
-    <bcf:citekey order="26" intorder="1">miyano1990</bcf:citekey>
+    <bcf:citekey order="25" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="26" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="27" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="28" intorder="1">sawa</bcf:citekey>
+    <bcf:citekey order="29" intorder="1">sawa</bcf:citekey>
   </bcf:section>
   <!-- SORTING TEMPLATES -->
   <bcf:sortingtemplate name="none">

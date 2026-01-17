@@ -205,7 +205,12 @@ Pro konstrukci gramatiky používáme pomocnou třídu \texttt{ConversionGrammar
 
 Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu. Uživatel tak může sledovat, jak obvod postupně přechází na gramatiku, a vidět, která pravidla vznikají z~konkrétních uzlů.
 
-\section{Ukládání a načítání MCVP obvodů}
+\section{Předpřipravené sady}
+\label{sec:MCVPPreparedSets}
+
+Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \texttt{Sady/MCVP}. Tyto sady slouží jako základní ukázkové příklady. Tyto uložené obvody jsou taktéž ve formatu JSON.
+
+\subsection{Ukládání a načítání MCVP obvodů}
 \label{sec:MCVPSerialization}
 
 Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
@@ -216,8 +221,3 @@ Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a imp
     \caption{Ovládací prvky pro import a export MCVP obvodů}
     \label{fig:import-export-controls}
 \end{figure}
-
-\subsection{Předpřipravené sady}
-\label{sec:MCVPPreparedSets}
-
-Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \texttt{Sady/MCVP}. Tyto sady slouží jako základní ukázkové příklady. Tyto uložené obvody jsou taktéž ve formatu JSON.
