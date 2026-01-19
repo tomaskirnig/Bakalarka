@@ -90,7 +90,7 @@ export function Grammar({ onNavigate, initialData }) {
                     <h6 className="mb-2">Pravidla formátu gramatiky</h6>
                     <ul className="ps-3 mb-2">
                         <li><strong>Oddělte symboly mezerami:</strong> <code>S → a S</code> (správně) vs <code>S → aS</code> (špatně)</li>
-                        <li><strong>Velká písmena = neterminály:</strong> S, A, AA, ABC</li>
+                        <li><strong>Velká písmena (i česká) = neterminály:</strong> S, A, Č, Ř, AA</li>
                         <li><strong>Vše ostatní = terminály:</strong> a, +, id, number</li>
                         <li>První neterminál na prvním řádku je počáteční symbol</li>
                         <li>Použijte <code>|</code> pro oddělení alternativ</li>

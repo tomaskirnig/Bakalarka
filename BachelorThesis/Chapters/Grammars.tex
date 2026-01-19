@@ -47,16 +47,16 @@ Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivační
 \section{Manuální zadání gramatiky}
 \label{sec:GrammarsManual}
 
-Komponenta \texttt{ManualInput} poskytuje textové rozhraní pro přímé zadávání pravidel gramatiky. Tento přístup je pro uživatele přirozenější a rychlejší než vyplňování mnoha polí formuláře.
+Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky.
 
 \begin{itemize}
-    \item \textbf{Syntaktický formát:} Každé pravidlo se zapisuje na nový řádek ve tvaru \texttt{LHS -> RHS}. Pro oddělení více alternativ na pravé straně se používá symbol svislítka (\texttt{|}). Symboly v rámci jedné alternativy musí být odděleny mezerami.
+    \item \textbf{Syntaktický formát:} Každé pravidlo se zapisuje na nový řádek ve tvaru \texttt{LS -> PS}. Pro oddělení více alternativ na pravé straně se používá symbol \texttt{|}. Symboly v rámci jedné alternativy musí být odděleny mezerami.
     
-    \item \textbf{Kategorizace symbolů:} Algoritmus v modulu \texttt{GrammarParser.js} automaticky rozpoznává typy symbolů. Symboly složené výhradně z velkých písmen anglické abecedy jsou považovány za neterminály. Jakékoliv jiné řetězce jsou identifikovány jako terminály.
+    \item \textbf{Kategorizace symbolů:} Algoritmus v modulu \texttt{GrammarParser.js} automaticky rozpoznává typy symbolů. Symboly složené čistě z velkých písmen (včetně českých znaků s diakritikou) jsou považovány za neterminály. Jakékoliv jiné řetězce jsou identifikovány jako terminály.
     
-    \item \textbf{Epsilon pravidla:} Pro vyjádření prázdného řetězce ($\epsilon$) lze použít přímo symbol \texttt{epsilon} nebo řecké písmeno.
+    \item \textbf{Epsilon pravidla:} Pro vyjádření prázdného řetězce ($\epsilon$) lze použít přímo slovo \texttt{epsilon} nebo řecké písmeno.
     
-    \item \textbf{Počáteční symbol:} První neterminál uvedený na levé straně úplně prvního pravidla je automaticky nastaven jako počáteční symbol \( S \).
+    \item \textbf{Počáteční symbol:} První neterminál uvedený na levé straně prvního pravidla je automaticky nastaven jako počáteční symbol \( S \).
 \end{itemize}
 
 Příklad vstupu:
@@ -64,36 +64,36 @@ Příklad vstupu:
 S -> a S b | epsilon
 \end{verbatim}
 
-Aplikace během zpracování textu provádí validaci – kontroluje správnost formátu pravidel a upozorňuje na nejčastější chyby, jako je například zapomenutá mezera mezi neterminálem a terminálem (např. \texttt{aS}), což by parser chybně identifikoval jako jeden terminální symbol.
+Aplikace během zpracování textu provádí validaci a kontroluje správnost formátu pravidel. Validace upozorňuje na tyto typy chyb:
+
+\begin{itemize}
+    \item \textbf{Chybějící levá nebo pravá strana:} Pravidlo musí obsahovat jak levou stranu (neterminál), tak pravou stranu. Parser zobrazí chybu, pokud v pravidle chybí šipka \texttt{->} nebo pokud je některá strana prázdná.
+    
+    \item \textbf{Neplatný neterminál:} Levá strana pravidla musí být složena pouze z velkých písmen (včetně českých znaků s diakritikou).
+    
+    \item \textbf{Zapomenutá mezera:} Parser detekuje pravděpodobné chyby, jako je zapomenutá mezera mezi neterminálem a terminálem (např. \texttt{aS}), což by bylo chybně identifikováno jako jeden terminální symbol. V takovém případě parser navrhne správné oddělení symbolů mezerami.
+\end{itemize}
 
 \section{Generování náhodných gramatik}
 \label{sec:GrammarsGeneration}
 
-Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pro vytváření náhodných bezkontextových gramatik na základě konfiguračních parametrů. Komponenta \texttt{GenerateInput} poskytuje uživatelské rozhraní s možností nastavení základních i pokročilých parametrů.
+Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pro vytváření náhodných bezkontextových gramatik na základě vstupních parametrů. Komponenta \texttt{GenerateInput} poskytuje uživatelské rozhraní s možností nastavení základních i pokročilých parametrů.
 
 \subsection{Základní parametry}
 \label{sec:GrammarsGenerationBasic}
 
-Základní parametry určují velikost a strukturu gramatiky:
-
-\begin{itemize}
-    \item \textbf{Počet neterminálů (1-10):} Počet neterminálních symbolů v gramatice. Neterminály jsou označeny velkými písmeny abecedy \( A, B, C, \dots \). Pro více než 26 symbolů se používají dvoupísmenné kombinace (\( AA, AB, \dots \)).
-    
-    \item \textbf{Počet terminálů (1-10):} Počet terminálních symbolů. Terminály jsou označeny malými písmeny \( a, b, c, \dots \). Pro více než 26 symbolů se opakuje stejné písmeno.
-    
-    \item \textbf{Maximální délka pravé strany (1-5):} Určuje maximální počet symbolů na pravé straně pravidla. Skutečná délka každého pravidla je náhodně zvolena mezi 1 a touto hodnotou.
-\end{itemize}
+Základní parametry umožňují rychlé vygenerování gramatiky a určují její velikost a strukturu. Prvním parametrem je počet neterminálů v rozmezí 1 až 10. Druhým parametrem je počet terminálů, taktéž v rozmezí 1 až 10. Třetí parametr určuje maximální délku pravé strany, zde jsou hodnoty v rozmezí 1 až 5, přičemž délka každého pravidla je náhodně zvolena mezi hodnotou 1 a hodnotou tohoto parametru.
 
 \subsection{Pokročilé parametry}
 \label{sec:GrammarsGenerationAdvanced}
 
-Pokročilé parametry umožňují jemnější kontrolu nad vlastnostmi generované gramatiky:
+Pokročilé parametry umožňují větší kontrolu nad vlastnostmi generované gramatiky:
 
 \begin{itemize}
     \item \textbf{Počet pravých stran na neterminál:} 
     \begin{itemize}
         \item Min (1-10): Minimální počet pravidel pro každý neterminál
-        \item Max (1-10): Maximální počet pravidel pro každý neterminál
+        \item Max: Maximální počet pravidel, automaticky omezen na rozmezí od hodnoty parametru Min do 10
         \item Pro každý neterminál se náhodně zvolí počet pravidel v tomto rozmezí
     \end{itemize}
     
@@ -162,7 +162,7 @@ Gramatiky lze exportovat a importovat ve formátu JSON pomocí komponenty \textt
 \begin{itemize}
     \item Pole \texttt{terminals} se seznamem terminálních symbolů
     \item Pole \texttt{nonTerminals} se seznamem neterminálních symbolů
-    \item Pole \texttt{productions} s pravidly, kde každé pravidlo má \texttt{lhs} (levou stranu) a \texttt{rhs} (pravou stranu jako pole symbolů)
+    \item Pole \texttt{productions} s pravidly, kde každé pravidlo má \texttt{ls} (levou stranu) a \texttt{ps} (pravou stranu jako pole symbolů)
     \item \texttt{startSymbol} určující počáteční neterminál
 \end{itemize}
 
@@ -173,7 +173,7 @@ Tento formát umožňuje sdílení gramatik mezi uživateli a vytváření před
 \section{Algoritmus vyhodnocení}
 \label{sec:GrammarsAlgorithm}
 
-Řešení problému prázdnosti gramatiky je implementováno v modulu \texttt{GrammarEvaluator.js}. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů.
+Řešení problému prázdnosti gramatiky je implementováno v modulu \texttt{GrammarEvaluator.js}. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů nebo prázdný řetězec \( \epsilon \).
 
 \subsection{Identifikace produktivních neterminálů}
 \label{sec:GrammarsProductive}

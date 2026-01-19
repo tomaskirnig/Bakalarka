@@ -82,7 +82,7 @@ export function isEmptyLanguage(grammar) {
   
   if (!isEmpty) {
       let idCounter = 0;
-      const MAX_DEPTH = 50; // Prevent infinite recursion
+      const MAX_DEPTH = 30; // Prevent infinite recursion and visualization stack overflow
       
       // Helper to randomly select one production from available options
       const selectRandomProduction = (symbol, depth) => {

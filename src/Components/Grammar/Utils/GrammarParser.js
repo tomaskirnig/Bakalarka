@@ -12,7 +12,7 @@ export function parseGrammar(inputText) {
                 throw new Error(`Neplatný formát pravidla: ${rule}`);
             } 
             
-            if(!ls.match(/^[A-Z]+$/)) {
+            if(!ls.match(/^[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]+$/)) {
                 console.warn(`Invalid non-terminal symbol: ${ls}`);
                 throw new Error(`Neplatný neterminál: ${ls}`);
             }
@@ -54,10 +54,10 @@ export function parseGrammar(inputText) {
                 // Validate tokens - detect likely missing spaces
                 for (let symbol of symbols) {
                     // Check for mixed case (likely missing space between symbols)
-                    if (symbol.match(/[A-Z]/) && symbol.match(/[^A-Z]/)) {
+                    if (symbol.match(/[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/) && symbol.match(/[^A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/)) {
                         throw new Error(
                             `Symbol "${symbol}" obsahuje velká i jiná písmena. ` +
-                            `Pravděpodobně chybí mezera. Použijte mezery pro oddělení symbolů: "${symbol}" → např. "${symbol.replace(/([A-Z])/g, ' $1').trim()}"`
+                            `Pravděpodobně chybí mezera. Použijte mezery pro oddělení symbolů: "${symbol}" → např. "${symbol.replace(/([A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ])/g, ' $1').trim()}"`
                         );
                     }
                 }
@@ -66,7 +66,7 @@ export function parseGrammar(inputText) {
                 
                 // Categorize symbols
                 for (let sym of symbols) {
-                    if (sym.match(/^[A-Z]+$/)) {
+                    if (sym.match(/^[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]+$/)) {
                         // It is a Non-Terminal (one or more uppercase letters)
                         if (!grammar.nonTerminals.includes(sym)) {
                             grammar.nonTerminals.push(sym);

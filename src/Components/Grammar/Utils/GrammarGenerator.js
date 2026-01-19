@@ -25,12 +25,82 @@ export function generateGrammar(config) {
   const terminals = generateTerminals(config.terminalCount);
   const productions = generateProductions(nonTerminals, terminals, config);
 
+  ensureReachability(productions, nonTerminals, terminals);
+
   return new Grammar({
     name: "Generated Context-Free Grammar",
     nonTerminals,
     terminals,
     productions
   });
+}
+
+/**
+ * Ensures that all non-terminals are reachable from the start symbol (first non-terminal).
+ * If a non-terminal is unreachable, it modifies a rule of a reachable non-terminal to include it.
+ * @param {Object} productions - The grammar productions
+ * @param {string[]} nonTerminals - List of all non-terminals
+ */
+function ensureReachability(productions, nonTerminals) {
+    if (nonTerminals.length === 0) return;
+    
+    const startSymbol = nonTerminals[0];
+    
+    // Iteratively fix unreachable symbols
+    // Loop limit prevents infinite loops in pathological cases
+    let iterations = 0;
+    while (iterations < nonTerminals.length * 2) {
+        // 1. Compute Reachable Set (BFS)
+        const reachable = new Set([startSymbol]);
+        const queue = [startSymbol];
+        
+        while (queue.length > 0) {
+            const current = queue.shift();
+            const rules = productions[current] || [];
+            
+            for (const rule of rules) {
+                for (const symbol of rule) {
+                    if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
+                        reachable.add(symbol);
+                        queue.push(symbol);
+                    }
+                }
+            }
+        }
+        
+        // 2. Identify Unreachable
+        const unreachable = nonTerminals.filter(nt => !reachable.has(nt));
+        if (unreachable.length === 0) break; // All done!
+        
+        // 3. Fix one unreachable symbol
+        const targetUnreachable = unreachable[0];
+        
+        // Pick a reachable non-terminal to modify
+        const reachableArray = Array.from(reachable);
+        const hostSymbol = getRandomElement(reachableArray);
+        const hostRules = productions[hostSymbol];
+        
+        if (hostRules && hostRules.length > 0) {
+            // Pick a random rule
+            const ruleIndex = getRandomInt(0, hostRules.length - 1);
+            const rule = hostRules[ruleIndex];
+            
+            if (rule.length > 0 && rule[0] !== 'ε') {
+                // Replace a random symbol in this rule with the unreachable one
+                const replaceIndex = getRandomInt(0, rule.length - 1);
+                rule[replaceIndex] = targetUnreachable;
+            } else {
+                // If rule is empty or epsilon, just append (or replace epsilon)
+                // Note: Replacing epsilon with a non-terminal changes the language, but ensures reachability.
+                hostRules[ruleIndex] = [targetUnreachable]; 
+            }
+        } else {
+             // Should not happen if generator works, but safety fallback: create new rule
+             productions[hostSymbol] = [[targetUnreachable]];
+        }
+        
+        iterations++;
+    }
 }
 
 /**
@@ -133,12 +203,35 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
     return ['ε'];
   }
   
-  // Create regular rule
-  const ruleLength = getRandomInt(1, config.maxRuleLength);
-  let rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals, config);
+  // 1. Determine if we WANT recursion
+  let useLeft = config.allowLeftRecursion && Math.random() < 0.3;
+  let useRight = config.allowRightRecursion && Math.random() < 0.3;
   
-  // Apply additional recursion at start/end if configured
-  rule = applyRecursion(rule, nonTerminal, config);
+  // 2. Check if we have SPACE for recursion
+  const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);
+  let maxBaseLength = config.maxRuleLength - recursionCost;
+  
+  // If the requested recursion leaves no room for base symbols (or negative room),
+  // we must disable recursion to respect the strict maxRuleLength.
+  // Exception: If maxRuleLength is large enough but we just hit a random edge case?
+  // Here we simplify: if we can't fit minimal base (1) + recursion, drop recursion.
+  if (maxBaseLength < 1) {
+      useLeft = false;
+      useRight = false;
+      maxBaseLength = config.maxRuleLength;
+  }
+  
+  // 3. Generate the base rule
+  const ruleLength = getRandomInt(1, maxBaseLength);
+  const rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals, config);
+  
+  // 4. Apply Recursion
+  if (useLeft) {
+      rule.unshift(nonTerminal);
+  }
+  if (useRight) {
+      rule.push(nonTerminal);
+  }
   
   return rule;
 }
@@ -156,12 +249,9 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   const rule = [];
   
   // Determine which non-terminals can be used
-  let availableNonTerminals = nonTerminals;
-  
-  // If both recursions are completely disabled, use terminals only (no nonterminals at all)
-  if (!config.allowLeftRecursion && !config.allowRightRecursion) {
-    availableNonTerminals = [];
-  }
+  // We exclude the current non-terminal to prevent accidental direct recursion in the base rule.
+  // Direct recursion (Left/Right) is handled explicitly in createProductionRule based on config.
+  let availableNonTerminals = nonTerminals.filter(nt => nt !== currentNonTerminal);
   
   for (let j = 0; j < length; j++) {
     // If no non-terminals are available, always use terminal
@@ -177,28 +267,6 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   }
   
   return rule;
-}
-
-/**
- * Applies recursion to a rule based on configuration
- * @param {string[]} rule - The rule to potentially make recursive
- * @param {string} nonTerminal - The non-terminal for creating recursion
- * @param {GrammarConfig} config - Configuration parameters
- * @returns {string[]} Potentially modified rule with recursion
- */
-function applyRecursion(rule, nonTerminal, config) {
-  let result = [...rule];
-  
-  // Only apply recursion if explicitly allowed
-  if (config.allowLeftRecursion === true && Math.random() < 0.3) {
-    result.unshift(nonTerminal); // Add left recursion
-  }
-  
-  if (config.allowRightRecursion === true && Math.random() < 0.3) {
-    result.push(nonTerminal); // Add right recursion
-  }
-  
-  return result;
 }
 
 /**

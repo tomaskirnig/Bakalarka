@@ -17,15 +17,45 @@ export function GenerateInput({ onGrammar }) {
     const [maxProductions, setMaxProductions] = useState(3);
     const [showAdvanced, setShowAdvanced] = useState(false);
 
+    const handleIntChange = (setter, min, max) => (e) => {
+        const val = e.target.value;
+        // Allow empty string temporarily for editing
+        if (val === '') {
+            setter('');
+            return;
+        }
+        
+        const num = parseInt(val, 10);
+        if (isNaN(num)) return;
+
+        // Strict clamping
+        if (num > max) {
+            setter(max);
+        } else if (num < min) {
+            // If user types '0' or negative, force to min immediately
+             setter(min);
+        } else {
+            setter(num);
+        }
+    };
+
+    // Ensure valid value on blur (if user left it empty)
+    const handleBlur = (setter, val, min) => () => {
+        if (val === '' || val < min) {
+            setter(min);
+        }
+    };
+
     // Handler for generating the grammar when the button is clicked
     const handleGenerateGrammar = () => {
         // Create config object based on form inputs
+        // Ensure values are numbers (in case of temporary empty string state)
         const config = {
-            nonTerminalCount: numNonTerminals,
-            terminalCount: numTerminals,
-            maxRuleLength: maxRuleLength,
-            minProductionsPerNonTerminal: minProductions,
-            maxProductionsPerNonTerminal: maxProductions,
+            nonTerminalCount: Number(numNonTerminals) || 1,
+            terminalCount: Number(numTerminals) || 1,
+            maxRuleLength: Number(maxRuleLength) || 1,
+            minProductionsPerNonTerminal: Number(minProductions) || 1,
+            maxProductionsPerNonTerminal: Number(maxProductions) || 1,
             allowLeftRecursion: allowLeftRecursion,
             allowRightRecursion: allowRightRecursion,
             epsilonMode: epsilonMode
@@ -57,7 +87,8 @@ export function GenerateInput({ onGrammar }) {
                         min="1"
                         max="10"
                         value={numTerminals}
-                        onChange={(e) => setNumTerminals(Number(e.target.value))}
+                        onChange={handleIntChange(setNumTerminals, 1, 10)}
+                        onBlur={handleBlur(setNumTerminals, numTerminals, 1)}
                     />
                 </div>
                 <div className="col-md-6">
@@ -69,7 +100,8 @@ export function GenerateInput({ onGrammar }) {
                         min="1"
                         max="10"
                         value={numNonTerminals}
-                        onChange={(e) => setNumNonTerminals(Number(e.target.value))}
+                        onChange={handleIntChange(setNumNonTerminals, 1, 10)}
+                        onBlur={handleBlur(setNumNonTerminals, numNonTerminals, 1)}
                     />
                 </div>
             </div>
@@ -84,7 +116,8 @@ export function GenerateInput({ onGrammar }) {
                         min="1"
                         max="5"
                         value={maxRuleLength}
-                        onChange={(e) => setMaxRuleLength(Number(e.target.value))}
+                        onChange={handleIntChange(setMaxRuleLength, 1, 5)}
+                        onBlur={handleBlur(setMaxRuleLength, maxRuleLength, 1)}
                     />
                 </div>
             </div>
@@ -121,7 +154,8 @@ export function GenerateInput({ onGrammar }) {
                                     min="1"
                                     max="10"
                                     value={minProductions}
-                                    onChange={(e) => setMinProductions(Number(e.target.value))}
+                                    onChange={handleIntChange(setMinProductions, 1, 10)}
+                                    onBlur={handleBlur(setMinProductions, minProductions, 1)}
                                 />
                             </div>
                             <div className="col-6">
@@ -133,7 +167,8 @@ export function GenerateInput({ onGrammar }) {
                                     min={minProductions}
                                     max="10"
                                     value={maxProductions}
-                                    onChange={(e) => setMaxProductions(Number(e.target.value))}
+                                    onChange={handleIntChange(setMaxProductions, minProductions, 10)}
+                                    onBlur={handleBlur(setMaxProductions, maxProductions, minProductions)}
                                 />
                             </div>
                         </div>
