@@ -82,7 +82,7 @@ Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pr
 \subsection{Základní parametry}
 \label{sec:GrammarsGenerationBasic}
 
-Základní parametry umožňují rychlé vygenerování gramatiky a určují její velikost a strukturu. Prvním parametrem je počet neterminálů v rozmezí 1 až 10. Druhým parametrem je počet terminálů, taktéž v rozmezí 1 až 10. Třetí parametr určuje maximální délku pravé strany, zde jsou hodnoty v rozmezí 1 až 5, přičemž délka každého pravidla je náhodně zvolena mezi hodnotou 1 a hodnotou tohoto parametru.
+Základní parametry umožňují rychlé vygenerování gramatiky a určují její velikost a strukturu. Prvním parametrem je počet neterminálů v rozmezí 1 až 10. Druhým parametrem je počet terminálů, taktéž v rozmezí 1 až 10. Třetí parametr určuje maximální délku pravé strany, zde se mohou zadat hodnoty v rozmezí 1 až 5, přičemž délka každého pravidla je náhodně zvolena mezi hodnotou 1 a hodnotou tohoto parametru.
 
 \subsection{Pokročilé parametry}
 \label{sec:GrammarsGenerationAdvanced}
@@ -101,7 +101,7 @@ Pokročilé parametry umožňují větší kontrolu nad vlastnostmi generované 
     \begin{itemize}
         \item Levá rekurze: Povoluje pravidla tvaru \( A \to A \alpha \)
         \item Pravá rekurze: Povoluje pravidla tvaru \( A \to \alpha A \)
-        \item Pokud jsou obě vypnuté, generátor vytváří pouze pravidla s terminály
+        \item Pokud jsou obě vypnuté, generátor vytváří pouze pravidla bez rekurze
         \item Pravděpodobnost aplikace rekurze je 30\% při povoleném režimu
     \end{itemize}
     
@@ -109,25 +109,25 @@ Pokročilé parametry umožňují větší kontrolu nad vlastnostmi generované 
     \begin{itemize}
         \item \textbf{Ne:} Negenerují se žádná epsilon pravidla
         \item \textbf{Náhodně:} Epsilon pravidla se generují s pravděpodobností 8\%
-        \item \textbf{Vždy:} Epsilon pravidla se generují s pravděpodobností 15\%
+        \item \textbf{Vždy:} Epsilon pravidla se generují s pravděpodobností 15\%, přičemž je garantován alespoň jeden výskyt v gramatice
     \end{itemize}
 \end{itemize}
 
 \subsection{Algoritmus generování}
 \label{sec:GrammarsGenerationAlgorithm}
 
-Algoritmus generování probíhá následovně:
+Algoritmus generování probíhá v těchto krocích:
 
 \begin{enumerate}
-    \item \textbf{Vytvoření symbolů:} Generují se pole neterminálů a terminálů podle zadaných počtů. První neterminál (\( A \)) je implicitně počáteční symbol.
+    \item \textbf{Vytvoření symbolů:} Generují se pole neterminálů a terminálů podle zadaných počtů. První neterminál je automaticky nastaven jako počáteční symbol \( S \) gramatiky.
     
     \item \textbf{Generování pravidel pro každý neterminál:} 
     \begin{enumerate}
-        \item Náhodně se určí počet pravidel pro tento neterminál (v rozmezí min-max)
+        \item Náhodně se určí počet pravidel pro tento neterminál (v rozmezí vstupních parametrů - min-max)
         \item Pro každé pravidlo:
         \begin{itemize}
-            \item Kontrola epsilon režimu – případné vytvoření \( \epsilon \) pravidla
-            \item Jinak určení náhodné délky pravé strany (1 až maxRuleLength)
+            \item Kontrola epsilon režimu – jestli je povolená generace epsilon terminálu, je zde šance na jeho vytvoření (podle zvoleného režimu)
+            \item Jinak určení náhodné délky pravé strany (1 až vstupní parametr max délka pravé strany)
             \item Náhodný výběr symbolů – terminály s pravděpodobností 50\%, neterminály s 50\%
             \item Aplikace rekurze – přidání neterminálu na začátek/konec dle nastavení
         \end{itemize}
@@ -135,19 +135,6 @@ Algoritmus generování probíhá následovně:
     
     \item \textbf{Sestavení gramatiky:} Vytvoření instance třídy \texttt{Grammar} s vygenerovanými symboly a pravidly.
 \end{enumerate}
-
-\subsection{Vlastnosti generovaných gramatik}
-\label{sec:GrammarsGenerationProperties}
-
-Výsledná gramatika nemusí nutně generovat neprázdný jazyk – to závisí na náhodnosti generování a zvolených parametrech:
-
-\begin{itemize}
-    \item Gramatiky s vypnutou rekurzí a bez epsilon pravidel mají vyšší šanci generovat neprázdný jazyk
-    \item Gramatiky s povolenou rekurzí mohou obsahovat nedosažitelné nebo neproduktivní neterminály
-    \item Epsilon režim "Vždy" zvyšuje pravděpodobnost neprázdného jazyka
-\end{itemize}
-
-Vygenerované gramatiky slouží jako testovací případy pro algoritmus vyhodnocení prázdnosti jazyka.
 
 \section{Předpřipravené sady}
 \label{sec:GrammarsPreparedSets}

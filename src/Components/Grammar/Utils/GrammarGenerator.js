@@ -25,6 +25,10 @@ export function generateGrammar(config) {
   const terminals = generateTerminals(config.terminalCount);
   const productions = generateProductions(nonTerminals, terminals, config);
 
+  if (config.epsilonMode === 'always') {
+    ensureEpsilonExists(productions, nonTerminals, config);
+  }
+
   ensureReachability(productions, nonTerminals, terminals);
 
   return new Grammar({
@@ -36,8 +40,47 @@ export function generateGrammar(config) {
 }
 
 /**
+ * Ensures that at least one epsilon rule exists in the grammar.
+ * @param {Object} productions - The grammar productions
+ * @param {string[]} nonTerminals - List of all non-terminals
+ * @param {GrammarConfig} config - Configuration parameters
+ */
+function ensureEpsilonExists(productions, nonTerminals, config) {
+  let hasEpsilon = false;
+  
+  // Check if epsilon already exists
+  for (const nt of nonTerminals) {
+    if (productions[nt]) {
+      for (const rule of productions[nt]) {
+        if (rule.length === 1 && rule[0] === 'ε') {
+          hasEpsilon = true;
+          break;
+        }
+      }
+    }
+    if (hasEpsilon) break;
+  }
+  
+  // If not, add one to a random non-terminal
+  if (!hasEpsilon) {
+    const randomNt = getRandomElement(nonTerminals);
+    if (!productions[randomNt]) productions[randomNt] = [];
+    
+    const maxProductions = config.maxProductionsPerNonTerminal || 3;
+    
+    // If we reached the max productions limit, replace a random rule
+    if (productions[randomNt].length >= maxProductions) {
+      const replaceIndex = getRandomInt(0, productions[randomNt].length - 1);
+      productions[randomNt][replaceIndex] = ['ε'];
+    } else {
+      // Otherwise just add it
+      productions[randomNt].push(['ε']);
+    }
+  }
+}
+
+/**
  * Ensures that all non-terminals are reachable from the start symbol (first non-terminal).
- * If a non-terminal is unreachable, it modifies a rule of a reachable non-terminal to include it.
  * @param {Object} productions - The grammar productions
  * @param {string[]} nonTerminals - List of all non-terminals
  */
@@ -90,8 +133,7 @@ function ensureReachability(productions, nonTerminals) {
                 const replaceIndex = getRandomInt(0, rule.length - 1);
                 rule[replaceIndex] = targetUnreachable;
             } else {
-                // If rule is empty or epsilon, just append (or replace epsilon)
-                // Note: Replacing epsilon with a non-terminal changes the language, but ensures reachability.
+                // If rule is empty or epsilon, replace entire rule
                 hostRules[ruleIndex] = [targetUnreachable]; 
             }
         } else {
@@ -134,17 +176,26 @@ function validateConfig(config) {
  * @returns {string[]} Array of non-terminal symbols
  */
 function generateNonTerminals(count) {
-  const symbols = [];
-  for (let i = 0; i < count; i++) {
-    if (i < 26) {
-      // Single letters A-Z
-      symbols.push(String.fromCharCode(65 + i));
+  const symbols = ['S'];
+  let currentCode = 65; // ASCII for 'A'
+  
+  while (symbols.length < count) {
+    let symbol;
+    
+    if (currentCode <= 90) { // A-Z
+      symbol = String.fromCharCode(currentCode);
     } else {
-      // Double letters AA, AB, ..., ZZ
-      const firstChar = Math.floor((i - 26) / 26);
-      const secondChar = (i - 26) % 26;
-      symbols.push(String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar));
+       // Generate AA, AB, etc.
+       const index = currentCode - 91; 
+       const firstChar = Math.floor(index / 26);
+       const secondChar = index % 26;
+       symbol = String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar);
     }
+
+    if (symbol !== 'S') {
+      symbols.push(symbol);
+    }
+    currentCode++;
   }
   return symbols;
 }
@@ -211,10 +262,7 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);
   let maxBaseLength = config.maxRuleLength - recursionCost;
   
-  // If the requested recursion leaves no room for base symbols (or negative room),
-  // we must disable recursion to respect the strict maxRuleLength.
-  // Exception: If maxRuleLength is large enough but we just hit a random edge case?
-  // Here we simplify: if we can't fit minimal base (1) + recursion, drop recursion.
+  // Drop recursion if it doesn't fit within maxRuleLength with at least one base symbol.
   if (maxBaseLength < 1) {
       useLeft = false;
       useRight = false;
@@ -223,7 +271,7 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   
   // 3. Generate the base rule
   const ruleLength = getRandomInt(1, maxBaseLength);
-  const rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals, config);
+  const rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals);
   
   // 4. Apply Recursion
   if (useLeft) {
@@ -242,10 +290,9 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
  * @param {string} currentNonTerminal - The non-terminal being defined (to avoid unwanted recursion)
  * @param {string[]} nonTerminals - Available non-terminals
  * @param {string[]} terminals - Available terminals
- * @param {GrammarConfig} config - Configuration parameters
  * @returns {string[]} Array of symbols for the rule
  */
-function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals, config) {
+function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals) {
   const rule = [];
   
   // Determine which non-terminals can be used
