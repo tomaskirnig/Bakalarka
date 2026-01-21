@@ -89,5 +89,9 @@
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
 \contentsline {chapter}{Přílohy}{37}{chapter*.11}%
 \contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{38}{appendix.A}%

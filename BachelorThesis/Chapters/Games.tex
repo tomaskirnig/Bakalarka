@@ -18,12 +18,12 @@ Problém spočívá v rozhodnutí, zda Hráč I má výherní strategii ze zadan
     \item \textbf{Výstup:} Rozhodnutí, zda Hráč I má výherní strategii ze startovní pozice.
 \end{itemize}
 
-Hráč I vyhrává, pokud se dostane do pozice, kde Hráč II nemá žádný možný tah. Naopak, Hráč I prohrává, když se sám dostane do pozice bez možných tahů \cite{papadimitriou1993}.
+Hráč I vyhrává, pokud se dostane do pozice, kde Hráč II nemá žádný možný tah. Naopak, Hráč I prohrává, když se sám dostane do pozice bez možných tahů \cite{sawa}.
 
 \subsection{P-úplnost problému}
 \label{sec:GamesCompleteness}
 
-Tento problém je P-úplný \cite{arora2009}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
+Tento problém je P-úplný \cite{sawa}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
 
 \section{Formát vstupu}
 \label{sec:GamesInput}

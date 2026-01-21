@@ -6,7 +6,7 @@
 
 Problém prázdnosti bezkontextových gramatik (CFG Emptiness Problem) je dalším příkladem P-úplného problému \cite{sawa}. Bezkontextová gramatika představuje formální systém sloužící k generování jazyka, který hraje klíčovou roli v defininovaní syntaxe programovacích jazyků i v analýze neprogramovacích jazyků.
 
-Formálně je gramatika definována jako čtveřice \( G = (N, \Sigma, P, S) \), kde:
+Formálně je gramatika definována jako čtveřice \( G = (N, \Sigma, P, S) \) \cite{uti_grammars}, kde:
 
 \begin{itemize}
     \item \( N \) je konečná množina neterminálních symbolů (neterminálů).
@@ -22,7 +22,7 @@ Problém spočívá v tom, zda daná gramatika generuje alespoň jedno slovo slo
     \item \textbf{Výstup:} Rozhodnutí, jestli je jazyk \( L(G) = \{ w \in \Sigma^* \mid S \Rightarrow^* w \} \) neprázdný.
 \end{itemize}
 
-Symbol \( \Rightarrow^* \) označuje derivaci v nula nebo více krocích \cite{sawa}. Gramatika generuje neprázdný jazyk právě tehdy, když z počátečního symbolu \( S \) lze odvodit alespoň jedno slovo složené pouze z terminálních symbolů.
+Symbol \( \Rightarrow^* \) označuje derivaci v nula nebo více krocích \cite{uti_grammars}. Gramatika generuje neprázdný jazyk právě tehdy, když z počátečního symbolu \( S \) lze odvodit alespoň jedno slovo složené pouze z terminálních symbolů.
 
 \subsection{P-úplnost problému}
 \label{sec:GrammarsCompleteness}
@@ -155,12 +155,12 @@ Gramatiky lze exportovat a importovat ve formátu JSON pomocí komponenty \textt
 
 Tento formát umožňuje sdílení gramatik mezi uživateli a vytváření předpřipravených příkladů.
 
-%clean
+
 
 \section{Algoritmus vyhodnocení}
 \label{sec:GrammarsAlgorithm}
 
-Řešení problému prázdnosti gramatiky je implementováno v modulu \texttt{GrammarEvaluator.js}. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů nebo prázdný řetězec \( \epsilon \).
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení prázdnosti gramatiky. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů nebo prázdný řetězec \( \epsilon \).
 
 \subsection{Identifikace produktivních neterminálů}
 \label{sec:GrammarsProductive}
@@ -181,19 +181,21 @@ Algoritmus pracuje iterativně a postupně označuje produktivní neterminály \
 
 Implementace používá optimalizovanou verzi s frontou (work-list algorithm). Místo procházení všech pravidel v každém cyklu udržujeme frontu nově označených produktivních neterminálů a kontrolujeme pouze ta pravidla, která tyto neterminály obsahují na pravé straně.
 
-Časová složitost algoritmu je \( O(|P| \cdot l) \), kde \( |P| \) je počet pravidel a \( l \) je maximální délka pravé strany pravidla, protože každé pravidlo je kontrolováno nejvýše jednou pro každý symbol na pravé straně.
+Časová složitost algoritmu je \( O(|P| \cdot l) \) \cite{uti_grammars}, kde \( |P| \) značí celkový počet pravidel a \( l \) je maximální délka pravé strany pravidla. Každé pravidlo je totiž kontrolováno nejvýše jednou pro každý symbol na pravé straně.
 
 \subsection{Rekonstrukce svědka}
 \label{sec:GrammarsWitness}
 
-Během běhu algoritmu si pro každý produktivní neterminál ukládáme tzv. svědky (witnesses) – všechna produktivní pravidla pro daný neterminál, nikoliv pouze první. Tato informace je uložena v mapě \texttt{allWitnesses}, která pro každý neterminál obsahuje pole všech jeho produktivních pravých stran.
+%clean
 
-Po skončení analýzy, pokud je počáteční symbol \( S \) produktivní, můžeme rekurzivně rekonstruovat derivační strom:
+Algoritmus během svého běhu zaznamenává pro každý produktivní neterminál tzv. svědky (witnesses). Svědek představuje produktivní pravidlo, které prokazuje produktivitu daného neterminálu. Na rozdíl od základní verze algoritmu, která ukládá pouze první nalezené produktivní pravidlo, implementace uchovává všechna produktivní pravidla pro každý neterminál. Tato data jsou ukládána do mapy \texttt{allWitnesses}, která pro každý produktivní neterminál obsahuje pole všech jeho produktivních pravých stran.
+
+Po dokončení analýzy produktivních neterminálů je možné provést sestavení derivačního stromu, pokud je počáteční symbol \( S \) produktivní. Sestavení probíhá rekurzivně:
 
 \begin{enumerate}
     \item \textbf{Výběr pravidla:} Pro každý neterminál náhodně vybereme jedno z jeho produktivních pravidel. Při větší hloubce derivace (> 20 kroků) preferujeme nerekurzivní pravidla, aby se předešlo nekonečným derivacím.
     
-    \item \textbf{Limitace hloubky:} Rekurzivní konstrukce stromu je omezena na maximální hloubku 50 úrovní. Pokud je tato hloubka překročena, vyhodí se chyba a strom se nevykreslí.
+    \item \textbf{Limitace hloubky:} Rekurzivní konstrukce stromu je omezena na maximální hloubku 30 úrovní. Pokud je tato hloubka překročena, vyhodí se chyba a strom se nevykreslí.
     
     \item \textbf{Stavba uzlů:} Pro každý neterminál:
     \begin{itemize}

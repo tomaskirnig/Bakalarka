@@ -19,33 +19,6 @@
 
 \refsection{0}
   \datalist[entry]{none/global//global/global/global}
-    \entry{papadimitriou1993}{book}{}{}
-      \name{author}{1}{}{%
-        {{hash=b3b407bb63367a850366076095ee1970}{%
-           family={Papadimitriou},
-           familyi={P\bibinitperiod},
-           given={Christos\bibnamedelima H.},
-           giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {Addison-Wesley}%
-      }
-      \strng{namehash}{b3b407bb63367a850366076095ee1970}
-      \strng{fullhash}{b3b407bb63367a850366076095ee1970}
-      \strng{fullhashraw}{b3b407bb63367a850366076095ee1970}
-      \strng{bibnamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorbibnamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authornamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorfullhash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorfullhashraw}{b3b407bb63367a850366076095ee1970}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{isbn}{978-0201530827}
-      \field{title}{Computational Complexity}
-      \field{year}{1993}
-    \endentry
     \entry{sawa_bigo}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
@@ -63,8 +36,8 @@
       \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
       \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
       \field{extraname}{1}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
@@ -77,37 +50,36 @@
       \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
       \endverb
     \endentry
-    \entry{arora2009}{book}{}{}
-      \name{author}{2}{}{%
-        {{hash=8e08b59145b9531815169c7ed0a0b055}{%
-           family={Arora},
-           familyi={A\bibinitperiod},
-           given={Sanjeev},
-           giveni={S\bibinitperiod}}}%
-        {{hash=ef4505bdcbc58ae15e11f8bc6c51af7e}{%
-           family={Barak},
-           familyi={B\bibinitperiod},
-           given={Boaz},
-           giveni={B\bibinitperiod}}}%
+    \entry{uti_turing}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
+           family={Sawa},
+           familyi={S\bibinitperiod},
+           given={Zbyněk},
+           giveni={Z\bibinitperiod}}}%
       }
-      \list{publisher}{1}{%
-        {Cambridge University Press}%
-      }
-      \strng{namehash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{fullhash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{fullhashraw}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{bibnamehash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{authorbibnamehash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{authornamehash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{authorfullhash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \strng{authorfullhashraw}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \field{sortinit}{5}
-      \field{sortinithash}{20e9b4b0b173788c5dace24730f47d8c}
+      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \field{extraname}{2}
+      \field{sortinit}{3}
+      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{isbn}{978-0521424264}
-      \field{title}{Computational Complexity: A Modern Approach}
-      \field{year}{2009}
+      \field{howpublished}{Online}
+      \field{title}{Úvod do teoretické informatiky – Turingovy stroje}
+      \field{year}{2014}
+      \verb{urlraw}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
+      \endverb
     \endentry
     \entry{sawa}{misc}{}{}
       \name{author}{1}{}{%
@@ -125,7 +97,7 @@
       \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
       \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
       \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \field{extraname}{2}
+      \field{extraname}{3}
       \field{sortinit}{6}
       \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
       \field{labelnamesource}{author}
@@ -310,6 +282,37 @@
       \endverb
       \verb{url}
       \verb https://eslint.org/
+      \endverb
+    \endentry
+    \entry{uti_grammars}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
+           family={Sawa},
+           familyi={S\bibinitperiod},
+           given={Zbyněk},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \field{extraname}{4}
+      \field{sortinit}{2}
+      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Úvod do teoretické informatiky – Bezkontextové gramatiky}
+      \field{year}{2014}
+      \verb{urlraw}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-10-cz.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-10-cz.pdf
       \endverb
     \endentry
   \enddatalist
