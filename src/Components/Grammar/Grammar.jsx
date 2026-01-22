@@ -8,11 +8,14 @@ import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
+import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
+import { Modal } from '../Common/Modal';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
+    const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
 
     // Handle initial data if provided
     useEffect(() => {
@@ -28,6 +31,7 @@ export function Grammar({ onNavigate, initialData }) {
     const handleOptionChange = (option) => {
         setChosenOpt(option);
         setGrammar(null);
+        setShowSteps(false);
     };
 
     const handleExport = () => {
@@ -68,6 +72,7 @@ export function Grammar({ onNavigate, initialData }) {
 
         setGrammar(new GrammarClass(grammarData));
         setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
+        setShowSteps(false);
     };
 
     // Calculate analysis result only once when grammar changes
@@ -134,14 +139,27 @@ export function Grammar({ onNavigate, initialData }) {
                     </div>
 
                     <div className="card mt-3">
-                        <div className="card-header">
-                            <h4>Analýza gramatiky</h4>
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h4 className="mb-0">Analýza gramatiky</h4>
+                            <button 
+                                className="btn btn-outline-primary"
+                                onClick={() => setShowSteps(true)}
+                            >
+                                Zobrazit krokování
+                            </button>
                         </div>
                         <div className="card-body">
                              <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
                                 {analysisResult.explanation}
                              </p>
                         </div>
+                        
+                        {/* Step-by-Step Visualization Modal */}
+                        {showSteps && (
+                            <Modal onClose={() => setShowSteps(false)}>
+                                <StepByStepGrammar grammar={grammar} />
+                            </Modal>
+                        )}
                         
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
                             <div className="card-body border-top">

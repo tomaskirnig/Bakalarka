@@ -65,14 +65,14 @@
 \contentsline {subsection}{\numberline {5.5.1}Ukládání a načítání gramatik}{32}{subsection.5.5.1}%
 \contentsline {section}{\numberline {5.6}Algoritmus vyhodnocení}{32}{section.5.6}%
 \contentsline {subsection}{\numberline {5.6.1}Identifikace produktivních neterminálů}{32}{subsection.5.6.1}%
-\contentsline {subsection}{\numberline {5.6.2}Rekonstrukce svědka}{33}{subsection.5.6.2}%
+\contentsline {subsection}{\numberline {5.6.2}Rekonstrukce derivace}{33}{subsection.5.6.2}%
 \contentsline {section}{\numberline {5.7}Vizualizace derivačního stromu}{33}{section.5.7}%
-\contentsline {subsection}{\numberline {5.7.1}Komponenta pro vykreslení}{33}{subsection.5.7.1}%
-\contentsline {subsubsection}{\numberline {5.7.1.1}Vizuální prvky}{34}{subsubsection.5.7.1.1}%
-\contentsline {subsubsection}{\numberline {5.7.1.2}Interaktivita a responsivita}{34}{subsubsection.5.7.1.2}%
+\contentsline {subsection}{\numberline {5.7.1}Komponenta pro vykreslení}{34}{subsection.5.7.1}%
 \contentsline {section}{\numberline {5.8}Krokové vyhodnocení}{34}{section.5.8}%
-\contentsline {chapter}{\numberline {6}Závěr}{36}{chapter.6}%
-\contentsline {chapter}{Literatura}{37}{chapter*.11}%
+\contentsline {subsection}{\numberline {5.8.1}Struktura zobrazení}{34}{subsection.5.8.1}%
+\contentsline {subsection}{\numberline {5.8.2}Navigace a ovládání}{34}{subsection.5.8.2}%
+\contentsline {chapter}{\numberline {6}Závěr}{35}{chapter.6}%
+\contentsline {chapter}{Literatura}{36}{chapter*.11}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
@@ -93,5 +93,5 @@
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
-\contentsline {chapter}{Přílohy}{37}{chapter*.11}%
-\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{38}{appendix.A}%
+\contentsline {chapter}{Přílohy}{36}{chapter*.11}%
+\contentsline {chapter}{\numberline {A}Dlouhý zdrojový kód}{37}{appendix.A}%

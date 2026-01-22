@@ -945,3 +945,42 @@ select {
 .clickable {
   cursor: pointer;
 }
+
+/* Modal Styles */
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 2000;
+  padding: 20px;
+}
+
+.modal-content {
+  width: calc(100% - 40px);
+  max-width: 1400px;
+  height: calc(90vh - 40px);
+  max-height: calc(90vh - 40px);
+  overflow: hidden;
+}
+
+.modal-close-btn {
+  cursor: pointer;
+  right: 15px;
+  z-index: 10;
+}
+
+/* Step By Step Grammar Styles */
+.step-rules-list {
+    overflow-y: auto;
+}
+
+.step-rule-item {
+    transition: background-color 0.3s;
+}
+
+.step-rule-current {
+    background-color: rgba(255, 193, 7, 0.25) !important;
+    border: 1px solid #ffc107 !important;
+}
+
+.step-info-card {
+    min-height: 200px;
+}

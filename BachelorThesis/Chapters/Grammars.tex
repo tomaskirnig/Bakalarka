@@ -183,29 +183,29 @@ Implementace používá optimalizovanou verzi s frontou (work-list algorithm). M
 
 Časová složitost algoritmu je \( O(|P| \cdot l) \) \cite{uti_grammars}, kde \( |P| \) značí celkový počet pravidel a \( l \) je maximální délka pravé strany pravidla. Každé pravidlo je totiž kontrolováno nejvýše jednou pro každý symbol na pravé straně.
 
-\subsection{Rekonstrukce svědka}
+\subsection{Rekonstrukce derivace}
 \label{sec:GrammarsWitness}
 
 %clean
 
-Algoritmus během svého běhu zaznamenává pro každý produktivní neterminál tzv. svědky (witnesses). Svědek představuje produktivní pravidlo, které prokazuje produktivitu daného neterminálu. Na rozdíl od základní verze algoritmu, která ukládá pouze první nalezené produktivní pravidlo, implementace uchovává všechna produktivní pravidla pro každý neterminál. Tato data jsou ukládána do mapy \texttt{allWitnesses}, která pro každý produktivní neterminál obsahuje pole všech jeho produktivních pravých stran.
+Algoritmus během svého běhu zaznamenává pro každý produktivní neterminál všechna jeho produktivní pravidla. Na rozdíl od základní verze algoritmu, která ukládá pouze první nalezené produktivní pravidlo, implementace uchovává všechna produktivní pravidla pro každý neterminál. Tato data jsou ukládána do mapy \texttt{allWitnesses}, která pro každý produktivní neterminál obsahuje pole všech jeho produktivních pravých stran.
 
 Po dokončení analýzy produktivních neterminálů je možné provést sestavení derivačního stromu, pokud je počáteční symbol \( S \) produktivní. Sestavení probíhá rekurzivně:
 
 \begin{enumerate}
     \item \textbf{Výběr pravidla:} Pro každý neterminál náhodně vybereme jedno z jeho produktivních pravidel. Při větší hloubce derivace (> 20 kroků) preferujeme nerekurzivní pravidla, aby se předešlo nekonečným derivacím.
     
-    \item \textbf{Limitace hloubky:} Rekurzivní konstrukce stromu je omezena na maximální hloubku 30 úrovní. Pokud je tato hloubka překročena, vyhodí se chyba a strom se nevykreslí.
+    \item \textbf{Limitace hloubky:} Rekurzivní konstrukce stromu je omezena na maximální hloubku 30 úrovní. Pokud je tato hloubka překročena, vrátí se chyba a místo vykreslení stromu se zobrazí informační zpráva.
     
-    \item \textbf{Stavba uzlů:} Pro každý neterminál:
+    \item \textbf{Stavba uzlů:} Strom se buduje rekurzivně funkcí \texttt{buildNode()}:
     \begin{itemize}
-        \item Vytvoříme uzel se symbolem a unikátním ID
-        \item Vybereme náhodné produktivní pravidlo
-        \item Rekurzivně vytvoříme potomky pro každý symbol na pravé straně
-        \item Terminály a \( \epsilon \) tvoří listy stromu
+        \item Pro každý neterminál vytvoříme uzel s unikátním identifikátorem
+        \item Náhodně vybereme jedno z jeho produktivních pravidel
+        \item Pro každý symbol na pravé straně pravidla rekurzivně vytvoříme potomky (zvýšíme hloubku o 1)
+        \item Terminály a \( \epsilon \) vytvoří listy stromu bez dalších potomků
     \end{itemize}
     
-    \item \textbf{Extrakce slova:} Z vytvořeného stromu extraujeme vygenerované slovo zleva doprava čtením terminálních listů.
+    \item \textbf{Extrakce slova:} Funkce \texttt{extractTerminals()} prochází strom zleva doprava a čte terminální listy, čímž získá řetězec vygenerovaný danou derivací.
 \end{enumerate}
 
 Tato rekonstrukce slouží nejen jako důkaz neprázdnosti jazyka, ale také jako vizuální pomůcka pro pochopení struktury generovaných slov. Náhodný výběr pravidel znamená, že při každém vyhodnocení může být vygenerováno jiné slovo.
@@ -213,58 +213,41 @@ Tato rekonstrukce slouží nejen jako důkaz neprázdnosti jazyka, ale také jak
 \section{Vizualizace derivačního stromu}
 \label{sec:GrammarsVisualization}
 
-Pokud gramatika generuje neprázdný jazyk, aplikace nejen potvrdí tento fakt, ale také vizuálně demonstruje důkaz vykreslením derivačního stromu pro jedno z možných slov.
+Pokud gramatika generuje neprázdný jazyk, aplikace nejen potvrdí tento fakt, ale také vizuálně ukáže důkaz vykreslením derivačního stromu pro jedno z možných slov.
 
 \subsection{Komponenta pro vykreslení}
 \label{sec:GrammarsTreeComponent}
 
-Pro vykreslení derivačního stromu je využita komponenta \texttt{DerivationTreeVisual}, která je postavená na knihovně \emph{react-force-graph-2d}. Strom je zobrazen v hierarchickém rozložení pomocí režimu \texttt{dagMode="td"} (top-down).
-
-\subsubsection{Vizuální prvky}
-\label{sec:GrammarsVisualElements}
-
-\begin{itemize}
-    \item \textbf{Neterminály:} Zobrazeny standardní barvou definovanou v konfiguraci (\texttt{useGraphColors}), reprezentují mezikroky v derivaci.
-    
-    \item \textbf{Terminály:} Zvýrazněny kontrastní barvou (standardně žlutá), aby bylo na první pohled zřejmé, které symboly tvoří výsledné slovo. Listy stromu čtené zleva doprava tvoří vygenerované slovo.
-    
-    \item \textbf{Epsilon (\( \epsilon \)):} Zobrazeny specifickou barvou (standardně šedá) pro reprezentaci prázdného řetězce. Tyto uzly signalizují místa, kde byla aplikována epsilon pravidla.
-    
-    \item \textbf{Hrany:} Reprezentují aplikaci přepisovacích pravidel – hrana z uzlu \( A \) do uzlu \( B \) znamená, že symbol \( B \) se objevuje na pravé straně pravidla použitého pro derivaci z \( A \).
-\end{itemize}
-
-\subsubsection{Interaktivita a responsivita}
-\label{sec:GrammarsInteractivity}
-
-Komponenta využívá několik moderních přístupů pro zajištění dobrého uživatelského zážitku:
-
-\begin{itemize}
-    \item \textbf{Responsivní rozměry:} Komponenta využívá \texttt{ResizeObserver} API pro automatické přizpůsobení velikosti grafu při změně velikosti okna nebo kontejneru.
-    
-    \item \textbf{Jednotné nastavení:} Barvy a další vizuální parametry jsou spravovány pomocí custom React hooks:
-    \begin{itemize}
-        \item \texttt{useGraphColors}: Poskytuje konzistentní barevné schéma napříč aplikací
-        \item \texttt{useGraphSettings}: Poskytuje specifická nastavení pro derivační stromy gramatik
-    \end{itemize}
-    
-    \item \textbf{Interaktivní ovládání:} Uživatel může:
-    \begin{itemize}
-        \item Přibližovat a oddalovat pomocí kolečka myši
-        \item Posouvat pohled tažením
-        \item Přesouvat jednotlivé uzly pro lepší přehlednost
-    \end{itemize}
-\end{itemize}
+Pro vykreslení derivačního stromu je využit algoritmus z komponenty \texttt{DerivationTreeVisual}, která využívá knihovnu \emph{react-force-graph-2d}. Strom je zobrazen ve stromovém rozložení pomocí režimu \texttt{dagMode="td"} (top-down).
 
 \section{Krokové vyhodnocení}
 \label{sec:GrammarsStepByStep}
 
-Pro detailnější pochopení algoritmu implementuje aplikace krokovatelnou analýzu. Komponenta sleduje jednotlivé iterace algoritmu a zobrazuje:
+Pro detailnější pochopení algoritmu implementuje aplikace krokovatelnou analýzu prostřednictvím komponenty \texttt{StepByStepGrammar}. Tato komponenta využívá modul \texttt{GrammarStepEvaluator.js} k simulaci algoritmu a zobrazuje průběh výpočtu v modálním okně.
+
+\subsection{Struktura zobrazení}
+\label{sec:GrammarsStepByStepStructure}
+
+Rozhraní krokového vyhodnocení je rozčleněno do několika sekcí:
 
 \begin{itemize}
-    \item Aktuální stav množiny produktivních neterminálů \( \mathcal{P} \)
-    \item Právě kontrolované pravidlo
-    \item Rozhodnutí, zda pravidlo přidává nový produktivní neterminál
-    \item Textové vysvětlení každého kroku
+    \item \textbf{Seznam pravidel gramatiky:} Zobrazuje všechna produktivní pravidla. Aktuálně kontrolované pravidlo je vizuálně zvýrazněno žlutým pozadím a oranžovým ohraničením. Pravidla, jejichž levá strana je již produktivní, jsou označena zeleným štítkem s textem „Produktivní".
+    
+    \item \textbf{Množina produktivních symbolů:} Aktuální obsah množiny \( \mathcal{P} \) je zobrazen formou zelených štítků s písmenem neterminálu. Tato množina se postupně rozšiřuje během jednotlivých iterací algoritmu, za podmínky že gramatika obsahuje produktivní neterminály.
+    
+    \item \textbf{Vysvětlení kroku:} Textový popis aktuální operace algoritmu, například „Pravidlo \( A \to a \) obsahuje pouze terminály. \( A \) je produktivní" nebo „Pravidlo se stalo produktivním díky \( B \). \( A \) přidán mezi produktivní".
 \end{itemize}
 
-Uživatel může procházet kroky analýzy pomocí navigačních tlačítek – k dispozici jsou tlačítka „Předchozí", „Další", „Začátek" a „Konec" pro rychlý přesun. Tato funkce pomáhá pochopit, jak algoritmus postupně buduje množinu produktivních neterminálů a jak závislosti mezi pravidly ovlivňují výsledek.
+\subsection{Navigace a ovládání}
+\label{sec:GrammarsStepByStepNavigation}
+
+Pro pohyb mezi jednotlivými kroky analýzy jsou k dispozici čtyři navigační tlačítka:
+
+\begin{itemize}
+    \item \textbf{Začátek:} Přesun na první krok algoritmu (inicializace prázdné množiny \( \mathcal{P} \))
+    \item \textbf{Předchozí:} Krok zpět v historii výpočtu
+    \item \textbf{Další:} Posun na následující krok
+    \item \textbf{Konec:} Skok na finální krok s výsledkem analýzy
+\end{itemize}
+
+Aktuální pozice je indikována čítačem ve formátu „Krok \( x \) z \( n \)", kde \( n \) představuje celkový počet kroků. Tato interaktivní vizualizace umožňuje sledovat, jak algoritmus postupně identifikuje produktivní neterminály na základě již známých produktivních symbolů a jak závislosti mezi pravidly určují pořadí jejich vyhodnocení.
