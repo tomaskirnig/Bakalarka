@@ -163,6 +163,7 @@ export function CombinatorialGame({ initialData }) {
                             onGraphUpdate={setGraph} 
                             analysisResult={analysisResult}
                             optimalMoves={optimalMoves}
+                            onExplain={() => setExplain(true)}
                         />;
                         case 'generate': return <GenerateInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
                         case 'sets': return <PreparedSetsInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
@@ -171,17 +172,24 @@ export function CombinatorialGame({ initialData }) {
                 }}
             />
 
-            {(graph && chosenOpt !== 'manual') && (
+            {graph && (
                 <>
-                    <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                        <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
-                    </div>
-                    <GameAnalysisDisplay analysisResult={analysisResult} />
-                    <div className="mt-3">
-                        <button className='btn btn-primary' onClick={() => setExplain(true)}>
-                            Vysvětlit
-                        </button>
-                    </div>
+                    {chosenOpt !== 'manual' && (
+                        <>
+                            <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+                                <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                            </div>
+                            <GameAnalysisDisplay analysisResult={analysisResult} />
+                        </>
+                    )}
+                    
+                    {chosenOpt !== 'manual' && (
+                        <div className="mt-3">
+                            <button className='btn btn-primary' onClick={() => setExplain(true)}>
+                                Vysvětlit
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 

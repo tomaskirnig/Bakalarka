@@ -5,7 +5,7 @@ import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 import { toast } from 'react-toastify';
 
-export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optimalMoves }) {
+export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optimalMoves, onExplain }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
   const [hoverNode, setHoverNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);  // Track selected node
@@ -15,6 +15,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   const fgRef = useRef(); // Reference to ForceGraph component
   const containerRef = useRef(); // Reference to the graph container div
   const isInternalUpdate = useRef(false); // Track if update originated internally
+  const hasInitialized = useRef(false); // Track if initial node has been added
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   
   const colors = useGraphColors();
@@ -171,22 +172,17 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
 
   // Add the first node when the component loads ONLY if empty and no initial graph
   useEffect(() => {
-    if (!initialGraph && graph.nodes.length === 0) {
-      setGraph(prevGraph => {
-        if (prevGraph.nodes.length === 0) { // Only add if it's still empty
-          const newId = "0"; // First node ID
-          const newNode = { id: newId, player: 1, neighbors: [] };
-          // Automatically set the first node as starting node
-          setStartingNodeId(newId);
-          return {
-            nodes: [newNode],
-            links: []
-          };
-        }
-        return prevGraph;
+    if (!initialGraph && !hasInitialized.current) {
+      hasInitialized.current = true;
+      const newId = "0"; // First node ID
+      const newNode = { id: newId, player: 1, neighbors: [] };
+      setGraph({
+        nodes: [newNode],
+        links: []
       });
+      setStartingNodeId(newId);
     }
-  }, [initialGraph]); // Removed 'graph' from dependencies to prevent infinite loop 
+  }, [initialGraph]);
 
   // Function to add a node
   const addNode = () => {
@@ -597,7 +593,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
     </div>
 
     {/* Two-column layout container */}
-    <div className="row g-4 mb-5">
+    <div className="row g-4 mb-3">
         {/* Left column: Analysis results */}
         <div className="col-md-6">
             <div className="card h-100 shadow-sm">
@@ -685,6 +681,14 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
             </div>
         </div>
     </div>
+
+    {analysisResult && onExplain && (
+        <div className="mt-3">
+            <button className='btn btn-primary' onClick={onExplain}>
+                Vysvětlit
+            </button>
+        </div>
+    )}
     </>
   );
 }
@@ -693,5 +697,6 @@ ManualInput.propTypes = {
   initialGraph: PropTypes.object,
   onGraphUpdate: PropTypes.func,
   analysisResult: PropTypes.object,
-  optimalMoves: PropTypes.object
+  optimalMoves: PropTypes.object,
+  onExplain: PropTypes.func
 };
