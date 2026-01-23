@@ -27,7 +27,7 @@ Symbol \( \Rightarrow^* \) označuje derivaci v nula nebo více krocích \cite{u
 \subsection{P-úplnost problému}
 \label{sec:GrammarsCompleteness}
 
-Problém prázdnosti bezkontextových gramatik je P-úplný \cite{sawa}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Produktivní neterminál je takový, ze kterého lze derivovat řetězec složený pouze z terminálů \cite{sawa}.
+Problém prázdnosti bezkontextových gramatik je P-úplný \cite{sawa, miyano}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Produktivní neterminál je takový, ze kterého lze derivovat řetězec složený pouze z terminálů \cite{sawa}.
 
 I přes řešitelnost v polynomiálním čase je problém P-úplný, což naznačuje obtížnou paralelizovatelnost. Produktivita jednoho neterminálu často závisí na produktivitě jiných neterminálů. Tato vzájemná závislost vyžaduje sekvenční zpracování podobné vyhodnocování MCVP obvodu.
 
@@ -179,7 +179,7 @@ Algoritmus pracuje iterativně a postupně označuje produktivní neterminály \
     \item \textbf{Výsledek:} Pokud \( S \in \mathcal{P} \), pak jazyk \( L(G) \) není prázdný. V opačném případě je \( L(G) = \emptyset \).
 \end{enumerate}
 
-Implementace používá optimalizovanou verzi s frontou (work-list algorithm). Místo procházení všech pravidel v každém cyklu udržujeme frontu nově označených produktivních neterminálů a kontrolujeme pouze ta pravidla, která tyto neterminály obsahují na pravé straně.
+Implementace používá optimalizovanou verzi s frontou (work-list algorithm), což odpovídá principu algoritmu průchodu do šířky (BFS). Místo procházení všech pravidel v každém cyklu udržujeme frontu nově označených produktivních neterminálů a kontrolujeme pouze ta pravidla, která tyto neterminály obsahují na pravé straně.
 
 Časová složitost algoritmu je \( O(|P| \cdot l) \) \cite{uti_grammars}, kde \( |P| \) značí celkový počet pravidel a \( l \) je maximální délka pravé strany pravidla. Každé pravidlo je totiž kontrolováno nejvýše jednou pro každý symbol na pravé straně.
 
