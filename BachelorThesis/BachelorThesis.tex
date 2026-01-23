@@ -72,8 +72,8 @@
 
 % Jsou v praci tabulky? Pokud ano vysazime jejich seznam a odstrankujeme.
 % Pokud ne smazeme nasledujici dve makra.
-\listoftables
-\clearpage
+% \listoftables
+% \clearpage
 
 % A nasleduje text zaverecne prace.
 \input{Chapters/Introduction.tex}
@@ -88,12 +88,10 @@
 \printbibliography[title={Literatura}, heading=bibintoc]
 
 % Prilohy
-\appendix
-% \input{Chapters/Appendix1.tex}
-% \input{Chapters/Appendix2.tex}
+% \appendix
 
 % Priloha vlozena primo do hlavniho LaTeX souboru. Ne vsechny prilohy je nutne mit ve zvlastnich souborech.
-\chapter{Dlouhý zdrojový kód}
+% \chapter{Dlouhý zdrojový kód}
 % \lstinputlisting[label=src:CppExternal,caption={Dlouhý zdrojový kód v jazyce C++ načtený s externího souboru}]{SourceCodes/ArraySortingAlgorithms.cpp}
 
 \end{document}

@@ -186,7 +186,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         return prevGraph;
       });
     }
-  }, [initialGraph, graph]); 
+  }, [initialGraph]); // Removed 'graph' from dependencies to prevent infinite loop 
 
   // Function to add a node
   const addNode = () => {
@@ -549,7 +549,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
 
   return (
     <>
-    <div className="GraphDiv mb-3 shadow-sm" ref={containerRef}>
+    <div className="GraphDiv mb-3 shadow-sm" ref={containerRef} style={{ height: '60vh', minHeight: '500px' }}>
       <div className="graph-controls">
         <button 
           className="graph-btn" 

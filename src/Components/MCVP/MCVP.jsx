@@ -127,7 +127,11 @@ export function MCVP({ onNavigate, initialData }) {
                 }}
             />
 
-            {(tree && chosenOpt !== 'interactive') && <TreeRenderCanvas tree={tree} />}
+            {(tree && chosenOpt !== 'interactive') && (
+                <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+                    <TreeRenderCanvas tree={tree} />
+                </div>
+            )}
 
             {tree && (
                 <div className="card mt-3 mx-auto shadow-sm" style={{ maxWidth: '600px' }}>

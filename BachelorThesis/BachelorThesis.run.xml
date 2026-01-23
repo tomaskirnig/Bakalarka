@@ -86,7 +86,6 @@
     </requires>
     <requires type="editable">
       <file>bibliography.bib</file>
-      <file>coffee.bib</file>
     </requires>
   </external>
 </requests>

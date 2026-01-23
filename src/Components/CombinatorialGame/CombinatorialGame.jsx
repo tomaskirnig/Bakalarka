@@ -173,7 +173,9 @@ export function CombinatorialGame({ initialData }) {
 
             {(graph && chosenOpt !== 'manual') && (
                 <>
-                    <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                    <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+                        <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                    </div>
                     <GameAnalysisDisplay analysisResult={analysisResult} />
                     <div className="mt-3">
                         <button className='btn btn-primary' onClick={() => setExplain(true)}>

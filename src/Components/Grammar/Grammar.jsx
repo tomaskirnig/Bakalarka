@@ -172,7 +172,9 @@ export function Grammar({ onNavigate, initialData }) {
                                 {!analysisResult.derivedWord && (
                                     <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
                                 )}
-                                <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                                <div style={{ height: '60vh', width: '100%' }}>
+                                    <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                                </div>
                             </div>
                         )}
                     </div>

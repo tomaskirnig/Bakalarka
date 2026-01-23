@@ -273,13 +273,13 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
     const step = steps[currentStep];
     
     return (
-      <div className="conversion-step">
-        <h3>Krok {currentStep + 1} z {steps.length}</h3>
-        <p className="description">{step.description}</p>
-        <div className="visualizations">
-          <div className="col-md-7">
-            <h4>MCVP</h4>
-            <div>
+      <div className="conversion-step d-flex flex-column pb-2">
+        <h3 className="text-center mb-1">Krok {currentStep + 1} z {steps.length}</h3>
+        <p className="description text-center mb-2 small">{step.description}</p>
+        <div className="row gx-2" style={{ minHeight: 0, margin: 0 }}>
+          <div className="col-md-7 d-flex flex-column" style={{ minHeight: 0 }}>
+            <h4 className="text-center mb-1">MCVP</h4>
+            <div className="bg-light" style={{ borderRadius: '4px', overflow: 'hidden', height: '49vh' }}>
               <TreeRenderCanvas 
                 tree={mcvpTree} 
                 highlightedNode={step.mcvpHighlight}
@@ -290,11 +290,13 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             </div>
           </div>
           
-          <div className="col-md-5">
-            <h4>Gramatika</h4>
-            <GrammarDisplay grammar={step.grammar} />
-            <div className="visual-note">
-              <p><em>{step.visualNote}</em></p>
+          <div className="col-md-5 d-flex flex-column" style={{ minHeight: 0 }}>
+            <h4 className="text-center mb-1">Gramatika</h4>
+            <div className="bg-light p-2" style={{ overflow: 'auto', height: '49vh', borderRadius: '4px' }}>
+              <GrammarDisplay grammar={step.grammar} />
+              <div className="mt-2 p-2 bg-white rounded">
+                <p className="mb-0 small"><em>{step.visualNote}</em></p>
+              </div>
             </div>
           </div>
         </div>
@@ -303,29 +305,53 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
   };
 
   return (
-    <div className="mcvp-to-grammar-converter">
-      <h2>MCVP {String.fromCharCode(8594)} Gramatika</h2>
+    <div className="px-4 d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
+      <h2 className="text-center mb-2" style={{ flexShrink: 0 }}>MCVP {String.fromCharCode(8594)} Gramatika</h2>
 
-      {renderCurrentStep()}
+      <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
+        {renderCurrentStep()}
+      </div>
       
-      <NavigationControls 
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        onPrevious={goToPreviousStep}
-        onNext={goToNextStep}
-      />
-      
-      {finalGrammar && (
-        <div className="d-flex justify-content-center flex-column align-items-center">
-            <QuickNavigationControls 
-            onGoToStart={() => setCurrentStep(0)}
-            onGoToEnd={() => setCurrentStep(steps.length - 1)}
-            />
-            <button className="btn btn-success btn-lg mt-2" onClick={handleRedirect}>
-                Otevřít v Gramatice
-            </button>
+      <div className="mt-2" style={{ flexShrink: 0 }}>
+        <div className="d-flex justify-content-center gap-2 mb-2">
+          <button 
+            onClick={goToPreviousStep}
+            disabled={currentStep === 0}
+            className="btn btn-secondary"
+          >
+            Předchozí
+          </button>
+          
+          <button 
+            onClick={goToNextStep}
+            disabled={currentStep === steps.length - 1}
+            className="btn btn-primary"
+          >
+            Další
+          </button>
         </div>
-      )}
+        
+        {finalGrammar && (
+          <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
+              <button 
+                onClick={() => setCurrentStep(0)}
+                className="btn btn-outline-secondary btn-sm"
+              >
+                ⏮️ Jít na začátek
+              </button>
+              
+              <button 
+                onClick={() => setCurrentStep(steps.length - 1)}
+                className="btn btn-outline-primary btn-sm"
+              >
+                Jít na konec ⏭️
+              </button>
+              <button className="btn btn-success" onClick={handleRedirect}>
+                  Otevřít v Gramatice
+              </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

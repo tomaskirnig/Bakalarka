@@ -191,19 +191,21 @@ export function StepByStepGame({ graph }) {
   }, [currentStep, steps]);
 
   return (
-    <div className="step-by-step-container">
-      <h2 className="text-center mb-3">Postupná analýza výherní strategie</h2> 
+    <div className="step-by-step-container px-4 d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
+      <h2 className="text-center mb-3" style={{ flexShrink: 0 }}>Postupná analýza výherní strategie</h2> 
       {steps.length > 0 ? (
         <>
-          <DisplayGraph 
-            graph={graph} 
-            optimalMoves={optimalMoves}
-            highlightedNode={steps[currentStep]?.positionId}
-            winningPlayerMap={winningPlayerMap}
-          />
+          <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'auto' }}>
+            <DisplayGraph 
+              graph={graph} 
+              optimalMoves={optimalMoves}
+              highlightedNode={steps[currentStep]?.positionId}
+              winningPlayerMap={winningPlayerMap}
+            />
+          </div>
           
-          <div className='step-controls-info container'>
-          <div className='row align-items-center mt-3'>
+          <div className='step-controls-info container-fluid mt-3' style={{ flexShrink: 0 }}>
+          <div className='row align-items-center'>
             <div className='step-info col-md-7'>
               <div className="card p-3 bg-light" style={{ minHeight: '140px' }}>
                 <p className="mb-1"><strong>Hráč na tahu:</strong> Hráč {steps[currentStep].position.player}</p>
