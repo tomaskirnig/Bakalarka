@@ -1,5 +1,5 @@
 {
-  "name": "Basic Addition Grammar",
+  "name": "Základní sčítání",
   "nonTerminals": ["S", "E"],
   "terminals": ["+", "id"],
   "productions": {

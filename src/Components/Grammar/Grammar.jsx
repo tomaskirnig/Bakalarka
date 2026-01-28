@@ -141,12 +141,6 @@ export function Grammar({ onNavigate, initialData }) {
                     <div className="card mt-3">
                         <div className="card-header d-flex justify-content-between align-items-center">
                             <h4 className="mb-0">Analýza gramatiky</h4>
-                            <button 
-                                className="btn btn-outline-primary"
-                                onClick={() => setShowSteps(true)}
-                            >
-                                Zobrazit krokování
-                            </button>
                         </div>
                         <div className="card-body">
                              <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
@@ -177,6 +171,15 @@ export function Grammar({ onNavigate, initialData }) {
                                 </div>
                             </div>
                         )}
+                    </div>
+
+                    <div className="mt-3">
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => setShowSteps(true)}
+                        >
+                            Vysvětlit
+                        </button>
                     </div>
                 </div>
             )}

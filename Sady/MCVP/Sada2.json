@@ -1,5 +1,5 @@
 {
-  "name": "Sada2 (4xPro, 3xOpe)",
+  "name": "Sada 2 (4x Proměnné, 3x Operace)",
   "nodes": [
     { "id": 1, "type": "variable", "value": "x1", "varValue": 1 },
     { "id": 2, "type": "variable", "value": "x2", "varValue": 1 },

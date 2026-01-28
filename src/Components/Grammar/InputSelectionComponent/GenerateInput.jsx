@@ -12,7 +12,7 @@ export function GenerateInput({ onGrammar }) {
     // Advanced options
     const [allowLeftRecursion, setAllowLeftRecursion] = useState(true);
     const [allowRightRecursion, setAllowRightRecursion] = useState(true);
-    const [epsilonMode, setEpsilonMode] = useState('never');
+    const [epsilonMode, setEpsilonMode] = useState('random');
     const [minProductions, setMinProductions] = useState(1);
     const [maxProductions, setMaxProductions] = useState(3);
     const [showAdvanced, setShowAdvanced] = useState(false);

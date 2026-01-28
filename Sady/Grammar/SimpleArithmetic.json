@@ -1,5 +1,5 @@
 {
-  "name": "Simple Arithmetic Grammar",
+  "name": "Jednoduchá aritmetika",
   "nonTerminals": ["E", "T", "F"],
   "terminals": ["+", "-", "*", "/", "(", ")", "number"],
   "productions": {

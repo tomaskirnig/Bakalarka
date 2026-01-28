@@ -1,5 +1,5 @@
 {
-  "name": "Set 1 (3 uzly 3 hrany)",
+  "name": "Sada 1 (3 uzly, 2 hrany)",
   "nodes": [
     { "id": "1", "player": 1 },
     { "id": "2", "player": 2 },
