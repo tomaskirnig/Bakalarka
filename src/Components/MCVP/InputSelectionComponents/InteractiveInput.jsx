@@ -434,7 +434,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             </div>
 
             {/* ForceGraph Canvas */}
-            <div className="GraphDiv" ref={containerRef}>
+            <div className="GraphDiv" ref={containerRef} style={{ height: '60vh', minHeight: '500px' }}>
                 <div className="graph-controls">
                   <button 
                     className="graph-btn" 

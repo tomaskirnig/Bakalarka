@@ -405,6 +405,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
           <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
               <button 
                 onClick={() => setCurrentStep(0)}
+                disabled={currentStep === 0}
                 className="btn btn-outline-secondary btn-sm"
               >
                 ⏮️ Jít na začátek
@@ -412,6 +413,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
               
               <button 
                 onClick={() => setCurrentStep(steps.length - 1)}
+                disabled={currentStep === steps.length - 1}
                 className="btn btn-outline-primary btn-sm"
               >
                 Jít na konec ⏭️

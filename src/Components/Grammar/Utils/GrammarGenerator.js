@@ -52,7 +52,7 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
   for (const nt of nonTerminals) {
     if (productions[nt]) {
       for (const rule of productions[nt]) {
-        if (rule.length === 1 && rule[0] === 'ε') {
+        if (rule.length === 0) {
           hasEpsilon = true;
           break;
         }
@@ -71,10 +71,10 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
     // If we reached the max productions limit, replace a random rule
     if (productions[randomNt].length >= maxProductions) {
       const replaceIndex = getRandomInt(0, productions[randomNt].length - 1);
-      productions[randomNt][replaceIndex] = ['ε'];
+      productions[randomNt][replaceIndex] = [];
     } else {
       // Otherwise just add it
-      productions[randomNt].push(['ε']);
+      productions[randomNt].push([]);
     }
   }
 }
@@ -128,7 +128,7 @@ function ensureReachability(productions, nonTerminals) {
             const ruleIndex = getRandomInt(0, hostRules.length - 1);
             const rule = hostRules[ruleIndex];
             
-            if (rule.length > 0 && rule[0] !== 'ε') {
+            if (rule.length > 0) {
                 // Replace a random symbol in this rule with the unreachable one
                 const replaceIndex = getRandomInt(0, rule.length - 1);
                 rule[replaceIndex] = targetUnreachable;

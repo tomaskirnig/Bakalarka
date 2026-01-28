@@ -1,4 +1,8 @@
 ---- MCVP ----
+- Fix - when user clicks on the explain button, it recalculates the derived word 
+- Fix - placement of the explain button should be like in other problems under all page content
+- Fix - in MCVP to CG disable the button to end or to beginnig if the user is at the end or begining of the conversion
+
 - Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
@@ -16,6 +20,8 @@
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
 - Add fixed positions for nodes when exporting some graph + position the graph when provided with fixed positions
+
+- Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
 
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici

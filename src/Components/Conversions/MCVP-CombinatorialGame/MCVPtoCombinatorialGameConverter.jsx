@@ -130,10 +130,11 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             <div className="alert alert-info py-2 mb-2" style={{ flexShrink: 0 }}>
                 <strong>Pravidla převodu:</strong>
                 <ul className="mb-0 list-inline d-inline-block ms-2">
-                    <li className="list-inline-item"><strong>OR</strong> &rarr; Hráč 1 (volí)</li>
-                    <li className="list-inline-item"><strong>AND</strong> &rarr; Hráč 2 (volí)</li>
-                    <li className="list-inline-item"><strong>1</strong> &rarr; Hráč 2 (prohrává)</li>
-                    <li className="list-inline-item"><strong>0</strong> &rarr; Hráč 1 (prohrává)</li>
+                    <li className="list-inline-item"><strong>OR</strong> &rarr; Hráč 1,</li>
+                    <li className="list-inline-item"><strong>AND</strong> &rarr; Hráč 2</li>
+                    <li className="list-inline-item"><strong>|</strong></li>
+                    <li className="list-inline-item"><strong>1</strong> &rarr; Hráč 2,</li>
+                    <li className="list-inline-item"><strong>0</strong> &rarr; Hráč 1</li>
                 </ul>
             </div>
 
@@ -153,10 +154,18 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
 
                 {finalGraph && (
                     <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
-                        <button className="btn btn-outline-secondary btn-sm" onClick={() => setCurrentStep(0)}>
+                        <button 
+                            className="btn btn-outline-secondary btn-sm" 
+                            onClick={() => setCurrentStep(0)}
+                            disabled={currentStep === 0}
+                        >
                             ⏮️ Jít na začátek
                         </button>
-                        <button className="btn btn-outline-primary btn-sm" onClick={() => setCurrentStep(steps.length - 1)}>
+                        <button 
+                            className="btn btn-outline-primary btn-sm" 
+                            onClick={() => setCurrentStep(steps.length - 1)}
+                            disabled={currentStep === steps.length - 1}
+                        >
                             Jít na konec ⏭️
                         </button>
                         <button className="btn btn-success" onClick={handleRedirect}>
