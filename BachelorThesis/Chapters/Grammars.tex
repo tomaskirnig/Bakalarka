@@ -1,10 +1,10 @@
-\chapter{Prázdnost bezkontextových gramatik}
+\chapter{Neprázdnost bezkontextových gramatik}
 \label{sec:Grammars}
 
 \section{Teoretický základ}
 \label{sec:GrammarsTheory}
 
-Problém prázdnosti bezkontextových gramatik (CFG Emptiness Problem) je dalším příkladem P-úplného problému \cite{sawa}. Bezkontextová gramatika představuje formální systém sloužící k generování jazyka, který hraje klíčovou roli v definování syntaxe programovacích jazyků i v analýze neprogramovacích jazyků.
+Problém neprázdnosti jazyka bezkontextové gramatiky (CFG Non-emptiness Problem) je dalším příkladem P-úplného problému \cite{sawa}. Bezkontextová gramatika představuje formální systém sloužící k generování jazyka, který hraje klíčovou roli v definování syntaxe programovacích jazyků i v analýze neprogramovacích jazyků.
 
 Formálně je gramatika definována jako čtveřice \( G = (N, \Sigma, P, S) \) \cite{uti_grammars}, kde:
 
@@ -27,7 +27,7 @@ Symbol \( \Rightarrow^* \) označuje derivaci v nula nebo více krocích \cite{u
 \subsection{P-úplnost problému}
 \label{sec:GrammarsCompleteness}
 
-Problém prázdnosti bezkontextových gramatik je P-úplný \cite{sawa, miyano}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Produktivní neterminál je takový, ze kterého lze derivovat řetězec složený pouze z terminálů \cite{sawa}.
+Problém neprázdnosti jazyka bezkontextové gramatiky je P-úplný \cite{sawa, miyano}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Produktivní neterminál je takový, ze kterého lze derivovat řetězec složený pouze z terminálů \cite{sawa}.
 
 I přes řešitelnost v polynomiálním čase je problém P-úplný, což naznačuje obtížnou paralelizovatelnost. Produktivita jednoho neterminálu často závisí na produktivitě jiných neterminálů. Tato vzájemná závislost vyžaduje sekvenční zpracování podobné vyhodnocování MCVP obvodu.
 
@@ -82,7 +82,7 @@ Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pr
 \subsection{Základní parametry}
 \label{sec:GrammarsGenerationBasic}
 
-Základní parametry umožňují rychlé vygenerování gramatiky a určují její velikost a strukturu. Prvním parametrem je počet neterminálů v rozmezí 1 až 10. Druhým parametrem je počet terminálů, taktéž v rozmezí 1 až 10. Třetí parametr určuje maximální délku pravé strany, zde se mohou zadat hodnoty v rozmezí 1 až 5, přičemž délka každého pravidla je náhodně zvolena mezi hodnotou 1 a hodnotou tohoto parametru.
+Základní parametry umožňují rychlé vygenerování gramatiky a určují její velikost a strukturu. Prvním parametrem je počet neterminálů v rozmezí 1 až 10. Druhým parametrem je počet terminálů, taktéž v rozmezí 1 až 10. Třetí parametr určuje maximální délku pravé strany, zde se mohou zadat hodnoty v rozmezí 1 až 5, přičemž délka každého pravidla je náhodně zvolena v intervalu od 1 do hodnoty tohoto parametru.
 
 \subsection{Pokročilé parametry}
 \label{sec:GrammarsGenerationAdvanced}
@@ -160,7 +160,7 @@ Tento formát umožňuje sdílení gramatik mezi uživateli a vytváření před
 \section{Algoritmus vyhodnocení}
 \label{sec:GrammarsAlgorithm}
 
-Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení prázdnosti gramatiky. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů nebo prázdný řetězec \( \epsilon \).
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení neprázdnosti gramatiky. Algoritmus zjišťuje, zda je počáteční symbol \( S \) produktivní – tedy zda z něj lze odvodit slovo složené pouze z terminálů nebo prázdný řetězec \( \epsilon \).
 
 \subsection{Identifikace produktivních neterminálů}
 \label{sec:GrammarsProductive}

@@ -313,11 +313,11 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       return false;
     }
 
-    // Check if adding this edge would create a cycle
-    if (wouldCreateCycle(sourceId, targetId)) {
-      toast.error("Nelze přidat hranu: Byl by vytvořen cyklus. Graf musí zůstat acyklický (DAG).");
-      return false;
-    }
+    // Check if adding this edge would create a cycle - REMOVED to allow cycles
+    // if (wouldCreateCycle(sourceId, targetId)) {
+    //   toast.error("Nelze přidat hranu: Byl by vytvořen cyklus. Graf musí zůstat acyklický (DAG).");
+    //   return false;
+    // }
 
     const source = nodeMap[sourceId];
     const target = nodeMap[targetId];

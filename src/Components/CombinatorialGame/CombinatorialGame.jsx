@@ -49,12 +49,8 @@ export function CombinatorialGame({ initialData }) {
             // The selected starting player matches the player assigned to the starting node
             
             finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy;
-            
-            if (rawAnalysisResult.hasWinningStrategy) {
-                finalAnalysisResult.message = "Hráč 1 má výherní strategii.";
-            } else {
-                finalAnalysisResult.message = "Hráč 1 nemá výherní strategii.";
-            }
+            // Use the detailed message from computeWinner (which handles Win/Lose/Draw)
+            finalAnalysisResult.message = rawAnalysisResult.message;
         }
         
         // Optimal moves are still calculated based on Player 1's winning positions

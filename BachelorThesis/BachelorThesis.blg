@@ -1,16 +1,16 @@
 [0] Config.pm:328> INFO - This is Biber 2.21
 [0] Config.pm:331> INFO - Logfile is 'BachelorThesis.blg'
-[126] biber-MSWIN64:342> INFO - === 
-[175] Biber.pm:421> INFO - Reading 'BachelorThesis.bcf'
-[264] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
-[279] Biber.pm:4487> INFO - Processing section 0
-[296] Biber.pm:4678> INFO - Looking for bibtex file 'bibliography.bib' for section 0
-[339] bibtex.pm:1713> INFO - LaTeX decoding ...
-[354] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography.bib'
-[467] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'normalization = NFD' with 'normalization = prenormalized'
-[467] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'variable = shifted' with 'variable = non-ignorable'
-[468] Biber.pm:4307> INFO - Sorting list 'none/global//global/global/global' of type 'entry' with template 'none' and locale 'cs-CZ'
-[496] bbl.pm:676> INFO - Writing 'BachelorThesis.bbl' with encoding 'UTF-8'
-[501] bbl.pm:779> INFO - Output to BachelorThesis.bbl
-[506] Biber.pm:132> WARN - legacy month field 'December' in entry 'miyano' is not an integer - this will probably not sort properly.
-[506] Biber.pm:134> INFO - WARNINGS: 1
+[106] biber-MSWIN64:342> INFO - === 
+[151] Biber.pm:421> INFO - Reading 'BachelorThesis.bcf'
+[257] Biber.pm:1002> INFO - Found 14 citekeys in bib section 0
+[270] Biber.pm:4487> INFO - Processing section 0
+[279] Biber.pm:4678> INFO - Looking for bibtex file 'bibliography.bib' for section 0
+[343] bibtex.pm:1713> INFO - LaTeX decoding ...
+[359] bibtex.pm:1519> INFO - Found BibTeX data source 'bibliography.bib'
+[442] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'variable = shifted' with 'variable = non-ignorable'
+[442] UCollate.pm:68> INFO - Overriding locale 'cs-CZ' defaults 'normalization = NFD' with 'normalization = prenormalized'
+[442] Biber.pm:4307> INFO - Sorting list 'nty/global//global/global/global' of type 'entry' with template 'nty' and locale 'cs-CZ'
+[456] bbl.pm:676> INFO - Writing 'BachelorThesis.bbl' with encoding 'UTF-8'
+[461] bbl.pm:779> INFO - Output to BachelorThesis.bbl
+[467] Biber.pm:132> WARN - legacy month field 'December' in entry 'miyano' is not an integer - this will probably not sort properly.
+[467] Biber.pm:134> INFO - WARNINGS: 1

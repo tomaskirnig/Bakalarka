@@ -87,9 +87,9 @@ export function Grammar({ onNavigate, initialData }) {
                     instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
                     fileName="grammar.json"
                 />
-                <InfoButton title="Problém prázdnosti gramatiky">
+                <InfoButton title="Problém neprázdnosti gramatiky">
                     <p>
-                        Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
+                        Tento modul řeší problém neprázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
                     </p>
                     <hr />
                     <h6 className="mb-2">Pravidla formátu gramatiky</h6>

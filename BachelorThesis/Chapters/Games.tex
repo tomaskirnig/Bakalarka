@@ -14,16 +14,16 @@ Kombinatorická hra dvou hráčů na orientovaném grafu je další příklad P-
 Problém spočívá v rozhodnutí, zda Hráč I má výherní strategii ze zadané počáteční pozice:
 
 \begin{itemize}
-    \item \textbf{Vstup:} Orientovaný acyklický graf (DAG), kde každý uzel reprezentuje herní pozici přiřazenou některému z hráčů, hrany reprezentují možné tahy a jeden uzel je označen jako počáteční pozice.
+    \item \textbf{Vstup:} Orientovaný graf, kde každý uzel reprezentuje herní pozici přiřazenou některému z hráčů, hrany reprezentují možné tahy a jeden uzel je označen jako počáteční pozice.
     \item \textbf{Výstup:} Rozhodnutí, zda Hráč I má výherní strategii ze startovní pozice.
 \end{itemize}
 
-Hráč I vyhrává, pokud se dostane do pozice, kde Hráč II nemá žádný možný tah. Naopak, Hráč I prohrává, když se sám dostane do pozice bez možných tahů \cite{sawa}.
+V této hře platí, že hráč, který se ocitne v pozici bez možných tahů, prohrává. Hráč I tedy vyhrává, pokud má strategii, jak vynutit stav, kdy je na tahu Hráč II v pozici bez dalších hran, nebo pokud se hra dostane do takového stavu jeho vlastním tahem \cite{sawa}.
 
 \subsection{P-úplnost problému}
 \label{sec:GamesCompleteness}
 
-Tento problém je P-úplný \cite{sawa, miyano}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní na základě možností volby jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
+Tento problém je P-úplný \cite{sawa, miyano}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní pro daného hráče na základě dostupných tahů a jejich výsledků. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
 
 \section{Formát vstupu}
 \label{sec:GamesInput}
@@ -59,7 +59,7 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání.
 \end{itemize}
 
-Aplikace průběžně validuje graf a zabraňuje vytvoření neplatných struktur. Pokud uživatel zkusí přidat hranu, která by vytvořila cyklus, aplikace tuto akci zablokuje a zobrazí chybovou zprávu. Dále upozorní uživatele, pokud není nastavena počáteční pozice, což je nutné pro spuštění analýzy.
+Aplikace průběžně validuje graf. Uživatel je upozorněn, pokud není nastavena počáteční pozice, což je nutné pro spuštění analýzy.
 
 \section{Generování náhodných her}
 \label{sec:GamesGeneration}
@@ -117,14 +117,27 @@ Graf používá fyzikální simulaci pro automatické rozmístění uzlů. Uživ
 \section{Algoritmus analýzy}
 \label{sec:GamesAlgorithm}
 
-Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus je technicky velmi podobný vyhodnocování MCVP stromu – používá průchod do hloubky (DFS) s memoizací. Rozdíl spočívá v logice, kterou určujeme výsledek každé pozice.
+Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus využívá iterativní přístup (retrográdní analýzu) pro postupné označování pozic od koncových uzlů směrem k počáteční pozici.
 
 \subsection{Vyhodnocení výherních pozic}
 \label{sec:GamesRetrograde}
 
-Algoritmus rozhoduje, zda je daná pozice výherní pro Hráče I. Koncové pozice (listové uzly) bez dalších tahů jsou výherní pro Hráče I, když je na tahu Hráč II (nemá možnost pokračovat). U ostatních pozic záleží na tom, kdo je na tahu: pokud je to Hráč I, stačí mu jedna výherní možnost pokračování – může si ji vybrat. Pokud je na tahu Hráč II, musí všechny možné tahy vést do výherních pozic Hráče I, protože Hráč II si vybere nejlepší tah pro sebe.
+Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní na tahu, nebo zda skončí remízou (v případě cyklů bez vynuceného výsledku). Vyhodnocení probíhá následovně:
 
-Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran, protože každá pozice a hrana je zpracována právě jednou.
+\begin{enumerate}
+    \item \textbf{Koncové pozice:} Pozice bez dalších tahů jsou prohrávající pro hráče, který je v nich na tahu.
+    
+    \item \textbf{Zpětné šíření:} Od koncových pozic se postupně propagují výsledky:
+    \begin{itemize}
+        \item Pokud existuje tah do prohrávající pozice soupeře, aktuální pozice je vyhrávající.
+        \item Pokud tentýž hráč pokračuje v tahu (bez změny hráče), tah do vyhrávající pozice znamená, že i původní pozice je vyhrávající.
+        \item Pokud všechny tahy vedou do vyhrávajících pozic soupeře, aktuální pozice je prohrávající.
+    \end{itemize}
+    
+    \item \textbf{Neurčené pozice:} Pozice, jejichž status nelze jednoznačně určit (například kvůli cyklům), zůstávají označeny jako remíza.
+\end{enumerate}
+
+Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
 
 \subsection{Optimální tahy}
 \label{sec:GamesOptimalMoves}
@@ -134,13 +147,13 @@ Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí v�
 \section{Krokové vyhodnocení}
 \label{sec:GamesStepByStep}
 
-Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Funkce \texttt{computeWinningStrategySteps()} zaznamenává každý krok v celkovém vyhodnocení:
+Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Algoritmus zaznamenává každý krok aktualizace stavu grafu:
 
 \begin{itemize}
-    \item Hráč na tahu v dané pozici
-    \item Výsledky vyhodnocení všech potomků
-    \item Finální rozhodnutí, zda je pozice výherní pro Hráče I
-    \item Textové vysvětlení rozhodnutí
+    \item \textbf{Inicializace:} Všechny pozice jsou na začátku ve stavu REMÍZA.
+    \item \textbf{Terminální stavy:} Identifikace pozic bez tahů (PROHRA).
+    \item \textbf{Aktualizace:} Postupné šíření výherních a prohrávajících stavů grafem.
+    \item \textbf{Vysvětlení:} U každého kroku je zobrazeno vysvětlení, proč došlo ke změně stavu (např. „Z pozice X lze táhnout do prohrávající pozice Y").
 \end{itemize}
 
-Uživatel může procházet kroky analýzy pomocí navigačních tlačítek – kromě standardních tlačítek „Předchozí" a „Další" jsou k dispozici také tlačítka „Začátek" a „Konec" pro rychlý přesun na první nebo poslední krok analýzy. Aktuálně analyzovaný uzel je ve zvýrazněn světle modrou barvou (stejnou jako při najetí myší) a pod grafem je slovní popis rozhodnutí. Tato funkce pomáhá pochopit, jak algoritmus postupně buduje cesty z výherních pozic od listů ke kořeni.
+Uživatel může procházet kroky analýzy pomocí navigačních tlačítek. Aktuálně aktualizovaný uzel je v grafu zvýrazněn. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.

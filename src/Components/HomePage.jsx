@@ -18,7 +18,7 @@ export function HomePage() {
                         <strong>Kombinatorické hry:</strong> Zkoumejte a hledejte výherní strategie v jednoduchých kombinatorických hrách.
                     </li>
                     <li>
-                        <strong>Bezkontextové gramatiky:</strong> Definujte a analyzujte formální gramatiky.
+                        <strong>Bezkontextové gramatiky:</strong> Řešte problém neprázdnosti gramatik a analyzujte jejich derivační stromy.
                     </li>
                 </ul>
                 <p className='lead'>

@@ -9,6 +9,7 @@
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----
+- Fix - make cycles in graph possible
 - Fix the evaluating alg, its enough to have one winnig strategy to evaluate that the player I have winnig strategy
 - Fix display of the optimal moves (the whole path should be highlighted)
 
@@ -26,5 +27,4 @@
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici
 
--poslat link na live stranku 
 -udelat novou vetev s omezenout fyzikou

@@ -18,96 +18,7 @@
 
 
 \refsection{0}
-  \datalist[entry]{none/global//global/global/global}
-    \entry{sawa_bigo}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
-           family={Sawa},
-           familyi={S\bibinitperiod},
-           given={Zbyněk},
-           giveni={Z\bibinitperiod}}}%
-      }
-      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \field{extraname}{1}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Úvod do teoretické informatiky – Výpočetní složitost algoritmů}
-      \field{year}{2014}
-      \verb{urlraw}
-      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
-      \endverb
-      \verb{url}
-      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
-      \endverb
-    \endentry
-    \entry{uti_turing}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
-           family={Sawa},
-           familyi={S\bibinitperiod},
-           given={Zbyněk},
-           giveni={Z\bibinitperiod}}}%
-      }
-      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \field{extraname}{2}
-      \field{sortinit}{3}
-      \field{sortinithash}{ad6fe7482ffbd7b9f99c9e8b5dccd3d7}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Úvod do teoretické informatiky – Turingovy stroje}
-      \field{year}{2014}
-      \verb{urlraw}
-      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
-      \endverb
-      \verb{url}
-      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
-      \endverb
-    \endentry
-    \entry{papadimitriou}{book}{}{}
-      \name{author}{1}{}{%
-        {{hash=b3b407bb63367a850366076095ee1970}{%
-           family={Papadimitriou},
-           familyi={P\bibinitperiod},
-           given={Christos\bibnamedelima H.},
-           giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
-      }
-      \list{publisher}{1}{%
-        {Addison Wesley}%
-      }
-      \strng{namehash}{b3b407bb63367a850366076095ee1970}
-      \strng{fullhash}{b3b407bb63367a850366076095ee1970}
-      \strng{fullhashraw}{b3b407bb63367a850366076095ee1970}
-      \strng{bibnamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorbibnamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authornamehash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorfullhash}{b3b407bb63367a850366076095ee1970}
-      \strng{authorfullhashraw}{b3b407bb63367a850366076095ee1970}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{isbn}{978-0201530827}
-      \field{title}{Computational Complexity}
-      \field{year}{1994}
-    \endentry
+  \datalist[entry]{nty/global//global/global/global}
     \entry{arora}{book}{}{}
       \name{author}{2}{}{%
         {{hash=8e08b59145b9531815169c7ed0a0b055}{%
@@ -132,100 +43,13 @@
       \strng{authornamehash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
       \strng{authorfullhash}{af2b04a0bcd76cc1a4cd54f6e4b95158}
       \strng{authorfullhashraw}{af2b04a0bcd76cc1a4cd54f6e4b95158}
-      \field{sortinit}{6}
-      \field{sortinithash}{b33bc299efb3c36abec520a4c896a66d}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{isbn}{978-0521424264}
       \field{title}{Computational Complexity: A Modern Approach}
       \field{year}{2009}
-    \endentry
-    \entry{sawa}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
-           family={Sawa},
-           familyi={S\bibinitperiod},
-           given={Zbyněk},
-           giveni={Z\bibinitperiod}}}%
-      }
-      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
-      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \field{extraname}{3}
-      \field{sortinit}{7}
-      \field{sortinithash}{108d0be1b1bee9773a1173443802c0a3}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Teoretická informatika – Podklady pro přednášky}
-      \field{year}{2025}
-      \verb{urlraw}
-      \verb https://www.cs.vsb.cz/sawa/ti/slides/ti-slides-08.pdf
-      \endverb
-      \verb{url}
-      \verb https://www.cs.vsb.cz/sawa/ti/slides/ti-slides-08.pdf
-      \endverb
-    \endentry
-    \entry{react2024}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=350a86b0327152e3a50596538f38a5db}{%
-           family={{Meta Platforms, Inc.}},
-           familyi={M\bibinitperiod}}}%
-      }
-      \strng{namehash}{350a86b0327152e3a50596538f38a5db}
-      \strng{fullhash}{350a86b0327152e3a50596538f38a5db}
-      \strng{fullhashraw}{350a86b0327152e3a50596538f38a5db}
-      \strng{bibnamehash}{350a86b0327152e3a50596538f38a5db}
-      \strng{authorbibnamehash}{350a86b0327152e3a50596538f38a5db}
-      \strng{authornamehash}{350a86b0327152e3a50596538f38a5db}
-      \strng{authorfullhash}{350a86b0327152e3a50596538f38a5db}
-      \strng{authorfullhashraw}{350a86b0327152e3a50596538f38a5db}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{React -- A JavaScript library for building user interfaces}
-      \field{year}{2024}
-      \verb{urlraw}
-      \verb https://react.dev/
-      \endverb
-      \verb{url}
-      \verb https://react.dev/
-      \endverb
-    \endentry
-    \entry{vite2024}{misc}{}{}
-      \name{author}{1}{}{%
-        {{hash=c9b7eebec98bfd1a3c2bacf7f17d463f}{%
-           family={{Vite Team}},
-           familyi={V\bibinitperiod}}}%
-      }
-      \strng{namehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{fullhash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{fullhashraw}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{bibnamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{authorbibnamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{authornamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{authorfullhash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \strng{authorfullhashraw}{c9b7eebec98bfd1a3c2bacf7f17d463f}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
-      \field{labelnamesource}{author}
-      \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Vite -- Next Generation Frontend Tooling}
-      \field{year}{2024}
-      \verb{urlraw}
-      \verb https://vitejs.dev/
-      \endverb
-      \verb{url}
-      \verb https://vitejs.dev/
-      \endverb
     \endentry
     \entry{reactforcegraph2024}{misc}{}{}
       \name{author}{1}{}{%
@@ -243,8 +67,8 @@
       \strng{authornamehash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
       \strng{authorfullhash}{3d5b1e1c356dc3c6f979e9abb1bef63e}
       \strng{authorfullhashraw}{3d5b1e1c356dc3c6f979e9abb1bef63e}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{A}
+      \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
@@ -255,6 +79,34 @@
       \endverb
       \verb{url}
       \verb https://github.com/vasturiano/react-force-graph
+      \endverb
+    \endentry
+    \entry{bootstrap2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=32eb0b0875563e55481f7d189401c2c1}{%
+           family={{Bootstrap Team}},
+           familyi={B\bibinitperiod}}}%
+      }
+      \strng{namehash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{fullhash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{fullhashraw}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{bibnamehash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{authorbibnamehash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{authornamehash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{authorfullhash}{32eb0b0875563e55481f7d189401c2c1}
+      \strng{authorfullhashraw}{32eb0b0875563e55481f7d189401c2c1}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Bootstrap -- The most popular HTML, CSS, and JS library in the world}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://getbootstrap.com/
+      \endverb
+      \verb{url}
+      \verb https://getbootstrap.com/
       \endverb
     \endentry
     \entry{d3js2024}{misc}{}{}
@@ -273,8 +125,8 @@
       \strng{authornamehash}{3a56f801778dd81bf67b8f9cdccacb12}
       \strng{authorfullhash}{3a56f801778dd81bf67b8f9cdccacb12}
       \strng{authorfullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
@@ -287,32 +139,32 @@
       \verb https://d3js.org/
       \endverb
     \endentry
-    \entry{bootstrap2024}{misc}{}{}
+    \entry{eslint2024}{misc}{}{}
       \name{author}{1}{}{%
-        {{hash=32eb0b0875563e55481f7d189401c2c1}{%
-           family={{Bootstrap Team}},
-           familyi={B\bibinitperiod}}}%
+        {{hash=4d5dece698b0f95de460bf5b054c4abc}{%
+           family={{ESLint Team}},
+           familyi={E\bibinitperiod}}}%
       }
-      \strng{namehash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{fullhash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{fullhashraw}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{bibnamehash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{authorbibnamehash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{authornamehash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{authorfullhash}{32eb0b0875563e55481f7d189401c2c1}
-      \strng{authorfullhashraw}{32eb0b0875563e55481f7d189401c2c1}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \strng{namehash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{fullhash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{fullhashraw}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{bibnamehash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{authorbibnamehash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{authornamehash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{authorfullhash}{4d5dece698b0f95de460bf5b054c4abc}
+      \strng{authorfullhashraw}{4d5dece698b0f95de460bf5b054c4abc}
+      \field{sortinit}{E}
+      \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
-      \field{title}{Bootstrap -- The most popular HTML, CSS, and JS library in the world}
+      \field{title}{ESLint -- Pluggable JavaScript linter}
       \field{year}{2024}
       \verb{urlraw}
-      \verb https://getbootstrap.com/
+      \verb https://eslint.org/
       \endverb
       \verb{url}
-      \verb https://getbootstrap.com/
+      \verb https://eslint.org/
       \endverb
     \endentry
     \entry{reacttoastify2024}{misc}{}{}
@@ -331,8 +183,8 @@
       \strng{authornamehash}{16b7be8385c4310ab6fd58b46e6f89d4}
       \strng{authorfullhash}{16b7be8385c4310ab6fd58b46e6f89d4}
       \strng{authorfullhashraw}{16b7be8385c4310ab6fd58b46e6f89d4}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \field{sortinit}{K}
+      \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
@@ -345,32 +197,32 @@
       \verb https://fkhadra.github.io/react-toastify/
       \endverb
     \endentry
-    \entry{eslint2024}{misc}{}{}
+    \entry{react2024}{misc}{}{}
       \name{author}{1}{}{%
-        {{hash=4d5dece698b0f95de460bf5b054c4abc}{%
-           family={{ESLint Team}},
-           familyi={E\bibinitperiod}}}%
+        {{hash=350a86b0327152e3a50596538f38a5db}{%
+           family={{Meta Platforms, Inc.}},
+           familyi={M\bibinitperiod}}}%
       }
-      \strng{namehash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{fullhash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{fullhashraw}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{bibnamehash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{authorbibnamehash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{authornamehash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{authorfullhash}{4d5dece698b0f95de460bf5b054c4abc}
-      \strng{authorfullhashraw}{4d5dece698b0f95de460bf5b054c4abc}
-      \field{sortinit}{1}
-      \field{sortinithash}{4f6aaa89bab872aa0999fec09ff8e98a}
+      \strng{namehash}{350a86b0327152e3a50596538f38a5db}
+      \strng{fullhash}{350a86b0327152e3a50596538f38a5db}
+      \strng{fullhashraw}{350a86b0327152e3a50596538f38a5db}
+      \strng{bibnamehash}{350a86b0327152e3a50596538f38a5db}
+      \strng{authorbibnamehash}{350a86b0327152e3a50596538f38a5db}
+      \strng{authornamehash}{350a86b0327152e3a50596538f38a5db}
+      \strng{authorfullhash}{350a86b0327152e3a50596538f38a5db}
+      \strng{authorfullhashraw}{350a86b0327152e3a50596538f38a5db}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
-      \field{title}{ESLint -- Pluggable JavaScript linter}
+      \field{title}{React -- A JavaScript library for building user interfaces}
       \field{year}{2024}
       \verb{urlraw}
-      \verb https://eslint.org/
+      \verb https://react.dev/
       \endverb
       \verb{url}
-      \verb https://eslint.org/
+      \verb https://react.dev/
       \endverb
     \endentry
     \entry{miyano}{report}{}{}
@@ -402,8 +254,8 @@
       \strng{authornamehash}{2761e081ab7a3316ad6d85822477a2ef}
       \strng{authorfullhash}{2761e081ab7a3316ad6d85822477a2ef}
       \strng{authorfullhashraw}{2761e081ab7a3316ad6d85822477a2ef}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{sortinit}{M}
+      \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{month}{12}
@@ -416,6 +268,64 @@
       \endverb
       \verb{url}
       \verb https://catalog.lib.kyushu-u.ac.jp/opac_download_md/3123/rifis-tr-17.pdf
+      \endverb
+    \endentry
+    \entry{papadimitriou}{book}{}{}
+      \name{author}{1}{}{%
+        {{hash=b3b407bb63367a850366076095ee1970}{%
+           family={Papadimitriou},
+           familyi={P\bibinitperiod},
+           given={Christos\bibnamedelima H.},
+           giveni={C\bibinitperiod\bibinitdelim H\bibinitperiod}}}%
+      }
+      \list{publisher}{1}{%
+        {Addison Wesley}%
+      }
+      \strng{namehash}{b3b407bb63367a850366076095ee1970}
+      \strng{fullhash}{b3b407bb63367a850366076095ee1970}
+      \strng{fullhashraw}{b3b407bb63367a850366076095ee1970}
+      \strng{bibnamehash}{b3b407bb63367a850366076095ee1970}
+      \strng{authorbibnamehash}{b3b407bb63367a850366076095ee1970}
+      \strng{authornamehash}{b3b407bb63367a850366076095ee1970}
+      \strng{authorfullhash}{b3b407bb63367a850366076095ee1970}
+      \strng{authorfullhashraw}{b3b407bb63367a850366076095ee1970}
+      \field{sortinit}{P}
+      \field{sortinithash}{ff3bcf24f47321b42cb156c2cc8a8422}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{isbn}{978-0201530827}
+      \field{title}{Computational Complexity}
+      \field{year}{1994}
+    \endentry
+    \entry{sawa}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
+           family={Sawa},
+           familyi={S\bibinitperiod},
+           given={Zbyněk},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \field{extraname}{1}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Teoretická informatika – Podklady pro přednášky}
+      \field{year}{2025}
+      \verb{urlraw}
+      \verb https://www.cs.vsb.cz/sawa/ti/slides/ti-slides-08.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.vsb.cz/sawa/ti/slides/ti-slides-08.pdf
       \endverb
     \endentry
     \entry{uti_grammars}{misc}{}{}
@@ -434,9 +344,9 @@
       \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
       \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
       \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
-      \field{extraname}{4}
-      \field{sortinit}{2}
-      \field{sortinithash}{8b555b3791beccb63322c22f3320aa9a}
+      \field{extraname}{2}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{howpublished}{Online}
@@ -447,6 +357,96 @@
       \endverb
       \verb{url}
       \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-10-cz.pdf
+      \endverb
+    \endentry
+    \entry{uti_turing}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
+           family={Sawa},
+           familyi={S\bibinitperiod},
+           given={Zbyněk},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \field{extraname}{3}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Úvod do teoretické informatiky – Turingovy stroje}
+      \field{year}{2014}
+      \verb{urlraw}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
+      \endverb
+    \endentry
+    \entry{sawa_bigo}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=d3c5405813cf61512dd3280c64b1cd38}{%
+           family={Sawa},
+           familyi={S\bibinitperiod},
+           given={Zbyněk},
+           giveni={Z\bibinitperiod}}}%
+      }
+      \strng{namehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{fullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{bibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorbibnamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authornamehash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhash}{d3c5405813cf61512dd3280c64b1cd38}
+      \strng{authorfullhashraw}{d3c5405813cf61512dd3280c64b1cd38}
+      \field{extraname}{4}
+      \field{sortinit}{S}
+      \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Úvod do teoretické informatiky – Výpočetní složitost algoritmů}
+      \field{year}{2014}
+      \verb{urlraw}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
+      \endverb
+      \verb{url}
+      \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
+      \endverb
+    \endentry
+    \entry{vite2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=c9b7eebec98bfd1a3c2bacf7f17d463f}{%
+           family={{Vite Team}},
+           familyi={V\bibinitperiod}}}%
+      }
+      \strng{namehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{fullhash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{fullhashraw}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{bibnamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{authorbibnamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{authornamehash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{authorfullhash}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \strng{authorfullhashraw}{c9b7eebec98bfd1a3c2bacf7f17d463f}
+      \field{sortinit}{V}
+      \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Online}
+      \field{title}{Vite -- Next Generation Frontend Tooling}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://vitejs.dev/
+      \endverb
+      \verb{url}
+      \verb https://vitejs.dev/
       \endverb
     \endentry
   \enddatalist

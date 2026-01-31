@@ -7,7 +7,7 @@
 Monotone Circuit Value Problem je základní problém v teorii složitosti, který patří mezi P-úplné problémy \cite{sawa}. Jeho definice je následující:
 
 \begin{itemize}
-    \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními proměnnými (pouze hodnoty 0 nebo 1 - false nebo true).
+    \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními hodnotami (pouze hodnoty 0 nebo 1 - false nebo true).
     \item \textbf{Výstup:} Hodnota výstupního uzlu obvodu (kořene stromu).
 \end{itemize}
 
@@ -17,14 +17,12 @@ Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly předs
 
 \label{sec:MCVPCompleteness}
 
-
-
 MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. Přestože je problém v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus pro jeho řešení – problém vyžaduje sekvenční zpracování.
 
 \section{Formát vstupu a parsování výrazů}
 \label{sec:MCVPParsing}
 
-Aplikace umožňuje zadat monotónní obvod několika způsoby. Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
+Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
 
 \begin{figure}[htbp]
     \centering
@@ -91,7 +89,7 @@ Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuáln�
 \section{Interaktivní editace obvodu}
 \label{sec:MCVPInteractive}
 
-Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může:
+Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph} (viz obrázek \ref{fig:controls-interactive-mcvp}). Uživatel může:
 
 \begin{itemize}
     \item \textbf{Přidávat uzly:} Pomocí tlačítek pod grafem lze vložit nové uzly typu AND, OR nebo vstupní proměnnou s hodnotou 0 nebo 1. Nový uzel se umístí do grafu, ale není propojen s ostatními uzly.
@@ -132,7 +130,7 @@ Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}
 
-Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole, takže hodnoty se šíří zdola nahoru.
+Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole, hodnoty se tedy šíří směrem zdola nahoru (viz obrázek \ref{fig:tree-render-canvas}).
 
 \begin{figure}[htbp]
     \centering
@@ -216,7 +214,7 @@ Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \text
 \subsection{Ukládání a načítání MCVP obvodů}
 \label{sec:MCVPSerialization}
 
-Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
+Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON (viz obrázek \ref{fig:import-export-controls}). Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
 
 \begin{figure}[htbp]
     \centering
