@@ -1,0 +1,29 @@
+Seznam souborů a složek k odstranění před odevzdáním projektu:
+
+### 🤖 Soubory související s AI/Gemini
+- GEMINI.md
+- OdstranitGeminiFile-predOdevzdanim.txt
+- Odstranit_pred_odevzdanim.txt (tento soubor)
+
+### 📝 Poznámky a pracovní soubory
+- Backlog.txt
+- BachelorThesis - pozn.pdf
+
+### ⚙️ Prostředí a verzování (pokud odevzdáváte ZIP)
+- .git/
+- .vscode/
+- node_modules/
+- dist/
+
+### 📄 Pomocné soubory LaTeXu (ve složce BachelorThesis)
+- *.aux
+- *.bbl
+- *.bcf
+- *.blg
+- *.run.xml
+- *.synctex.gz
+- *.out
+- *.toc
+- *.lof
+- *.lot
+- BachelorThesis.pdf (pokud má být odevzdán pouze zdrojový kód, jinak ponechat)

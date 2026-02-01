@@ -30,6 +30,7 @@ export class Node {
     this.type = type; // variable / operation
     this.parents = parents || []; // Ensure arrays are initialized
     this.children = children || [];
+    this.evaluationResult = undefined; // Set during visualization to show evaluation progress
   }
 
   /**

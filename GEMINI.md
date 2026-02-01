@@ -4,6 +4,10 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 
 ---
 
+# General
+1. Do just what you are told, if you want or think that other things should or could be implemented, ask for user input.
+
+
 # 💻 Programming (Web Application) - CODING
 
 ## 🛑 Critical Rules

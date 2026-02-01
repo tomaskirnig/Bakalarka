@@ -246,61 +246,6 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
     );
   };
 
-  // Function to check if adding an edge would create a cycle
-  const wouldCreateCycle = (sourceId, targetId) => {
-    // Build adjacency list from current links plus the proposed new edge
-    const adjacency = {};
-    graph.nodes.forEach(node => {
-      adjacency[node.id] = [];
-    });
-    
-    // Add existing edges
-    graph.links.forEach(link => {
-      const srcId = typeof link.source === 'object' ? link.source.id : link.source;
-      const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
-      if (!adjacency[srcId]) adjacency[srcId] = [];
-      adjacency[srcId].push(tgtId);
-    });
-    
-    // Add the proposed new edge
-    if (!adjacency[sourceId]) adjacency[sourceId] = [];
-    adjacency[sourceId].push(targetId);
-    
-    // DFS to detect cycle
-    const visited = new Set();
-    const recStack = new Set();
-    
-    const hasCycleDFS = (nodeId) => {
-      visited.add(nodeId);
-      recStack.add(nodeId);
-      
-      const neighbors = adjacency[nodeId] || [];
-      for (const neighbor of neighbors) {
-        if (!visited.has(neighbor)) {
-          if (hasCycleDFS(neighbor)) {
-            return true;
-          }
-        } else if (recStack.has(neighbor)) {
-          return true; // Back edge found - cycle detected
-        }
-      }
-      
-      recStack.delete(nodeId);
-      return false;
-    };
-    
-    // Check all nodes as potential starting points
-    for (const nodeId of Object.keys(adjacency)) {
-      if (!visited.has(nodeId)) {
-        if (hasCycleDFS(nodeId)) {
-          return true;
-        }
-      }
-    }
-    
-    return false;
-  };
-
   // Function to add an edge between two nodes
   const addEdge = (sourceId, targetId) => {
     // Don't allow self-loops or duplicate edges
@@ -312,12 +257,6 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       toast.error("Nelze přidat hranu: Hrana mezi těmito uzly již existuje.");
       return false;
     }
-
-    // Check if adding this edge would create a cycle - REMOVED to allow cycles
-    // if (wouldCreateCycle(sourceId, targetId)) {
-    //   toast.error("Nelze přidat hranu: Byl by vytvořen cyklus. Graf musí zůstat acyklický (DAG).");
-    //   return false;
-    // }
 
     const source = nodeMap[sourceId];
     const target = nodeMap[targetId];
@@ -602,14 +541,29 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
                 </div>
                 <div className="card-body text-center d-flex flex-column justify-content-center">
                     {analysisResult ? (
-                        <>
-                            <div className={`alert ${analysisResult.hasWinningStrategy ? 'alert-success' : 'alert-warning'}`}>
-                                {analysisResult.message}
-                            </div>
-                            <p className="text-muted small mb-0">
-                                Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
-                            </p>
-                        </>
+                        (() => {
+                            const startStatus = analysisResult.nodeStatusRaw ? analysisResult.nodeStatusRaw[startingNodeId] : null;
+                            let alertClass = 'alert-secondary';
+                            
+                            if (analysisResult.hasWinningStrategy) {
+                                alertClass = 'alert-success';
+                            } else if (startStatus === 'DRAW') {
+                                alertClass = 'alert-warning';
+                            } else {
+                                alertClass = 'alert-danger';
+                            }
+
+                            return (
+                                <>
+                                    <div className={`alert ${alertClass}`}>
+                                        {analysisResult.message}
+                                    </div>
+                                    <p className="text-muted small mb-0">
+                                        Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
+                                    </p>
+                                </>
+                            );
+                        })()
                     ) : (
                         <p className="text-muted text-center my-auto">
                            Definujte graf a startovní pozici pro zobrazení analýzy.

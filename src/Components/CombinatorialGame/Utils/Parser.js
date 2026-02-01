@@ -36,13 +36,7 @@ export function parseExpressionToTree(expression, startingPosition) {
     const [idStr, playerStr] = nodeDef.split(":").map(s => s.trim());
     const id = idStr;
     const player = Number(playerStr);
-    positions[id] = {
-      id,
-      player,
-      isWinning: false,  
-      parents: [],
-      children: []
-    };
+    positions[id] = new GamePosition(id, player, [], []);
   });
 
   // Process the edges and fill in the children/parents arrays.

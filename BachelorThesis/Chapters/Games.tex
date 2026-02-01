@@ -14,16 +14,28 @@ Kombinatorická hra dvou hráčů na orientovaném grafu je další příklad P-
 Problém spočívá v rozhodnutí, zda Hráč I má výherní strategii ze zadané počáteční pozice:
 
 \begin{itemize}
-    \item \textbf{Vstup:} Orientovaný graf, kde každý uzel reprezentuje herní pozici přiřazenou některému z hráčů, hrany reprezentují možné tahy a jeden uzel je označen jako počáteční pozice.
+    \item \textbf{Vstup:} Orientovaný graf (DG), kde každý uzel reprezentuje herní pozici přiřazenou některému z hráčů, hrany reprezentují možné tahy a jeden uzel je označen jako počáteční pozice.
     \item \textbf{Výstup:} Rozhodnutí, zda Hráč I má výherní strategii ze startovní pozice.
 \end{itemize}
 
-V této hře platí, že hráč, který se ocitne v pozici bez možných tahů, prohrává. Hráč I tedy vyhrává, pokud má strategii, jak vynutit stav, kdy je na tahu Hráč II v pozici bez dalších hran, nebo pokud se hra dostane do takového stavu jeho vlastním tahem \cite{sawa}.
+\textbf{Pravidla hry:} Hra končí, když se dostane do pozice, kde hráč na tahu nemá žádný možný tah – tento hráč pak prohrává. Hráči se střídají v tazích podle toho, jaký hráč je přiřazen aktuální pozici: je-li uzel přiřazen Hráči I, táhne Hráč I; je-li přiřazen Hráči II, táhne Hráč II.
+
+\textbf{Výherní strategie:} Výherní strategie pro Hráče I je taková posloupnost tahů, která garantuje výhru Hráče I bez ohledu na to, jak hraje Hráč II. Jinými slovy, Hráč I má výherní strategii, pokud existuje způsob, jak vždy volit tahy tak, aby se hra dostala do pozice, kde je Hráč II na tahu a nemá žádný možný tah \cite{sawa}.
+
+Hráč I tedy vyhrává v těchto případech:
+\begin{itemize}
+    \item Může vynutit situaci, kdy se hra dostane do pozice, kde je Hráč II na tahu a nemá žádný možný tah (terminální pozice pro Hráče II).
+    \item Hra začíná v pozici přiřazené Hráči II, která nemá žádné odchozí hrany – Hráč II okamžitě prohrává a Hráč I vyhrává.
+\end{itemize}
 
 \subsection{P-úplnost problému}
 \label{sec:GamesCompleteness}
 
-Tento problém je P-úplný \cite{sawa, miyano}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Implementace je podobná algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) – opět používáme průchod do hloubky s memoizací. Liší se pouze logika rozhodování: místo kombinace logických hodnot zde určujeme, která pozice je výherní pro daného hráče na základě dostupných tahů a jejich výsledků. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
+Tento problém je P-úplný \cite{sawa, miyano}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. Algoritmus pracuje iterativně a dokáže zpracovat i grafy s cykly – v případě cyklů bez jednoznačného výsledku přiřadí pozicím status remízy. 
+
+Logika rozhodování funguje následovně: Pro každou pozici určujeme, zda je výherní pro hráče, který je v ní na tahu. Pokud má hráč v dané pozici alespoň jeden tah do pozice, která je výherní pro něj, pak je i aktuální pozice výherní pro něj. Naopak, pokud všechny možné tahy vedou do pozic výherních pro protihráče, pak je aktuální pozice výherní pro protihráče (tedy prohrávající pro hráče na tahu). V případě, že některé tahy vedou do pozic výherních pro protihráče a některé do pozic, jejichž výsledek ještě nebyl určen, zůstává aktuální pozice také nerozhodnuta (remíza).
+
+Implementace využívá frontu (queue) pro postupné zpracování pozic – začínáme koncovými pozicemi a postupně šíříme výsledky směrem k počáteční pozici. Liší se od algoritmu vyhodnocování MCVP (viz kapitola \ref{sec:MCVPEvaluation}) tím, že místo kombinace logických hodnot zde pracujeme s výherními stavy jednotlivých hráčů. I když je problém řešitelný v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus – řešení vyžaduje sekvenční zpracování pozic.
 
 \section{Formát vstupu}
 \label{sec:GamesInput}
@@ -74,12 +86,12 @@ Modul \texttt{Generator.js} obsahuje funkci \texttt{generateGraph()} pro vytvá�
 Algoritmus generování probíhá ve dvou fázích:
 
 \begin{enumerate}
-    \item \textbf{Vytvoření kostry:} Vytvoříme uzly očíslované 0 až \( n-1 \) a každému náhodně přiřadíme hráče. Pro každý uzel \( i > 0 \) pak vytvoříme hranu z náhodného předchozího uzlu do uzlu \( i \). Tím zajistíme souvislý acyklický graf – hrany vedou vždy od nižších čísel k vyšším, takže cyklus vzniknout nemůže.
+    \item \textbf{Vytvoření kostry:} Vytvoříme uzly očíslované 0 až \( n-1 \) a každému náhodně přiřadíme hráče. Pro každý uzel \( i > 0 \) pak vytvoříme hranu z náhodného předchozího uzlu (s indexem menším než \( i \)) do uzlu \( i \). Tím zajistíme, že uzel 0 (počáteční pozice) může dosáhnout všechny ostatní uzly, a současně vytvoříme acyklickou kostru grafu.
     
-    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \), kde \( i < j \), podle dané pravděpodobnosti přidáme hranu \( i \to j \), pokud ještě neexistuje.
+    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti přidáme hranu \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
 \end{enumerate}
 
-Výsledný graf je vždy platný DAG s uzlem 0 jako počáteční pozicí.
+Výsledný graf je vždy souvislý s uzlem 0 jako počáteční pozicí. Graf může obsahovat cykly, což odpovídá reálným herním situacím, kde se hra může dostat do opakujících se pozic. Algoritmus analýzy (viz sekce \ref{sec:GamesAlgorithm}) je navržen tak, aby správně zpracoval i grafy s cykly a přiřadil těmto pozicím status remízy, pokud nelze jednoznačně určit výherce.
 
 \section{Předpřipravené sady}
 \label{sec:GamesPreparedSets}

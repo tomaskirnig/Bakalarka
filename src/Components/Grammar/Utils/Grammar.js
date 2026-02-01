@@ -16,6 +16,7 @@ export class Grammar {
     this.nonTerminals = data.nonTerminals || [];
     this.terminals = data.terminals || [];
     this.productions = data.productions || {};
+    // Note: startSymbol is derived as the first nonTerminal, not stored separately
   }
   
   // Method to initialize from JSON data

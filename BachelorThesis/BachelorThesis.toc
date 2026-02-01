@@ -40,18 +40,18 @@
 \contentsline {subsection}{\numberline {3.9.1}Ukládání a načítání MCVP obvodů}{20}{subsection.3.9.1}%
 \contentsline {chapter}{\numberline {4}Kombinatorická hra}{21}{chapter.4}%
 \contentsline {section}{\numberline {4.1}Teoretický základ}{21}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}P-úplnost problému}{21}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.1}P-úplnost problému}{22}{subsection.4.1.1}%
 \contentsline {section}{\numberline {4.2}Formát vstupu}{22}{section.4.2}%
 \contentsline {section}{\numberline {4.3}Interaktivní editace grafu}{22}{section.4.3}%
 \contentsline {section}{\numberline {4.4}Generování náhodných her}{23}{section.4.4}%
 \contentsline {section}{\numberline {4.5}Předpřipravené sady}{23}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Ukládání a načítání her}{23}{subsection.4.5.1}%
+\contentsline {subsection}{\numberline {4.5.1}Ukládání a načítání her}{24}{subsection.4.5.1}%
 \contentsline {section}{\numberline {4.6}Vizualizace grafu}{24}{section.4.6}%
 \contentsline {section}{\numberline {4.7}Algoritmus analýzy}{24}{section.4.7}%
 \contentsline {subsection}{\numberline {4.7.1}Vyhodnocení výherních pozic}{24}{subsection.4.7.1}%
 \contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{25}{subsection.4.7.2}%
 \contentsline {section}{\numberline {4.8}Krokové vyhodnocení}{25}{section.4.8}%
-\contentsline {chapter}{\numberline {5}Neprázdnost bezkontextových gramatik}{26}{chapter.5}%
+\contentsline {chapter}{\numberline {5}Problém neprázdnosti jazyka \\ bezkontextové gramatiky}{26}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Teoretický základ}{26}{section.5.1}%
 \contentsline {subsection}{\numberline {5.1.1}P-úplnost problému}{27}{subsection.5.1.1}%
 \contentsline {section}{\numberline {5.2}Formát vstupu}{27}{section.5.2}%
