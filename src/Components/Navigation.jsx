@@ -3,10 +3,10 @@ import PropTypes from 'prop-types';
 
 export function Navigation({ selectedOption, onNavSelect }) {
   const navItems = [
-    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Domů', icon: '🏠' },
-    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP', icon: '🌳' },
-    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra', icon: '🎲' },
-    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Gramatika', icon: '📝' },
+    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Domů' },
+    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP' },
+    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra' },
+    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Gramatika' },
   ];
 
   // Handle offcanvas functionality
@@ -75,7 +75,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
     }, 400);
   };
 
-  const renderButton = ({ key, label, icon, isMobile }) => (
+  const renderButton = ({ key, label, isMobile }) => (
     <button
       key={key}
       className={`modern-nav-link ${selectedOption === key ? 'active' : ''}`}
@@ -84,7 +84,6 @@ export function Navigation({ selectedOption, onNavSelect }) {
         if (isMobile) closeMobileMenu();
       }}
     >
-      <span className="nav-icon">{icon}</span>
       <span className="nav-text">{label}</span>
     </button>
   );
