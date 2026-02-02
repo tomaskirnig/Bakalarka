@@ -290,24 +290,6 @@ class Parser {
 }
 
 /**
- * Prints a tree to the console with indentation (debug).
- * 
- * @param {Node} node - The root node of the tree to print
- * @param {number} indent - The indentation level (default: 0)
- */
-export function printTree(node, indent = 0) {
-  if (node !== null) {
-    console.log(' '.repeat(indent) + node.value + (node.varValue !== null ? `[${node.varValue}]` : ''));
-    
-    if (node.children && node.children.length > 0) {
-      node.children.forEach(child => {
-        if (child) printTree(child, indent + 2);
-      });
-    }
-  }
-}
-
-/**
  * Parses an expression string into an MCVP expression tree.
  * 
  * @param {string} exprStr - The expression string to parse
@@ -324,7 +306,6 @@ export function parseExpressionToTree(exprStr) {
     const parser = new Parser(tokens);
     const tree = parser.parse();
     // console.log("Parsed tree:");
-    //printTree(tree); 
     return tree;
   } 
   catch (error) {

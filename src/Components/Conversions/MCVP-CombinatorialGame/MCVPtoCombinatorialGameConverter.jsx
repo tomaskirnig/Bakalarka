@@ -182,31 +182,3 @@ MCVPtoCombinatorialGameConverter.propTypes = {
     mcvpTree: PropTypes.object.isRequired,
     onNavigate: PropTypes.func
 };
-
-/**
- * Component for quick navigation controls
- */
-function QuickNavigationControls({ onGoToStart, onGoToEnd }) {
-  return (
-    <div className="quick-navigation my-4 d-flex justify-content-center gap-3">
-      <button 
-        onClick={onGoToStart}
-        className="btn btn-outline-secondary"
-      >
-        ⏮️ Jít na začátek
-      </button>
-      
-      <button 
-        onClick={onGoToEnd}
-        className="btn btn-outline-primary"
-      >
-        Jít na konec ⏭️
-      </button>
-    </div>
-  );
-}
-
-QuickNavigationControls.propTypes = {
-  onGoToStart: PropTypes.func.isRequired,
-  onGoToEnd: PropTypes.func.isRequired
-};

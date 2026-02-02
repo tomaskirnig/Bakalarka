@@ -196,13 +196,7 @@ export function CombinatorialGame({ initialData }) {
                     )}
                 </Modal>
             )}
-
-            {/* {graph && (
-                <div className="d-flex justify-content-center gap-3 my-4">
-                    <button className='btn-control'>Převést na MCVP</button>
-                    <button className='btn-control'>Převést na Kombinatorickou hru</button>
-                </div>
-            )} */}
+            
             </div>
         </div>  
     );
