@@ -233,7 +233,7 @@ class MCVPToGrammarConverter {
           `Kořen je proměnná s hodnotou 1, generuje terminál '${terminal}'.`
         );
       } else {
-        this.grammar.setProductions(nodeSymbol, [[this.EPSILON]]);
+        this.grammar.setProductions(nodeSymbol, [[]]);
         this.addStep(
           `Pravidlo pro kořen: ${nodeSymbol} → ${this.EPSILON}`,
           node,
@@ -251,15 +251,17 @@ class MCVPToGrammarConverter {
 
     if (node.value === "A") { // AND node
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
+      const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : this.EPSILON;
       this.addStep(
-        `Přidat AND pravidlo: ${nodeSymbol} → ${childSymbols.join(' ')}`,
+        `Přidat AND pravidlo: ${nodeSymbol} → ${rightSide}`,
         node,
         `AND uzel: zřetězení symbolů potomků.`
       );
     } else if (node.value === "O") { // OR node
       this.grammar.setProductions(nodeSymbol, childSymbols.map(symbol => [symbol]));
+      const rules = childSymbols.map(s => `${nodeSymbol} → ${s}`).join(', ');
       this.addStep(
-        `Přidat OR pravidla: ${childSymbols.map(s => `${nodeSymbol} → ${s}`).join(', ')}`,
+        `Přidat OR pravidla: ${rules}`,
         node,
         `OR uzel: alternativní pravidla pro potomky.`
       );
@@ -284,7 +286,8 @@ class MCVPToGrammarConverter {
         this.grammar.addTerminal(terminal);
         return terminal;
       } else {
-        return this.EPSILON;
+        // Variable with value 0 contributes nothing (epsilon)
+        return null;
       }
     }
     return this.symbolGenerator.getSymbol(child);

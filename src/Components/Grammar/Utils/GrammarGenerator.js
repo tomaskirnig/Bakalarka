@@ -249,9 +249,9 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   const epsilonMode = config.epsilonMode || 'never';
   
   if (epsilonMode === 'always' && Math.random() < 0.15) {
-    return ['ε'];
+    return [];
   } else if (epsilonMode === 'random' && Math.random() < 0.08) {
-    return ['ε'];
+    return [];
   }
   
   // 1. Determine if we WANT recursion
