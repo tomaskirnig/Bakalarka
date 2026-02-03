@@ -280,9 +280,11 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
 
       // Function to delete an edge between two nodes
       const deleteEdge = (sourceId, targetId) => {
-        const updatedLinks = graph.links.filter(link =>
-          !(link.source.id === sourceId && link.target.id === targetId)
-        );
+        const updatedLinks = graph.links.filter(link => {
+          const linkSourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const linkTargetId = typeof link.target === 'object' ? link.target.id : link.target;
+          return !(linkSourceId === sourceId && linkTargetId === targetId);
+        });
       
         setGraph({
           nodes: graph.nodes,
@@ -651,6 +653,6 @@ ManualInput.propTypes = {
   initialGraph: PropTypes.object,
   onGraphUpdate: PropTypes.func,
   analysisResult: PropTypes.object,
-  optimalMoves: PropTypes.object,
+  optimalMoves: PropTypes.instanceOf(Set),
   onExplain: PropTypes.func
 };

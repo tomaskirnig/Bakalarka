@@ -71,8 +71,9 @@
       \field{sortinithash}{2f401846e2029bad6b3ecc16d50031e2}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{react-force-graph -- React component for 2D, 3D, VR and AR force directed graphs}
+      \field{howpublished}{GitHub}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{react-force-graph: React component for 2D, 3D, VR and AR force directed graphs [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://github.com/vasturiano/react-force-graph
@@ -99,8 +100,9 @@
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Bootstrap -- The most popular HTML, CSS, and JS library in the world}
+      \field{howpublished}{OpenJS Foundation}
+      \field{note}{Verze 5.3.8. [cit. 2026-02-03]}
+      \field{title}{Bootstrap: Build fast, responsive sites [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://getbootstrap.com/
@@ -129,8 +131,9 @@
       \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{D3.js -- Data-Driven Documents}
+      \field{howpublished}{Observable Inc.}
+      \field{note}{Verze 7.9.0. [cit. 2026-02-03]}
+      \field{title}{D3.js: Data-Driven Documents [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://d3js.org/
@@ -157,8 +160,9 @@
       \field{sortinithash}{8da8a182d344d5b9047633dfc0cc9131}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{ESLint -- Pluggable JavaScript linter}
+      \field{howpublished}{OpenJS Foundation}
+      \field{note}{Verze 9.39.2. [cit. 2026-02-03]}
+      \field{title}{ESLint: Find and fix problems in your JavaScript code [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://eslint.org/
@@ -187,8 +191,9 @@
       \field{sortinithash}{c02bf6bff1c488450c352b40f5d853ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{react-toastify -- React notification made easy}
+      \field{howpublished}{GitHub Pages}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{React-toastify: React notification made easy [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://fkhadra.github.io/react-toastify/
@@ -215,8 +220,9 @@
       \field{sortinithash}{4625c616857f13d17ce56f7d4f97d451}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{React -- A JavaScript library for building user interfaces}
+      \field{howpublished}{Meta Open Source}
+      \field{note}{Verze 19.2. [cit. 2026-02-03]}
+      \field{title}{React: The library for web and native user interfaces [online]}
       \field{year}{2024}
       \verb{urlraw}
       \verb https://react.dev/
@@ -244,7 +250,7 @@
            giveni={T\bibinitperiod}}}%
       }
       \list{institution}{1}{%
-        {Kyushu University}%
+        {Fukuoka: Kyushu University, Research Institute of Fundamental Information Science}%
       }
       \strng{namehash}{2761e081ab7a3316ad6d85822477a2ef}
       \strng{fullhash}{2761e081ab7a3316ad6d85822477a2ef}
@@ -259,8 +265,9 @@
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
       \field{month}{12}
+      \field{note}{[cit. 2026-02-03]}
       \field{number}{RIFIS-TR-CS-17}
-      \field{title}{A List of P-Complete Problems}
+      \field{title}{A List of P-Complete Problems [online]}
       \field{type}{techreport}
       \field{year}{1990}
       \verb{urlraw}
@@ -318,8 +325,9 @@
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Teoretická informatika – Podklady pro přednášky}
+      \field{howpublished}{Ostrava: VŠB-TUO, Katedra informatiky}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{Teoretická informatika – Podklady pro přednášky [online]}
       \field{year}{2025}
       \verb{urlraw}
       \verb https://www.cs.vsb.cz/sawa/ti/slides/ti-slides-08.pdf
@@ -349,8 +357,9 @@
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Úvod do teoretické informatiky – Bezkontextové gramatiky}
+      \field{howpublished}{Ostrava: VŠB-TUO, Katedra informatiky}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{Úvod do teoretické informatiky – Bezkontextové gramatiky [online]}
       \field{year}{2014}
       \verb{urlraw}
       \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-10-cz.pdf
@@ -380,8 +389,9 @@
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Úvod do teoretické informatiky – Turingovy stroje}
+      \field{howpublished}{Ostrava: VŠB-TUO, Katedra informatiky}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{Úvod do teoretické informatiky – Turingovy stroje [online]}
       \field{year}{2014}
       \verb{urlraw}
       \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-08-cz.pdf
@@ -411,8 +421,9 @@
       \field{sortinithash}{b164b07b29984b41daf1e85279fbc5ab}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Úvod do teoretické informatiky – Výpočetní složitost algoritmů}
+      \field{howpublished}{Ostrava: VŠB-TUO, Katedra informatiky}
+      \field{note}{[cit. 2026-02-03]}
+      \field{title}{Úvod do teoretické informatiky – Výpočetní složitost algoritmů [online]}
       \field{year}{2014}
       \verb{urlraw}
       \verb https://www.cs.vsb.cz/kot/download/uti2014/uti-12-cz.pdf
@@ -439,14 +450,15 @@
       \field{sortinithash}{afb52128e5b4dc4b843768c0113d673b}
       \field{labelnamesource}{author}
       \field{labeltitlesource}{title}
-      \field{howpublished}{Online}
-      \field{title}{Vite -- Next Generation Frontend Tooling}
+      \field{howpublished}{VoidZero Inc.}
+      \field{note}{Verze 6. [cit. 2026-02-03]}
+      \field{title}{Vite: The Build Tool for the Web [online]}
       \field{year}{2024}
       \verb{urlraw}
-      \verb https://vitejs.dev/
+      \verb https://vite.dev/
       \endverb
       \verb{url}
-      \verb https://vitejs.dev/
+      \verb https://vite.dev/
       \endverb
     \endentry
   \enddatalist

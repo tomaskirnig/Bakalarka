@@ -9,11 +9,14 @@
 \contentsline {figure}{\numberline {2.1}{\ignorespaces Příklad notifikační zprávy v aplikaci}}{13}{figure.caption.4}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {3.1}{\ignorespaces Výběr způsobu zadání vstupu pro MCVP}}{15}{figure.caption.5}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Ovládací prvky pro interaktivní editor obvodů MCVP}}{17}{figure.caption.6}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{18}{figure.caption.7}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Ovládací prvky pro import a export MCVP obvodů}}{20}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Třídní diagram pro hlavní třídy MCVP}}{16}{figure.caption.6}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Ovládací prvky pro interaktivní editor obvodů MCVP}}{17}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{18}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Ovládací prvky pro import a export MCVP obvodů}}{21}{figure.caption.9}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Třídní diagram pro hlavní třídu kombinatorické hry}}{25}{figure.caption.10}%
 \addvspace {10\p@ }
+\contentsline {figure}{\numberline {5.1}{\ignorespaces Třídní diagram pro hlavní třídu bezkontextové gramatiky}}{32}{figure.caption.11}%
 \addvspace {10\p@ }
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 

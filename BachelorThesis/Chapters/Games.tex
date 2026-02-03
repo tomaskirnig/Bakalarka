@@ -91,6 +91,22 @@ Algoritmus generování probíhá ve dvou fázích:
     \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti přidáme hranu \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
 \end{enumerate}
 
+\subsection{Vnitřní reprezentace herního grafu}
+\label{sec:GamesInternalRepresentation}
+
+Pro reprezentaci struktury herního grafu v paměti aplikace slouží dvojice objektových tříd \texttt{GamePosition} a \texttt{GameGraph}, jejichž vztah ilustruje třídní diagram na obrázku \ref{fig:cg-class}. 
+
+Třída \texttt{GamePosition} modeluje jednotlivou herní pozici jako uzel grafu. Každá instance uchovává identifikátor hráče, který je v dané pozici na tahu, spolu se seznamy předchůdců a následníků. Tyto seznamy umožňují efektivní navigaci grafem při retrográdní analýze i při zobrazování možných tahů.
+
+Třída \texttt{GameGraph} představuje kontejner sdružující všechny herní pozice do jednoho celku. Tato třída spravuje kolekci všech instancí \texttt{GamePosition} a uchovává referenci na počáteční uzel, ze kterého hra začíná. Struktura umožňuje rychlý přístup k~libovolné pozici v~grafu a podporuje operace potřebné pro analýzu výherní strategie.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{IMGs/CG_class.png}
+    \caption{Třídní diagram pro hlavní třídu kombinatorické hry}
+    \label{fig:cg-class}
+\end{figure}
+
 Výsledný graf je vždy souvislý s uzlem 0 jako počáteční pozicí. Graf může obsahovat cykly, což odpovídá reálným herním situacím, kde se hra může dostat do opakujících se pozic. Algoritmus analýzy (viz sekce \ref{sec:GamesAlgorithm}) je navržen tak, aby správně zpracoval i grafy s cykly a přiřadil těmto pozicím status remízy, pokud nelze jednoznačně určit výherce.
 
 \section{Předpřipravené sady}
@@ -165,7 +181,7 @@ Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGam
     \item \textbf{Inicializace:} Všechny pozice jsou na začátku ve stavu REMÍZA.
     \item \textbf{Terminální stavy:} Identifikace pozic bez tahů (PROHRA).
     \item \textbf{Aktualizace:} Postupné šíření výherních a prohrávajících stavů grafem.
-    \item \textbf{Vysvětlení:} U každého kroku je zobrazeno vysvětlení, proč došlo ke změně stavu (např. „Z pozice X lze táhnout do prohrávající pozice Y").
+    \item \textbf{Vysvětlení:} U každého kroku je zobrazeno vysvětlení, proč došlo ke změně stavu (např. \uv{Z pozice X lze táhnout do prohrávající pozice Y}).
 \end{itemize}
 
 Uživatel může procházet kroky analýzy pomocí navigačních tlačítek. Aktuálně aktualizovaný uzel je v grafu zvýrazněn. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.

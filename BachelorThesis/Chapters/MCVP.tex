@@ -52,8 +52,15 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
     
-    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node}, které tvoří stromovou strukturu reprezentující zadaný obvod.
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class}), které tvoří stromovou strukturu reprezentující zadaný obvod.
 \end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/MCVP_class.png}
+    \caption{Třídní diagram pro hlavní třídy MCVP}
+    \label{fig:mcvp-class}
+\end{figure}
 
 Výsledkem parsování je stromová struktura, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 

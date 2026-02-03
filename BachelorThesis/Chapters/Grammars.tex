@@ -133,8 +133,15 @@ Algoritmus generování probíhá v těchto krocích:
         \end{itemize}
     \end{enumerate}
     
-    \item \textbf{Sestavení gramatiky:} Vytvoření instance třídy \texttt{Grammar} s vygenerovanými symboly a pravidly.
+    \item \textbf{Sestavení gramatiky:} Vytvoření instance třídy \texttt{Grammar} (viz obrázek \ref{fig:grammar-class}) s vygenerovanými symboly a pravidly.
 \end{enumerate}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{IMGs/Grammar_class.png}
+    \caption{Třídní diagram pro hlavní třídu bezkontextové gramatiky}
+    \label{fig:grammar-class}
+\end{figure}
 
 \section{Předpřipravené sady}
 \label{sec:GrammarsPreparedSets}
@@ -231,11 +238,11 @@ Pro detailnější pochopení algoritmu implementuje aplikace krokovatelnou anal
 Rozhraní krokového vyhodnocení je rozčleněno do několika sekcí:
 
 \begin{itemize}
-    \item \textbf{Seznam pravidel gramatiky:} Zobrazuje všechna produktivní pravidla. Aktuálně kontrolované pravidlo je vizuálně zvýrazněno žlutým pozadím a oranžovým ohraničením. Pravidla, jejichž levá strana je již produktivní, jsou označena zeleným štítkem s textem „Produktivní".
+    \item \textbf{Seznam pravidel gramatiky:} Zobrazuje všechna produktivní pravidla. Aktuálně kontrolované pravidlo je vizuálně zvýrazněno žlutým pozadím a oranžovým ohraničením. Pravidla, jejichž levá strana je již produktivní, jsou označena zeleným štítkem s textem \uv{Produktivní}.
     
     \item \textbf{Množina produktivních symbolů:} Aktuální obsah množiny \( \mathcal{P} \) je zobrazen formou zelených štítků s písmenem neterminálu. Tato množina se postupně rozšiřuje během jednotlivých iterací algoritmu, za podmínky že gramatika obsahuje produktivní neterminály.
     
-    \item \textbf{Vysvětlení kroku:} Textový popis aktuální operace algoritmu, například „Pravidlo \( A \to a \) obsahuje pouze terminály. \( A \) je produktivní" nebo „Pravidlo se stalo produktivním díky \( B \). \( A \) přidán mezi produktivní".
+    \item \textbf{Vysvětlení kroku:} Textový popis aktuální operace algoritmu, například \uv{Pravidlo \( A \to a \) obsahuje pouze terminály. \( A \) je produktivní} nebo \uv{Pravidlo se stalo produktivním díky \( B \). \( A \) přidán mezi produktivní}.
 \end{itemize}
 
 \subsection{Navigace a ovládání}
@@ -250,4 +257,4 @@ Pro pohyb mezi jednotlivými kroky analýzy jsou k dispozici čtyři navigační
     \item \textbf{Konec:} Skok na finální krok s výsledkem analýzy
 \end{itemize}
 
-Aktuální pozice je indikována čítačem ve formátu „Krok \( x \) z \( n \)", kde \( n \) představuje celkový počet kroků. Tato interaktivní vizualizace umožňuje sledovat, jak algoritmus postupně identifikuje produktivní neterminály na základě již známých produktivních symbolů a jak závislosti mezi pravidly určují pořadí jejich vyhodnocení.
+Aktuální pozice je indikována čítačem ve formátu \uv{Krok \( x \) z \( n \)}, kde \( n \) představuje celkový počet kroků. Tato interaktivní vizualizace umožňuje sledovat, jak algoritmus postupně identifikuje produktivní neterminály na základě již známých produktivních symbolů a jak závislosti mezi pravidly určují pořadí jejich vyhodnocení.

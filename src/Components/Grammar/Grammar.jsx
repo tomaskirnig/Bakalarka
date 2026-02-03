@@ -158,12 +158,12 @@ export function Grammar({ onNavigate, initialData }) {
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
                             <div className="card-body border-top">
                                 <h5>Ukázkový derivační strom</h5>
-                                {analysisResult.derivedWord && (
+                                {analysisResult.derivedWord !== undefined && analysisResult.derivedWord !== null && (
                                     <p className="text-muted small">
                                         Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
                                     </p>
                                 )}
-                                {!analysisResult.derivedWord && (
+                                {(analysisResult.derivedWord === undefined || analysisResult.derivedWord === null) && (
                                     <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
                                 )}
                                 <div style={{ height: '60vh', width: '100%' }}>

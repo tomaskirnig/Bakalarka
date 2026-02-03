@@ -26,55 +26,56 @@
 \contentsline {section}{\numberline {3.3}Vyhodnocení obvodu}{15}{section.3.3}%
 \contentsline {subsection}{\numberline {3.3.1}Algoritmus vyhodnocení}{16}{subsection.3.3.1}%
 \contentsline {subsection}{\numberline {3.3.2}Krokové vyhodnocení}{16}{subsection.3.3.2}%
-\contentsline {section}{\numberline {3.4}Interaktivní editace obvodu}{16}{section.3.4}%
+\contentsline {section}{\numberline {3.4}Interaktivní editace obvodu}{17}{section.3.4}%
 \contentsline {section}{\numberline {3.5}Generování náhodných obvodů}{17}{section.3.5}%
-\contentsline {section}{\numberline {3.6}Vizualizace obvodu}{17}{section.3.6}%
+\contentsline {section}{\numberline {3.6}Vizualizace obvodu}{18}{section.3.6}%
 \contentsline {subsection}{\numberline {3.6.1}Hierarchické rozložení}{18}{subsection.3.6.1}%
-\contentsline {section}{\numberline {3.7}Převod na kombinatorickou hru}{18}{section.3.7}%
-\contentsline {subsection}{\numberline {3.7.1}Princip převodu}{18}{subsection.3.7.1}%
+\contentsline {section}{\numberline {3.7}Převod na kombinatorickou hru}{19}{section.3.7}%
+\contentsline {subsection}{\numberline {3.7.1}Princip převodu}{19}{subsection.3.7.1}%
 \contentsline {subsection}{\numberline {3.7.2}Implementace převodu}{19}{subsection.3.7.2}%
-\contentsline {section}{\numberline {3.8}Převod na bezkontextovou gramatiku}{19}{section.3.8}%
-\contentsline {subsection}{\numberline {3.8.1}Pravidla převodu}{19}{subsection.3.8.1}%
+\contentsline {section}{\numberline {3.8}Převod na bezkontextovou gramatiku}{20}{section.3.8}%
+\contentsline {subsection}{\numberline {3.8.1}Pravidla převodu}{20}{subsection.3.8.1}%
 \contentsline {subsection}{\numberline {3.8.2}Implementace převodu}{20}{subsection.3.8.2}%
 \contentsline {section}{\numberline {3.9}Předpřipravené sady}{20}{section.3.9}%
-\contentsline {subsection}{\numberline {3.9.1}Ukládání a načítání MCVP obvodů}{20}{subsection.3.9.1}%
-\contentsline {chapter}{\numberline {4}Kombinatorická hra}{21}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Teoretický základ}{21}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}P-úplnost problému}{22}{subsection.4.1.1}%
-\contentsline {section}{\numberline {4.2}Formát vstupu}{22}{section.4.2}%
-\contentsline {section}{\numberline {4.3}Interaktivní editace grafu}{22}{section.4.3}%
-\contentsline {section}{\numberline {4.4}Generování náhodných her}{23}{section.4.4}%
-\contentsline {section}{\numberline {4.5}Předpřipravené sady}{23}{section.4.5}%
-\contentsline {subsection}{\numberline {4.5.1}Ukládání a načítání her}{24}{subsection.4.5.1}%
-\contentsline {section}{\numberline {4.6}Vizualizace grafu}{24}{section.4.6}%
-\contentsline {section}{\numberline {4.7}Algoritmus analýzy}{24}{section.4.7}%
-\contentsline {subsection}{\numberline {4.7.1}Vyhodnocení výherních pozic}{24}{subsection.4.7.1}%
-\contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{25}{subsection.4.7.2}%
-\contentsline {section}{\numberline {4.8}Krokové vyhodnocení}{25}{section.4.8}%
-\contentsline {chapter}{\numberline {5}Problém neprázdnosti jazyka \\ bezkontextové gramatiky}{26}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Teoretický základ}{26}{section.5.1}%
-\contentsline {subsection}{\numberline {5.1.1}P-úplnost problému}{27}{subsection.5.1.1}%
-\contentsline {section}{\numberline {5.2}Formát vstupu}{27}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Manuální zadání gramatiky}{27}{section.5.3}%
-\contentsline {section}{\numberline {5.4}Generování náhodných gramatik}{28}{section.5.4}%
-\contentsline {subsection}{\numberline {5.4.1}Základní parametry}{28}{subsection.5.4.1}%
-\contentsline {subsection}{\numberline {5.4.2}Pokročilé parametry}{28}{subsection.5.4.2}%
-\contentsline {subsection}{\numberline {5.4.3}Algoritmus generování}{29}{subsection.5.4.3}%
-\contentsline {section}{\numberline {5.5}Předpřipravené sady}{29}{section.5.5}%
-\contentsline {subsection}{\numberline {5.5.1}Ukládání a načítání gramatik}{30}{subsection.5.5.1}%
-\contentsline {section}{\numberline {5.6}Algoritmus vyhodnocení}{30}{section.5.6}%
-\contentsline {subsection}{\numberline {5.6.1}Identifikace produktivních neterminálů}{30}{subsection.5.6.1}%
-\contentsline {subsection}{\numberline {5.6.2}Rekonstrukce derivace}{31}{subsection.5.6.2}%
-\contentsline {section}{\numberline {5.7}Vizualizace derivačního stromu}{31}{section.5.7}%
-\contentsline {subsection}{\numberline {5.7.1}Komponenta pro vykreslení}{32}{subsection.5.7.1}%
-\contentsline {section}{\numberline {5.8}Krokové vyhodnocení}{32}{section.5.8}%
-\contentsline {subsection}{\numberline {5.8.1}Struktura zobrazení}{32}{subsection.5.8.1}%
-\contentsline {subsection}{\numberline {5.8.2}Navigace a ovládání}{32}{subsection.5.8.2}%
-\contentsline {chapter}{\numberline {6}Závěr}{33}{chapter.6}%
-\contentsline {section}{\numberline {6.1}Dosažené výsledky}{33}{section.6.1}%
-\contentsline {section}{\numberline {6.2}Vzdělávací přínos}{34}{section.6.2}%
-\contentsline {section}{\numberline {6.3}Možnosti dalšího rozvoje}{34}{section.6.3}%
-\contentsline {chapter}{Literatura}{35}{chapter*.9}%
+\contentsline {subsection}{\numberline {3.9.1}Ukládání a načítání MCVP obvodů}{21}{subsection.3.9.1}%
+\contentsline {chapter}{\numberline {4}Kombinatorická hra}{22}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Teoretický základ}{22}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}P-úplnost problému}{23}{subsection.4.1.1}%
+\contentsline {section}{\numberline {4.2}Formát vstupu}{23}{section.4.2}%
+\contentsline {section}{\numberline {4.3}Interaktivní editace grafu}{23}{section.4.3}%
+\contentsline {section}{\numberline {4.4}Generování náhodných her}{24}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Vnitřní reprezentace herního grafu}{24}{subsection.4.4.1}%
+\contentsline {section}{\numberline {4.5}Předpřipravené sady}{25}{section.4.5}%
+\contentsline {subsection}{\numberline {4.5.1}Ukládání a načítání her}{25}{subsection.4.5.1}%
+\contentsline {section}{\numberline {4.6}Vizualizace grafu}{26}{section.4.6}%
+\contentsline {section}{\numberline {4.7}Algoritmus analýzy}{26}{section.4.7}%
+\contentsline {subsection}{\numberline {4.7.1}Vyhodnocení výherních pozic}{26}{subsection.4.7.1}%
+\contentsline {subsection}{\numberline {4.7.2}Optimální tahy}{27}{subsection.4.7.2}%
+\contentsline {section}{\numberline {4.8}Krokové vyhodnocení}{27}{section.4.8}%
+\contentsline {chapter}{\numberline {5}Problém neprázdnosti jazyka \\ bezkontextové gramatiky}{28}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Teoretický základ}{28}{section.5.1}%
+\contentsline {subsection}{\numberline {5.1.1}P-úplnost problému}{29}{subsection.5.1.1}%
+\contentsline {section}{\numberline {5.2}Formát vstupu}{29}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Manuální zadání gramatiky}{29}{section.5.3}%
+\contentsline {section}{\numberline {5.4}Generování náhodných gramatik}{30}{section.5.4}%
+\contentsline {subsection}{\numberline {5.4.1}Základní parametry}{30}{subsection.5.4.1}%
+\contentsline {subsection}{\numberline {5.4.2}Pokročilé parametry}{30}{subsection.5.4.2}%
+\contentsline {subsection}{\numberline {5.4.3}Algoritmus generování}{31}{subsection.5.4.3}%
+\contentsline {section}{\numberline {5.5}Předpřipravené sady}{31}{section.5.5}%
+\contentsline {subsection}{\numberline {5.5.1}Ukládání a načítání gramatik}{32}{subsection.5.5.1}%
+\contentsline {section}{\numberline {5.6}Algoritmus vyhodnocení}{32}{section.5.6}%
+\contentsline {subsection}{\numberline {5.6.1}Identifikace produktivních neterminálů}{32}{subsection.5.6.1}%
+\contentsline {subsection}{\numberline {5.6.2}Rekonstrukce derivace}{33}{subsection.5.6.2}%
+\contentsline {section}{\numberline {5.7}Vizualizace derivačního stromu}{34}{section.5.7}%
+\contentsline {subsection}{\numberline {5.7.1}Komponenta pro vykreslení}{34}{subsection.5.7.1}%
+\contentsline {section}{\numberline {5.8}Krokové vyhodnocení}{34}{section.5.8}%
+\contentsline {subsection}{\numberline {5.8.1}Struktura zobrazení}{34}{subsection.5.8.1}%
+\contentsline {subsection}{\numberline {5.8.2}Navigace a ovládání}{35}{subsection.5.8.2}%
+\contentsline {chapter}{\numberline {6}Závěr}{36}{chapter.6}%
+\contentsline {section}{\numberline {6.1}Dosažené výsledky}{36}{section.6.1}%
+\contentsline {section}{\numberline {6.2}Vzdělávací přínos}{37}{section.6.2}%
+\contentsline {section}{\numberline {6.3}Možnosti dalšího rozvoje}{37}{section.6.3}%
+\contentsline {chapter}{Literatura}{38}{chapter*.12}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
