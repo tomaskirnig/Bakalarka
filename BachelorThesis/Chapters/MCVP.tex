@@ -8,7 +8,7 @@ Monotone Circuit Value Problem je základní problém v teorii složitosti, kter
 
 \begin{itemize}
     \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními hodnotami (pouze hodnoty 0 nebo 1 - false nebo true).
-    \item \textbf{Výstup:} Hodnota výstupního uzlu obvodu (kořene stromu).
+    \item \textbf{Výstup:} Hodnota výstupního uzlu obvodu (výstupního hradla).
 \end{itemize}
 
 Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly představují buď vstupní proměnné (listy) nebo logická hradla (vnitřní uzly). Hrany reprezentují tok logických hodnot – přenášejí výsledky vyhodnocení z jednoho uzlu jako vstupy do uzlů následujících. V monotónním obvodu chybí hradla NOT, což zajišťuje, že funkce reprezentovaná obvodem je monotónní – zvýšení hodnoty libovolného vstupu nikdy nesníží hodnotu výstupu \cite{sawa}.
@@ -22,7 +22,7 @@ MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvod
 \section{Formát vstupu a parsování výrazů}
 \label{sec:MCVPParsing}
 
-Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
+Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na strukturu obvodu (DAG).
 
 \begin{figure}[htbp]
     \centering
@@ -52,7 +52,7 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
     
-    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class}), které tvoří stromovou strukturu reprezentující zadaný obvod.
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class}), které tvoří strukturu grafu reprezentující zadaný obvod.
 \end{enumerate}
 
 \begin{figure}[htbp]
@@ -62,12 +62,12 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
     \label{fig:mcvp-class}
 \end{figure}
 
-Výsledkem parsování je stromová struktura, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+Výsledkem parsování je orientovaný graf, kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
 \section{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluation}
 
-Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem stromové struktury, který je implementován v modulu \texttt{EvaluateTree.js}.
+Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem grafu, který je implementován v modulu \texttt{EvaluateTree.js}.
 
 \subsection{Algoritmus vyhodnocení}
 \label{sec:MCVPAlgorithm}
@@ -79,7 +79,7 @@ Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) 
     
     \item \textbf{Vnitřní uzly (operace):} Pro uzly reprezentující logické operace funkce nejdříve vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 pouze tehdy, když alespoň jeden potomek má hodnotu 1.
     
-    \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných podstromů.
+    \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných uzlů.
     
     \item \textbf{Detekce cyklů:} Algoritmus používá množinu \texttt{visiting} pro detekci případných cyklů v grafu, které by způsobily nekonečnou rekurzi.
 \end{enumerate}
@@ -89,7 +89,7 @@ Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) 
 \subsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStep}
 
-Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku stromové struktury. Uživatel tak může sledovat, jak se hodnoty šíří od listů ke kořeni stromové struktury a lépe pochopit princip vyhodnocování.
+Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku obvodu. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
 
 Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace.
 
@@ -120,7 +120,7 @@ Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pom
     \label{fig:controls-interactive-mcvp}
 \end{figure}
 
-Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz kapitola \ref{sec:GraphVisualization}). Aplikace průběžně aktualizuje interní stromovou strukturu odpovídající aktuálnímu stavu grafu.
+Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz kapitola \ref{sec:GraphVisualization}). Aplikace průběžně aktualizuje interní strukturu grafu odpovídající aktuálnímu stavu grafu.
 
 \section{Generování náhodných obvodů}
 \label{sec:MCVPGeneration}
@@ -137,7 +137,7 @@ Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}
 
-Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole, hodnoty se tedy šíří směrem zdola nahoru (viz obrázek \ref{fig:tree-render-canvas}).
+Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako orientovaný graf s výstupním hradlem nahoře a vstupy dole, hodnoty se tedy šíří směrem zdola nahoru (viz obrázek \ref{fig:tree-render-canvas}).
 
 \begin{figure}[htbp]
     \centering
@@ -149,7 +149,7 @@ Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRe
 \subsection{Hierarchické rozložení}
 \label{sec:MCVPLayout}
 
-Pro vizualizaci stromu používá aplikace knihovnu \emph{react-force-graph-2d}. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
+Pro vizualizaci grafu používá aplikace knihovnu \emph{react-force-graph-2d}. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
 
 \section{Převod na kombinatorickou hru}
 \label{sec:MCVPtoGame}
@@ -176,7 +176,7 @@ Převod zachovává výsledek řešení: Hráč I v kombinatorické hře vyhráv
 \subsection{Implementace převodu}
 \label{sec:MCVPtoGameImplementation}
 
-Třída \texttt{MCVPToGameStepGenerator} prochází MCVP strom rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře včetně hran k pozicím potomků. Pro efektivitu používáme memoizaci – každý uzel zpracujeme právě jednou, i kdyby se v obvodu vyskytoval vícekrát (například při sdílených podstromech).
+Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře včetně hran k pozicím potomků. Pro efektivitu používáme memoizaci – každý uzel zpracujeme právě jednou, i kdyby se v obvodu vyskytoval vícekrát (například při sdílených částech obvodu).
 
 Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně. Na levé straně vidí uživatel původní obvod se zvýrazněným aktuálně zpracovávaným uzlem, vpravo vznikající graf kombinatorické hry. Navigační tlačítka umožňují procházet kroky převodu k dalšímu i předešlému kroku.
 
@@ -207,7 +207,7 @@ Výsledná gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhod
 \subsection{Implementace převodu}
 \label{sec:MCVPtoGrammarImplementation}
 
-Převod implementuje třída \texttt{MCVPToGrammarConverter} (modul \texttt{MCVPtoGrammarConverter.jsx}). Nejprve \texttt{NonTerminalGenerator} přiřadí každému uzlu obvodu unikátní symbol – kořen dostane počáteční symbol $S$, ostatní uzly postupně symboly $A$, $B$, $C$, atd. Poté funkce \texttt{createProductionsRecursively()} rekurzivně prochází strom a generuje gramatická pravidla podle typu jednotlivých uzlů.
+Převod implementuje třída \texttt{MCVPToGrammarConverter} (modul \texttt{MCVPtoGrammarConverter.jsx}). Nejprve \texttt{NonTerminalGenerator} přiřadí každému uzlu obvodu unikátní symbol – kořen dostane počáteční symbol $S$, ostatní uzly postupně symboly $A$, $B$, $C$, atd. Poté funkce \texttt{createProductionsRecursively()} rekurzivně prochází graf a generuje gramatická pravidla podle typu jednotlivých uzlů.
 
 Pro konstrukci gramatiky používáme pomocnou třídu \texttt{ConversionGrammar} (soubor \texttt{ConversionGrammar.js}), která rozšiřuje standardní třídu \texttt{Grammar} o metody pro přidávání symbolů a pravidel.
 
@@ -221,7 +221,7 @@ Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \text
 \subsection{Ukládání a načítání MCVP obvodů}
 \label{sec:MCVPSerialization}
 
-Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON (viz obrázek \ref{fig:import-export-controls}). Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
+Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON (viz obrázek \ref{fig:import-export-controls}). Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede strukturu grafu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte strukturu grafu včetně hran mezi uzly.
 
 \begin{figure}[htbp]
     \centering

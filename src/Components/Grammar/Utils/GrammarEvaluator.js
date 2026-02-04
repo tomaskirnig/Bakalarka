@@ -38,7 +38,9 @@ export function isEmptyLanguage(grammar) {
 
   // Helper: can this right produce terminals given current productive set?
   function rightIsProductive(right) {
-    return right.length === 0 || right.every(sym => terminals.includes(sym) || productive.has(sym));
+    return right.length === 0 || 
+           (right.length === 1 && right[0] === 'ε') ||
+           right.every(sym => terminals.includes(sym) || productive.has(sym));
   }
 
   // 1) Seed the queue with any nonterminal that has a terminal-only (or ε) rule

@@ -29,7 +29,7 @@ export function generateGrammar(config) {
     ensureEpsilonExists(productions, nonTerminals, config);
   }
 
-  ensureReachability(productions, nonTerminals, terminals);
+  ensureReachability(productions, nonTerminals);
 
   return new Grammar({
     name: "Generated Context-Free Grammar",

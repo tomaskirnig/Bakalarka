@@ -64,17 +64,7 @@ export function computeWinner(graph) {
       const samePlayer = (playerP === playerU);
 
       if (statusU === 'LOSE') {
-        nodeStatus[p] = 'WIN';
-        queue.push(p);
-        steps.push({
-          type: 'UPDATE',
-          id: p,
-          status: 'WIN',
-          triggerId: u,
-          explanation: `Z pozice ${p} lze táhnout do prohrávající pozice ${u}. Hráč na tahu vyhrává.`
-        });
-      } else if (statusU === 'WIN') {
-        if (samePlayer) {
+        if (!samePlayer) {
           nodeStatus[p] = 'WIN';
           queue.push(p);
           steps.push({
@@ -82,7 +72,7 @@ export function computeWinner(graph) {
             id: p,
             status: 'WIN',
             triggerId: u,
-            explanation: `Z pozice ${p} (Hráč ${playerP}) lze táhnout do vyhrávající pozice ${u} (také Hráč ${playerU}). Hráč na tahu vyhrává.`
+            explanation: `Z pozice ${p} (Hráč ${playerP}) lze táhnout do prohrávající pozice soupeře ${u} (Hráč ${playerU}). Hráč na tahu vyhrává.`
           });
         } else {
           degree[p]--;
@@ -94,7 +84,32 @@ export function computeWinner(graph) {
               id: p,
               status: 'LOSE',
               triggerId: u,
-              explanation: `Všechny tahy z pozice ${p} vedou do vyhrávajících pozic soupeře. Hráč na tahu prohrává.`
+              explanation: `Všechny tahy z pozice ${p} (Hráč ${playerP}) vedou do pozic, kde tento hráč prohrává. Hráč na tahu prohrává.`
+            });
+          }
+        }
+      } else if (statusU === 'WIN') {
+        if (samePlayer) {
+          nodeStatus[p] = 'WIN';
+          queue.push(p);
+          steps.push({
+            type: 'UPDATE',
+            id: p,
+            status: 'WIN',
+            triggerId: u,
+            explanation: `Z pozice ${p} (Hráč ${playerP}) lze táhnout do své vyhrávající pozice ${u} (také Hráč ${playerU}). Hráč na tahu vyhrává.`
+          });
+        } else {
+          degree[p]--;
+          if (degree[p] === 0) {
+            nodeStatus[p] = 'LOSE';
+            queue.push(p);
+            steps.push({
+              type: 'UPDATE',
+              id: p,
+              status: 'LOSE',
+              triggerId: u,
+              explanation: `Všechny tahy z pozice ${p} (Hráč ${playerP}) vedou do vyhrávajících pozic soupeře. Hráč na tahu prohrává.`
             });
           }
         }

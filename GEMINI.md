@@ -6,7 +6,9 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 
 # General
 1. Do just what you are told, if you want or think that other things should or could be implemented, ask for user input.
-
+2. It is alright to fail instead of halucinating not correct information.
+3. Write comments that describe the code if needed and dont write comments that describe your actions or thoughts.
+4. If we change some code and now the description in the thesis is not correct, change the text in thesis according to the new code. 
 
 # 💻 Programming (Web Application) - CODING
 

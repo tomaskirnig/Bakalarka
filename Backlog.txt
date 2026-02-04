@@ -5,6 +5,7 @@
 
 - Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
+- Optimize (interactive) - make the arrows bigger
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
@@ -26,7 +27,6 @@
 
 - Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
 
-krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici
 
 -udelat novou vetev s omezenout fyzikou

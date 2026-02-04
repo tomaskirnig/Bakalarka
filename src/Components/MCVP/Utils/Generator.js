@@ -97,7 +97,10 @@ export function generateTree(numGates, numVariables) {
           const variance = Math.max(1, Math.floor(targetChildren * 0.2));
           const randomVariance = Math.floor(Math.random() * (2 * variance + 1)) - variance;
           
-          childCount = Math.max(2, Math.min(nodes.length, targetChildren + randomVariance));
+          // Ensure we don't try to take more nodes than available
+          // If only 1 node is left, we must take 1, otherwise we prefer at least 2
+          const minAllowed = nodes.length < 2 ? 1 : 2;
+          childCount = Math.max(minAllowed, Math.min(nodes.length, targetChildren + randomVariance));
       }
       
       const children = [];

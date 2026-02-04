@@ -51,8 +51,10 @@ export function generateGrammarSteps(grammar) {
         const { left, right } = rule;
         const ruleStr = `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
         
-        // Check if right side consists purely of terminals
-        const isTerminalOnly = right.every(sym => terminals.includes(sym));
+        // Check if right side consists purely of terminals (or is epsilon)
+        const isTerminalOnly = right.length === 0 || 
+                             (right.length === 1 && right[0] === 'ε') ||
+                             right.every(sym => terminals.includes(sym));
 
         if (isTerminalOnly) {
              if (!productive.has(left)) {
@@ -115,7 +117,9 @@ export function generateGrammarSteps(grammar) {
                  const ruleStr = `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
                  
                  // Check if this rule is NOW fully productive
-                 const isProductive = right.every(sym => terminals.includes(sym) || productive.has(sym));
+                 const isProductive = right.length === 0 || 
+                                    (right.length === 1 && right[0] === 'ε') ||
+                                    right.every(sym => terminals.includes(sym) || productive.has(sym));
                  
                  if (isProductive) {
                      if (!productive.has(left)) {
