@@ -5,7 +5,7 @@ import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
-import { TreeCanvas } from './TreeRenderCanvas';
+import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateTree } from './Utils/EvaluateTree';
 import { Modal } from '../Common/Modal';
 import { StepByStepTree } from './StepByStepTree';
@@ -127,7 +127,11 @@ export function MCVP({ onNavigate, initialData }) {
                 }}
             />
 
-            {(tree && chosenOpt !== 'interactive') && <TreeCanvas tree={tree} />}
+            {(tree && chosenOpt !== 'interactive') && (
+                <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+                    <TreeRenderCanvas tree={tree} />
+                </div>
+            )}
 
             {tree && (
                 <div className="card mt-3 mx-auto shadow-sm" style={{ maxWidth: '600px' }}>

@@ -2,7 +2,7 @@
 \documentclass[czech,bachelor]{diploma}
 % Dalsi doplnujici baliky maker
 \usepackage[autostyle=true,czech=quotes]{csquotes} % korektni sazba uvozovek, podpora pro balik biblatex
-\usepackage[backend=biber, style=iso-numeric, alldates=iso]{biblatex} % bibliografie
+\usepackage[backend=biber, style=iso-numeric, alldates=iso, sorting=nty]{biblatex} % bibliografie
 \usepackage{dcolumn} % sloupce tabulky s ciselnymi hodnotami
 \usepackage{subfig} % makra pro "podobrazky" a "podtabulky"
 \usepackage[cpp]{diplomalst}
@@ -28,7 +28,7 @@
 % Pokud nechceme nikomu dekovat makro zapoznamkujeme.
 % \Acknowledgement{Rád bych na tomto místě poděkoval všem, kteří mi s prací pomohli, protože bez nich by tato práce nevznikla.}
 
-\CzechAbstract{Tato bakalářská práce se zabývá vývojem výukové webové aplikace pro demonstraci P-úplných problémů. Cílem je usnadnit studentům pochopení a procvičování těchto problémů. Aplikace se zaměřuje na tři P-úplné problémy: \emph{Monotone Circuit Value Problem} (MCVP), \emph{prázdnou gramatiku} a \emph{kombinatorickou hru}. Práce zahrnuje implementaci modulů pro interaktivní zadávání vstupů (ručně, náhodnou generací nebo výběrem z připravené sady) a simulaci jejich řešení. Uživatel může také sledovat krokový převod instance MCVP na další zmíněné problémy a následně jejich řešení.}
+\CzechAbstract{Tato bakalářská práce se zabývá vývojem výukové webové aplikace pro demonstraci P-úplných problémů. Cílem je usnadnit studentům pochopení a procvičování těchto problémů. Aplikace se zaměřuje na tři P-úplné problémy: \emph{Monotone Circuit Value Problem} (MCVP), \emph{problém neprázdnosti bezkontextové gramatiky} a \emph{kombinatorické hry na grafech}. Práce zahrnuje implementaci modulů pro interaktivní zadávání vstupů (ručně, náhodnou generací nebo výběrem z připravené sady) a simulaci jejich řešení. Uživatel může také sledovat krokový převod instance MCVP na další zmíněné problémy a následně jejich řešení.}
 
 \CzechKeywords{Teoretická informatika, P-úplné problémy, Monotone Circuit Value Problem, webová aplikace, simulace, převod instancí}
 
@@ -39,9 +39,21 @@
 \AddAcronym{MCVP}{Monotone Circuit Value Problem}
 \AddAcronym{P}{Třída problémů řešitelných v polynomiálním čase}
 \AddAcronym{NC}{Nick's Class -- třída efektivně paralelizovatelných problémů}
+\AddAcronym{BFS}{Breadth First Search -- Algoritmus průchodu do šířky}
+\AddAcronym{CFG}{Context-Free Grammar -- Bezkontextová gramatika}
+\AddAcronym{DAG}{Directed Acyclic Graph -- Orientovaný acyklický graf}
+\AddAcronym{DFS}{Depth First Search -- Algoritmus průchodu do hloubky}
+\AddAcronym{DOM}{Document Object Model -- Objektový model dokumentu}
+\AddAcronym{HTML}{Hypertext Markup Language -- Hypertextový značkovací jazyk}
+\AddAcronym{ID}{Identifier -- Identifikátor}
+\AddAcronym{JSON}{JavaScript Object Notation -- Objektový zápis JavaScriptu}
+\AddAcronym{LS}{Levá strana}
+\AddAcronym{PS}{Pravá strana}
+\AddAcronym{SPA}{Single Page Application -- Jednostránková webová aplikace}
+\AddAcronym{TI}{Teoretická informatika}
+\AddAcronym{UI}{User Interface -- Uživatelské rozhraní}
 
 \addbibresource{bibliography.bib}
-\addbibresource{coffee.bib}
 
 % Novy druh tabulkoveho sloupce, ve kterem jsou cisla zarovnana podle desetinne carky
 \newcolumntype{d}[1]{D{,}{,}{#1}}
@@ -60,8 +72,8 @@
 
 % Jsou v praci tabulky? Pokud ano vysazime jejich seznam a odstrankujeme.
 % Pokud ne smazeme nasledujici dve makra.
-\listoftables
-\clearpage
+% \listoftables
+% \clearpage
 
 % A nasleduje text zaverecne prace.
 \input{Chapters/Introduction.tex}
@@ -76,12 +88,10 @@
 \printbibliography[title={Literatura}, heading=bibintoc]
 
 % Prilohy
-\appendix
-% \input{Chapters/Appendix1.tex}
-% \input{Chapters/Appendix2.tex}
+% \appendix
 
 % Priloha vlozena primo do hlavniho LaTeX souboru. Ne vsechny prilohy je nutne mit ve zvlastnich souborech.
-\chapter{Dlouhý zdrojový kód}
+% \chapter{Dlouhý zdrojový kód}
 % \lstinputlisting[label=src:CppExternal,caption={Dlouhý zdrojový kód v jazyce C++ načtený s externího souboru}]{SourceCodes/ArraySortingAlgorithms.cpp}
 
 \end{document}

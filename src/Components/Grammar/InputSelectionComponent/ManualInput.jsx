@@ -22,8 +22,8 @@ export function ManualInput({ onGrammar }) {
     <div className="inputWindow">
       <h2>Zadání gramatiky</h2>
       <h3>
-        <div>Formát: S → aS | bA</div> 
-        <div>A → aA | bS | ε</div>
+        <div>Formát: S → a S | b A</div> 
+        <div>A → a A | b S | ε</div>
       </h3>
       <div>
         <textarea

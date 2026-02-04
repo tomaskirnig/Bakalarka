@@ -1,5 +1,5 @@
 {
-  "name": "Empty Language Example",
+  "name": "Příklad prázdného jazyka",
   "nonTerminals": ["S", "A"],
   "terminals": ["a", "b"],
   "productions": {

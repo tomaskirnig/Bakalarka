@@ -81,9 +81,9 @@ This document provides a detailed overview of the JavaScript (`.js`) and React C
 #### Core
 
 ##### 📄 MCVP.jsx (src/Components/MCVP)
-**Description:** The main container component for the MCVP module. It orchestrates input selection, graph visualization (`TreeCanvas`), evaluation result display, and conversion options.
+**Description:** The main container component for the MCVP module. It orchestrates input selection, graph visualization (`TreeRenderCanvas`), evaluation result display, and conversion options.
 **Key Functions:**
-- `MCVP({ onNavigate, initialData })`: Manages state for the current tree, evaluation results, and modal visibility. Integrates input components and the `TreeCanvas`.
+- `MCVP({ onNavigate, initialData })`: Manages state for the current tree, evaluation results, and modal visibility. Integrates input components and the `TreeRenderCanvas`.
 
 ##### 📄 TreeRenderCanvas.jsx (src/Components/MCVP)
 **Description:** Visualizes the MCVP expression tree as a directed graph using `react-force-graph-2d`.
@@ -91,12 +91,12 @@ This document provides a detailed overview of the JavaScript (`.js`) and React C
 - **Force-Directed Layout:** Uses D3 forces (link, charge, collision) to layout the graph.
 - **DAG Layout:** Configured with `dagMode="td"` (top-down) for hierarchical tree visualization.
 **Key Functions:**
-- `TreeCanvas({ tree, highlightedNode, activeNode, completedSteps })`: Converts the tree structure into graph data (nodes/links), handles resizing, and defines custom painting functions (`paintNode`, `paintLink`) to draw nodes and edges with specific styles based on their state (evaluated, highlighted, etc.).
+- `TreeRenderCanvas({ tree, highlightedNode, activeNode, completedSteps })`: Converts the tree structure into graph data (nodes/links), handles resizing, and defines custom painting functions (`paintNode`, `paintLink`) to draw nodes and edges with specific styles based on their state (evaluated, highlighted, etc.).
 
 ##### 📄 StepByStepTree.jsx (src/Components/MCVP)
 **Description:** A component for visualizing the evaluation of an MCVP tree step-by-step.
 **Key Functions:**
-- `StepByStepTree({ tree })`: Uses `evaluateTreeWithSteps` to generate an evaluation sequence and provides controls ("Previous", "Next") to traverse these steps, updating the visualization via `TreeCanvas`.
+- `StepByStepTree({ tree })`: Uses `evaluateTreeWithSteps` to generate an evaluation sequence and provides controls ("Previous", "Next") to traverse these steps, updating the visualization via `TreeRenderCanvas`.
 
 #### Utils
 

@@ -1,4 +1,43 @@
 \chapter{Závěr}
 \label{sec:Conclusion}
 
-% Zde bude shrnutí výsledků a diskuze.
+Cílem této práce bylo vytvořit interaktivní webovou aplikaci pro vizualizaci a demonstraci převoditelnosti a řešení P-úplných problémů na příkladu tří vybraných P-úplných problémů: Monotone Circuit Value Problem, kombinatorických her na grafu a problému neprázdnosti jazyka bezkontextové gramatiky.
+
+\section{Dosažené výsledky}
+\label{sec:ConclusionAchievements}
+
+Výsledná aplikace splňuje všechny stanovené cíle a poskytuje jednotné prostředí pro práci se třemi P-úplnými problémy. Pro každý problém je implementováno kompletní řešení zahrnující:
+
+\begin{itemize}
+    \item \textbf{Flexibilní vstupní systém:} Uživatelé mohou zadávat instance problémů třemi způsoby – manuálním zadáním, generováním náhodných instancí nebo pomocí předpřipravených příkladů. Tyto možnosti umožňují jak experimentování s vlastními příklady, tak rychlé testování algoritmu na náhodných datech.
+    
+    \item \textbf{Vizualizaci řešení:} Každý problém je doprovázen grafickou reprezentací, která využívá knihovnu \emph{react-force-graph-2d} pro interaktivní zobrazení grafových struktur. Uživatel může manipulovat se zobrazenými grafy, přibližovat je a přesouvat uzly pro lepší orientaci.
+    
+    \item \textbf{Krokové vyhodnocení:} Implementace krokovatelného průchodu algoritmů umožňuje sledovat každý jednotlivý krok výpočtu s textovým vysvětlením.
+    
+    \item \textbf{Export a import dat:} Možnost ukládání a načítání instancí problémů ve formátu JSON podporuje sdílení příkladů a vytváření knihoven testovacích případů.
+\end{itemize}
+
+Aplikace taktéž demonstruje dva konkrétní převody z MCVP na kombinatorickou hru a na bezkontextovou gramatiku. Oba převody jsou implementovány krokovatelně, takže uživatel může sledovat, jak se jednotlivé uzly obvodu transformují na odpovídající struktury v cílovém problému. Tato vizualizace názorně ilustruje techniku polynomiálních redukcí a vzájemnou převoditelnost P-úplných problémů.
+
+\section{Vzdělávací přínos}
+\label{sec:ConclusionEducational}
+
+Aplikace představuje vzdělávací nástroj pro výuku teorie složitosti s interaktivním přístupem. Krokové vyhodnocení s textovými vysvětleními umožňuje pochopit fungování algoritmů na konkrétních příkladech, zatímco vizualizace převodů demonstruje vzájemnou převoditelnost P-úplných problémů. Generování náhodných instancí pak podporuje experimentální učení a pozorování chování algoritmů na různých strukturách vstupů.
+
+\section{Možnosti dalšího rozvoje}
+\label{sec:ConclusionFutureWork}
+
+Přestože aplikace poskytuje funkční implementaci všech plánovaných funkcí, existuje prostor pro další rozšíření:
+
+\begin{itemize}
+    \item \textbf{Další P-úplné problémy:} Aplikace by mohla být rozšířena o další P-úplné problémy, jako je například vyhodnocování booleovských formulí v konjunktivní normální formě nebo problém dosažitelnosti v grafech s omezenou šířkou.
+    
+    \item \textbf{Více převodů:} Implementace dalších směrů převodů – například z kombinatorických her na gramatiky nebo opačným směrem z gramatik na MCVP – by poskytla kompletnější obraz vzájemné převoditelnosti těchto problémů.
+    
+    \item \textbf{Výkonnostní optimalizace:} Pro velmi velké instance (stovky uzlů) by mohly být implementovány optimalizace vykreslování a výpočtu, například pomocí virtualizace zobrazení nebo progresivního vykreslování.
+\end{itemize}
+
+Výsledná aplikace může sloužit jako doplněk k tradičním výukovým materiálům v kurzech teorie složitosti a teoretické informatiky, kde pomáhá studentům lépe pochopit abstraktní koncepty prostřednictvím konkrétních interaktivních příkladů.
+
+\endinput

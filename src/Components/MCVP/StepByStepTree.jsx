@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
-import { TreeCanvas } from './TreeRenderCanvas';
+import { TreeRenderCanvas } from './TreeRenderCanvas';
 
 /**
  * Component for visualizing the step-by-step evaluation of an MCVP tree.
@@ -44,19 +44,24 @@ export function StepByStepTree({ tree }) {
     return val;
   };
 
+  const goToFirstStep = () => setCurrentStep(0);
+  const goToLastStep = () => setCurrentStep(steps.length - 1);
+
   return (
-    <div className="step-by-step-container">
-      <h2 className="text-center mb-3">Postupné vyhodnocení</h2> 
+    <div className="step-by-step-container px-4 d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
+      <h2 className="text-center mb-3" style={{ flexShrink: 0 }}>Postupné vyhodnocení</h2> 
       {steps.length > 0 ? (
         <>
-          <TreeCanvas 
-            tree={tree}
-            activeNode={steps[currentStep]?.node}
-            completedSteps={steps.slice(0, currentStep + 1)}
-          />
+          <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'auto' }}>
+            <TreeRenderCanvas 
+              tree={tree}
+              activeNode={steps[currentStep]?.node}
+              completedSteps={steps.slice(0, currentStep + 1)}
+            />
+          </div>
           
-          <div className='step-controls-info container'>
-          <div className='row align-items-center mt-3'>
+          <div className='step-controls-info container-fluid mt-3' style={{ flexShrink: 0 }}>
+          <div className='row align-items-center'>
             <div className='step-info col-md-7'>
               <div className="card p-3 bg-light">
                 <p className="mb-1"><strong>Vyhodnocovaný uzel:</strong> {getCurrentNodeValue()}</p>
@@ -66,12 +71,18 @@ export function StepByStepTree({ tree }) {
             </div>
             <div className='step-controls col-md-5 d-flex flex-column align-items-center justify-content-center'>
               <p className="text-center mb-2">Krok {currentStep + 1} z {steps.length}</p>
-              <div>
-                <button className='btn btn-secondary mx-1' onClick={goToPreviousStep} disabled={currentStep === 0}>
+              <div className="d-flex gap-2">
+                <button className='btn btn-secondary btn-sm' onClick={goToFirstStep} disabled={currentStep === 0}>
+                  &#x23EE; Začátek
+                </button>
+                <button className='btn btn-secondary' onClick={goToPreviousStep} disabled={currentStep === 0}>
                   &larr; Předchozí
                 </button>
-                <button className='btn btn-primary mx-1' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
+                <button className='btn btn-primary' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
                   Další &rarr;
+                </button>
+                <button className='btn btn-primary btn-sm' onClick={goToLastStep} disabled={currentStep === steps.length - 1}>
+                  Konec &#x23ED;
                 </button>
               </div>
             </div>

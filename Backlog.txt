@@ -1,29 +1,32 @@
 ---- MCVP ----
-- Optimize - the nodes are still overlaping, when there are more children
+- Fix - when user clicks on the explain button, it recalculates the derived word 
+- Fix - placement of the explain button should be like in other problems under all page content
+- Fix - in MCVP to CG disable the button to end or to beginnig if the user is at the end or begining of the conversion
+
+- Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 - Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
 
 ---- CG ----
-- Remake the isWinning property to hold players id
-- Add highlight of the selected node (in manual)
-
-- what should happen when there is a cycle and no player has winnig strategy, because there is no ending node that is dead end ?
+- Fix the evaluating alg, its enough to have one winnig strategy to evaluate that the player I have winnig strategy
+- Fix display of the optimal moves (the whole path should be highlighted)
+- Fix - when cycle, in explain modal show the cycle and maybe the steps
+- Optimize - dont reheat the fyzics when manipulating with graph
+- Optimize - make the starting lenght of edges longer
 
 ---- Grammar ----
-
+- Check if epsilon counts as empty grammar 
+- Optimize - adjust the node radius for the longer words
 - Optimize - (manual) make the text area as big as the content automaticly 
 
-
 ---- Global ----
-- Fix mobile navigation - dark overlay overlays the navigation 
 - Add autoscroll after selecting set or genererating and displaying some data 
-- Optimize using the useCallback 
-- Optimize using loaders  
-- Rewrite css to bootstrap
+- Add fixed positions for nodes when exporting some graph + position the graph when provided with fixed positions
+
+- Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
 
 krokovani Gramatiky a CG
 zobrazit u kazdeho nodu hrace s vyherni pozici
 
--poslat link na live stranku 
 -udelat novou vetev s omezenout fyzikou

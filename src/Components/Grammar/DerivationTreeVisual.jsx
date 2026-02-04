@@ -42,7 +42,7 @@ export function DerivationTreeVisual({ tree }) {
     // Initial call
     updateDimensions();
 
-    const resizeObserver = new ResizeObserver((entries) => {
+    const resizeObserver = new ResizeObserver(() => {
         updateDimensions();
     });
 

@@ -8,11 +8,14 @@ import { isEmptyLanguage } from './Utils/GrammarEvaluator';
 import { Grammar as GrammarClass } from './Utils/Grammar';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
+import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
+import { Modal } from '../Common/Modal';
 
 export function Grammar({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
+    const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
 
     // Handle initial data if provided
     useEffect(() => {
@@ -28,6 +31,7 @@ export function Grammar({ onNavigate, initialData }) {
     const handleOptionChange = (option) => {
         setChosenOpt(option);
         setGrammar(null);
+        setShowSteps(false);
     };
 
     const handleExport = () => {
@@ -68,6 +72,7 @@ export function Grammar({ onNavigate, initialData }) {
 
         setGrammar(new GrammarClass(grammarData));
         setChosenOpt('manual'); // Switch to manual/view mode to show the imported result
+        setShowSteps(false);
     };
 
     // Calculate analysis result only once when grammar changes
@@ -82,19 +87,19 @@ export function Grammar({ onNavigate, initialData }) {
                     instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
                     fileName="grammar.json"
                 />
-                <InfoButton title="Problém prázdnosti gramatiky">
+                <InfoButton title="Problém neprázdnosti gramatiky">
                     <p>
-                        Tento modul řeší problém prázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
+                        Tento modul řeší problém neprázdnosti pro bezkontextové gramatiky (CFG). Zjišťuje, zda daná gramatika generuje alespoň jeden řetězec složený pouze z terminálních symbolů.
                     </p>
                     <hr />
-                    <h6 className="mb-2">Nápověda k formátu gramatiky</h6>
-                    <ul className="ps-3 mb-0">
-                        <li>První řádek definuje počáteční symbol.</li>
-                        <li><strong>Neterminály:</strong> Velká písmena (A-Z).</li>
-                        <li><strong>Terminály:</strong> Jakékoliv znaky kromě velkých písmen.</li>
-                        <li><strong>Pravidla:</strong> Tvar <code>S → aS | bA</code>.</li>
-                        <li>Použijte <code>|</code> pro oddělení alternativ.</li>
-                        <li>Použijte <code>ε</code> pro prázdný řetězec.</li>
+                    <h6 className="mb-2">Pravidla formátu gramatiky</h6>
+                    <ul className="ps-3 mb-2">
+                        <li><strong>Oddělte symboly mezerami:</strong> <code>S → a S</code> (správně) vs <code>S → aS</code> (špatně)</li>
+                        <li><strong>Velká písmena (i česká) = neterminály:</strong> S, A, Č, Ř, AA</li>
+                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number</li>
+                        <li>První neterminál na prvním řádku je počáteční symbol</li>
+                        <li>Použijte <code>|</code> pro oddělení alternativ</li>
+                        <li>Použijte <code>ε</code> nebo <code>epsilon</code> pro prázdný řetězec</li>
                     </ul>
                 </InfoButton>
             </div>
@@ -122,7 +127,7 @@ export function Grammar({ onNavigate, initialData }) {
 
             {grammar && analysisResult && (
                 <div className='mt-4 mb-4'>
-                    <div className="card mb-3 text-center">
+                    <div className="card mb-3 text-center" style={{ maxWidth: '600px', margin: 'auto', marginBottom: '30px' }}>
                         <div className="card-header">
                             <h5>Definice gramatiky</h5>
                         </div>
@@ -134,8 +139,8 @@ export function Grammar({ onNavigate, initialData }) {
                     </div>
 
                     <div className="card mt-3">
-                        <div className="card-header">
-                            <h4>Analýza gramatiky</h4>
+                        <div className="card-header d-flex justify-content-between align-items-center">
+                            <h4 className="mb-0">Analýza gramatiky</h4>
                         </div>
                         <div className="card-body">
                              <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
@@ -143,13 +148,38 @@ export function Grammar({ onNavigate, initialData }) {
                              </p>
                         </div>
                         
+                        {/* Step-by-Step Visualization Modal */}
+                        {showSteps && (
+                            <Modal onClose={() => setShowSteps(false)}>
+                                <StepByStepGrammar grammar={grammar} />
+                            </Modal>
+                        )}
+                        
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
                             <div className="card-body border-top">
                                 <h5>Ukázkový derivační strom</h5>
-                                <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
-                                <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                                {analysisResult.derivedWord !== undefined && analysisResult.derivedWord !== null && (
+                                    <p className="text-muted small">
+                                        Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
+                                    </p>
+                                )}
+                                {(analysisResult.derivedWord === undefined || analysisResult.derivedWord === null) && (
+                                    <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
+                                )}
+                                <div style={{ height: '60vh', width: '100%' }}>
+                                    <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                                </div>
                             </div>
                         )}
+                    </div>
+
+                    <div className="mt-3">
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => setShowSteps(true)}
+                        >
+                            Vysvětlit
+                        </button>
                     </div>
                 </div>
             )}

@@ -164,8 +164,8 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     if (hoverNode.current === node) {
       fillColor = colors.highlightNode;
     } else if (highlightedNode && node.id === highlightedNode) {
-      // Step-by-step highlighted node
-      fillColor = colors.accentBlue;
+      // Step-by-step highlighted node - use same color as hover
+      fillColor = colors.highlightNode;
     } else if (node.isStartingPosition) {
       fillColor = colors.accentRed;
     } else {
@@ -174,6 +174,15 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     
     ctx.fillStyle = fillColor;
     ctx.fill();
+    
+    // Draw node ID in center when in hover mode
+    if (hoverNode.current !== null) {
+      ctx.font = '5px Arial';
+      ctx.fillStyle = 'black';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(node.id, node.x, node.y);
+    }
     
     // Draw the player label below the node.
     ctx.font = game.labelFont; 

@@ -22,7 +22,7 @@ Pro sestavení aplikace byl použit nástroj (bundler) \emph{Vite} \cite{vite202
 
 Aplikace je strukturována jako \emph{Single Page Application} (SPA), kde celá aplikace běží v rámci jedné HTML stránky a navigace mezi jednotlivými moduly probíhá bez opětovného načítání stránky. Hlavní komponenta \texttt{App.jsx} funguje jako kořen aplikační struktury a spravuje globální stav aplikace pomocí React Hooks, především \texttt{useState} pro udržení aktuální stránky a předávaných dat.
 
-Zdrojový kód je rozdělen do tří hlavních modulů podle řešených problémů – MCVP, kombinatorické hry a bezkontextové gramatiky (viz kapitoly \ref{sec:MCVP}, \ref{sec:Games} a \ref{sec:Grammars}). Každý modul obsahuje vlastní logiku a vizualizační komponenty a je organizován do separátních složek podle funckionality:
+Zdrojový kód je rozdělen do tří hlavních modulů podle řešených problémů – MCVP, kombinatorické hry a bezkontextové gramatiky (viz kapitoly \ref{sec:MCVP}, \ref{sec:Games} a \ref{sec:Grammars}). Každý modul obsahuje vlastní logiku a vizualizační komponenty a je organizován do samostatných složek podle funkcionality:
 \begin{itemize}
     \item \textbf{Hlavní komponentu} – kontejnerovou komponentu řídící celý modul
     \item \textbf{Utils} – pomocné funkce obsahující algoritmy (parsery, generátory, evaluátory)
@@ -30,14 +30,14 @@ Zdrojový kód je rozdělen do tří hlavních modulů podle řešených problé
     \item \textbf{Vizualizační komponenty} – komponenty pro grafické zobrazení problémů a jejich řešení
 \end{itemize}
 
-Společné prvky jako tlačítka nebo modální okna jsou sdíleny mezi všemi moduly. Pro jendotné nastavení grafů byly vytvořeny pomocné moduly v adresáři \texttt{src/Hooks} – modul \texttt{useGraphColors} spravuje barvy použité v grafických vizualizacích a modul \texttt{useGraphSettings} obshahuje parametry pro vzhled grafů (velikost uzlů, vzdálenosti apod.).
+Společné prvky jako tlačítka nebo modální okna jsou sdíleny mezi všemi moduly. Pro jednotné nastavení grafů byly vytvořeny pomocné moduly v adresáři \texttt{src/Hooks} – modul \texttt{useGraphColors} spravuje barvy použité v grafických vizualizacích a modul \texttt{useGraphSettings} obsahuje parametry pro vzhled grafů (velikost uzlů, vzdálenosti apod.).
 
 Tato struktura umožňuje snadné úpravy na jednom místě. 
 
 \section{Vizualizace grafů}
 \label{sec:GraphVisualization}
 
-Pro vizualizaci grafů používá aplikace knihovnu \emph{D3.js} \cite{d3js2024}. Grafy jsou automaticky rozmístěny – uzly se vzájemně odpuzují a hrany je přitahují k sobě. Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) jsou uzly uspořádány do úrovní shora dolů, s kořenem nahoře a listy dole.
+Pro vizualizaci grafů používá aplikace knihovnu \emph{react-force-graph} \cite{reactforcegraph2024}, která je postavena na knihovně \emph{D3.js} \cite{d3js2024}. Grafy jsou automaticky rozmístěny pomocí force-directed layoutu – uzly se vzájemně odpuzují a hrany je přitahují k sobě, což vytváří vizuálně přehledné uspořádání. Pro stromové struktury v MCVP modulu (viz kapitola \ref{sec:MCVP}) jsou uzly uspořádány do úrovní shora dolů, s kořenem nahoře a listy dole.
 
 Během vyhodnocování se uzly a hrany v grafu vybarvují podle aktuálního stavu, což uživateli umožňuje sledovat průběh výpočtu.
 
@@ -61,9 +61,16 @@ Aplikace umožňuje ukládání a načítání dat pomocí souborů ve formátu 
 \section{Notifikace a zpětná vazba}
 \label{sec:Notifications}
 
-Pro zobrazení upozornění a chybových hlášek aplikace používá knihovnu \emph{react-toastify} \cite{reacttoastify2024}. Notifikace se objevují v rohu obrazovky a automaticky mizí po chvíli. Aplikace zobrazuje notifikace zejména při chybách ve vstupu, úspěšném uložení dat nebo varováních při neplatných operacích.
+Pro zobrazení upozornění a chybových hlášek aplikace používá knihovnu \emph{react-toastify} \cite{reacttoastify2024}. Notifikace se objevují v rohu obrazovky a automaticky mizí po chvíli. Aplikace zobrazuje notifikace zejména při chybách ve vstupu, úspěšném uložení dat nebo varováních při neplatných operacích (viz obrázek \ref{fig:toastify-message}).
 
 Notifikace poskytují okamžitou zpětnou vazbu pro uživatele.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{IMGs/ToastifyMessage.png}
+    \caption{Příklad notifikační zprávy v aplikaci}
+    \label{fig:toastify-message}
+\end{figure}
 
 \section{Vývojové nástroje}
 \label{sec:DevTools}

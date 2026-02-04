@@ -9,18 +9,16 @@ export class GamePosition {
   /**
    * Creates a new game position.
    * 
-   * @param {number|string} id - The unique identifier for this position
+   * @param {string} id - The unique identifier for this position
    * @param {number} player - The player who moves from this position (1 or 2)
-   * @param {Array<number|string>} parents - Array of parent position IDs
-   * @param {Array<number|string>} children - Array of child position IDs
-   * @param {boolean|null} isWinning - Whether this position is winning for the I. player
+   * @param {Array<string>} parents - Array of parent position IDs
+   * @param {Array<string>} children - Array of child position IDs
    */
-  constructor(id, player, parents, children, isWinning) {
+  constructor(id, player, parents, children) {
     this.id = id; // Internal id
     this.player = player; // Player that makes the move from this position
     this.parents = parents; // List of parent positions
     this.children = children; // List of child positions
-    this.isWinning = isWinning; // Is this position winning?
   }
 }
   
@@ -31,7 +29,7 @@ export class GameGraph {
   /**
    * Creates a new game graph.
    * 
-   * @param {Object<string, GamePosition>} positions - Map of position IDs to position objects
+   * @param {Object<string, GamePosition>} positions - Object mapping position IDs to GamePosition objects, representing all positions in the game
    * @param {GamePosition} startingPosition - The starting position of the game
    */
   constructor(positions, startingPosition) {

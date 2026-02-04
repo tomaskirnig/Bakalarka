@@ -1,15 +1,38 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
-import { TreeCanvas } from '../../MCVP/TreeRenderCanvas';
+import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 import ConversionGrammar from './ConversionGrammar';
 
 /**
- * Generates non-terminal symbols for MCVP nodes
+ * Generates non-terminal symbols using A-Z, AA-ZZ naming convention
  */
 class NonTerminalGenerator {
   constructor() {
-    this.counter = 0;
+    this.currentCode = 65; // ASCII for 'A'
     this.nodeMap = new Map();
+    this.generatedSymbols = new Set(['S']); // S is reserved for start
+  }
+
+  /**
+   * Generates the next unique non-terminal symbol
+   */
+  generateNextSymbol() {
+    let symbol;
+    do {
+      if (this.currentCode <= 90) { // A-Z
+        symbol = String.fromCharCode(this.currentCode);
+      } else {
+         // Generate AA, AB, etc.
+         const index = this.currentCode - 91; 
+         const firstChar = Math.floor(index / 26);
+         const secondChar = index % 26;
+         symbol = String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar);
+      }
+      this.currentCode++;
+    } while (this.generatedSymbols.has(symbol) || symbol === 'S'); // Skip if already exists or is S
+
+    this.generatedSymbols.add(symbol);
+    return symbol;
   }
 
   getSymbolForNode(node, startSymbol = null) {
@@ -20,10 +43,9 @@ class NonTerminalGenerator {
     let symbol;
     if (startSymbol) {
       symbol = startSymbol;
-    } else if (node.type === "variable") {
-      symbol = node.value;
+      this.generatedSymbols.add(symbol);
     } else {
-      symbol = `${node.value}${this.counter++}`;
+      symbol = this.generateNextSymbol();
     }
 
     this.nodeMap.set(node, symbol);
@@ -43,6 +65,39 @@ class NonTerminalGenerator {
 }
 
 /**
+ * Generates terminal symbols using a-z, then special characters
+ */
+class TerminalGenerator {
+  constructor() {
+    this.terminals = 'abcdefghijklmnopqrstuvwxyz+-=*#@$%&!?<>[]{}()'.split('');
+    this.currentIndex = 0;
+    this.variableMap = new Map();
+  }
+
+  /**
+   * Gets or generates a terminal for a variable node
+   */
+  getTerminalForVariable(variable) {
+    if (this.variableMap.has(variable)) {
+      return this.variableMap.get(variable);
+    }
+
+    if (this.currentIndex >= this.terminals.length) {
+      // If we run out of symbols, generate numbered terminals
+      const terminal = `t${this.currentIndex - this.terminals.length + 1}`;
+      this.variableMap.set(variable, terminal);
+      this.currentIndex++;
+      return terminal;
+    }
+
+    const terminal = this.terminals[this.currentIndex];
+    this.variableMap.set(variable, terminal);
+    this.currentIndex++;
+    return terminal;
+  }
+}
+
+/**
  * Handles the conversion logic from MCVP to Grammar
  */
 class MCVPToGrammarConverter {
@@ -50,9 +105,11 @@ class MCVPToGrammarConverter {
     this.mcvpTree = mcvpTree;
     this.grammar = new ConversionGrammar();
     this.symbolGenerator = new NonTerminalGenerator();
+    this.terminalGenerator = new TerminalGenerator();
     this.steps = [];
     this.processedNodes = new Set();
     this.productionNodes = new Set();
+    this.EPSILON = 'ε'; // Epsilon for variables with value 0
   }
 
   /**
@@ -83,10 +140,10 @@ class MCVPToGrammarConverter {
 
   addInitializationStep() {
     this.steps.push({
-      description: "Inicializace gramatiky s počátečním symbolem S",
+      description: "Inicializace gramatiky",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: "Začínáme s gramatikou obsahující pouze počáteční symbol S",
+      visualNote: `Inicializace: Počáteční symbol S. Proměnné s hodnotou 1 budou nahrazeny unikátními terminály (a-z, +, -, atd.), proměnné s hodnotou 0 budou nahrazeny epsilon (${this.EPSILON}).`,
       symbols: this.symbolGenerator.getAllSymbols()
     });
   }
@@ -96,7 +153,7 @@ class MCVPToGrammarConverter {
       description: "Konverze dokončena",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku",
+      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku. Každá proměnná s hodnotou 1 má unikátní terminál, proměnné s hodnotou 0 jsou nahrazeny epsilon.",
       symbols: this.symbolGenerator.getAllSymbols()
     });
   }
@@ -121,24 +178,24 @@ class MCVPToGrammarConverter {
     if (!node || this.processedNodes.has(node)) return;
     this.processedNodes.add(node);
 
-    const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
-    
-    // Add non-terminal for operation nodes, terminal for variable nodes
-    if (node.type === "operation") {
-      this.grammar.addNonTerminal(nodeSymbol);
-    } else {
-      this.grammar.addTerminal(node.value);
+    // If node is a variable AND NOT the root, we don't create a non-terminal for it.
+    // It will be replaced directly by a terminal or epsilon in parent's rule.
+    const isRoot = node === this.mcvpTree;
+    if (node.type === "variable" && !isRoot) {
+      return;
     }
 
-    // Add step for this node
+    const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
+    this.grammar.addNonTerminal(nodeSymbol);
+
     const nodeTypeDisplay = node.type === "operation" 
       ? (node.value === "A" ? "AND" : "OR") 
-      : "proměnná";
+      : `proměnná ${node.value}`;
     
     this.addStep(
-      `Přidat ${node.type === "operation" ? "neterminál" : "terminál"} ${nodeSymbol} pro ${nodeTypeDisplay} uzel ${node.value}`,
+      `Vytvořit neterminál ${nodeSymbol}`,
       node,
-      `Vytvořen ${node.type === "operation" ? "neterminál" : "terminál"} ${nodeSymbol} pro uzel ${node.value}`
+      `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
     );
 
     // Process children
@@ -154,41 +211,86 @@ class MCVPToGrammarConverter {
   }
 
   createProductionsRecursively(node) {
-    if (!node || node.type !== "operation" || this.productionNodes.has(node)) return;
+    if (!node || this.productionNodes.has(node)) return;
     this.productionNodes.add(node);
 
-    const nodeSymbol = this.symbolGenerator.getSymbol(node);
+    // If variable and NOT root, we don't create productions for it (it has no NT)
+    const isRoot = node === this.mcvpTree;
+    if (node.type === "variable" && !isRoot) return;
+
+    const nodeSymbol = this.symbolGenerator.getSymbol(node); // Should be 'S' if root variable, or NT for op
     if (!nodeSymbol) return;
 
+    // Handle variable nodes (Only if Root)
+    if (node.type === "variable") {
+      if (node.varValue === 1) {
+        const terminal = this.terminalGenerator.getTerminalForVariable(node);
+        this.grammar.addTerminal(terminal);
+        this.grammar.setProductions(nodeSymbol, [[terminal]]);
+        this.addStep(
+          `Pravidlo pro kořen: ${nodeSymbol} → ${terminal}`,
+          node,
+          `Kořen je proměnná s hodnotou 1, generuje terminál '${terminal}'.`
+        );
+      } else {
+        this.grammar.setProductions(nodeSymbol, [[]]);
+        this.addStep(
+          `Pravidlo pro kořen: ${nodeSymbol} → ${this.EPSILON}`,
+          node,
+          `Kořen je proměnná s hodnotou 0, generuje epsilon (${this.EPSILON}).`
+        );
+      }
+      return;
+    }
+
+    // Handle operation nodes
     const childSymbols = node.children
+      .filter(child => child != null)
       .map(child => this.getProductionSymbolForChild(child))
       .filter(Boolean);
 
     if (node.value === "A") { // AND node
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
+      const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : this.EPSILON;
       this.addStep(
-        `Přidat AND pravidlo pro ${nodeSymbol}: ${nodeSymbol} → ${childSymbols.join(' ')}`,
+        `Přidat AND pravidlo: ${nodeSymbol} → ${rightSide}`,
         node,
-        `AND uzel ${nodeSymbol} vyžaduje všechny potomky: ${childSymbols.join(' ')}`
+        `AND uzel: zřetězení symbolů potomků.`
       );
     } else if (node.value === "O") { // OR node
       this.grammar.setProductions(nodeSymbol, childSymbols.map(symbol => [symbol]));
+      const rules = childSymbols.map(s => `${nodeSymbol} → ${s}`).join(', ');
       this.addStep(
-        `Přidat OR pravidla pro ${nodeSymbol}: ${childSymbols.map(symbol => 
-          `${nodeSymbol} → ${symbol}`).join(', ')}`,
+        `Přidat OR pravidla: ${rules}`,
         node,
-        `OR uzel ${nodeSymbol} má alternativní pravidla pro každého potomka`
+        `OR uzel: alternativní pravidla pro potomky.`
       );
     }
 
     // Process children
-    node.children.forEach(child => this.createProductionsRecursively(child));
+    node.children.forEach(child => {
+      if (child) {
+        this.createProductionsRecursively(child);
+      }
+    });
   }
 
   getProductionSymbolForChild(child) {
-    return child.type === "variable" 
-      ? child.value 
-      : this.symbolGenerator.getSymbol(child);
+    if (!child) {
+      console.warn('getProductionSymbolForChild called with null/undefined child');
+      return null;
+    }
+    if (child.type === "variable") {
+      if (child.varValue === 1) {
+        const terminal = this.terminalGenerator.getTerminalForVariable(child);
+        this.grammar.addTerminal(terminal);
+        return terminal;
+      } else {
+        // Variable with value 0 contributes nothing (epsilon)
+        return null;
+      }
+    }
+    return this.symbolGenerator.getSymbol(child);
   }
 }
 
@@ -244,14 +346,14 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
     const step = steps[currentStep];
     
     return (
-      <div className="conversion-step">
-        <h3>Krok {currentStep + 1} z {steps.length}</h3>
-        <p className="description">{step.description}</p>
-        <div className="visualizations">
-          <div className="col-md-7">
-            <h4>MCVP</h4>
-            <div>
-              <TreeCanvas 
+      <div className="conversion-step d-flex flex-column pb-2">
+        <h3 className="text-center mb-1">Krok {currentStep + 1} z {steps.length}</h3>
+        <p className="description text-center mb-2 small">{step.description}</p>
+        <div className="row gx-2" style={{ minHeight: 0, margin: 0 }}>
+          <div className="col-md-7 d-flex flex-column" style={{ minHeight: 0 }}>
+            <h4 className="text-center mb-1">MCVP</h4>
+            <div className="bg-light" style={{ borderRadius: '4px', overflow: 'hidden', height: '49vh' }}>
+              <TreeRenderCanvas 
                 tree={mcvpTree} 
                 highlightedNode={step.mcvpHighlight}
                 activeNode={step.mcvpHighlight}
@@ -261,11 +363,13 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             </div>
           </div>
           
-          <div className="col-md-5">
-            <h4>Gramatika</h4>
-            <GrammarDisplay grammar={step.grammar} />
-            <div className="visual-note">
-              <p><em>{step.visualNote}</em></p>
+          <div className="col-md-5 d-flex flex-column" style={{ minHeight: 0 }}>
+            <h4 className="text-center mb-1">Gramatika</h4>
+            <div className="bg-light p-2" style={{ overflow: 'auto', height: '49vh', borderRadius: '4px' }}>
+              <GrammarDisplay grammar={step.grammar} />
+              <div className="mt-2 p-2 bg-white rounded">
+                <p className="mb-0 small"><em>{step.visualNote}</em></p>
+              </div>
             </div>
           </div>
         </div>
@@ -274,29 +378,55 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
   };
 
   return (
-    <div className="mcvp-to-grammar-converter">
-      <h2>MCVP {String.fromCharCode(8594)} Gramatika</h2>
+    <div className="px-4 d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
+      <h2 className="text-center mb-2" style={{ flexShrink: 0 }}>MCVP {String.fromCharCode(8594)} Gramatika</h2>
 
-      {renderCurrentStep()}
+      <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'hidden' }}>
+        {renderCurrentStep()}
+      </div>
       
-      <NavigationControls 
-        currentStep={currentStep}
-        totalSteps={steps.length}
-        onPrevious={goToPreviousStep}
-        onNext={goToNextStep}
-      />
-      
-      {finalGrammar && (
-        <div className="d-flex justify-content-center flex-column align-items-center">
-            <QuickNavigationControls 
-            onGoToStart={() => setCurrentStep(0)}
-            onGoToEnd={() => setCurrentStep(steps.length - 1)}
-            />
-            <button className="btn btn-success btn-lg mt-2" onClick={handleRedirect}>
-                Otevřít v Gramatice
-            </button>
+      <div className="mt-2" style={{ flexShrink: 0 }}>
+        <div className="d-flex justify-content-center gap-2 mb-2">
+          <button 
+            onClick={goToPreviousStep}
+            disabled={currentStep === 0}
+            className="btn btn-secondary"
+          >
+            Předchozí
+          </button>
+          
+          <button 
+            onClick={goToNextStep}
+            disabled={currentStep === steps.length - 1}
+            className="btn btn-primary"
+          >
+            Další
+          </button>
         </div>
-      )}
+        
+        {finalGrammar && (
+          <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
+              <button 
+                onClick={() => setCurrentStep(0)}
+                disabled={currentStep === 0}
+                className="btn btn-outline-secondary btn-sm"
+              >
+                ⏮️ Jít na začátek
+              </button>
+              
+              <button 
+                onClick={() => setCurrentStep(steps.length - 1)}
+                disabled={currentStep === steps.length - 1}
+                className="btn btn-outline-primary btn-sm"
+              >
+                Jít na konec ⏭️
+              </button>
+              <button className="btn btn-success" onClick={handleRedirect}>
+                  Otevřít v Gramatice
+              </button>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
@@ -336,112 +466,6 @@ function GrammarDisplay({ grammar }) {
 }
 
 GrammarDisplay.propTypes = {
-  grammar: PropTypes.shape({
-    nonTerminals: PropTypes.array.isRequired,
-    terminals: PropTypes.array.isRequired,
-    startSymbol: PropTypes.string.isRequired,
-    productions: PropTypes.object.isRequired
-  }).isRequired
-};
-
-/**
- * Component for step navigation controls
- */
-function NavigationControls({ currentStep, totalSteps, onPrevious, onNext }) {
-  return (
-    <div className="navigation-controls">
-      <button 
-        onClick={onPrevious}
-        disabled={currentStep === 0}
-        className="btn btn-secondary"
-      >
-        Předchozí krok
-      </button>
-      
-      <button 
-        onClick={onNext}
-        disabled={currentStep === totalSteps - 1}
-        className="btn btn-primary ml-2"
-      >
-        Další krok
-      </button>
-    </div>
-  );
-}
-
-NavigationControls.propTypes = {
-  currentStep: PropTypes.number.isRequired,
-  totalSteps: PropTypes.number.isRequired,
-  onPrevious: PropTypes.func.isRequired,
-  onNext: PropTypes.func.isRequired
-};
-
-/**
- * Component for quick navigation controls
- */
-function QuickNavigationControls({ onGoToStart, onGoToEnd }) {
-  return (
-    <div className="quick-navigation my-4 d-flex justify-content-center gap-3">
-      <button 
-        onClick={onGoToStart}
-        className="btn btn-outline-secondary"
-      >
-        ⏮️ Jít na začátek
-      </button>
-      
-      <button 
-        onClick={onGoToEnd}
-        className="btn btn-outline-primary"
-      >
-        Jít na konec ⏭️
-      </button>
-    </div>
-  );
-}
-
-QuickNavigationControls.propTypes = {
-  onGoToStart: PropTypes.func.isRequired,
-  onGoToEnd: PropTypes.func.isRequired
-};
-
-/**
- * Component for displaying the final converted grammar
- */
-function FinalGrammarDisplay({ grammar }) {
-  return (
-    <div className="conversion-result mt-4 d-flex justify-content-center">
-      <div style={{ maxWidth: '600px', width: '100%' }}>
-        <h3 className="text-center">Výsledná gramatika</h3>
-        <div className="final-grammar-container p-3" style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', borderRadius: '10px' }}>
-          <div className="mb-3">
-            <strong>Neterminály:</strong> {grammar.nonTerminals.join(', ')}
-          </div>
-          
-          <div className="mb-3">
-            <strong>Terminály:</strong> {grammar.terminals.join(', ')}
-          </div>
-          
-          <div className="mb-3">
-            <strong>Počáteční symbol:</strong> {grammar.startSymbol}
-          </div>
-          
-          <div>
-            <strong>Pravidla:</strong>
-            <div className="mt-2">
-              {Object.entries(grammar.productions).map(([nt, prods]) => (
-                <div key={nt} className="mb-1" style={{ fontFamily: 'monospace', fontSize: '1.1rem' }}>
-                  {nt} → {prods.map(p => Array.isArray(p) ? p.join(' ') : p).join(' | ')}
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-FinalGrammarDisplay.propTypes = {
   grammar: PropTypes.shape({
     nonTerminals: PropTypes.array.isRequired,
     terminals: PropTypes.array.isRequired,

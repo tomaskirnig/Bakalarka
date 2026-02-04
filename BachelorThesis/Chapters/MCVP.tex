@@ -7,21 +7,29 @@
 Monotone Circuit Value Problem je základní problém v teorii složitosti, který patří mezi P-úplné problémy \cite{sawa}. Jeho definice je následující:
 
 \begin{itemize}
-    \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními proměnnými (pouze hodnoty 0 nebo 1 - false nebo true).
+    \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními hodnotami (pouze hodnoty 0 nebo 1 - false nebo true).
     \item \textbf{Výstup:} Hodnota výstupního uzlu obvodu (kořene stromu).
 \end{itemize}
 
-Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly představují buď vstupní proměnné (listy) nebo logická hradla (vnitřní uzly). Hrany reprezentují tok logických hodnot – přenášejí výsledky vyhodnocení z jednoho uzlu jako vstupy do uzlů následujících. V monotónním obvodu chybí hradla NOT, což zajišťuje, že funkce reprezentovaná obvodem je monotónní – zvýšení hodnoty libovolného vstupu nikdy nesníží hodnotu výstupu \cite{papadimitriou1993}.
+Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly představují buď vstupní proměnné (listy) nebo logická hradla (vnitřní uzly). Hrany reprezentují tok logických hodnot – přenášejí výsledky vyhodnocení z jednoho uzlu jako vstupy do uzlů následujících. V monotónním obvodu chybí hradla NOT, což zajišťuje, že funkce reprezentovaná obvodem je monotónní – zvýšení hodnoty libovolného vstupu nikdy nesníží hodnotu výstupu \cite{sawa}.
 
 \subsection{P-úplnost MCVP}
+
 \label{sec:MCVPCompleteness}
 
-MCVP je P-úplný problém \cite{arora2009}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. Přestože je problém v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus pro jeho řešení – problém vyžaduje sekvenční zpracování.
+MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. Přestože je problém v třídě P, jeho P-úplnost naznačuje, že pravděpodobně neexistuje efektivní paralelní algoritmus pro jeho řešení – problém vyžaduje sekvenční zpracování.
 
 \section{Formát vstupu a parsování výrazů}
 \label{sec:MCVPParsing}
 
-Aplikace umožňuje zadat monotónní obvod několika způsoby. Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
+Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na stromovou strukturu.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/InputSelectorMCVP.png}
+    \caption{Výběr způsobu zadání vstupu pro MCVP}
+    \label{fig:input-selector-mcvp}
+\end{figure}
 
 \subsection{Gramatika vstupního jazyka}
 \label{sec:MCVPGrammar}
@@ -36,9 +44,6 @@ Vstupní výrazy odpovídají jednoduché gramatice:
 
 Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
 
-%clear po sem 
-
-
 \subsection{Lexikální a syntaktická analýza}
 \label{sec:MCVPLexer}
 
@@ -47,25 +52,32 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
     
-    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Metody odpovídají pravidlům gramatiky: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky nebo proměnné. Parser vytváří uzly typu \texttt{Node}, které tvoří strom reprezentující strukturu obvodu.
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class}), které tvoří stromovou strukturu reprezentující zadaný obvod.
 \end{enumerate}
 
-Výsledkem parsování je binární strom, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/MCVP_class.png}
+    \caption{Třídní diagram pro hlavní třídy MCVP}
+    \label{fig:mcvp-class}
+\end{figure}
+
+Výsledkem parsování je stromová struktura, kde listy jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
 \section{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluation}
 
-Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem stromu implementovaným v modulu \texttt{EvaluateTree.js}.
+Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem stromové struktury, který je implementován v modulu \texttt{EvaluateTree.js}.
 
 \subsection{Algoritmus vyhodnocení}
 \label{sec:MCVPAlgorithm}
 
-Funkce \texttt{evaluateTree()} používá algoritmus do hloubky (DFS) s memoizací:
+Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) s memoizací:
 
 \begin{enumerate}
     \item \textbf{Listy (proměnné):} Pro uzly typu \texttt{variable} funkce vrací přímo přiřazenou hodnotu (0 nebo 1).
     
-    \item \textbf{Vnitřní uzly (operace):} Pro operační uzly funkce rekurzivně vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 právě tehdy, když alespoň jeden potomek má hodnotu 1.
+    \item \textbf{Vnitřní uzly (operace):} Pro uzly reprezentující logické operace funkce nejdříve vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 pouze tehdy, když alespoň jeden potomek má hodnotu 1.
     
     \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných podstromů.
     
@@ -77,112 +89,117 @@ Funkce \texttt{evaluateTree()} používá algoritmus do hloubky (DFS) s memoizac
 \subsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStep}
 
-Pro vzdělávací účely aplikace nabízí krokové vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává každý vyhodnocený uzel spolu s hodnotami jeho potomků do pole kroků. Uživatel tak může sledovat, jak se hodnoty šíří od listů k~kořeni stromu, a lépe pochopit princip vyhodnocování.
+Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku stromové struktury. Uživatel tak může sledovat, jak se hodnoty šíří od listů ke kořeni stromové struktury a lépe pochopit princip vyhodnocování.
 
 Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace.
 
 \section{Interaktivní editace obvodu}
 \label{sec:MCVPInteractive}
 
-Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může:
+Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph} (viz obrázek \ref{fig:controls-interactive-mcvp}). Uživatel může:
 
 \begin{itemize}
-    \item \textbf{Přidávat uzly:} Kliknutím do prázdné oblasti grafu lze vytvořit nový uzel. Uživatel vybere typ uzlu (proměnná s hodnotou 0, proměnná s hodnotou 1, hradlo AND nebo hradlo OR).
+    \item \textbf{Přidávat uzly:} Pomocí tlačítek pod grafem lze vložit nové uzly typu AND, OR nebo vstupní proměnnou s hodnotou 0 nebo 1. Nový uzel se umístí do grafu, ale není propojen s ostatními uzly.
     
-    \item \textbf{Vytvářet hrany:} Táhnutím myši z jednoho uzlu do druhého vytvoří hranu reprezentující tok dat v obvodu.
-    
-    \item \textbf{Odstraňovat prvky:} Pravým kliknutím na uzel nebo hranu lze prvek odstranit z obvodu.
-    
+    \item \textbf{Vytvářet hrany:} Označit uzel, ten následně může:
+    \begin{itemize}
+        \item Nastavit na AND nebo OR operaci.
+        \item Nastavit na proměnnou s hodnotou 0 nebo 1.
+        \item Odstranit uzel z grafu.
+        \item Vytvořit nebo odstranit hranu s dalším uzlem.
+    \end{itemize}
+        
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání obvodu.
 \end{itemize}
 
-Grafický editor využívá knihovnu D3.js pro vykreslování a interakci. Force-directed layout automaticky rozmísťuje uzly tak, aby byl graf přehledný.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.7\textwidth]{IMGs/ControlsForInteractiveMCVP.png}
+    \caption{Ovládací prvky pro interaktivní editor obvodů MCVP}
+    \label{fig:controls-interactive-mcvp}
+\end{figure}
+
+Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz kapitola \ref{sec:GraphVisualization}). Aplikace průběžně aktualizuje interní stromovou strukturu odpovídající aktuálnímu stavu grafu.
 
 \section{Generování náhodných obvodů}
 \label{sec:MCVPGeneration}
 
-Aplikace obsahuje generátor náhodných monotónních obvodů v modulu \texttt{Generator.js}. Uživatel může specifikovat:
+Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}. Uživatel může upravit dva parametry:
 
 \begin{itemize}
-    \item \textbf{Počet proměnných:} Určuje, kolik vstupních uzlů bude obvod obsahovat.
-    \item \textbf{Počet operací:} Určuje, kolik vnitřních uzlů (hradel) bude obvod obsahovat.
-    \item \textbf{Strukturu:} Algoritmus zajišťuje, že výsledný obvod je platný orientovaný acyklický graf s jedním kořenovým uzlem.
+    \item \textbf{Počet hradel:} Kolik uzlů s operacemi (hradel AND a OR) bude obvod obsahovat.
+    \item \textbf{Počet proměnných:} Kolik uzlů s proměnnými (listů) bude obvod obsahovat.
 \end{itemize}
 
-Generátor pracuje následovně: nejprve vytvoří zadaný počet proměnných s náhodnými hodnotami, poté postupně přidává operační uzly. Každý operační uzel náhodně vybere dva existující uzly jako potomky a náhodně zvolí operaci (AND nebo OR). Výsledkem je náhodný, ale vždy vyhodnotitelný obvod.
+Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný počet proměnných, s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo vypočítáme cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě přidáme náhodnou odchylku $\pm 20\%$ – tak dosáhneme vyváženosti mezi úplnou náhodností a vyrovnanou distribucí. Hradlo pak náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR) a přidá se do množiny použitelných uzlů pro potomky. Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}
 
-Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole.
+Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako stromový graf s kořenem nahoře a listy dole, hodnoty se tedy šíří směrem zdola nahoru (viz obrázek \ref{fig:tree-render-canvas}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/TreeRenderCanvas.png}
+    \caption{Vizualizace MCVP obvodu pomocí TreeRenderCanvas}
+    \label{fig:tree-render-canvas}
+\end{figure}
 
 \subsection{Hierarchické rozložení}
 \label{sec:MCVPLayout}
 
-Pro stromové struktury používá aplikace hierarchické rozložení z knihovny D3.js. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene. Algoritmus zajišťuje, že se hrany nekříží a strom je vizuálně vyvážený.
-
-\subsection{Barevné kódování}
-\label{sec:MCVPColors}
-
-Uzly jsou rozlišeny barvami podle typu a hodnoty:
-\begin{itemize}
-    \item \textbf{Proměnné s hodnotou 1:} Zelená barva indikuje pravdivou hodnotu.
-    \item \textbf{Proměnné s hodnotou 0:} Červená barva indikuje nepravdivou hodnotu.
-    \item \textbf{Hradlo AND:} Modrá barva reprezentuje logický součin.
-    \item \textbf{Hradlo OR:} Oranžová barva reprezentuje logický součet.
-\end{itemize}
-
-Během krokového vyhodnocování se aktuálně zpracovávaný uzel zvýrazní silnějším ohraničením, aby uživatel mohl sledovat postup výpočtu.
+Pro vizualizaci stromu používá aplikace knihovnu \emph{react-force-graph-2d}. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
 
 \section{Převod na kombinatorickou hru}
 \label{sec:MCVPtoGame}
 
-Aplikace implementuje polynomiální redukci z MCVP na problém kombinatorických her, což demonstruje P-úplnost obou problémů. Převod je realizován v modulech \texttt{ConversionCombinatorialGame.js} a \texttt{MCVPtoCombinatorialGameConverter.jsx}.
+Pro ilustraci vzájemné převoditelnosti P-úplných problémů implementujeme převod z MCVP na kombinatorickou hru (popsaný v kapitole \ref{sec:Games}). Tento převod se nachází v modulech \texttt{ConversionCombinatorialGame.js} a \texttt{MCVPtoCombinatorialGameConverter.jsx}.
 
-\subsection{Pravidla převodu}
+\subsection{Princip převodu}
 \label{sec:MCVPtoGameRules}
 
-Každý uzel monotónního obvodu je namapován na pozici ve hře dvou hráčů následujícím způsobem \cite{sawa}:
+V tomto převodu se mapují uzly obvodu MCVP na pozice ve hře dvou hráčů \cite{sawa}. Každý typ uzlu odpovídá specifické herní situaci:
 
 \begin{itemize}
-    \item \textbf{Hradlo OR:} Převedeno na pozici pro Hráče 1. Hráč 1 volí, kterou z~následujících pozic (odpovídajících potomkům v obvodu) zvolí. Pokud některý potomek vede k výhře pro Hráče 1, může tuto možnost zvolit.
+    \item \textbf{Hradlo OR} vytváří pozici pro Hráče 1 (hráč I je na tahu). Ten si může vybrat libovolnou následující pozici odpovídající potomkům hradla. Stačí, aby jedna z možností vedla k jeho výhře.
     
-    \item \textbf{Hradlo AND:} Převedeno na pozici pro Hráče 2. Hráč 2 volí následující pozici. Aby Hráč 1 vyhrál, musí vyhrát ve všech možných pokračováních, protože Hráč 2 se snaží Hráči 1 zabránit ve výhře.
+    \item \textbf{Hradlo AND} vytváří pozici pro Hráče 2 (hráč II je na tahu). Ten vybírá následující pozici a~snaží se zabránit výhře Hráče 1. Hráč 1 vyhraje pouze pokud vyhrává ve všech možných pokračováních.
     
-    \item \textbf{Proměnná s hodnotou 1:} Převedena na terminální pozici, kde Hráč 2 nemá žádné tahy – to znamená, že Hráč 2 prohrává, tedy Hráč 1 vyhrává.
+    \item \textbf{Proměnná s hodnotou 1} odpovídá konečné pozici, ve které Hráč 2 nemá žádné tahy – Hráč 1 tedy vyhrává.
     
-    \item \textbf{Proměnná s hodnotou 0:} Převedena na terminální pozici, kde Hráč 1 nemá žádné tahy – to znamená, že Hráč 1 prohrává.
+    \item \textbf{Proměnná s hodnotou 0} odpovídá konečné pozici, ve které Hráč 1 nemá žádné tahy a~prohrává.
 \end{itemize}
 
-Tento převod zachovává výsledek: obvod vyhodnotí na 1 právě tehdy, když Hráč 1 má vítěznou strategii ve výsledné hře.
+Převod zachovává výsledek řešení: Hráč I v kombinatorické hře vyhrává tehdy, když se MCVP obvod vyhodnotí na 1.
 
 \subsection{Implementace převodu}
 \label{sec:MCVPtoGameImplementation}
 
-Třída \texttt{MCVPToGameStepGenerator} provádí rekurzivní průchod stromem obvodu. Pro každý navštívený uzel vytvoří odpovídající pozici ve hře a hrany vedoucí k pozicím odpovídajícím potomkům. Algoritmus používá memoizaci pomocí slovníku, aby zajistil, že každý uzel je zpracován pouze jednou, i když se v obvodu vyskytuje vícekrát (v případě sdílených podstromů).
+Třída \texttt{MCVPToGameStepGenerator} prochází MCVP strom rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře včetně hran k pozicím potomků. Pro efektivitu používáme memoizaci – každý uzel zpracujeme právě jednou, i kdyby se v obvodu vyskytoval vícekrát (například při sdílených podstromech).
 
-Komponenta \texttt{MCVPtoCombinatorialGameConverter} vizualizuje převod krok po kroku. Na levé straně obrazovky je zobrazen původní obvod se zvýrazněným aktuálně zpracovávaným uzlem, na pravé straně je zobrazen dosud vytvořený graf hry. Uživatel může procházet kroky převodu vpřed a vzad pomocí navigačních tlačítek.
+Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně. Na levé straně vidí uživatel původní obvod se zvýrazněným aktuálně zpracovávaným uzlem, vpravo vznikající graf kombinatorické hry. Navigační tlačítka umožňují procházet kroky převodu k dalšímu i předešlému kroku.
 
 \section{Převod na bezkontextovou gramatiku}
 \label{sec:MCVPtoGrammar}
 
-Druhý implementovaný převod transformuje monotónní obvod na bezkontextovou gramatiku, kde problém vyhodnocení obvodu odpovídá problému prázdnosti jazyka generovaného gramatikou.
+Druhá implementovaný převod transformuje MCVP obvod na bezkontextovou gramatiku (viz kapitola \ref{sec:Grammars}). Hodnota výsledku je zde taktéž zachována – gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhodnotí na 1.
 
-\subsection{Princip převodu}
+\subsection{Pravidla převodu}
 \label{sec:MCVPtoGrammarPrinciple}
 
-Každý uzel obvodu je mapován na symbol gramatiky \cite{sawa}:
+Převod mapuje uzly MCVP obvodu na symboly gramatiky \cite{sawa}:
 
 \begin{itemize}
-    \item \textbf{Kořen obvodu:} Odpovídá počátečnímu symbolu gramatiky $S$.
+    \item \textbf{Kořen obvodu} se mapuje na počáteční symbol gramatiky $S$.
     
-    \item \textbf{Hradlo AND s potomky $A$ a $B$:} Vytvoří se pravidlo tvaru $X \to AB$, kde $X$ je neterminál odpovídající hradlu. Řetězec lze odvodit z $X$ právě tehdy, když lze odvodit řetězce z obou $A$ i $B$.
+    \item \textbf{Hradlo AND s potomky $A$ a $B$} vytvoří pravidlo $X \to AB$, kde $X$ reprezentuje hradlo. Řetězec lze z $X$ odvodit právě tehdy, když lze odvodit řetězce z obou potomků $A$ i $B$.
     
-    \item \textbf{Hradlo OR s potomky $A$ a $B$:} Vytvoří se dvě pravidla: $X \to A$ a $X \to B$. Řetězec lze odvodit z $X$, pokud jej lze odvodit alespoň z jednoho z~$A$ nebo $B$.
+    \item \textbf{Hradlo OR s potomky $A$ a $B$} vytvoří dvě pravidla: $X \to A$ a $X \to B$ ($X \to A \mid B$). Stačí, když lze řetězec odvodit alespoň z jednoho potomka.
     
-    \item \textbf{Proměnná s hodnotou 1:} Mapována na pravidlo generující terminální symbol (například $X \to \varepsilon$ nebo $X \to a$), což znamená, že z tohoto symbolu lze odvodit neprázdný řetězec.
+    \item \textbf{Proměnná s hodnotou 1} generuje epsilon pravidlo $X \to \varepsilon$, což umožňuje odvození prázdného řetězce a gramatika tak může generovat neprázdný jazyk.
     
-    \item \textbf{Proměnná s hodnotou 0:} Mapována na neterminál bez pravidel, což znamená, že z tohoto symbolu nelze nic odvodit.
+    \item \textbf{Proměnná s hodnotou 0} vytvoří pravidlo $X \to t$, kde $t$ je terminál bez dalších odvozovacích pravidel. Z tohoto neterminálu tak nelze odvodit žádný řetězec složený pouze z terminálů.
 \end{itemize}
 
 Výsledná gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhodnotí na 1.
@@ -190,27 +207,25 @@ Výsledná gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhod
 \subsection{Implementace převodu}
 \label{sec:MCVPtoGrammarImplementation}
 
-Třída \texttt{MCVPToGrammarConverter} (definovaná v souboru \texttt{MCVPtoGrammarConverter.jsx}) implementuje převod ve dvou fázích:
+Převod implementuje třída \texttt{MCVPToGrammarConverter} (modul \texttt{MCVPtoGrammarConverter.jsx}). Nejprve \texttt{NonTerminalGenerator} přiřadí každému uzlu obvodu unikátní symbol – kořen dostane počáteční symbol $S$, ostatní uzly postupně symboly $A$, $B$, $C$, atd. Poté funkce \texttt{createProductionsRecursively()} rekurzivně prochází strom a generuje gramatická pravidla podle typu jednotlivých uzlů.
 
-\begin{enumerate}
-    \item \textbf{Mapování uzlů na symboly:} Třída \texttt{NonTerminalGenerator} přiřazuje každému uzlu obvodu unikátní symbol gramatiky. Kořen je mapován na počáteční symbol $S$, ostatní uzly dostanou symboly $A$, $B$, $C$, atd.
-    
-    \item \textbf{Generování pravidel:} Funkce \texttt{createProductionsRecursively()} rekurzivně prochází strom a pro každý uzel vytváří odpovídající gramatická pravidla podle typu uzlu (AND, OR nebo proměnná).
-\end{enumerate}
+Pro konstrukci gramatiky používáme pomocnou třídu \texttt{ConversionGrammar} (soubor \texttt{ConversionGrammar.js}), která rozšiřuje standardní třídu \texttt{Grammar} o metody pro přidávání symbolů a pravidel.
 
-Pomocná třída \texttt{ConversionGrammar} (v souboru \texttt{ConversionGrammar.js}) rozšiřuje standardní třídu \texttt{Grammar} o metody pro inkrementální přidávání neterminálů, terminálů a pravidel, což usnadňuje krokovou konstrukci gramatiky během převodu.
+Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu. Uživatel tak může sledovat, jak obvod postupně přechází na gramatiku, a vidět, která pravidla vznikají z~konkrétních uzlů.
 
-Komponenta \texttt{MCVPtoGrammarConverter} opět umožňuje krokové sledování převodu. Uživatel vidí, jak je obvod postupně transformován na gramatiku, a může sledovat, která pravidla gramatiky vznikají z jednotlivých uzlů obvodu.
+\section{Předpřipravené sady}
+\label{sec:MCVPPreparedSets}
 
-\section{Ukládání a načítání obvodů}
+Aplikace nabízí několik předpřipravených sad MCVP obvodů ve složce \texttt{Sady/MCVP}. Tyto sady slouží jako základní ukázkové příklady. Tyto uložené obvody jsou taktéž ve formatu JSON.
+
+\subsection{Ukládání a načítání MCVP obvodů}
 \label{sec:MCVPSerialization}
 
-Aplikace podporuje export a import obvodů ve formátu JSON. Modul \texttt{Serialization.js} obsahuje funkce:
+Aby si mohl uživatel uložit specifický obvod, podporuje aplikace export a import obvodů ve formátu JSON (viz obrázek \ref{fig:import-export-controls}). Modul \texttt{Serialization.js} obsahuje potřebné funkce. Funkce \texttt{treeToFlatGraph()} převede stromovou strukturu na JSON objekt s poli uzlů a hran, kde každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu (export). Opačný převod zajišťuje \texttt{flatGraphToTree()} funkce, která z JSON formátu načte stromovou strukturu včetně hran mezi uzly.
 
-\begin{itemize}
-    \item \textbf{\texttt{treeToFlatGraph()}:} Převede stromovou strukturu obvodu na JSON objekt obsahující pole uzlů a pole hran. Každý uzel má unikátní ID, typ, hodnotu a případně přiřazenou binární hodnotu.
-    
-    \item \textbf{\texttt{flatGraphToTree()}:} Provádí opačný převod – ze serializovaného JSON objektu rekonstruuje stromovou strukturu s~referenčními vazbami mezi uzly.
-\end{itemize}
-
-Tato funkcionalita umožňuje uživatelům ukládat zajímavé obvody pro pozdější použití nebo sdílet příklady s ostatními. Aplikace obsahuje sadu předpřipravených příkladů ve složce \texttt{Sady/MCVP}, které demonstrují různé scénáře a konfigurace obvodů.
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.3\textwidth]{IMGs/ImportExportControls.png}
+    \caption{Ovládací prvky pro import a export MCVP obvodů}
+    \label{fig:import-export-controls}
+\end{figure}

@@ -49,12 +49,8 @@ export function CombinatorialGame({ initialData }) {
             // The selected starting player matches the player assigned to the starting node
             
             finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy;
-            
-            if (rawAnalysisResult.hasWinningStrategy) {
-                finalAnalysisResult.message = "Hráč 1 má výherní strategii.";
-            } else {
-                finalAnalysisResult.message = "Hráč 1 nemá výherní strategii.";
-            }
+            // Use the detailed message from computeWinner (which handles Win/Lose/Draw)
+            finalAnalysisResult.message = rawAnalysisResult.message;
         }
         
         // Optimal moves are still calculated based on Player 1's winning positions
@@ -158,7 +154,13 @@ export function CombinatorialGame({ initialData }) {
                 ]}
                 renderContent={(opt) => {
                     switch (opt) {
-                        case 'manual': return <ManualInput initialGraph={graph} onGraphUpdate={setGraph} />;
+                        case 'manual': return <ManualInput 
+                            initialGraph={graph} 
+                            onGraphUpdate={setGraph} 
+                            analysisResult={analysisResult}
+                            optimalMoves={optimalMoves}
+                            onExplain={() => setExplain(true)}
+                        />;
                         case 'generate': return <GenerateInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
                         case 'sets': return <PreparedSetsInput onGraphUpdate={setGraph} selectedStartingPlayer={selectedStartingPlayer} setSelectedStartingPlayer={setSelectedStartingPlayer} />;
                         default: return null;
@@ -166,15 +168,24 @@ export function CombinatorialGame({ initialData }) {
                 }}
             />
 
-            {(graph && chosenOpt !== 'manual') && (
+            {graph && (
                 <>
-                    <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
-                    <GameAnalysisDisplay analysisResult={analysisResult} />
-                    <div className="mt-3">
-                        <button className='btn btn-primary' onClick={() => setExplain(true)}>
-                            Vysvětlit
-                        </button>
-                    </div>
+                    {chosenOpt !== 'manual' && (
+                        <>
+                            <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+                                <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                            </div>
+                            <GameAnalysisDisplay analysisResult={analysisResult} />
+                        </>
+                    )}
+                    
+                    {chosenOpt !== 'manual' && (
+                        <div className="mt-3">
+                            <button className='btn btn-primary' onClick={() => setExplain(true)}>
+                                Vysvětlit
+                            </button>
+                        </div>
+                    )}
                 </>
             )}
 
@@ -185,13 +196,7 @@ export function CombinatorialGame({ initialData }) {
                     )}
                 </Modal>
             )}
-
-            {/* {graph && (
-                <div className="d-flex justify-content-center gap-3 my-4">
-                    <button className='btn-control'>Převést na MCVP</button>
-                    <button className='btn-control'>Převést na Kombinatorickou hru</button>
-                </div>
-            )} */}
+            
             </div>
         </div>  
     );

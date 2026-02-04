@@ -1,5 +1,5 @@
 {
-  "name": "Sada4 (1xPro)",
+  "name": "Sada 4 (1x Proměnná)",
   "nodes": [
     { "id": 1, "type": "variable", "value": "x1", "varValue": 1 }
   ],

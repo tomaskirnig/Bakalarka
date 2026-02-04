@@ -100,6 +100,12 @@ export class MCVPToGameStepGenerator {
     }
 
     traverse(node) {
+        // Add null check at the beginning
+        if (!node) {
+            console.warn('traverse called with null/undefined node');
+            return;
+        }
+
         const nodeId = this.getUniqueId(node);
 
         if (this.visited.has(nodeId)) return;
@@ -150,6 +156,12 @@ export class MCVPToGameStepGenerator {
             const childIds = [];
             
             for (const child of node.children) {
+                // Skip null/undefined children
+                if (!child) {
+                    console.warn('Skipping null/undefined child in node:', node);
+                    continue;
+                }
+                
                 this.traverse(child); // Recursively build children first
                 const childId = this.getUniqueId(child);
                 childIds.push(childId);
