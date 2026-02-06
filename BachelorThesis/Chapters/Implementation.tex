@@ -1,0 +1,76 @@
+\chapter{Implementace}
+\label{sec:Implementation}
+
+V této kapitole detailně popisujeme implementaci jednotlivých modulů aplikace. Zaměřujeme se na technické řešení algoritmů pro parsování, vyhodnocování a generování instancí P-úplných problémů.
+
+\section{Monotone Circuit Value Problem}
+\label{sec:ImplementationMCVP}
+
+Modul pro MCVP tvoří jádro aplikace a slouží jako výchozí bod pro převody na ostatní problémy.
+
+\subsection{Lexikální a syntaktická analýza}
+\label{sec:MCVPParsingImpl}
+
+Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích v modulu \texttt{Parser.js}:
+
+\begin{enumerate}
+    \item \textbf{Tokenizace:} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů (závorky, operátory, proměnné) pomocí regulárních výrazů.
+    \item \textbf{Parsování:} Třída \texttt{Parser} implementuje rekurzivní sestupný parser, který respektuje prioritu operátorů (OR má nižší prioritu než AND). Výsledkem je hierarchie objektů třídy \texttt{Node}.
+\end{enumerate}
+
+\subsection{Algoritmus vyhodnocení}
+\label{sec:MCVPEvaluationImpl}
+
+Vyhodnocení obvodu je implementováno v modulu \texttt{EvaluateTree.js}. Funkce \texttt{evaluateTree()} využívá algoritmus průchodu do hloubky (DFS) s memoizací vyhodnocených uzlů. Tím je zajištěna lineární časová složitost $O(n)$ vzhledem k počtu uzlů. Pro účely výuky jsme implementovali také funkci \texttt{evaluateTreeWithSteps()}, která zaznamenává stav obvodu v každém kroku výpočtu.
+
+\subsection{Interaktivní editace a generování}
+\label{sec:MCVPInteractiveImpl}
+
+Kromě textového vstupu jsme vytvořili grafický editor v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může přímo v ploše grafu přidávat uzly, měnit jejich typ a vytvářet propojení. 
+
+Modul \texttt{Generator.js} umožňuje vytvářet náhodné platné DAG struktury. Algoritmus nejprve vygeneruje listy (proměnné) a následně k nim postupně připojuje hradla tak, aby nevznikaly cykly a výsledný graf měl jediný kořen.
+
+\section{Kombinatorické hry}
+\label{sec:ImplementationGames}
+
+Implementace kombinatorických her se soustředí na práci s grafy, které mohou obsahovat cykly.
+
+\subsection{Retrográdní analýza}
+\label{sec:GamesAlgorithmImpl}
+
+Jádrem modulu je retrográdní analýza v souboru \texttt{ComputeWinner.js}. Na rozdíl od MCVP, kde postupujeme od listů ke kořeni, zde algoritmus začíná u terminálních pozic (uzlů bez následníků) a šíří výsledek (výhra/prohra) zpět proti směru hran. K tomu využíváme frontu (BFS přístup), která zaručuje správné vyhodnocení i v přítomnosti cyklů – pozice, které nelze jednoznačně označit jako výherní nebo prohrávající, zůstávají ve stavu remízy.
+
+\subsection{Vizualizace a krokování}
+\label{sec:GamesVisualImpl}
+
+Pro zobrazení herního grafu využíváme komponentu \texttt{DisplayGraph}. Výherní strategie je v grafu zvýrazněna odlišnou barvou hran. Krokové vyhodnocení v komponentě \texttt{StepByStepGame} umožňuje uživateli sledovat, jak se stavy prohry a výhry postupně propagují grafem.
+
+\section{Bezkontextové gramatiky}
+\label{sec:ImplementationGrammars}
+
+Modul gramatik řeší problém neprázdnosti jazyka pomocí identifikace produktivních neterminálů.
+
+\subsection{Identifikace produktivních symbolů}
+\label{sec:GrammarsAlgorithmImpl}
+
+Algoritmus v modulu \texttt{GrammarEvaluator.js} pracuje iterativně. V každém kroku označí neterminály, pro které existuje pravidlo s pravou stranou složenou výhradně z terminálů nebo již označených produktivních neterminálů. Výpočet končí, jakmile se množina produktivních symbolů v dané iteraci nezmění.
+
+\subsection{Rekonstrukce derivačního stromu}
+\label{sec:GrammarsWitnessImpl}
+
+Pokud je počáteční symbol označen jako produktivní, aplikace dokáže rekonstruovat konkrétní derivaci jako důkaz neprázdnosti. Tento proces probíhá rekurzivně – pro každý neterminál náhodně vybereme jedno z jeho produktivních pravidel a budujeme strom až k terminálním symbolům. Abychom předešli nekonečným derivacím u rekurzivních gramatik, omezili jsme hloubku stromu a implementovali preferenci nerekurzivních pravidel při překročení určité meze.
+
+\section{Implementace převodů mezi problémy}
+\label{sec:ImplementationReductions}
+
+Klíčovou funkcí aplikace je vizualizace redukcí mezi P-úplnými problémy.
+
+\subsection{Redukce na kombinatorickou hru}
+\label{sec:MCVPToGameImpl}
+
+Převod implementuje třída \texttt{MCVPToGameStepGenerator}. Prochází MCVP graf a pro každý uzel generuje odpovídající herní pozici: OR hradla se mění na pozice Hráče I, AND hradla na pozice Hráče II. Terminální hodnoty 0 a 1 jsou převedeny na prohrávající pozice pro dané hráče. Implementace využívá memoizaci, aby každý uzel MCVP odpovídal právě jedné pozici v herním grafu.
+
+\subsection{Redukce na bezkontextovou gramatiku}
+\label{sec:MCVPToGrammarImpl}
+
+Převod zajišťuje komponenta \texttt{MCVPtoGrammarConverter}. Algoritmus rekurzivně mapuje strukturu obvodu na přepisovací pravidla. AND hradla vytvářejí pravidla s více symboly na pravé straně (konjunkce), zatímco OR hradla vytvářejí alternativní pravidla pro tentýž neterminál (disjunkce). Epsilon pravidla jsou využita k reprezentaci logické hodnoty 1.

@@ -1,0 +1,81 @@
+\chapter{Analýza a návrh}
+\label{sec:AnalysisAndDesign}
+
+V této kapitole se věnujeme popisu technologií, které jsme pro vývoj aplikace zvolili, a detailnímu návrhu architektury celého systému. Zaměřujeme se také na definici klíčových datových struktur a principy návrhu uživatelského rozhraní, které jsou zásadní pro srozumitelnost výukového nástroje.
+
+\section{Volba technologií}
+\label{sec:WebTechnologies}
+
+Pro distribuci výukové aplikace jsme zvolili webové technologie, které nabízejí řadu výhod oproti desktopovým nebo mobilním aplikacím. Hlavním argumentem pro toto řešení je maximální dostupnost pro uživatele napříč platformami – aplikace nevyžaduje žádnou instalaci a běží v libovolném moderním prohlížeči. Snadná údržba a okamžitá distribuce aktualizací jsou dalšími přínosy, které webové prostředí poskytuje.
+
+\subsection{React a Vite}
+\label{sec:ReactVite}
+
+Jako základní kámen vývoje jsme zvolili knihovnu \emph{React} \cite{react2024}. React nám umožnil rozdělit uživatelské rozhraní na znovupoužitelné komponenty, což výrazně usnadnilo vývoj komplexních modulů pro jednotlivé problémy. Klíčovým konceptem je zde reaktivita – rozhraní se automaticky synchronizuje se stavem dat, což minimalizuje riziko chyb při ruční manipulaci s DOM.
+
+Pro sestavení aplikace jsme využili nástroj \emph{Vite} \cite{vite2024}. Vite nám poskytl rychlé vývojové prostředí díky efektivnímu bundlování a okamžité odezvě při úpravách kódu. Pro finální produkční verzi se Vite stará o optimalizaci souborů, což zajišťuje rychlé načítání aplikace.
+
+\section{Architektura a struktura kódu}
+\label{sec:ComponentArchitecture}
+
+Aplikaci jsme navrhli jako \emph{Single Page Application} (SPA). Veškerá logika a navigace probíhá v rámci jedné stránky, což uživateli poskytuje plynulý zážitek podobný desktopové aplikaci. Kořenem struktury je komponenta \texttt{App.jsx}, která spravuje globální stav a řídí přepínání mezi moduly.
+
+Zdrojový kód jsme strukturovali tak, aby byla zajištěna oddělitelnost logiky a vizualizace. Každý modul (MCVP, hry, gramatiky) disponuje vlastní adresářovou strukturou:
+\begin{itemize}
+    \item \textbf{Hlavní komponenta:} Funguje jako kontejner, který spravuje lokální stav a propojuje vstupní data s algoritmy a vizualizací.
+    \item \textbf{Adresář Utils:} Zde jsou soustředěny čisté algoritmy – parsery pro zpracování vstupu, generátory náhodných instancí a evaluátory pro výpočet řešení.
+    \item \textbf{Vizualizační komponenty:} Starají se o vykreslení grafů a stromů pomocí knihovny \emph{react-force-graph}.
+\end{itemize}
+
+\section{Návrh datových struktur}
+\label{sec:DataStructures}
+
+Abychom mohli s P-úplnými problémy efektivně pracovat a vizualizovat je, museli jsme nejprve navrhnout jejich vnitřní reprezentaci v paměti aplikace.
+
+\subsection{Reprezentace obvodu MCVP}
+\label{sec:MCVPDesignStructure}
+
+Pro modelování logického obvodu jsme využili orientovaný acyklický graf. Každý uzel obvodu je reprezentován instancí třídy \texttt{Node}. Tato třída, jak ukazuje třídní diagram na obrázku \ref{fig:mcvp-class}, uchovává informaci o typu operace (AND, OR) nebo hodnotě proměnné. Klíčovou vlastností je seznam odkazů na potomky, což nám umožňuje rekurzivní průchod celým stromem při jeho vyhodnocování.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{IMGs/MCVP_class.png}
+    \caption{Třídní diagram pro hlavní třídy MCVP}
+    \label{fig:mcvp-class}
+\end{figure}
+
+\subsection{Reprezentace herního grafu}
+\label{sec:GamesDesignStructure}
+
+Herní graf kombinatorické hry vyžadoval odlišný přístup, neboť na rozdíl od MCVP může obsahovat cykly. Pro tyto účely jsme navrhli třídy \texttt{GamePosition} a \texttt{GameGraph} (viz obrázek \ref{fig:cg-class}). Třída \texttt{GamePosition} reprezentuje jednotlivou pozici a uchovává informaci o hráči, který je na tahu, spolu se seznamy předchůdců a následníků, což je nezbytné pro retrográdní analýzu.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{IMGs/CG_class.png}
+    \caption{Třídní diagram pro hlavní třídy kombinatorické hry}
+    \label{fig:cg-class}
+\end{figure}
+
+\subsection{Reprezentace bezkontextové gramatiky}
+\label{sec:GrammarDesignStructure}
+
+U bezkontextových gramatik jsme se zaměřili na reprezentaci přepisovacích pravidel. Třída \texttt{Grammar} (obrázek \ref{fig:grammar-class}) spravuje množiny symbolů a seznamy produkcí. Každá produkce propojuje levou stranu (neterminál) s polem symbolů na pravé straně. Tento návrh nám dovoluje snadno identifikovat produktivní neterminály v iterativním algoritmu.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.45\textwidth]{IMGs/Grammar_class.png}
+    \caption{Třídní diagram pro hlavní třídu bezkontextové gramatiky}
+    \label{fig:grammar-class}
+\end{figure}
+
+\section{Návrh uživatelského rozhraní}
+\label{sec:UIDesign}
+
+Při návrhu rozhraní jsme kladli důraz na to, aby student nebyl zahlcen informacemi a mohl se soustředit na podstatu problému. Rozložení stránky jsme sjednotili napříč všemi moduly:
+\begin{itemize}
+    \item \textbf{Ovládací panel:} Levá nebo horní část obrazovky, kde uživatel volí způsob zadání vstupu a spouští simulace.
+    \item \textbf{Interaktivní plátno:} Hlavní plocha pro vizualizaci grafů, kde uživatel může s prvky přímo manipulovat.
+    \item \textbf{Informační panely:} Modální okna nebo postranní panely zobrazující detaily o probíhajícím výpočtu nebo krokovém převodu.
+\end{itemize}
+
+Pro vizualizaci jsme zvolili knihovnu \emph{react-force-graph} \cite{reactforcegraph2024}, která díky fyzikální simulaci automaticky rozmísťuje uzly a hrany, čímž zajišťuje přehlednost i u složitějších instancí. Stylování jsme realizovali pomocí frameworku \emph{Bootstrap 5} \cite{bootstrap2024}, který zajistil jednotný vzhled a responzivitu rozhraní na různých velikostech obrazovek.
