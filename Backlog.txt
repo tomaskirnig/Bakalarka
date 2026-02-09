@@ -27,6 +27,34 @@
 
 - Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
 
-zobrazit u kazdeho nodu hrace s vyherni pozici
-
 -udelat novou vetev s omezenout fyzikou
+
+===================================================Uprava pisemne casti=========================================================================================================
+
+1. Odborné a implementační připomínky
+    [DONE]
+    MCVP (Circuit Value Problem): Musíš důsledně rozlišovat mezi stromem a DAGem (orientovaným acyklickým grafem). 
+    P-úplnost platí pro DAGy; u stromů je problém jednodušší. V textu i v programu bys měl pracovat s DAGem.
+
+    [DONE]
+    Kombinatorické hry: Vedoucí doporučuje zobecnit implementaci z acyklického grafu na obecný orientovaný graf. 
+    K vyhodnocení vítězné strategie navrhuje použít algoritmus s frontou (podobný prohledávání do šířky, ale od koncových uzlů), aby se předešlo problémům s nekonečnými cykly.
+
+    Gramatiky: Navrhuje upravit pravidla pro identifikaci neterminálů. Místo "všechna písmena velká" by stačilo, aby první písmeno bylo velké (což by umožnilo názvy jako A1 nebo A_10).
+
+2. Struktura a forma textu (Zásadní) [DONE]
+    Aktuální struktura je podle něj nevyhovující. Navrhuje klasické akademické dělení:
+
+    Teoretický základ: Formální definice (PTIME, P-úplnost, logaritmická redukce) a teoretický popis problémů.
+
+    Analýza a návrh: Volba technologií, knihoven a softwarové diagramy (např. třídní diagram, stavový diagram).
+
+    Implementace: Konkrétní popis kódu, reprezentace dat v programu a samotné algoritmy převodů.
+
+3. Grafické podklady
+    [DONE]
+    Smazat: Zbytečné obrázky (např. obr. 3.4), které nenesou informaci.
+
+    Přidat: Ilustrace převodů (jak vypadá konkrétní MCVP a jak se změní na hru/gramatiku).
+
+    Doplnit: Celkové screenshoty aplikace pro představu o UI.

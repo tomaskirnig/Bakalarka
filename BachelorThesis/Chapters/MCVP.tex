@@ -132,7 +132,7 @@ Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}.
     \item \textbf{Počet proměnných:} Kolik uzlů s proměnnými (listů) bude obvod obsahovat.
 \end{itemize}
 
-Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný počet proměnných, s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo vypočítáme cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě přidáme náhodnou odchylku $\pm 20\%$ – tak dosáhneme vyváženosti mezi úplnou náhodností a vyrovnanou distribucí. Hradlo pak náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR) a přidá se do množiny použitelných uzlů pro potomky. Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
+Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný počet proměnných, s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo se vypočítá cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě se přidá náhodná odchylka $\pm 20\%$ – tak je dosaženo vyváženosti mezi úplnou náhodností a vyrovnanou distribucí. Hradlo pak náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR) a přidá se do množiny použitelných uzlů pro potomky. Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
 
 \section{Vizualizace obvodu}
 \label{sec:MCVPVisualization}
@@ -154,7 +154,7 @@ Pro vizualizaci grafu používá aplikace knihovnu \emph{react-force-graph-2d}. 
 \section{Převod na kombinatorickou hru}
 \label{sec:MCVPtoGame}
 
-Pro ilustraci vzájemné převoditelnosti P-úplných problémů implementujeme převod z MCVP na kombinatorickou hru (popsaný v kapitole \ref{sec:Games}). Tento převod se nachází v modulech \texttt{ConversionCombinatorialGame.js} a \texttt{MCVPtoCombinatorialGameConverter.jsx}.
+Pro ilustraci vzájemné převoditelnésti P-úplných problémů je implementován převod z MCVP na kombinatorickou hru (popsaný v kapitole \ref{sec:Games}). Tento převod se nachází v modulech \texttt{ConversionCombinatorialGame.js} a \texttt{MCVPtoCombinatorialGameConverter.jsx}.
 
 \subsection{Princip převodu}
 \label{sec:MCVPtoGameRules}

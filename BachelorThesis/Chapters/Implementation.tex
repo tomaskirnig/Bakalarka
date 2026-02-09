@@ -1,76 +1,347 @@
 \chapter{Implementace}
 \label{sec:Implementation}
 
-V této kapitole detailně popisujeme implementaci jednotlivých modulů aplikace. Zaměřujeme se na technické řešení algoritmů pro parsování, vyhodnocování a generování instancí P-úplných problémů.
+Tato kapitola detailně popisuje implementaci jednotlivých modulů aplikace. Zaměřuje se na technické řešení algoritmů pro parsování, vyhodnocování a generování instancí P-úplných problémů.
 
 \section{Monotone Circuit Value Problem}
 \label{sec:ImplementationMCVP}
 
 Modul pro MCVP tvoří jádro aplikace a slouží jako výchozí bod pro převody na ostatní problémy.
 
-\subsection{Lexikální a syntaktická analýza}
+\subsection{Formát vstupu a parsování výrazů}
 \label{sec:MCVPParsingImpl}
 
-Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích v modulu \texttt{Parser.js}:
+Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp-impl}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na strukturu obvodu (DAG).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/InputSelectorMCVP.png}
+    \caption{Výběr způsobu zadání vstupu pro MCVP}
+    \label{fig:input-selector-mcvp-impl}
+\end{figure}
+
+\subsubsection{Gramatika vstupního jazyka}
+\label{sec:MCVPGrammarImpl}
+
+Vstupní výrazy odpovídají jednoduché gramatice popsané v kapitole \ref{sec:TheoryMCVP}. Pro připomenutí:
+
+\begin{itemize}
+    \item Operátory \texttt{O} (OR) a \texttt{A} (AND) reprezentují logický součet a součin.
+    \item Proměnné jsou zapsány ve tvaru \texttt{x1[0]} nebo \texttt{x2[1]}, kde číslo v hranatých závorkách udává hodnotu proměnné (0 nebo 1).
+    \item Výrazy lze libovolně uzávorkovat pomocí kulatých závorek pro určení priority vyhodnocení.
+\end{itemize}
+
+Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
+
+\subsubsection{Lexikální a syntaktická analýza}
+\label{sec:MCVPLexerImpl}
+
+Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, které jsou implementovány v modulu \texttt{Parser.js}:
 
 \begin{enumerate}
-    \item \textbf{Tokenizace:} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů (závorky, operátory, proměnné) pomocí regulárních výrazů.
-    \item \textbf{Parsování:} Třída \texttt{Parser} implementuje rekurzivní sestupný parser, který respektuje prioritu operátorů (OR má nižší prioritu než AND). Výsledkem je hierarchie objektů třídy \texttt{Node}.
+    \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
+    
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class-impl}), které tvoří strukturu grafu reprezentující zadaný obvod.
 \end{enumerate}
 
-\subsection{Algoritmus vyhodnocení}
+Návrh třídy \texttt{Node} a celková architektura datových struktur je detailně popsána v sekci \ref{sec:MCVPDesignStructure}. Výsledkem parsování je orientovaný graf (obrázek \ref{fig:mcvp-class-impl}), kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/MCVP_class.png}
+    \caption{Třídní diagram pro hlavní třídy MCVP}
+    \label{fig:mcvp-class-impl}
+\end{figure}
+
+\subsection{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluationImpl}
 
-Vyhodnocení obvodu je implementováno v modulu \texttt{EvaluateTree.js}. Funkce \texttt{evaluateTree()} využívá algoritmus průchodu do hloubky (DFS) s memoizací vyhodnocených uzlů. Tím je zajištěna lineární časová složitost $O(n)$ vzhledem k počtu uzlů. Pro účely výuky jsme implementovali také funkci \texttt{evaluateTreeWithSteps()}, která zaznamenává stav obvodu v každém kroku výpočtu.
+Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem grafu, který je implementován v modulu \texttt{EvaluateTree.js}.
 
-\subsection{Interaktivní editace a generování}
+\subsubsection{Algoritmus vyhodnocení}
+\label{sec:MCVPAlgorithmImpl}
+
+Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) s memoizací:
+
+\begin{enumerate}
+    \item \textbf{Listy (proměnné):} Pro uzly typu \texttt{variable} funkce vrací přímo přiřazenou hodnotu (0 nebo 1).
+    
+    \item \textbf{Vnitřní uzly (operace):} Pro uzly reprezentující logické operace funkce nejdříve vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 pouze tehdy, když alespoň jeden potomek má hodnotu 1.
+    
+    \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných uzlů.
+    
+    \item \textbf{Detekce cyklů:} Algoritmus používá množinu \texttt{visiting} pro detekci případných cyklů v grafu, které by způsobily nekonečnou rekurzi.
+\end{enumerate}
+
+Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci.
+
+\subsubsection{Krokové vyhodnocení}
+\label{sec:MCVPStepByStepImpl}
+
+Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku obvodu. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
+
+Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace.
+
+\subsection{Interaktivní editace obvodu}
 \label{sec:MCVPInteractiveImpl}
 
-Kromě textového vstupu jsme vytvořili grafický editor v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může přímo v ploše grafu přidávat uzly, měnit jejich typ a vytvářet propojení. 
+Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může:
 
-Modul \texttt{Generator.js} umožňuje vytvářet náhodné platné DAG struktury. Algoritmus nejprve vygeneruje listy (proměnné) a následně k nim postupně připojuje hradla tak, aby nevznikaly cykly a výsledný graf měl jediný kořen.
+\begin{itemize}
+    \item \textbf{Přidávat uzly:} Pomocí tlačítek pod grafem lze vložit nové uzly typu AND, OR nebo vstupní proměnnou s hodnotou 0 nebo 1. Nový uzel se umístí do grafu, ale není propojen s ostatními uzly.
+    
+    \item \textbf{Vytvářet hrany:} Označit uzel, ten následně může:
+    \begin{itemize}
+        \item Nastavit na AND nebo OR operaci.
+        \item Nastavit na proměnnou s hodnotou 0 nebo 1.
+        \item Odstranit uzel z grafu.
+        \item Vytvořit nebo odstranit hranu s dalším uzlem.
+    \end{itemize}
+        
+    \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání obvodu.
+\end{itemize}
 
-\section{Kombinatorické hry}
+Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz sekce \ref{sec:UIDesign}). Aplikace průběžně aktualizuje interní strukturu grafu odpovídající aktuálnímu stavu grafu.
+
+\subsection{Generování náhodných obvodů}
+\label{sec:MCVPGenerationImpl}
+
+Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}. Uživatel může upravit dva parametry:
+
+\begin{itemize}
+    \item \textbf{Počet hradel:} Kolik uzlů s operacemi (hradel AND a OR) bude obvod obsahovat.
+    \item \textbf{Počet proměnných:} Kolik uzlů s proměnnými (listů) bude obvod obsahovat.
+\end{itemize}
+
+Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný počet proměnných, s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo se vypočítá cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě se přidá náhodná odchylka $\pm 20\%$ – tak je dosaženo vyváženosti mezi úplnou náhodností a vyrovnanou distribucí. Hradlo pak náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR) a přidá se do množiny použitelných uzlů pro potomky. Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
+
+\subsection{Vizualizace obvodu}
+\label{sec:MCVPVisualizationImpl}
+
+Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRenderCanvas}. Obvod je zobrazen jako orientovaný graf s výstupním hradlem nahoře a vstupy dole, hodnoty se tedy šíří směrem zdola nahoru (viz obrázek \ref{fig:tree-render-canvas-impl}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/TreeRenderCanvas.png}
+    \caption{Vizualizace MCVP obvodu pomocí TreeRenderCanvas}
+    \label{fig:tree-render-canvas-impl}
+\end{figure}
+
+\subsubsection{Hierarchické rozložení}
+\label{sec:MCVPLayoutImpl}
+
+Pro vizualizaci grafu používá aplikace knihovnu \emph{react-force-graph-2d}. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
+
+\section{Kombinatorická hra}
 \label{sec:ImplementationGames}
 
-Implementace kombinatorických her se soustředí na práci s grafy, které mohou obsahovat cykly.
+\subsection{Formát vstupu}
+\label{sec:GamesInputImpl}
 
-\subsection{Retrográdní analýza}
+Aplikace nabízí tři způsoby zadávání herního grafu:
+
+\begin{itemize}
+    \item \textbf{Interaktivní editace:} Uživatel vytváří a upravuje graf pomocí grafického editoru (viz sekce \ref{sec:GamesInteractiveImpl}).
+    \item \textbf{Generování náhodných her:} Automatické vytvoření náhodného grafu podle zadaných parametrů (viz sekce \ref{sec:GamesGenerationImpl}).
+    \item \textbf{Předpřipravené sady:} Načtení ukázkových připravených příkladů (viz sekce \ref{sec:GamesPreparedSetsImpl}).
+\end{itemize}
+
+Všechny metody využívají komponentu \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
+
+\subsection{Interaktivní editace grafu}
+\label{sec:GamesInteractiveImpl}
+
+Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy pomocí interaktivního grafického editoru. Uživatel může:
+
+\begin{itemize}
+    \item \textbf{Přidávat uzly:} Vytvořit novou pozici.
+
+    \item \textbf{Upravovat uzly:} Kliknutím na uzel ho označíme. S označeným uzlem lze:
+    \begin{itemize}
+        \item Změnit hráče který je na tahu (Hráč I nebo Hráč II)
+        \item Odstranit pozici z grafu
+        \item Nastavit jako počáteční pozici
+        \item Použít jako zdroj nebo cíl pro vytvoření hrany
+        \item Vytvořit hranu z nebo do tohoto uzlu
+        \item Odstranit hrany k nebo od tohoto uzlu
+    \end{itemize}
+            
+    \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání.
+\end{itemize}
+
+Aplikace průběžně validuje graf. Uživatel je upozorněn, pokud není nastavena počáteční pozice, což je nutné pro spuštění analýzy.
+
+\subsection{Generování náhodných her}
+\label{sec:GamesGenerationImpl}
+
+Modul \texttt{Generator.js} obsahuje funkci \texttt{generateGraph()} pro vytváření náhodných herních grafů. Uživatel nastavuje dva parametry:
+
+\begin{itemize}
+    \item \textbf{Počet pozic:} Kolik uzlů (herních pozic) bude graf obsahovat.
+    \item \textbf{Pravděpodobnost hrany:} Hodnota 0\% -- 100\% určující, jak pravděpodobné je vytvoření hrany mezi dvěma uzly.
+\end{itemize}
+
+Algoritmus generování probíhá ve dvou fázích:
+
+\begin{enumerate}
+    \item \textbf{Vytvoření kostry:} Vytvoří se uzly očíslované 0 až \( n-1 \) a každému se náhodně přiřadí hráč. Pro každý uzel \( i > 0 \) pak vznikne hrana z náhodného předchozího uzlu (s indexem menším než \( i \)) do uzlu \( i \). Tím je zajištěno, že uzel 0 (počáteční pozice) může dosáhnout všechny ostatní uzly, a současně vznikne acyklická kostra grafu.
+    
+    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti se přidá hrana \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
+\end{enumerate}
+
+Vnitřní reprezentace grafu pomocí tříd \texttt{GamePosition} a \texttt{GameGraph} je popsána v sekci \ref{sec:GamesDesignStructure}. Diagram těchto tříd je uveden na obrázku \ref{fig:cg-class-impl}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{IMGs/CG_class.png}
+    \caption{Třídní diagram pro hlavní třídu kombinatorické hry}
+    \label{fig:cg-class-impl}
+\end{figure}
+
+\subsection{Předpřipravené sady}
+\label{sec:GamesPreparedSetsImpl}
+
+Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti.
+
+\subsubsection{Ukládání a načítání her}
+\label{sec:GamesSerializationImpl}
+
+Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \texttt{FileTransferControls} (viz obrázek \ref{fig:import-export-controls-cg}). Formát obsahuje pole \texttt{nodes} s uzly, pole \texttt{edges} s hranami a identifikátor \texttt{startingPosition}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.3\textwidth]{IMGs/ImportExportControls.png}
+    \caption{Ovládací prvky pro import a export herních grafů}
+    \label{fig:import-export-controls-cg}
+\end{figure}
+
+\subsection{Vizualizace grafu}
+\label{sec:GamesVisualizationImpl}
+
+Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}, která využívá knihovnu \emph{react-force-graph-2d}. Graf zobrazuje:
+
+\begin{itemize}
+    \item \textbf{Uzly:} Každý uzel reprezentuje herní pozici s označením hráče na tahu (I nebo II).
+    \item \textbf{Počáteční pozice:} Označena oranžovou barvou.
+    \item \textbf{Hrany:} Možné tahy jsou zobrazeny jako směrované hrany. Hrany patřící do výherní strategie jsou zvýrazněny tlustší čarou a žlutou barvou.
+\end{itemize}
+
+\subsection{Algoritmus analýzy}
 \label{sec:GamesAlgorithmImpl}
 
-Jádrem modulu je retrográdní analýza v souboru \texttt{ComputeWinner.js}. Na rozdíl od MCVP, kde postupujeme od listů ke kořeni, zde algoritmus začíná u terminálních pozic (uzlů bez následníků) a šíří výsledek (výhra/prohra) zpět proti směru hran. K tomu využíváme frontu (BFS přístup), která zaručuje správné vyhodnocení i v přítomnosti cyklů – pozice, které nelze jednoznačně označit jako výherní nebo prohrávající, zůstávají ve stavu remízy.
+Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus využívá retrográdní analýzu založenou na principech uvedených v sekci \ref{sec:TheoryGames}.
 
-\subsection{Vizualizace a krokování}
-\label{sec:GamesVisualImpl}
+\subsubsection{Vyhodnocení výherních pozic}
+\label{sec:GamesRetrogradeImpl}
 
-Pro zobrazení herního grafu využíváme komponentu \texttt{DisplayGraph}. Výherní strategie je v grafu zvýrazněna odlišnou barvou hran. Krokové vyhodnocení v komponentě \texttt{StepByStepGame} umožňuje uživateli sledovat, jak se stavy prohry a výhry postupně propagují grafem.
+Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní na tahu, nebo zda skončí remízou. Vyhodnocení probíhá následovně:
+
+\begin{enumerate}
+    \item \textbf{Koncové pozice:} Pozice bez dalších tahů jsou prohrávající pro hráče, který je v nich na tahu.
+    
+    \item \textbf{Zpětné šíření:} Od koncových pozic se postupně propagují výsledky:
+    \begin{itemize}
+        \item Pokud existuje tah do prohrávající pozice soupeře, aktuální pozice je vyhrávající.
+        \item Pokud tentýž hráč pokračuje v tahu (bez změny hráče), tah do vyhrávající pozice znamená, že i původní pozice je vyhrávající.
+        \item Pokud všechny tahy vedou do vyhrávajících pozic soupeře, aktuální pozice je prohrávající.
+    \end{itemize}
+    
+    \item \textbf{Neurčené pozice:} Pozice, jejichž status nelze jednoznačně určit (například kvůli cyklům), zůstávají označeny jako remíza.
+\end{enumerate}
+
+Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
+
+\subsubsection{Optimální tahy}
+\label{sec:GamesOptimalMovesImpl}
+
+Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie. Hrana z pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče I. Tyto hrany jsou zvýrazněny ve vizualizaci.
+
+\subsection{Krokové vyhodnocení}
+\label{sec:GamesStepByStepImpl}
+
+Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Algoritmus zaznamenává každý krok aktualizace stavu grafu a uživatel jimi může procházet pomocí navigačních tlačítek. Aktuálně aktualizovaný uzel je v grafu zvýrazněn. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.
 
 \section{Bezkontextové gramatiky}
 \label{sec:ImplementationGrammars}
 
-Modul gramatik řeší problém neprázdnosti jazyka pomocí identifikace produktivních neterminálů.
+\subsection{Formát vstupu}
+\label{sec:GrammarsInputImpl}
 
-\subsection{Identifikace produktivních symbolů}
+Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky: manuální zadání, náhodné generování a výběr z připravených sad. Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivačního stromu gramatiky implementovanou ve třídě \texttt{Grammar} (viz sekce \ref{sec:GrammarDesignStructure}). Třídní diagram této struktury je na obrázku \ref{fig:grammar-class-impl}.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{IMGs/Grammar_class.png}
+    \caption{Třídní diagram pro hlavní třídu bezkontextové gramatiky}
+    \label{fig:grammar-class-impl}
+\end{figure}
+
+\subsection{Manuální zadání gramatiky}
+\label{sec:GrammarsManualImpl}
+
+Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (velká písmena) a terminály.
+
+\subsection{Generování náhodných gramatik}
+\label{sec:GrammarsGenerationImpl}
+
+Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pro vytváření náhodných bezkontextových gramatik na základě vstupních parametrů.
+
+\subsubsection{Základní parametry}
+\label{sec:GrammarsGenerationBasicImpl}
+
+Základní parametry určují počet neterminálů (1--10), počet terminálů (1--10) a maximální délku pravé strany (1--5).
+
+\subsubsection{Pokročilé parametry}
+\label{sec:GrammarsGenerationAdvancedImpl}
+
+Pokročilé parametry umožňují kontrolu nad počtem pravidel na neterminál, povolením levé/pravé rekurze a režimem generování epsilon pravidel.
+
+\subsubsection{Algoritmus generování}
+\label{sec:GrammarsGenerationAlgorithmImpl}
+
+Algoritmus nejprve vytvoří symboly a následně pro každý neterminál generuje náhodný počet pravidel. Při tvorbě pravých stran zohledňuje nastavené pravděpodobnosti pro terminály, neterminály a rekurzivní volání.
+
+\subsection{Předpřipravené sady}
+\label{sec:GrammarsPreparedSetsImpl}
+
+Ve složce \texttt{Sady/Grammar} jsou uloženy předpřipravené příklady gramatik ve formátu JSON, jehož struktura je popsána v sekci \ref{sec:GrammarDesignStructure}.
+
+\subsection{Algoritmus vyhodnocení}
 \label{sec:GrammarsAlgorithmImpl}
 
-Algoritmus v modulu \texttt{GrammarEvaluator.js} pracuje iterativně. V každém kroku označí neterminály, pro které existuje pravidlo s pravou stranou složenou výhradně z terminálů nebo již označených produktivních neterminálů. Výpočet končí, jakmile se množina produktivních symbolů v dané iteraci nezmění.
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení neprázdnosti gramatiky založenou na teorii popsané v sekci \ref{sec:TheoryGrammars}.
 
-\subsection{Rekonstrukce derivačního stromu}
+\subsubsection{Identifikace produktivních neterminálů}
+\label{sec:GrammarsProductiveImpl}
+
+Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s frontou (work-list algorithm), což odpovídá principu BFS. Časová složitost je \( O(|P| \cdot l) \).
+
+\subsubsection{Rekonstrukce derivace}
 \label{sec:GrammarsWitnessImpl}
 
-Pokud je počáteční symbol označen jako produktivní, aplikace dokáže rekonstruovat konkrétní derivaci jako důkaz neprázdnosti. Tento proces probíhá rekurzivně – pro každý neterminál náhodně vybereme jedno z jeho produktivních pravidel a budujeme strom až k terminálním symbolům. Abychom předešli nekonečným derivacím u rekurzivních gramatik, omezili jsme hloubku stromu a implementovali preferenci nerekurzivních pravidel při překročení určité meze.
+Pokud je počáteční symbol \( S \) produktivní, funkce \texttt{buildNode()} rekurzivně sestaví derivačního strom. Pro každý neterminál náhodně vybírá z jeho produktivních pravidel, přičemž preferuje nerekurzivní varianty pro zamezení příliš hlubokých stromů.
+
+\subsection{Vizualizace derivačního stromu}
+\label{sec:GrammarsVisualizationImpl}
+
+Pokud gramatika generuje neprázdný jazyk, aplikace vizuálně ukáže derivační strom pomocí komponenty \texttt{DerivationTreeVisual}, využívající knihovnu \emph{react-force-graph-2d} v režimu top-down.
+
+\subsection{Krokové vyhodnocení}
+\label{sec:GrammarsStepByStepImpl}
+
+Komponenta \texttt{StepByStepGrammar} využívá modul \texttt{GrammarStepEvaluator.js} k interaktivní simulaci algoritmu. Zobrazuje seznam pravidel s barevným zvýrazněním aktuálního stavu a množinu dosud nalezených produktivních symbolů.
 
 \section{Implementace převodů mezi problémy}
 \label{sec:ImplementationReductions}
 
-Klíčovou funkcí aplikace je vizualizace redukcí mezi P-úplnými problémy.
+Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v sekci \ref{sec:TheoryReductions} aplikace implementuje dva klíčové převody z instance MCVP.
 
-\subsection{Redukce na kombinatorickou hru}
-\label{sec:MCVPToGameImpl}
+\subsection{Převod na kombinatorickou hru}
+\label{sec:MCVPtoGameImplementationImpl}
 
-Převod implementuje třída \texttt{MCVPToGameStepGenerator}. Prochází MCVP graf a pro každý uzel generuje odpovídající herní pozici: OR hradla se mění na pozice Hráče I, AND hradla na pozice Hráče II. Terminální hodnoty 0 a 1 jsou převedeny na prohrávající pozice pro dané hráče. Implementace využívá memoizaci, aby každý uzel MCVP odpovídal právě jedné pozici v herním grafu.
+Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}. Pro efektivitu používáme memoizaci. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně.
 
-\subsection{Redukce na bezkontextovou gramatiku}
-\label{sec:MCVPToGrammarImpl}
+\subsection{Převod na bezkontextovou gramatiku}
+\label{sec:MCVPtoGrammarImplementationImpl}
 
-Převod zajišťuje komponenta \texttt{MCVPtoGrammarConverter}. Algoritmus rekurzivně mapuje strukturu obvodu na přepisovací pravidla. AND hradla vytvářejí pravidla s více symboly na pravé straně (konjunkce), zatímco OR hradla vytvářejí alternativní pravidla pro tentýž neterminál (disjunkce). Epsilon pravidla jsou využita k reprezentaci logické hodnoty 1.
+Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Nejprve přiřadí uzlům unikátní symboly a poté rekurzivně generuje pravidla odpovídající typům hradel. Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu.
