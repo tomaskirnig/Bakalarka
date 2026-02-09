@@ -41,17 +41,12 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
     
-    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser. Parser je strukturován podle priority operátorů: \texttt{parseOrExpr()} zpracovává OR výrazy, \texttt{parseAndExpr()} zpracovává AND výrazy a \texttt{parseFactor()} zpracovává závorky a proměnné. Parser vytváří uzly typu \texttt{Node} (viz obrázek \ref{fig:mcvp-class-impl}), které tvoří strukturu grafu reprezentující zadaný obvod.
+    \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser respektující prioritu operátorů. Výrazy s operátorem OR mají nejnižší prioritu, následují výrazy s operátorem AND a nejvyšší prioritu mají atomické výrazy v závorkách nebo proměnné. Parser vytváří uzly typu \texttt{Node} (viz třídní diagram v sekci \ref{sec:MCVPDesignStructure}, obrázek \ref{fig:mcvp-class}), které tvoří strukturu grafu reprezentující zadaný obvod.
 \end{enumerate}
 
-Návrh třídy \texttt{Node} a celková architektura datových struktur je detailně popsána v sekci \ref{sec:MCVPDesignStructure}. Výsledkem parsování je orientovaný graf (obrázek \ref{fig:mcvp-class-impl}), kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+Výsledkem parsování je orientovaný graf, kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=1\textwidth]{IMGs/MCVP_class.png}
-    \caption{Třídní diagram pro hlavní třídy MCVP}
-    \label{fig:mcvp-class-impl}
-\end{figure}
+%clear 
 
 \subsection{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluationImpl}
