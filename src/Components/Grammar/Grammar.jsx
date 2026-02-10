@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponent/ManualInput';
@@ -75,8 +75,10 @@ export function Grammar({ onNavigate, initialData }) {
         setShowSteps(false);
     };
 
-    // Calculate analysis result only once when grammar changes
-    const analysisResult = grammar ? isEmptyLanguage(grammar) : null;
+    // Calculate analysis result only once when grammar changes - memoized to prevent recalculation on re-renders
+    const analysisResult = useMemo(() => {
+        return grammar ? isEmptyLanguage(grammar) : null;
+    }, [grammar]);
 
     return (
         <div className='div-content pb-2 page-container'>

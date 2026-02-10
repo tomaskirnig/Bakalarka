@@ -184,14 +184,7 @@ Algoritmus generování probíhá ve dvou fázích:
     \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti se přidá hrana \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
 \end{enumerate}
 
-Vnitřní reprezentace grafu pomocí tříd \texttt{GamePosition} a \texttt{GameGraph} je popsána v sekci \ref{sec:GamesDesignStructure}. Diagram těchto tříd je uveden na obrázku \ref{fig:cg-class-impl}.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.5\textwidth]{IMGs/CG_class.png}
-    \caption{Třídní diagram pro hlavní třídu kombinatorické hry}
-    \label{fig:cg-class-impl}
-\end{figure}
+Vnitřní reprezentace grafu pomocí tříd \texttt{GamePosition} a \texttt{GameGraph} je popsána v sekci \ref{sec:GamesDesignStructure}. Diagram těchto tříd je uveden na obrázku \ref{fig:cg-class}.
 
 \subsection{Předpřipravené sady}
 \label{sec:GamesPreparedSetsImpl}
@@ -262,14 +255,7 @@ Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGam
 \subsection{Formát vstupu}
 \label{sec:GrammarsInputImpl}
 
-Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky: manuální zadání, náhodné generování a výběr z připravených sad. Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivačního stromu gramatiky implementovanou ve třídě \texttt{Grammar} (viz sekce \ref{sec:GrammarDesignStructure}). Třídní diagram této struktury je na obrázku \ref{fig:grammar-class-impl}.
-
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.4\textwidth]{IMGs/Grammar_class.png}
-    \caption{Třídní diagram pro hlavní třídu bezkontextové gramatiky}
-    \label{fig:grammar-class-impl}
-\end{figure}
+Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky: manuální zadání, náhodné generování a výběr z připravených sad. Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivačního stromu gramatiky implementovanou ve třídě \texttt{Grammar} (viz sekce \ref{sec:GrammarDesignStructure}). Třídní diagram této struktury je na obrázku \ref{fig:grammar-class}.
 
 \subsection{Manuální zadání gramatiky}
 \label{sec:GrammarsManualImpl}
@@ -334,9 +320,26 @@ Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v sekc
 \subsection{Převod na kombinatorickou hru}
 \label{sec:MCVPtoGameImplementationImpl}
 
-Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}. Pro efektivitu používáme memoizaci. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně.
+Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}. Pro efektivitu používáme memoizaci. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně (viz obrázek \ref{fig:mcvp-to-cg-impl}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/MCVPtoCG.png}
+    \caption{Ukázka převodu MCVP obvodu na kombinatorickou hru}
+    \label{fig:mcvp-to-cg-impl}
+\end{figure}
+
 
 \subsection{Převod na bezkontextovou gramatiku}
 \label{sec:MCVPtoGrammarImplementationImpl}
 
-Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Nejprve přiřadí uzlům unikátní symboly a poté rekurzivně generuje pravidla odpovídající typům hradel. Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu.
+Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Nejprve přiřadí uzlům unikátní symboly a poté rekurzivně generuje pravidla odpovídající typům hradel. Jak je vidět na obrázku \ref{fig:mcvp-to-grammar-impl}, každá proměnná s hodnotou 1 je převedena na unikátní terminál, zatímco proměnné s hodnotou 0 vytvářejí prázdné produkce ($\varepsilon$).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/MCVPtoGrammar.png}
+    \caption{Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}
+    \label{fig:mcvp-to-grammar-impl}
+\end{figure}
+
+Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu.

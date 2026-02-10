@@ -26,7 +26,8 @@ export function TreeRenderCanvas({
   completedSteps = [],    // Steps with results to display
   width,
   height,
-  fitToScreen
+  fitToScreen,
+  fitTrigger = 0
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -310,10 +311,10 @@ export function TreeRenderCanvas({
 
   // Zoom to fit when triggered
   useEffect(() => {
-    if (fitToScreen && fgRef.current) {
+    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
         fgRef.current.zoomToFit(400, 50);
     }
-  }, [fitToScreen]);
+  }, [fitToScreen, fitTrigger]);
 
   return (
     <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
@@ -381,5 +382,6 @@ TreeRenderCanvas.propTypes = {
   completedSteps: PropTypes.array,
   width: PropTypes.number,
   height: PropTypes.number,
-  fitToScreen: PropTypes.bool
+  fitToScreen: PropTypes.bool,
+  fitTrigger: PropTypes.number
 };

@@ -6,6 +6,8 @@ import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 
 export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate }) {
     const [currentStep, setCurrentStep] = useState(0);
+    const [fitTrigger, setFitTrigger] = useState(0);
+    const [shouldFitCG, setShouldFitCG] = useState(false);
     const [cgDimensions, setCgDimensions] = useState({ width: 400, height: 400 });
     const [mcvpDimensions, setMcvpDimensions] = useState({ width: 400, height: 400 });
     const cgContainerRef = useRef(null);
@@ -19,7 +21,19 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
 
     useEffect(() => {
         setCurrentStep(0);
+        setFitTrigger(prev => prev + 1);
     }, [mcvpTree]);
+
+    // Trigger fit when reaching the last step
+    useEffect(() => {
+        if (currentStep === steps.length - 1 && steps.length > 0) {
+            setShouldFitCG(true);
+            setFitTrigger(prev => prev + 1);
+            // Reset after the fit completes
+            const timer = setTimeout(() => setShouldFitCG(false), 150);
+            return () => clearTimeout(timer);
+        }
+    }, [currentStep, steps.length]);
 
     // Resize observer for CG graph
     useEffect(() => {
@@ -69,6 +83,20 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
         }
     };
 
+    const skipToStart = () => {
+        setCurrentStep(0);
+        setShouldFitCG(true);
+        setFitTrigger(prev => prev + 1);
+        setTimeout(() => setShouldFitCG(false), 150);
+    };
+
+    const skipToEnd = () => {
+        setCurrentStep(steps.length - 1);
+        setShouldFitCG(true);
+        setFitTrigger(prev => prev + 1);
+        setTimeout(() => setShouldFitCG(false), 150);
+    };
+
     const renderCurrentStep = () => {
         if (!steps.length) return <p>Žádné kroky konverze.</p>;
         const step = steps[currentStep];
@@ -93,7 +121,8 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                                 completedSteps={step.labels || []}
                                 width={mcvpDimensions.width}
                                 height={mcvpDimensions.height}
-                                fitToScreen={currentStep === steps.length - 1}
+                                fitToScreen={false}
+                                fitTrigger={fitTrigger}
                             />
                         </div>
                     </div>
@@ -104,18 +133,13 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                             className="bg-light" 
                             style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', height: '49vh' }}
                         >
-                            {step.graph && step.graph.positions && Object.keys(step.graph.positions).length > 0 ? (
-                                <DisplayGraph 
-                                    graph={step.graph} 
-                                    width={cgDimensions.width} 
-                                    height={cgDimensions.height}
-                                    fitToScreen={currentStep === steps.length - 1}
-                                />
-                            ) : (
-                                <div className="d-flex justify-content-center align-items-center h-100 text-muted">
-                                    Prázdný graf
-                                </div>
-                            )}
+                            <DisplayGraph 
+                                graph={step.graph} 
+                                width={cgDimensions.width} 
+                                height={cgDimensions.height}
+                                fitToScreen={shouldFitCG}
+                                fitTrigger={fitTrigger}
+                            />
                         </div>
                     </div>
                 </div>
@@ -156,14 +180,14 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                     <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
                         <button 
                             className="btn btn-outline-secondary btn-sm" 
-                            onClick={() => setCurrentStep(0)}
+                            onClick={skipToStart}
                             disabled={currentStep === 0}
                         >
                             ⏮️ Jít na začátek
                         </button>
                         <button 
                             className="btn btn-outline-primary btn-sm" 
-                            onClick={() => setCurrentStep(steps.length - 1)}
+                            onClick={skipToEnd}
                             disabled={currentStep === steps.length - 1}
                         >
                             Jít na konec ⏭️

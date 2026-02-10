@@ -98,9 +98,6 @@ export function MCVP({ onNavigate, initialData }) {
                         <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
                         <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
                     </ul>
-                    <p className="mb-0">
-                        Tento problém je P-úplný, což znamená, že je těžké jej efektivně paralelizovat.
-                    </p>
                 </InfoButton>
             </div>
 

@@ -466,7 +466,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     // linkWidth={1} // This will be handled by paintLink
                     linkCanvasObject={paintLink} // Custom link renderer
                     linkCanvasObjectMode={() => "after"} // Draw custom object after link line
-                    linkDirectionalArrowLength={3.5}
+                    linkDirectionalArrowLength={6}
                     linkDirectionalArrowRelPos={1}
                     onDagError={handleDagError}
                     // Interaction

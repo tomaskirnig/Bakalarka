@@ -1,13 +1,16 @@
 ---- MCVP ----
-- Fix - when user clicks on the explain button, it recalculates the derived word 
-- Fix - placement of the explain button should be like in other problems under all page content
-- Fix - in MCVP to CG disable the button to end or to beginnig if the user is at the end or begining of the conversion
-
 - Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
-- Optimize (interactive) - make the arrows bigger
-- Optimize (generated) - advanced options can be added (max/min num of children ) 
 - Optimize - make just the variables smaller to fit the nodes, operations can stay the same
+
+- Expand (generated) - advanced options can be added (max/min num of children ) 
+
+---- MCVP -> CG ----
+- Optimize - center both graphs when clicked to start or to end button
+
+
+---- MCVP -> Grammar----
+- Optimize - center both graphs when clicked to start or to end button
 
 ---- CG ----
 - Fix the evaluating alg, its enough to have one winnig strategy to evaluate that the player I have winnig strategy
@@ -17,6 +20,7 @@
 - Optimize - make the starting lenght of edges longer
 
 ---- Grammar ----
+- Fix - when user clicks on the explain button, it recalculates the derived word 
 - Check if epsilon counts as empty grammar 
 - Optimize - adjust the node radius for the longer words
 - Optimize - (manual) make the text area as big as the content automaticly 

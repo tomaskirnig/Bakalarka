@@ -109,7 +109,6 @@ class MCVPToGrammarConverter {
     this.steps = [];
     this.processedNodes = new Set();
     this.productionNodes = new Set();
-    this.EPSILON = 'ε'; // Epsilon for variables with value 0
   }
 
   /**
@@ -143,7 +142,7 @@ class MCVPToGrammarConverter {
       description: "Inicializace gramatiky",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: `Inicializace: Počáteční symbol S. Proměnné s hodnotou 1 budou nahrazeny unikátními terminály (a-z, +, -, atd.), proměnné s hodnotou 0 budou nahrazeny epsilon (${this.EPSILON}).`,
+      visualNote: `Inicializace: Počáteční symbol S. Proměnné s hodnotou 1 budou nahrazeny unikátními terminály (a-z, +, -, atd.), proměnné s hodnotou 0 vytvoří prázdnou produkci (ε).`,
       symbols: this.symbolGenerator.getAllSymbols()
     });
   }
@@ -153,7 +152,7 @@ class MCVPToGrammarConverter {
       description: "Konverze dokončena",
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku. Každá proměnná s hodnotou 1 má unikátní terminál, proměnné s hodnotou 0 jsou nahrazeny epsilon.",
+      visualNote: "MCVP byl úspěšně převeden na bezkontextovou gramatiku. Každá proměnná s hodnotou 1 má unikátní terminál, proměnné s hodnotou 0 vytváří prázdné produkce (ε).",
       symbols: this.symbolGenerator.getAllSymbols()
     });
   }
@@ -235,31 +234,44 @@ class MCVPToGrammarConverter {
       } else {
         this.grammar.setProductions(nodeSymbol, [[]]);
         this.addStep(
-          `Pravidlo pro kořen: ${nodeSymbol} → ${this.EPSILON}`,
+          `Pravidlo pro kořen: ${nodeSymbol} → ε`,
           node,
-          `Kořen je proměnná s hodnotou 0, generuje epsilon (${this.EPSILON}).`
+          `Kořen je proměnná s hodnotou 0, generuje prázdnou produkci (ε).`
         );
       }
       return;
     }
 
     // Handle operation nodes
-    const childSymbols = node.children
-      .filter(child => child != null)
-      .map(child => this.getProductionSymbolForChild(child))
-      .filter(Boolean);
-
     if (node.value === "A") { // AND node
+      // For AND: filter out nulls (epsilon children contribute nothing to concatenation)
+      const childSymbols = node.children
+        .filter(child => child != null)
+        .map(child => this.getProductionSymbolForChild(child))
+        .filter(Boolean);
+      
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
-      const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : this.EPSILON;
+      const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : 'ε';
       this.addStep(
         `Přidat AND pravidlo: ${nodeSymbol} → ${rightSide}`,
         node,
         `AND uzel: zřetězení symbolů potomků.`
       );
     } else if (node.value === "O") { // OR node
-      this.grammar.setProductions(nodeSymbol, childSymbols.map(symbol => [symbol]));
-      const rules = childSymbols.map(s => `${nodeSymbol} → ${s}`).join(', ');
+      // For OR: keep nulls to create epsilon productions
+      const childSymbolsOrNull = node.children
+        .filter(child => child != null)
+        .map(child => this.getProductionSymbolForChild(child));
+      
+      // Create production for each child: null becomes [], others become [symbol]
+      const productions = childSymbolsOrNull.map(symbol => symbol === null ? [] : [symbol]);
+      this.grammar.setProductions(nodeSymbol, productions);
+      
+      const rules = childSymbolsOrNull.map((s) => {
+        const rhs = s === null ? 'ε' : s;
+        return `${nodeSymbol} → ${rhs}`;
+      }).join(', ');
+      
       this.addStep(
         `Přidat OR pravidla: ${rules}`,
         node,
@@ -300,6 +312,7 @@ class MCVPToGrammarConverter {
  */
 export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [fitTrigger, setFitTrigger] = useState(0);
 
   // Generate conversion steps using useMemo for performance
   const steps = useMemo(() => {
@@ -311,7 +324,15 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
   // Reset step when tree changes
   useEffect(() => {
     setCurrentStep(0);
+    setFitTrigger(prev => prev + 1);
   }, [mcvpTree]);
+
+  // Trigger fit when reaching the last step
+  useEffect(() => {
+    if (currentStep === steps.length - 1 && steps.length > 0) {
+      setFitTrigger(prev => prev + 1);
+    }
+  }, [currentStep, steps.length]);
 
   // Get final grammar
   const finalGrammar = useMemo(() => {
@@ -337,6 +358,16 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
     }
   };
 
+  const skipToStart = () => {
+    setCurrentStep(0);
+    setFitTrigger(prev => prev + 1);
+  };
+
+  const skipToEnd = () => {
+    setCurrentStep(steps.length - 1);
+    setFitTrigger(prev => prev + 1);
+  };
+
   // Render the current step
   const renderCurrentStep = () => {
     if (!steps.length || currentStep < 0 || currentStep >= steps.length) {
@@ -358,7 +389,8 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
                 highlightedNode={step.mcvpHighlight}
                 activeNode={step.mcvpHighlight}
                 completedSteps={step.symbols || []}
-                fitToScreen={currentStep === steps.length - 1}
+                fitToScreen={false}
+                fitTrigger={fitTrigger}
               />
             </div>
           </div>
@@ -407,7 +439,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
         {finalGrammar && (
           <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
               <button 
-                onClick={() => setCurrentStep(0)}
+                onClick={skipToStart}
                 disabled={currentStep === 0}
                 className="btn btn-outline-secondary btn-sm"
               >
@@ -415,7 +447,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
               </button>
               
               <button 
-                onClick={() => setCurrentStep(steps.length - 1)}
+                onClick={skipToEnd}
                 disabled={currentStep === steps.length - 1}
                 className="btn btn-outline-primary btn-sm"
               >
@@ -446,19 +478,30 @@ MCVPtoGrammarConverter.propTypes = {
  * Component for displaying grammar in a formatted way
  */
 function GrammarDisplay({ grammar }) {
+  // Helper function to format a production - show 'ε' for empty productions
+  const formatProduction = (prod) => {
+    if (!Array.isArray(prod)) return String(prod);
+    if (prod.length === 0) return 'ε';
+    return prod.join(' ');
+  };
+
   return (
     <div className="grammar-display">
-      <p><strong>Neterminály:</strong> {grammar.nonTerminals.join(', ')}</p>
-      <p><strong>Terminály:</strong> {grammar.terminals.join(', ')}</p>
+      <p><strong>Neterminály:</strong> {grammar.nonTerminals.join(', ') || '(žádné)'}</p>
+      <p><strong>Terminály:</strong> {grammar.terminals.length > 0 ? grammar.terminals.join(', ') : '(žádné)'}</p>
       <p><strong>Počáteční symbol:</strong> {grammar.startSymbol}</p>
       <div className="productions">
         <p><strong>Pravidla:</strong></p>
         <ul style={{ listStyleType: 'none', paddingLeft: 0 }}>
-          {Object.entries(grammar.productions).map(([nt, prods]) => (
-            <li key={nt}>
-              {nt} → {prods.map(p => Array.isArray(p) ? p.join(' ') : p).join(' | ')}
-            </li>
-          ))}
+          {Object.entries(grammar.productions).map(([nt, prods]) => {
+            const formattedProductions = prods.map(formatProduction);
+            const rightSide = formattedProductions.join(' | ');
+            return (
+              <li key={nt}>
+                {nt} → <span style={{ whiteSpace: 'pre' }}>{rightSide}</span>
+              </li>
+            );
+          })}
         </ul>
       </div>
     </div>

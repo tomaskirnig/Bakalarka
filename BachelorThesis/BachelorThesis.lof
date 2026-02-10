@@ -13,9 +13,9 @@
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {4.1}{\ignorespaces Výběr způsobu zadání vstupu pro MCVP}}{17}{figure.caption.7}%
 \contentsline {figure}{\numberline {4.2}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{20}{figure.caption.8}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Třídní diagram pro hlavní třídu kombinatorické hry}}{22}{figure.caption.9}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{23}{figure.caption.10}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Třídní diagram pro hlavní třídu bezkontextové gramatiky}}{24}{figure.caption.11}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{22}{figure.caption.9}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{26}{figure.caption.10}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{27}{figure.caption.11}%
 \addvspace {10\p@ }
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
