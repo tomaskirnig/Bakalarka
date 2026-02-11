@@ -34,8 +34,10 @@ export function Grammar({ onNavigate, initialData }) {
         setShowSteps(false);
     };
 
-    const handleExport = () => {
+    const handleExport = (includePositions = false) => {
         if (!grammar) return null;
+        // Note: Grammar doesn't use positions like graph-based problems
+        // The parameter is accepted for API consistency but not used
         // Return the grammar object properties
         return {
             name: grammar.name || "Exported Grammar",

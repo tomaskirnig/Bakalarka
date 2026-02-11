@@ -19,6 +19,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
     const [hoverNode, setHoverNode] = useState(null);
+    const [isDragging, setIsDragging] = useState(false);
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
@@ -410,19 +411,32 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, [selectedNode]);
 
-    // Force setup for collision
+    // Force setup for collision and charge
     useEffect(() => {
       if (fgRef.current) {
         // Add collision force to prevent overlap
         if (window.d3 && window.d3.forceCollide) {
-          fgRef.current.d3Force('collision', 
+          fgRef.current.d3Force('collision',
             window.d3.forceCollide().radius((_node) => mcvp.nodeRadius * 1.2) // Node radius plus a 20% buffer
               .strength(0.8) // Strong collision detection
               .iterations(2) // 2 iterations for stability
           );
         }
+
+        // Drastically reduce the charge force to prevent pushing other nodes away
+        // Default charge is -30, we set it to a very weak value
+        const chargeForce = fgRef.current.d3Force('charge');
+        if (chargeForce) {
+          chargeForce.strength(isDragging ? 0 : -10); // Disable during drag, weak otherwise
+        }
+
+        // Reduce link force distance to keep connected nodes closer
+        const linkForce = fgRef.current.d3Force('link');
+        if (linkForce) {
+          linkForce.distance(50).strength(1);
+        }
       }
-    }, [mcvp]); // Re-run if mcvp settings change
+    }, [mcvp, isDragging]); // Re-run if mcvp settings or dragging state changes
 
     return (
         <div>
@@ -477,9 +491,15 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     enablePanInteraction={true}
                     enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
+                    onNodeDrag={node => {
+                        setIsDragging(true);
+                        node.fx = node.x;
+                        node.fy = node.y;
+                    }}
                     onNodeDragEnd={node => { // Fix node position after dragging
-                    node.fx = node.x;
-                    node.fy = node.y;
+                        setIsDragging(false);
+                        node.fx = node.x;
+                        node.fy = node.y;
                     }}
                 />
             </div>

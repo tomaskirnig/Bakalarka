@@ -297,6 +297,14 @@ export function DisplayGraph({
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
+          onNodeDrag={node => {
+            node.fx = node.x;
+            node.fy = node.y;
+          }}
+          onNodeDragEnd={node => {
+            node.fx = node.x;
+            node.fy = node.y;
+          }}
         />
       </div>
 

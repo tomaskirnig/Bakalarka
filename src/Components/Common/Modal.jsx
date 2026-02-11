@@ -1,18 +1,21 @@
 import PropTypes from 'prop-types';
 
-export function Modal({ onClose, children }) {
+export function Modal({ onClose, children, title }) {
     return (
-        <div className="position-fixed top-0 start-0 end-0 bottom-0 d-flex justify-content-center align-items-center modal-overlay">
-            <div className="bg-white rounded-3 text-center modal-content">
-                <div className="position-relative h-100 d-flex flex-column">
+        <div className="modal-overlay" onClick={onClose}>
+            <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
+                <div className="modal-header-modern">
+                    {title && <h5 className="modal-title-modern">{title}</h5>}
                     <button 
                         onClick={onClose} 
-                        className="position-absolute top-0 bg-transparent border-0 fs-4 modal-close-btn">
-                        &#x2715;
+                        className="modal-close-btn-modern"
+                        aria-label="Close"
+                    >
+                        <i className="bi bi-x-lg"></i>
                     </button>
-                    <div className="h-100 pt-3 pb-3">
-                        {children}
-                    </div>
+                </div>
+                <div className="modal-body-modern">
+                    {children}
                 </div>
             </div>
         </div>
@@ -21,5 +24,6 @@ export function Modal({ onClose, children }) {
 
 Modal.propTypes = {
     onClose: PropTypes.func.isRequired,
-    children: PropTypes.node.isRequired
+    children: PropTypes.node.isRequired,
+    title: PropTypes.string
 };

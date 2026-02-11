@@ -50,9 +50,9 @@ export function MCVP({ onNavigate, initialData }) {
         setTree(null);
     };
 
-    const handleExport = () => {
+    const handleExport = (includePositions = false) => {
         if (!tree) return null;
-        return treeToFlatGraph(tree);
+        return treeToFlatGraph(tree, includePositions);
     };
 
     const handleImport = (data) => {

@@ -224,6 +224,14 @@ export function DerivationTreeVisual({ tree }) {
         // Events
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
+        onNodeDrag={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
+        onNodeDragEnd={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
       />
     </div>
   );

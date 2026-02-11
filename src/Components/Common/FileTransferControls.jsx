@@ -6,6 +6,8 @@ import { useGraphColors } from '../../Hooks/useGraphColors';
 
 export function FileTransferControls({ onExport, onImport, instructionText, fileName = "data.json" }) {
     const [showImportModal, setShowImportModal] = useState(false);
+    const [showExportModal, setShowExportModal] = useState(false);
+    const [includePositions, setIncludePositions] = useState(true);
     const [dragActive, setDragActive] = useState(false);
     const [hoverImport, setHoverImport] = useState(false);
     const [hoverExport, setHoverExport] = useState(false);
@@ -13,13 +15,17 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
     const colors = useGraphColors();
 
     const handleExportClick = () => {
+        setShowExportModal(true);
+    };
+
+    const performExport = () => {
         try {
-            const data = onExport();
+            const data = onExport(includePositions);
             if (!data) {
                 toast.warning("Žádná data k exportu.");
                 return;
             }
-            
+
             const jsonString = JSON.stringify(data, null, 2);
             const blob = new Blob([jsonString], { type: "application/json" });
             const url = URL.createObjectURL(blob);
@@ -30,6 +36,7 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
             link.click();
             document.body.removeChild(link);
             URL.revokeObjectURL(url);
+            setShowExportModal(false);
             toast.success("Export dokončen.");
         } catch (error) {
             console.error("Export failed:", error);
@@ -122,42 +129,87 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
 
             {showImportModal && (
                 <Modal onClose={() => setShowImportModal(false)} title="Importovat data">
-                    <div className="p-4 text-center">
-                        <p className="mb-4 text-muted small">
+                    <div className="text-center">
+                        <p className="modal-description">
                             {instructionText || "Nahrajte soubor JSON s daty pro aktualizaci grafu."}
                         </p>
-                        
-                        <div 
-                            className={`
-                                d-flex flex-column align-items-center justify-content-center
-                                p-4 border border-2 border-dashed rounded-3
-                                ${dragActive ? 'bg-light border-primary' : 'border-secondary-subtle'}
-                            `}
+
+                        <div
+                            className={`file-drop-zone ${dragActive ? 'file-drop-zone-active' : ''}`}
                             onDragEnter={handleDrag}
                             onDragLeave={handleDrag}
                             onDragOver={handleDrag}
                             onDrop={handleDrop}
                             onClick={() => fileInputRef.current?.click()}
-                            style={{ minHeight: '180px', cursor: 'pointer', transition: 'all 0.2s ease' }}
                         >
-                            <input 
+                            <input
                                 ref={fileInputRef}
-                                type="file" 
-                                accept=".json" 
-                                onChange={handleFileChange} 
-                                style={{ display: 'none' }} 
+                                type="file"
+                                accept=".json"
+                                onChange={handleFileChange}
+                                style={{ display: 'none' }}
                             />
-                            
-                            <div className={`mb-2 p-3 rounded-circle ${dragActive ? 'bg-primary-subtle' : 'bg-light'}`}>
-                                <i className={`bi bi-cloud-arrow-up fs-2 ${dragActive ? 'text-primary' : 'text-secondary'}`}></i>
+
+                            <div className="file-drop-icon">
+                                <i className="bi bi-cloud-arrow-up"></i>
                             </div>
-                            
-                            <h6 className="fw-semibold mb-1 text-dark">Přetáhněte soubor sem</h6>
-                            <span className="text-muted small">nebo klikněte pro výběr ze zařízení</span>
+
+                            <h6 className="file-drop-title">Přetáhněte soubor sem</h6>
+                            <span className="file-drop-subtitle">nebo klikněte pro výběr ze zařízení</span>
                         </div>
-                        
+
                         <div className="mt-3 text-center">
-                             <span className="badge bg-light text-secondary border fw-normal">.json</span>
+                             <span className="file-type-badge">
+                                <i className="bi bi-filetype-json me-1"></i>
+                                JSON soubor
+                             </span>
+                        </div>
+                    </div>
+                </Modal>
+            )}
+
+            {showExportModal && (
+                <Modal onClose={() => setShowExportModal(false)} title="Exportovat data">
+                    <div>
+                        <p className="modal-description text-center">
+                            Vyberte možnosti exportu a stáhněte soubor JSON.
+                        </p>
+
+                        <div className="export-option-card">
+                            <div className="d-flex align-items-start">
+                                <input
+                                    className="form-check-input-modern"
+                                    type="checkbox"
+                                    id="includePositionsCheckbox"
+                                    checked={includePositions}
+                                    onChange={(e) => setIncludePositions(e.target.checked)}
+                                />
+                                <label className="export-option-label" htmlFor="includePositionsCheckbox">
+                                    <div className="export-option-title">
+                                        <i className="bi bi-pin-map me-2"></i>
+                                        Zahrnout pozice uzlů
+                                    </div>
+                                    <div className="export-option-description">
+                                        Exportovat aktuální pozice uzlů v grafu. Při importu bude graf vypadat stejně.
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="modal-actions">
+                            <button
+                                className="btn-modal-secondary"
+                                onClick={() => setShowExportModal(false)}
+                            >
+                                Zrušit
+                            </button>
+                            <button
+                                className="btn-modal-primary"
+                                onClick={performExport}
+                            >
+                                <i className="bi bi-download me-2"></i>
+                                Exportovat
+                            </button>
                         </div>
                     </div>
                 </Modal>
