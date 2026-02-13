@@ -100,8 +100,8 @@ export function Grammar({ initialData }) {
                     <h6 className="mb-2">Pravidla formátu gramatiky</h6>
                     <ul className="ps-3 mb-2">
                         <li><strong>Oddělte symboly mezerami:</strong> <code>S → a S</code> (správně) vs <code>S → aS</code> (špatně)</li>
-                        <li><strong>Velká písmena (i česká) = neterminály:</strong> S, A, Č, Ř, AA</li>
-                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number</li>
+                        <li><strong>První písmeno velké (i české) = neterminály:</strong> S, A1, Abc, Č1, A_10</li>
+                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number, 1a</li>
                         <li>První neterminál na prvním řádku je počáteční symbol</li>
                         <li>Použijte <code>|</code> pro oddělení alternativ</li>
                         <li>Použijte <code>ε</code> nebo <code>epsilon</code> pro prázdný řetězec</li>

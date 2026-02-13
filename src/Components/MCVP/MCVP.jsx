@@ -8,6 +8,7 @@ import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInpu
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateTree } from './Utils/EvaluateTree';
 import { Modal } from '../Common/Modal';
+import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
@@ -158,19 +159,19 @@ export function MCVP({ onNavigate, initialData }) {
             )}
 
             {grammarConversion && (
-                <Modal onClose={() => setGrammarConversion(false)}>
+                <ConversionModal onClose={() => setGrammarConversion(false)}>
                     {tree && (
                         <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
 
             {gameConversion && (
-                <Modal onClose={() => setGameConversion(false)}>
+                <ConversionModal onClose={() => setGameConversion(false)}>
                     {tree && (
                         <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
 
             {explain && (

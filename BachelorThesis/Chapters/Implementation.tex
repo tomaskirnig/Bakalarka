@@ -260,7 +260,7 @@ Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky: manuální
 \subsection{Manuální zadání gramatiky}
 \label{sec:GrammarsManualImpl}
 
-Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (velká písmena) a terminály.
+Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (symboly začínající velkým písmenem, včetně českých znaků) a terminály (ostatní symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
 
 \subsection{Generování náhodných gramatik}
 \label{sec:GrammarsGenerationImpl}

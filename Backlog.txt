@@ -20,7 +20,6 @@
 
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
-- Add fixed positions for nodes when exporting some graph + position the graph when provided with fixed positions
 
 - Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
 
@@ -37,6 +36,7 @@
     Kombinatorické hry: Vedoucí doporučuje zobecnit implementaci z acyklického grafu na obecný orientovaný graf. 
     K vyhodnocení vítězné strategie navrhuje použít algoritmus s frontou (podobný prohledávání do šířky, ale od koncových uzlů), aby se předešlo problémům s nekonečnými cykly.
 
+    [DONE]
     Gramatiky: Navrhuje upravit pravidla pro identifikaci neterminálů. Místo "všechna písmena velká" by stačilo, aby první písmeno bylo velké (což by umožnilo názvy jako A1 nebo A_10).
 
 2. Struktura a forma textu (Zásadní) [DONE]

@@ -112,7 +112,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                         <div 
                             ref={mcvpContainerRef}
                             className="bg-light" 
-                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', height: '49vh' }}
+                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', height: '55vh' }}
                         >
                             <TreeRenderCanvas 
                                 tree={mcvpTree} 
@@ -131,7 +131,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                         <div 
                             ref={cgContainerRef}
                             className="bg-light" 
-                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', height: '49vh' }}
+                            style={{ position: 'relative', overflow: 'hidden', borderRadius: '4px', height: '55vh' }}
                         >
                             <DisplayGraph 
                                 graph={step.graph} 

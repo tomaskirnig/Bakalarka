@@ -56,16 +56,16 @@
 \contentsline {subsection}{\numberline {4.3.3}Generování náhodných gramatik}{24}{subsection.4.3.3}%
 \contentsline {subsubsection}{\numberline {4.3.3.1}Základní parametry}{24}{subsubsection.4.3.3.1}%
 \contentsline {subsubsection}{\numberline {4.3.3.2}Pokročilé parametry}{24}{subsubsection.4.3.3.2}%
-\contentsline {subsubsection}{\numberline {4.3.3.3}Algoritmus generování}{24}{subsubsection.4.3.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.3.3}Algoritmus generování}{25}{subsubsection.4.3.3.3}%
 \contentsline {subsection}{\numberline {4.3.4}Předpřipravené sady}{25}{subsection.4.3.4}%
 \contentsline {subsection}{\numberline {4.3.5}Algoritmus vyhodnocení}{25}{subsection.4.3.5}%
 \contentsline {subsubsection}{\numberline {4.3.5.1}Identifikace produktivních neterminálů}{25}{subsubsection.4.3.5.1}%
 \contentsline {subsubsection}{\numberline {4.3.5.2}Rekonstrukce derivace}{25}{subsubsection.4.3.5.2}%
 \contentsline {subsection}{\numberline {4.3.6}Vizualizace derivačního stromu}{25}{subsection.4.3.6}%
 \contentsline {subsection}{\numberline {4.3.7}Krokové vyhodnocení}{25}{subsection.4.3.7}%
-\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{25}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{25}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{26}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{26}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{26}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{27}{subsection.4.4.2}%
 \contentsline {chapter}{\numberline {5}Závěr}{28}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{28}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Vzdělávací přínos}{29}{section.5.2}%

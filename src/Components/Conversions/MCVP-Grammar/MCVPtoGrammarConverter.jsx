@@ -383,7 +383,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
         <div className="row gx-2" style={{ minHeight: 0, margin: 0 }}>
           <div className="col-md-7 d-flex flex-column" style={{ minHeight: 0 }}>
             <h4 className="text-center mb-1">MCVP</h4>
-            <div className="bg-light" style={{ borderRadius: '4px', overflow: 'hidden', height: '49vh' }}>
+            <div className="bg-light" style={{ borderRadius: '4px', overflow: 'hidden', height: '55vh' }}>
               <TreeRenderCanvas 
                 tree={mcvpTree} 
                 highlightedNode={step.mcvpHighlight}
@@ -397,7 +397,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
           
           <div className="col-md-5 d-flex flex-column" style={{ minHeight: 0 }}>
             <h4 className="text-center mb-1">Gramatika</h4>
-            <div className="bg-light p-2" style={{ overflow: 'auto', height: '49vh', borderRadius: '4px' }}>
+            <div className="bg-light p-2" style={{ overflow: 'auto', height: '55vh', borderRadius: '4px' }}>
               <GrammarDisplay grammar={step.grammar} />
               <div className="mt-2 p-2 bg-white rounded">
                 <p className="mb-0 small"><em>{step.visualNote}</em></p>
