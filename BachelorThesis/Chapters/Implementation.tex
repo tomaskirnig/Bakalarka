@@ -46,8 +46,6 @@ Převod textového výrazu na stromovou strukturu probíhá ve dvou fázích, kt
 
 Výsledkem parsování je orientovaný graf, kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
-%clear 
-
 \subsection{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluationImpl}
 
@@ -65,8 +63,10 @@ Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) 
     
     \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných uzlů.
     
-    \item \textbf{Detekce cyklů:} Algoritmus používá množinu \texttt{visiting} pro detekci případných cyklů v grafu, které by způsobily nekonečnou rekurzi.
+    \item \textbf{Detekce cyklů:} Při vstupu do uzlu je tento přidán do množiny \texttt{visiting}. Pokud algoritmus narazí na uzel, který je již v této množině, detekuje cyklus a vyhodí chybu. Po dokončení vyhodnocení uzlu je uzel z množiny \texttt{visiting} odstraněn.
 \end{enumerate}
+
+%clear 
 
 Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci.
 
