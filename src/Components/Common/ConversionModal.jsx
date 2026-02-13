@@ -23,7 +23,7 @@ export function ConversionModal({ onClose, children }) {
                     className="conversion-modal-close-btn"
                     aria-label="Close"
                 >
-                    ×
+                    <i className="bi bi-x-lg"></i>
                 </button>
                 <div className="conversion-modal-body">
                     {children}

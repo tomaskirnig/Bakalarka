@@ -15,10 +15,11 @@
 \contentsline {figure}{\numberline {3.6}{\ignorespaces Informační panel zobrazující výsledek analýzy}}{17}{figure.caption.9}%
 \addvspace {10\p@ }
 \contentsline {figure}{\numberline {4.1}{\ignorespaces Výběr způsobu zadání vstupu pro MCVP}}{18}{figure.caption.10}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{21}{figure.caption.11}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{23}{figure.caption.12}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{27}{figure.caption.13}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{28}{figure.caption.14}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Interaktivní editor pro tvorbu a úpravu monotónních obvodů}}{21}{figure.caption.11}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{22}{figure.caption.12}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{24}{figure.caption.13}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{28}{figure.caption.14}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{29}{figure.caption.15}%
 \addvspace {10\p@ }
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 

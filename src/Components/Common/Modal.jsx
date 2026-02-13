@@ -1,13 +1,23 @@
+import { useState } from 'react';
 import PropTypes from 'prop-types';
 
 export function Modal({ onClose, children, title }) {
+    const [isClosing, setIsClosing] = useState(false);
+
+    const handleClose = () => {
+        setIsClosing(true);
+        setTimeout(() => {
+            onClose();
+        }, 250);
+    };
+
     return (
-        <div className="modal-overlay" onClick={onClose}>
-            <div className="modal-content-modern" onClick={(e) => e.stopPropagation()}>
+        <div className={`modal-overlay ${isClosing ? 'modal-closing' : ''}`} onClick={handleClose}>
+            <div className={`modal-content-modern ${isClosing ? 'modal-content-closing' : ''}`} onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header-modern">
                     {title && <h5 className="modal-title-modern">{title}</h5>}
                     <button 
-                        onClick={onClose} 
+                        onClick={handleClose} 
                         className="modal-close-btn-modern"
                         aria-label="Close"
                     >

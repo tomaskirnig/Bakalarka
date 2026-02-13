@@ -278,6 +278,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             }, {});
             
             const updatedLinks = prevData.links.map(link => ({
+                id: link.id,
                 source: nodeMap[link.source.id],
                 target: nodeMap[link.target.id],
             }));
@@ -397,9 +398,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         const midY = (start.y + end.y) / 2;
 
         // Determine if the link ID should be displayed
+        // Only show if the selected node is connected to this link
         let shouldDisplayLinkId = false;
         if (selectedNode && link.id !== undefined && link.id !== null) {
-            shouldDisplayLinkId = true;
+            if (link.source.id === selectedNode.id || link.target.id === selectedNode.id) {
+                shouldDisplayLinkId = true;
+            }
         }
 
         if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
@@ -438,12 +442,20 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
       }
     }, [mcvp, isDragging]); // Re-run if mcvp settings or dragging state changes
 
+    const getNodeDisplayName = (node) => {
+        if (node.type === 'variable') {
+            return `${node.value}[${node.varValue}]`;
+        } else {
+            return node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
+        }
+    };
+
     return (
         <div>
             {/*Instructions*/}
             <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: 'var(--color-grey-medium)' }}>
-                {addingEdge && edgeSource && `Přidávání hrany z uzlu ${edgeSource.id}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
-                {selectedNode && !addingEdge && `Uzel ${selectedNode.id} vybrán.`}
+                {addingEdge && edgeSource && `Přidávání hrany z uzlu ${getNodeDisplayName(edgeSource)}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
+                {selectedNode && !addingEdge && `Uzel ${getNodeDisplayName(selectedNode)} vybrán.`}
                 {!selectedNode && !addingEdge && 'Klikněte na pozadí pro zrušení výběru. Klikněte na uzel pro výběr.'}
             </div>
 
@@ -515,7 +527,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             {/* Selected Node Controls */}
             {selectedNode && !addingEdge && (
                 <div className="p-4 my-3" style={{ border: '1px solid #eee', borderRadius: '4px'}}>
-                    <h5>Vybraný uzel: {selectedNode.value === 'O' ? "OR" : selectedNode.value === 'A' ? "AND" : selectedNode.value}</h5>
+                    <h5>Vybraný uzel: {getNodeDisplayName(selectedNode)}</h5>
                     <div className="d-flex flex-wrap justify-content-center align-items-center">
                         {/* Type/Value Change */}
                          {selectedNode.type === 'operation' && (

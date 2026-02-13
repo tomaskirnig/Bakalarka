@@ -80,7 +80,7 @@ Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuáln�
 \subsection{Interaktivní editace obvodu}
 \label{sec:MCVPInteractiveImpl}
 
-Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph}. Uživatel může:
+Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pomocí grafického editoru implementovaného v komponentě \texttt{InteractiveMCVPGraph} (viz obrázek \ref{fig:interactive-mcvp}). Uživatel může:
 
 \begin{itemize}
     \item \textbf{Přidávat uzly:} Pomocí tlačítek pod grafem lze vložit nové uzly typu AND, OR nebo vstupní proměnnou s hodnotou 0 nebo 1. Nový uzel se umístí do grafu, ale není propojen s ostatními uzly.
@@ -95,6 +95,13 @@ Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pom
         
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání obvodu.
 \end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/interactiveMCVP.png}
+    \caption{Interaktivní editor pro tvorbu a úpravu monotónních obvodů}
+    \label{fig:interactive-mcvp}
+\end{figure}
 
 Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz sekce \ref{sec:UIDesign}). Aplikace průběžně aktualizuje interní strukturu grafu odpovídající aktuálnímu stavu grafu.
 

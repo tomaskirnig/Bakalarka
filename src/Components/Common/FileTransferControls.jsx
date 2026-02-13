@@ -24,6 +24,14 @@ export function FileTransferControls({
         setShowExportModal(true);
     };
 
+    const handleCloseImportModal = () => {
+        setShowImportModal(false);
+    };
+
+    const handleCloseExportModal = () => {
+        setShowExportModal(false);
+    };
+
     const performExport = () => {
         try {
             const data = onExport(includePositions);
@@ -134,7 +142,7 @@ export function FileTransferControls({
             </div>
 
             {showImportModal && (
-                <Modal onClose={() => setShowImportModal(false)} title="Importovat data">
+                <Modal onClose={handleCloseImportModal} title="Importovat data">
                     <div className="text-center">
                         <p className="modal-description">
                             {instructionText || "Nahrajte soubor JSON s daty pro aktualizaci grafu."}
@@ -175,7 +183,7 @@ export function FileTransferControls({
             )}
 
             {showExportModal && (
-                <Modal onClose={() => setShowExportModal(false)} title="Exportovat data">
+                <Modal onClose={handleCloseExportModal} title="Exportovat data">
                     <div>
                         <p className="modal-description text-center">
                             Vyberte možnosti exportu a stáhněte soubor JSON.
@@ -207,7 +215,7 @@ export function FileTransferControls({
                         <div className="modal-actions">
                             <button
                                 className="btn-modal-secondary"
-                                onClick={() => setShowExportModal(false)}
+                                onClick={handleCloseExportModal}
                             >
                                 Zrušit
                             </button>
@@ -215,7 +223,6 @@ export function FileTransferControls({
                                 className="btn-modal-primary"
                                 onClick={performExport}
                             >
-                                <i className="bi bi-download me-2"></i>
                                 Exportovat
                             </button>
                         </div>
