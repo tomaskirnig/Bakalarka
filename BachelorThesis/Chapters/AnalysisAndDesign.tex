@@ -73,9 +73,30 @@ U bezkontextových gramatik je zaměřeno na reprezentaci přepisovacích pravid
 
 Rozhraní je navrženo tak, aby student nebyl zahlcen informacemi a mohl se soustředit na podstatu problému. Rozložení stránky bylo sjednoceno napříč všemi moduly:
 \begin{itemize}
-    \item \textbf{Ovládací panel:} Horní část obrazovky, kde uživatel volí způsob zadání vstupu a spouští simulace.
-    \item \textbf{Interaktivní plátno:} Hlavní plocha pro vizualizaci grafů, kde uživatel může s prvky přímo manipulovat.
-    \item \textbf{Informační panely:} Modální okna nebo postranní panely zobrazující detaily o probíhajícím výpočtu nebo krokovém převodu.
+    \item \textbf{Ovládací panel:} Horní část obrazovky, kde uživatel volí způsob zadání vstupu a spouští simulace (viz obrázek \ref{fig:ui-navigation}).
+    \item \textbf{Interaktivní plátno:} Hlavní plocha pro vizualizaci grafů, kde uživatel může s prvky přímo manipulovat (viz obrázek \ref{fig:ui-canvas}).
+    \item \textbf{Informační panely:} Modální okna nebo postranní panely zobrazující detaily o probíhajícím výpočtu nebo krokovém převodu (viz obrázek \ref{fig:ui-info-panel}).
 \end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{IMGs/navigation.png}
+    \caption{Ovládací panel s navigací a výběrem vstupu}
+    \label{fig:ui-navigation}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/InteractiveCanvas.png}
+    \caption{Interaktivní plátno pro vizualizaci a editaci grafů}
+    \label{fig:ui-canvas}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/informationPanel.png}
+    \caption{Informační panel zobrazující výsledek analýzy}
+    \label{fig:ui-info-panel}
+\end{figure}
 
 Pro vizualizaci byla použita knihovna \emph{react-force-graph} \cite{reactforcegraph2024}, která pomocí fyzikální simulace automaticky rozmísťuje uzly a hrany. Stylování je realizováno frameworkem \emph{Bootstrap 5} \cite{bootstrap2024}, který zajišťuje jednotný vzhled a responzivitu na různých velikostech obrazovek.
