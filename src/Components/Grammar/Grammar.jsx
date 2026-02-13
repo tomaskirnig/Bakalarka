@@ -12,7 +12,7 @@ import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
 import { Modal } from '../Common/Modal';
 
-export function Grammar({ onNavigate, initialData }) {
+export function Grammar({ initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
     const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
@@ -90,6 +90,7 @@ export function Grammar({ onNavigate, initialData }) {
                     onImport={handleImport}
                     instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
                     fileName="grammar.json"
+                    showPositionOption={false}
                 />
                 <InfoButton title="Problém neprázdnosti gramatiky">
                     <p>

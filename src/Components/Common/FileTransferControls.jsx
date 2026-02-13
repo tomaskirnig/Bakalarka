@@ -4,10 +4,16 @@ import { toast } from 'react-toastify';
 import { Modal } from './Modal';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 
-export function FileTransferControls({ onExport, onImport, instructionText, fileName = "data.json" }) {
+export function FileTransferControls({ 
+    onExport, 
+    onImport, 
+    instructionText, 
+    fileName = "data.json",
+    showPositionOption = true
+}) {
     const [showImportModal, setShowImportModal] = useState(false);
     const [showExportModal, setShowExportModal] = useState(false);
-    const [includePositions, setIncludePositions] = useState(true);
+    const [includePositions, setIncludePositions] = useState(showPositionOption);
     const [dragActive, setDragActive] = useState(false);
     const [hoverImport, setHoverImport] = useState(false);
     const [hoverExport, setHoverExport] = useState(false);
@@ -175,26 +181,28 @@ export function FileTransferControls({ onExport, onImport, instructionText, file
                             Vyberte možnosti exportu a stáhněte soubor JSON.
                         </p>
 
-                        <div className="export-option-card">
-                            <div className="d-flex align-items-start">
-                                <input
-                                    className="form-check-input-modern"
-                                    type="checkbox"
-                                    id="includePositionsCheckbox"
-                                    checked={includePositions}
-                                    onChange={(e) => setIncludePositions(e.target.checked)}
-                                />
-                                <label className="export-option-label" htmlFor="includePositionsCheckbox">
-                                    <div className="export-option-title">
-                                        <i className="bi bi-pin-map me-2"></i>
-                                        Zahrnout pozice uzlů
-                                    </div>
-                                    <div className="export-option-description">
-                                        Exportovat aktuální pozice uzlů v grafu. Při importu bude graf vypadat stejně.
-                                    </div>
-                                </label>
+                        {showPositionOption && (
+                            <div className="export-option-card">
+                                <div className="d-flex align-items-start">
+                                    <input
+                                        className="form-check-input-modern"
+                                        type="checkbox"
+                                        id="includePositionsCheckbox"
+                                        checked={includePositions}
+                                        onChange={(e) => setIncludePositions(e.target.checked)}
+                                    />
+                                    <label className="export-option-label" htmlFor="includePositionsCheckbox">
+                                        <div className="export-option-title">
+                                            <i className="bi bi-pin-map me-2"></i>
+                                            Zahrnout pozice uzlů
+                                        </div>
+                                        <div className="export-option-description">
+                                            Exportovat aktuální pozice uzlů v grafu. Při importu bude graf vypadat stejně.
+                                        </div>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
+                        )}
 
                         <div className="modal-actions">
                             <button
@@ -222,5 +230,6 @@ FileTransferControls.propTypes = {
     onExport: PropTypes.func.isRequired,
     onImport: PropTypes.func.isRequired,
     instructionText: PropTypes.string,
-    fileName: PropTypes.string
+    fileName: PropTypes.string,
+    showPositionOption: PropTypes.bool
 };

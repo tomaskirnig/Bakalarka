@@ -158,6 +158,7 @@ export function CombinatorialGame({ initialData }) {
                     onImport={handleImport}
                     instructionText="Nahrajte soubor JSON s definicí hry (uzly, hrany, startovní pozice)."
                     fileName="combinatorial_game.json"
+                    showPositionOption={false}
                 />
                 <InfoButton title="Kombinatorická hra na grafu">
                     <p>

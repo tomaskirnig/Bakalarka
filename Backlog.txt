@@ -17,10 +17,6 @@
 - Optimize - make the starting lenght of edges longer
 
 ---- Grammar ----
-- Fix - when user clicks on the explain button, it recalculates the derived word 
-- Check if epsilon counts as empty grammar 
-- Optimize - adjust the node radius for the longer words
-- Optimize - (manual) make the text area as big as the content automaticly 
 
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
