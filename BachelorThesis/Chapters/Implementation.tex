@@ -8,10 +8,17 @@ Tato kapitola detailně popisuje implementaci jednotlivých modulů aplikace. Za
 
 Modul pro MCVP tvoří jádro aplikace a slouží jako výchozí bod pro převody na ostatní problémy.
 
-\subsection{Formát vstupu a parsování výrazů}
-\label{sec:MCVPParsingImpl}
+\subsection{Formát vstupu}
+\label{sec:MCVPInputImpl}
 
-Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \ref{fig:input-selector-mcvp-impl}). Jako první je textový zápis ve formě logického výrazu, který je následně převeden na strukturu obvodu (DAG).
+Aplikace nabízí čtyři způsoby zadávání monotónního obvodu (viz obrázek \ref{fig:input-selector-mcvp-impl}):
+
+\begin{itemize}
+    \item \textbf{Textový zápis:} Zadání pomocí logického výrazu, který je následně parsován (viz sekce \ref{sec:MCVPParsingImpl}).
+    \item \textbf{Interaktivní editace:} Vytváření obvodu přímo na plátně pomocí grafického editoru (viz sekce \ref{sec:MCVPInteractiveImpl}).
+    \item \textbf{Generování náhodných obvodů:} Automatické vytvoření obvodu dle parametrů (viz sekce \ref{sec:MCVPGenerationImpl}).
+    \item \textbf{Předpřipravené sady:} Načtení ukázkových obvodů z připravené knihovny (viz sekce \ref{sec:MCVPPreparedSetsImpl}).
+\end{itemize}
 
 \begin{figure}[htbp]
     \centering
@@ -20,7 +27,12 @@ Aplikace umožňuje zadat monotónní obvod několika způsoby (viz obrázek \re
     \label{fig:input-selector-mcvp-impl}
 \end{figure}
 
-\subsubsection{Gramatika vstupního jazyka}
+\subsubsection{Manuální zadání a parsování výrazů}
+\label{sec:MCVPParsingImpl}
+
+Textový zápis ve formě logického výrazu je první metodou zadání vstupu. Tento zápis je následně převeden na strukturu obvodu (DAG).
+
+\paragraph{Gramatika vstupního jazyka}
 \label{sec:MCVPGrammarImpl}
 
 Vstupní výrazy odpovídají jednoduché gramatice popsané v kapitole \ref{sec:TheoryMCVP}. Pro připomenutí:
@@ -68,16 +80,14 @@ Funkce \texttt{evaluateTreeWithSteps()} používá algoritmus průchodu do hloub
     \item \textbf{Detekce cyklů:} Při vstupu do uzlu je tento přidán do množiny \texttt{visiting}. Pokud algoritmus narazí na uzel, který je již v této množině, detekuje cyklus a vyhodí chybu. Po dokončení vyhodnocení uzlu je uzel z množiny \texttt{visiting} odstraněn.
 \end{enumerate}
 
-%clear 
-
-Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci. Funkce vrací dvojici -- samotný výsledek a pole všech kroků výpočtu.
+Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci. Funkce vrací objekt obsahující samotný výsledek a pole všech kroků výpočtu.
 
 \subsubsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStepImpl}
 
-Vyhodnocení obvodu je provedeno pouze jednou při načtení, přičemž výsledek je využit pro běžné zobrazení a zaznamenané kroky jsou předány modální komponentě \texttt{StepByStepTree} pro krokovou vizualizaci. Tím se předchází opakovanému průchodu stromem a duplicitnímu výpočtu, což je výhodné zejména u rozsáhlejších obvodů.
+Vyhodnocení obvodu je provedeno pouze jednou při načtení, výsledek ve formě výstupní hodnoty obvodu je využit pro běžné zobrazení a zaznamenané kroky jsou předány modální komponentě \texttt{StepByStepTree} pro krokovou vizualizaci. Tím se předchází opakovanému průchodu stromem a duplicitnímu výpočtu, což je výhodné zejména u rozsáhlejších obvodů.
 
-Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky -- aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
+Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky -- aktuálně vyhodnocovaný uzel je zvýrazněn a pod grafem je zobrazena informace o hodnotách vstupů a výsledku operace. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
 
 \subsection{Interaktivní editace obvodu}
 \label{sec:MCVPInteractiveImpl}
@@ -105,8 +115,6 @@ Kromě textového zadání umožňuje aplikace vytvářet a upravovat obvody pom
     \label{fig:interactive-mcvp}
 \end{figure}
 
-Grafický editor využívá knihovnu \emph{react-force-graph} pro vykreslování a interakci (viz sekce \ref{sec:UIDesign}). Aplikace průběžně aktualizuje interní strukturu grafu odpovídající aktuálnímu stavu grafu.
-
 \subsection{Generování náhodných obvodů}
 \label{sec:MCVPGenerationImpl}
 
@@ -117,7 +125,35 @@ Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}.
     \item \textbf{Počet proměnných:} Kolik uzlů s proměnnými (listů) bude obvod obsahovat.
 \end{itemize}
 
-Generování probíhá v těchto fázích: Nejprve algoritmus vytvoří zadaný počet proměnných, s náhodnou hodnotou 0 nebo 1. Pak postupně přidává hradla. Pro každé hradlo se vypočítá cílový počet potomků podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud dostupných uzlů a $k$ počet zbývajících hradel. K této hodnotě se přidá náhodná odchylka $\pm 20\%$ – tak je dosaženo vyváženosti mezi úplnou náhodností a vyrovnanou distribucí. Hradlo pak náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR) a přidá se do množiny použitelných uzlů pro potomky. Poslední hradlo spojí všechny zbývající uzly a stane se kořenem. Výsledný graf je platný DAG.
+Generování probíhá v následujících krocích:
+
+\begin{enumerate}
+    \item Algoritmus vytvoří zadaný počet proměnných s náhodnou hodnotou 0 nebo 1.
+    
+    \item Algoritmus postupně přidává hradla. Pro každé nové hradlo vypočítá cílový počet vstupních uzlů (potomků) podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud vytvořených uzlů v grafu a $k$ je počet zbývajících hradel, která je třeba vytvořit.
+    
+    \item K vypočítané hodnotě se přidá náhodná odchylka $\pm 20\%$ – tak je dosaženo vyváženosti mezi úplnou náhodností a vyrovnanou distribucí.
+    
+    \item Hradlo náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR).
+    
+    \item Nově vytvořené hradlo se přidá do množiny použitelných uzlů pro následující hradla.
+    
+    \item Poslední hradlo využije jako potomky všechny uzly, které dosud nebyly vybrány jako potomci jiného hradla, a stane se kořenem obvodu.
+\end{enumerate}
+
+Výsledný graf je platný DAG.
+
+\subsection{Připravené sady obvodů}
+\label{sec:MCVPPreparedSetsImpl}
+
+Aplikace obsahuje sadu připravených obvodů, které lze načíst pomocí komponenty \texttt{PreparedSetsInput}. Tyto obvody jsou uloženy ve složce \texttt{Sady/MCVP} ve formátu JSON, který obsahuje pole \texttt{nodes} s uzly a pole \texttt{edges} s hranami. Každý uzel má atributy \texttt{id}, \texttt{type} (AND, OR, variable), a pro proměnné také \texttt{value} (0 nebo 1). Hrany jsou reprezentovány jako dvojice \texttt{source} a \texttt{target}, které odkazují na ID uzlů.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/MCVPJson.png}
+    \caption{Ukázka JSON formátu pro uložení MCVP obvodu}
+    \label{fig:mcvp-json-format}
+\end{figure}
 
 \subsection{Vizualizace obvodu}
 \label{sec:MCVPVisualizationImpl}
@@ -134,7 +170,7 @@ Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRe
 \subsubsection{Hierarchické rozložení}
 \label{sec:MCVPLayoutImpl}
 
-Pro vizualizaci grafu používá aplikace knihovnu \emph{react-force-graph-2d}. Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
+Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
 
 \section{Kombinatorická hra}
 \label{sec:ImplementationGames}
@@ -150,6 +186,8 @@ Aplikace nabízí tři způsoby zadávání herního grafu:
     \item \textbf{Předpřipravené sady:} Načtení ukázkových připravených příkladů (viz sekce \ref{sec:GamesPreparedSetsImpl}).
 \end{itemize}
 
+%clear
+
 Všechny metody využívají komponentu \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
 
 \subsection{Interaktivní editace grafu}
@@ -160,7 +198,7 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
 \begin{itemize}
     \item \textbf{Přidávat uzly:} Vytvořit novou pozici.
 
-    \item \textbf{Upravovat uzly:} Kliknutím na uzel ho označíme. S označeným uzlem lze:
+    \item \textbf{Upravovat uzly:} Po označení uzlu lze:
     \begin{itemize}
         \item Změnit hráče který je na tahu (Hráč I nebo Hráč II)
         \item Odstranit pozici z grafu
@@ -173,7 +211,7 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
     \item \textbf{Reorganizovat graf:} Uzly lze přesouvat myší pro lepší vizuální uspořádání.
 \end{itemize}
 
-Aplikace průběžně validuje graf. Uživatel je upozorněn, pokud není nastavena počáteční pozice, což je nutné pro spuštění analýzy.
+Aplikace průběžně validuje graf. Pokud není nastavena počáteční pozice, analýza není provedena a uživateli se zobrazí informační zpráva.
 
 \subsection{Generování náhodných her}
 \label{sec:GamesGenerationImpl}
@@ -185,12 +223,12 @@ Modul \texttt{Generator.js} obsahuje funkci \texttt{generateGraph()} pro vytvá�
     \item \textbf{Pravděpodobnost hrany:} Hodnota 0\% -- 100\% určující, jak pravděpodobné je vytvoření hrany mezi dvěma uzly.
 \end{itemize}
 
-Algoritmus generování probíhá ve dvou fázích:
+Algoritmus generování nejprve vytváří kostru grafu, která zajišťuje, že všechny pozice jsou dosažitelné z počáteční pozice, a následně přidává náhodné hrany, které mohou vytvářet cykly. Postup s \( n \) pozicemi a indexy \( i, j \) jednotlivých pozic:
 
 \begin{enumerate}
-    \item \textbf{Vytvoření kostry:} Vytvoří se uzly očíslované 0 až \( n-1 \) a každému se náhodně přiřadí hráč. Pro každý uzel \( i > 0 \) pak vznikne hrana z náhodného předchozího uzlu (s indexem menším než \( i \)) do uzlu \( i \). Tím je zajištěno, že uzel 0 (počáteční pozice) může dosáhnout všechny ostatní uzly, a současně vznikne acyklická kostra grafu.
+    \item \textbf{Vytvoření kostry:} Vytvoří se uzly očíslované 0 až \( n-1 \) s náhodně přiřazeným hráčem. Pro každý uzel \( i > 0 \) vznikne hrana z náhodného předchozího uzlu do uzlu \( i \). Tím je zaručena dosažitelnost všech uzlů z uzlu 0 (počáteční pozice).
     
-    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti se přidá hrana \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
+    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)) se podle zadané pravděpodobnosti přidá hrana \( i \to j \), pokud ještě neexistuje. Tyto hrany mohou vytvářet cykly a zvyšují složitost hry.
 \end{enumerate}
 
 Vnitřní reprezentace grafu pomocí tříd \texttt{GamePosition} a \texttt{GameGraph} je popsána v sekci \ref{sec:GamesDesignStructure}. Diagram těchto tříd je uveden na obrázku \ref{fig:cg-class}.
@@ -264,7 +302,15 @@ Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGam
 \subsection{Formát vstupu}
 \label{sec:GrammarsInputImpl}
 
-Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky: manuální zadání, náhodné generování a výběr z připravených sad. Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivačního stromu gramatiky implementovanou ve třídě \texttt{Grammar} (viz sekce \ref{sec:GrammarDesignStructure}). Třídní diagram této struktury je na obrázku \ref{fig:grammar-class}.
+Aplikace nabízí tři způsoby zadávání bezkontextové gramatiky:
+
+\begin{itemize}
+    \item \textbf{Manuální zadání:} Přímé vkládání pravidel gramatiky v textovém formátu (viz sekce \ref{sec:GrammarsManualImpl}).
+    \item \textbf{Generování náhodných gramatik:} Automatické vytvoření gramatiky na základě zadaných parametrů (viz sekce \ref{sec:GrammarsGenerationImpl}).
+    \item \textbf{Předpřipravené sady:} Načtení ukázkových gramatik z knihovny příkladů (viz sekce \ref{sec:GrammarsPreparedSetsImpl}).
+\end{itemize}
+
+Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivačního stromu gramatiky implementovanou ve třídě \texttt{Grammar} (viz sekce \ref{sec:GrammarDesignStructure}). Třídní diagram této struktury je na obrázku \ref{fig:grammar-class}.
 
 \subsection{Manuální zadání gramatiky}
 \label{sec:GrammarsManualImpl}
