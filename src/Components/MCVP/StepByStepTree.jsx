@@ -1,6 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 
 /**
@@ -10,18 +9,10 @@ import { TreeRenderCanvas } from './TreeRenderCanvas';
  * @component
  * @param {Object} props - The component props
  * @param {Object} props.tree - The MCVP tree to evaluate
+ * @param {Array} props.steps - Pre-calculated evaluation steps
  */
-export function StepByStepTree({ tree }) {
-  const [steps, setSteps] = useState([]);
+export function StepByStepTree({ tree, steps = [] }) {
   const [currentStep, setCurrentStep] = useState(0);
-  
-  useEffect(() => {
-    if (tree) {
-      const { steps: generatedSteps } = evaluateTreeWithSteps(tree);
-      setSteps(generatedSteps);
-      setCurrentStep(0);
-    }
-  }, [tree]);
 
   // Navigation functions
   const goToNextStep = () => {
@@ -105,5 +96,10 @@ StepByStepTree.propTypes = {
     value: PropTypes.any,
     varValue: PropTypes.any,
     children: PropTypes.array
-  })
+  }),
+  steps: PropTypes.arrayOf(PropTypes.shape({
+    node: PropTypes.object,
+    childValues: PropTypes.array,
+    result: PropTypes.number
+  }))
 };

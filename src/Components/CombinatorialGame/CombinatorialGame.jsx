@@ -11,6 +11,7 @@ import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { Modal } from '../Common/Modal';
+import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
 
 export function CombinatorialGame({ initialData }) {
@@ -222,11 +223,11 @@ export function CombinatorialGame({ initialData }) {
             )}
 
             {explain && (
-                <Modal onClose={() => setExplain(false)}>
+                <ConversionModal onClose={() => setExplain(false)}>
                     {graph && (
                         <StepByStepGame graph={graph} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
             
             </div>

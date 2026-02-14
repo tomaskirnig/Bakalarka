@@ -6,7 +6,7 @@ import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
-import { evaluateTree } from './Utils/EvaluateTree';
+import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
 import { Modal } from '../Common/Modal';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
@@ -42,8 +42,9 @@ export function MCVP({ onNavigate, initialData }) {
         }
     }, [initialData]);
 
-    const evaluationResult = useMemo(() => {
-        return tree ? evaluateTree(tree) : null;
+    // Calculate evaluation with steps once - the steps are reused for step-by-step explanation
+    const evaluation = useMemo(() => {
+        return tree ? evaluateTreeWithSteps(tree) : { result: null, steps: [] };
     }, [tree]);
 
     const handleOptionChange = (option) => {
@@ -137,10 +138,10 @@ export function MCVP({ onNavigate, initialData }) {
                         Výsledek obvodu
                     </div>
                     <div className="card-body text-center">
-                        {evaluationResult !== null ? (
+                        {evaluation.result !== null ? (
                             <>
-                                <div className={`alert ${evaluationResult ? 'alert-success' : 'alert-warning'}`}>
-                                    {`Výsledek: ${evaluationResult}`}
+                                <div className={`alert ${evaluation.result ? 'alert-success' : 'alert-warning'}`}>
+                                    {`Výsledek: ${evaluation.result}`}
                                 </div>
                             </>
                         ) : (
@@ -175,11 +176,11 @@ export function MCVP({ onNavigate, initialData }) {
             )}
 
             {explain && (
-                <Modal onClose={() => setExplain(false)}>
+                <ConversionModal onClose={() => setExplain(false)}>
                     {tree && (
-                        <StepByStepTree tree={ tree } />
+                        <StepByStepTree tree={tree} steps={evaluation.steps} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
             </div>
         </div>

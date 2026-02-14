@@ -54,12 +54,14 @@ Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem grafu, kter�
 \subsubsection{Algoritmus vyhodnocení}
 \label{sec:MCVPAlgorithmImpl}
 
-Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) s memoizací:
+Funkce \texttt{evaluateTreeWithSteps()} používá algoritmus průchodu do hloubky (DFS) s memoizací. Pro maximální využití vypočítaných dat funkce vrací jak výsledek vyhodnocení, tak i sekvenci všech mezivýpočtů, které můžou být použity pro krokovou vizualizaci. Průběh algoritmu:
 
 \begin{enumerate}
     \item \textbf{Listy (proměnné):} Pro uzly typu \texttt{variable} funkce vrací přímo přiřazenou hodnotu (0 nebo 1).
     
     \item \textbf{Vnitřní uzly (operace):} Pro uzly reprezentující logické operace funkce nejdříve vyhodnotí všechny potomky. Pokud je uzel typu AND, výsledek je 1 právě tehdy, když všichni potomci mají hodnotu 1. Pokud je uzel typu OR, výsledek je 1 pouze tehdy, když alespoň jeden potomek má hodnotu 1.
+    
+    \item \textbf{Zaznamenávání kroků:} Po vyhodnocení každého vnitřního uzlu je zaznamenán objekt obsahující vyhodnocovaný uzel, hodnoty jeho potomků a vypočítaný výsledek.
     
     \item \textbf{Memoizace:} Vyhodnocené hodnoty uzlů jsou uloženy do cache (slovníku), aby nedocházelo k opakovanému výpočtu stejných uzlů.
     
@@ -68,14 +70,14 @@ Funkce \texttt{evaluateTree()} používá algoritmus průchodu do hloubky (DFS) 
 
 %clear 
 
-Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci.
+Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci. Funkce vrací dvojici -- samotný výsledek a pole všech kroků výpočtu.
 
 \subsubsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStepImpl}
 
-Aplikace také nabízí krokovatelné vyhodnocení pomocí funkce \texttt{evaluateTreeWithSteps()}. Tato funkce provádí stejný výpočet jako \texttt{evaluateTree()}, ale navíc zaznamenává při každém výpočtu i stav zbytku obvodu. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
+Vyhodnocení obvodu je provedeno pouze jednou při načtení, přičemž výsledek je využit pro běžné zobrazení a zaznamenané kroky jsou předány modální komponentě \texttt{StepByStepTree} pro krokovou vizualizaci. Tím se předchází opakovanému průchodu stromem a duplicitnímu výpočtu, což je výhodné zejména u rozsáhlejších obvodů.
 
-Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky – aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace.
+Komponenta \texttt{StepByStepTree} zobrazuje každý krok graficky -- aktuálně vyhodnocovaný uzel je zvýrazněn a vedle grafu je zobrazena informace o hodnotách vstupů a výsledku operace. Uživatel tak může sledovat, jak se hodnoty šíří od vstupů k výstupu obvodu a lépe pochopit princip vyhodnocování.
 
 \subsection{Interaktivní editace obvodu}
 \label{sec:MCVPInteractiveImpl}

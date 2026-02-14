@@ -11,6 +11,7 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
 import { Modal } from '../Common/Modal';
+import { ConversionModal } from '../Common/ConversionModal';
 
 export function Grammar({ initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
@@ -155,9 +156,9 @@ export function Grammar({ initialData }) {
                         
                         {/* Step-by-Step Visualization Modal */}
                         {showSteps && (
-                            <Modal onClose={() => setShowSteps(false)}>
+                            <ConversionModal onClose={() => setShowSteps(false)}>
                                 <StepByStepGrammar grammar={grammar} />
-                            </Modal>
+                            </ConversionModal>
                         )}
                         
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
