@@ -186,9 +186,7 @@ Aplikace nabízí tři způsoby zadávání herního grafu:
     \item \textbf{Předpřipravené sady:} Načtení ukázkových připravených příkladů (viz sekce \ref{sec:GamesPreparedSetsImpl}).
 \end{itemize}
 
-%clear
-
-Všechny metody využívají komponentu \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
+Všec \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
 
 \subsection{Interaktivní editace grafu}
 \label{sec:GamesInteractiveImpl}
@@ -203,8 +201,7 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
         \item Změnit hráče který je na tahu (Hráč I nebo Hráč II)
         \item Odstranit pozici z grafu
         \item Nastavit jako počáteční pozici
-        \item Použít jako zdroj nebo cíl pro vytvoření hrany
-        \item Vytvořit hranu z nebo do tohoto uzlu
+        \item Vytvořit hranu z tohoto uzlu
         \item Odstranit hrany k nebo od tohoto uzlu
     \end{itemize}
             
@@ -238,10 +235,17 @@ Vnitřní reprezentace grafu pomocí tříd \texttt{GamePosition} a \texttt{Game
 
 Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní grafy různé velikosti a složitosti.
 
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{IMGs/CGJson.png}
+    \caption{Ukázka předpřipravených herních grafů ve formátu JSON}
+    \label{fig:prepared-sets-cg}
+\end{figure}
+
 \subsubsection{Ukládání a načítání her}
 \label{sec:GamesSerializationImpl}
 
-Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \texttt{FileTransferControls} (viz obrázek \ref{fig:import-export-controls-cg}). Formát obsahuje pole \texttt{nodes} s uzly, pole \texttt{edges} s hranami a identifikátor \texttt{startingPosition}.
+Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \texttt{FileTransferControls} (viz obrázek \ref{fig:import-export-controls-cg}). Formát obsahuje pole \texttt{nodes} s uzly, pole \texttt{edges} s hranami a identifikátor \texttt{startingPosition} (viz obrázek \ref{fig:prepared-sets-cg}).
 
 \begin{figure}[htbp]
     \centering
@@ -253,7 +257,7 @@ Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \te
 \subsection{Vizualizace grafu}
 \label{sec:GamesVisualizationImpl}
 
-Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}, která využívá knihovnu \emph{react-force-graph-2d}. Graf zobrazuje:
+Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}. Graf zobrazuje:
 
 \begin{itemize}
     \item \textbf{Uzly:} Každý uzel reprezentuje herní pozici s označením hráče na tahu (I nebo II).
@@ -276,12 +280,12 @@ Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní n
     
     \item \textbf{Zpětné šíření:} Od koncových pozic se postupně propagují výsledky:
     \begin{itemize}
-        \item Pokud existuje tah do prohrávající pozice soupeře, aktuální pozice je vyhrávající.
-        \item Pokud tentýž hráč pokračuje v tahu (bez změny hráče), tah do vyhrávající pozice znamená, že i původní pozice je vyhrávající.
-        \item Pokud všechny tahy vedou do vyhrávajících pozic soupeře, aktuální pozice je prohrávající.
+        \item Pokud z aktuální pozice existuje tah do pozice, kde je na tahu soupeř a ta pozice je pro něj prohrávající, pak je aktuální pozice vyhrávající.
+        \item Pokud z aktuální pozice existuje tah do pozice, kde zůstává tentýž hráč na tahu a ta pozice je vyhrávající, pak je i aktuální pozice vyhrávající.
+        \item Pokud všechny tahy z aktuální pozice vedou do pozic, které jsou vyhrávající pro soupeře (nebo prohrávající pro aktuálního hráče při zachování tahu), je aktuální pozice prohrávající.
     \end{itemize}
     
-    \item \textbf{Neurčené pozice:} Pozice, jejichž status nelze jednoznačně určit (například kvůli cyklům), zůstávají označeny jako remíza.
+    \item \textbf{Neurčené pozice:} Pozice uvnitř cyklů grafu, jejichž status nelze jednoznačně určit retrográdní analýzou, zůstávají označeny jako remíza. To nastává, když pozice tvoří silně souvislou komponentu, kde se hráči mohou pohybovat nekonečně dlouho bez jednoznačného vítěze.
 \end{enumerate}
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
@@ -289,7 +293,9 @@ Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní n
 \subsubsection{Optimální tahy}
 \label{sec:GamesOptimalMovesImpl}
 
-Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie. Hrana z pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče I. Tyto hrany jsou zvýrazněny ve vizualizaci.
+Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie \cite{sawa}. Hrana z pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče I. Tyto hrany jsou zvýrazněny ve vizualizaci.
+
+%clear
 
 \subsection{Krokové vyhodnocení}
 \label{sec:GamesStepByStepImpl}
