@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 
@@ -13,6 +13,14 @@ import { TreeRenderCanvas } from './TreeRenderCanvas';
  */
 export function StepByStepTree({ tree, steps = [] }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [fitTrigger, setFitTrigger] = useState(0);
+
+  // Trigger zoom-to-fit when reaching the final step
+  useEffect(() => {
+    if (steps[currentStep]?.type === 'FINAL') {
+      setFitTrigger(prev => prev + 1);
+    }
+  }, [currentStep, steps]);
 
   // Navigation functions
   const goToNextStep = () => {
@@ -29,6 +37,7 @@ export function StepByStepTree({ tree, steps = [] }) {
 
   const getCurrentNodeValue = () => {
     if (!steps[currentStep]) return '';
+    if (steps[currentStep].type === 'FINAL') return 'Výstupní hradlo';
     const val = steps[currentStep].node.value;
     if (val === 'A' || val === 'AND' || val === '∧') return 'AND';
     if (val === 'O' || val === 'OR' || val === '∨') return 'OR';
@@ -48,16 +57,31 @@ export function StepByStepTree({ tree, steps = [] }) {
               tree={tree}
               activeNode={steps[currentStep]?.node}
               completedSteps={steps.slice(0, currentStep + 1)}
+              fitTrigger={fitTrigger}
+              disableAutoCenter={steps[currentStep]?.type === 'FINAL'}
             />
           </div>
           
           <div className='step-controls-info container-fluid mt-3' style={{ flexShrink: 0 }}>
           <div className='row align-items-center'>
             <div className='step-info col-md-7'>
-              <div className="card p-3 bg-light">
-                <p className="mb-1"><strong>Vyhodnocovaný uzel:</strong> {getCurrentNodeValue()}</p>
-                <p className="mb-1"><strong>Hodnoty potomků:</strong> {steps[currentStep].childValues.join(', ')}</p>
-                <p className="mb-0"><strong>Výsledek:</strong> {String(steps[currentStep].result)}</p>
+              <div className="card p-3" style={{ 
+                minHeight: '140px',
+                backgroundColor: steps[currentStep]?.type === 'FINAL' ? 'rgba(255, 255, 0, 0.2)' : undefined 
+              }}>
+                {steps[currentStep]?.type === 'FINAL' ? (
+                  <>
+                    <p className="mb-1"><strong>Typ:</strong> Výsledek vyhodnocení</p>
+                    <p className="mb-1"><strong>Výstupní hodnota obvodu:</strong> {String(steps[currentStep].result)}</p>
+                    <p className="mb-0"><strong>Vysvětlení:</strong> {steps[currentStep].explanation}</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="mb-1"><strong>Vyhodnocovaný uzel:</strong> {getCurrentNodeValue()}</p>
+                    <p className="mb-1"><strong>Hodnoty potomků:</strong> {steps[currentStep].childValues.join(', ')}</p>
+                    <p className="mb-0"><strong>Výsledek:</strong> {String(steps[currentStep].result)}</p>
+                  </>
+                )}
               </div>
             </div>
             <div className='step-controls col-md-5 d-flex flex-column align-items-center justify-content-center'>

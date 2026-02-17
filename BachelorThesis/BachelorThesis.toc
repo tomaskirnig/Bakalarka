@@ -52,27 +52,27 @@
 \contentsline {subsubsection}{\numberline {4.2.6.1}Vyhodnocení výherních pozic}{26}{subsubsection.4.2.6.1}%
 \contentsline {subsubsection}{\numberline {4.2.6.2}Optimální tahy}{27}{subsubsection.4.2.6.2}%
 \contentsline {subsection}{\numberline {4.2.7}Krokové vyhodnocení}{27}{subsection.4.2.7}%
-\contentsline {section}{\numberline {4.3}Bezkontextové gramatiky}{27}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Formát vstupu}{27}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Manuální zadání gramatiky}{27}{subsection.4.3.2}%
-\contentsline {subsection}{\numberline {4.3.3}Generování náhodných gramatik}{27}{subsection.4.3.3}%
+\contentsline {section}{\numberline {4.3}Bezkontextové gramatiky}{28}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Formát vstupu}{28}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Manuální zadání gramatiky}{28}{subsection.4.3.2}%
+\contentsline {subsection}{\numberline {4.3.3}Generování náhodných gramatik}{28}{subsection.4.3.3}%
 \contentsline {subsubsection}{\numberline {4.3.3.1}Základní parametry}{28}{subsubsection.4.3.3.1}%
 \contentsline {subsubsection}{\numberline {4.3.3.2}Pokročilé parametry}{28}{subsubsection.4.3.3.2}%
-\contentsline {subsubsection}{\numberline {4.3.3.3}Algoritmus generování}{28}{subsubsection.4.3.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Předpřipravené sady}{28}{subsection.4.3.4}%
-\contentsline {subsection}{\numberline {4.3.5}Algoritmus vyhodnocení}{28}{subsection.4.3.5}%
-\contentsline {subsubsection}{\numberline {4.3.5.1}Identifikace produktivních neterminálů}{28}{subsubsection.4.3.5.1}%
-\contentsline {subsubsection}{\numberline {4.3.5.2}Rekonstrukce derivace}{28}{subsubsection.4.3.5.2}%
-\contentsline {subsection}{\numberline {4.3.6}Vizualizace derivačního stromu}{28}{subsection.4.3.6}%
+\contentsline {subsubsection}{\numberline {4.3.3.3}Algoritmus generování}{29}{subsubsection.4.3.3.3}%
+\contentsline {subsection}{\numberline {4.3.4}Předpřipravené sady}{29}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.5}Algoritmus vyhodnocení}{29}{subsection.4.3.5}%
+\contentsline {subsubsection}{\numberline {4.3.5.1}Identifikace produktivních neterminálů}{29}{subsubsection.4.3.5.1}%
+\contentsline {subsubsection}{\numberline {4.3.5.2}Rekonstrukce derivace}{29}{subsubsection.4.3.5.2}%
+\contentsline {subsection}{\numberline {4.3.6}Vizualizace derivačního stromu}{29}{subsection.4.3.6}%
 \contentsline {subsection}{\numberline {4.3.7}Krokové vyhodnocení}{29}{subsection.4.3.7}%
-\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{29}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{29}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{29}{subsection.4.4.2}%
+\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{30}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{30}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{31}{subsection.4.4.2}%
 \contentsline {chapter}{\numberline {5}Závěr}{32}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{32}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Vzdělávací přínos}{33}{section.5.2}%
 \contentsline {section}{\numberline {5.3}Možnosti dalšího rozvoje}{33}{section.5.3}%
-\contentsline {chapter}{Literatura}{34}{chapter*.18}%
+\contentsline {chapter}{Literatura}{34}{chapter*.19}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 

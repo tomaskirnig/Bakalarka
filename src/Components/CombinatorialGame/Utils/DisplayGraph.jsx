@@ -135,10 +135,6 @@ export function DisplayGraph({
     }
 
     hoverNode.current = node || null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, [data]);
 
   const handleLinkHover = useCallback((link) => {
@@ -151,10 +147,6 @@ export function DisplayGraph({
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
   }, []);
 
   const paintRing = useCallback((node, ctx) => {

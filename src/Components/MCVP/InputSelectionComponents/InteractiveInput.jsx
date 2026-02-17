@@ -19,7 +19,6 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
     const [hoverNode, setHoverNode] = useState(null);
-    const [isDragging, setIsDragging] = useState(false);
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
     const nextNodeIdRef = useRef(0);
@@ -331,15 +330,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
     const handleNodeHover = useCallback((node) => {
         setHoverNode(node);
-        if (containerRef.current) {
-            containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-        }
     }, []);
 
-    const handleLinkHover = useCallback((link) => {
-        if (containerRef.current) {
-            containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-        }
+    const handleLinkHover = useCallback(() => {
+        // Link hover handler
     }, []);
 
     // --- Canvas/Rendering Functions ---
@@ -431,7 +425,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         // Default charge is -30, we set it to a very weak value
         const chargeForce = fgRef.current.d3Force('charge');
         if (chargeForce) {
-          chargeForce.strength(isDragging ? 0 : -10); // Disable during drag, weak otherwise
+          chargeForce.strength(-10);
         }
 
         // Reduce link force distance to keep connected nodes closer
@@ -440,7 +434,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
           linkForce.distance(50).strength(1);
         }
       }
-    }, [mcvp, isDragging]); // Re-run if mcvp settings or dragging state changes
+    }, [mcvp]); // Re-run if mcvp settings changes
 
     const getNodeDisplayName = (node) => {
         if (node.type === 'variable') {
@@ -504,12 +498,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
                     onNodeDrag={node => {
-                        setIsDragging(true);
                         node.fx = node.x;
                         node.fy = node.y;
                     }}
                     onNodeDragEnd={node => { // Fix node position after dragging
-                        setIsDragging(false);
                         node.fx = node.x;
                         node.fy = node.y;
                     }}

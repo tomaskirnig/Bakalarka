@@ -23,7 +23,7 @@ export function StepByStepGame({ graph }) {
       const allSteps = [
         {
           type: 'INIT',
-          explanation: 'Začátek analýzy. Všechny pozice jsou inicializovány na REMÍZA (nedefinováno). Hledáme koncové pozice.',
+          explanation: 'Začátek analýzy. Všechny pozice jsou zatím nezpracované. Nejprve identifikujeme koncové pozice bez tahů.',
           accumulatedStatus: {}
         },
         ...result.steps
@@ -64,7 +64,7 @@ export function StepByStepGame({ graph }) {
     // Replay steps up to currentStep
     for (let i = 1; i <= currentStep; i++) { // Skip INIT step 0
       const step = steps[i];
-      if (step && step.id) {
+      if (step && step.id && step.type !== 'FINAL') {
          // Determine winning player based on status relative to node owner
          // step.status is 'WIN' or 'LOSE' for the player at step.id
          const nodePlayer = graph.positions[step.id].player;
@@ -124,18 +124,24 @@ export function StepByStepGame({ graph }) {
           <div className='step-controls-info container-fluid mt-3' style={{ flexShrink: 0 }}>
           <div className='row align-items-center'>
             <div className='step-info col-md-7'>
-              <div className="card p-3 bg-light" style={{ minHeight: '140px' }}>
-                <p className="mb-1"><strong>Krok:</strong> {activeStep?.type === 'INIT' ? 'Inicializace' : (activeStep?.type === 'TERMINAL' ? 'Nalezen koncový uzel' : 'Aktualizace stavu')}</p>
+              <div className={`card p-3 ${activeStep?.type === 'FINAL' ? '' : 'bg-light'}`} style={{ minHeight: '140px', backgroundColor: activeStep?.type === 'FINAL' ? 'rgba(255, 255, 0, 0.2)' : undefined }}>
+                <p className="mb-1"><strong>Typ:</strong> {activeStep?.type === 'INIT' ? 'Inicializace' : (activeStep?.type === 'TERMINAL' ? 'Koncová pozice' : (activeStep?.type === 'FINAL' ? 'Výsledek analýzy' : 'Propagace výsledku'))}</p>
                 
-                {activeStep?.id && (
+                {activeStep?.id && activeStep?.type !== 'FINAL' && (
                     <p className="mb-1">
                         <strong>Pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id].player})
                     </p>
                 )}
                 
+                {activeStep?.type === 'FINAL' && (
+                    <p className="mb-1">
+                        <strong>Počáteční pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id].player})
+                    </p>
+                )}
+                
                 <p className="mb-1"><strong>Vysvětlení:</strong> {activeStep?.explanation}</p>
                 
-                {activeStep?.status && (
+                {activeStep?.status && activeStep?.type !== 'FINAL' && (
                     <p className="mb-0">
                     <strong>Stav:</strong>{' '}
                     <span className={
@@ -143,7 +149,18 @@ export function StepByStepGame({ graph }) {
                         (activeStep.status === 'LOSE' && graph.positions[activeStep.id].player === 2) 
                         ? 'text-success fw-bold' : 'text-danger fw-bold'
                     }>
-                        {activeStep.status === 'WIN' ? 'Výherní' : 'Prohrávající'} (pro hráče {graph.positions[activeStep.id].player})
+                        {((activeStep.status === 'WIN' && graph.positions[activeStep.id].player === 1) || 
+                          (activeStep.status === 'LOSE' && graph.positions[activeStep.id].player === 2))
+                          ? 'Hráč 1 vyhrává' : 'Hráč 1 prohrává'}
+                    </span>
+                    </p>
+                )}
+
+                {activeStep?.type === 'FINAL' && (
+                    <p className="mb-0">
+                    <strong>Výsledek:</strong>{' '}
+                    <span className={activeStep.hasWinningStrategy ? 'fw-bold' : 'fw-bold'}>
+                        {activeStep.hasWinningStrategy ? 'Hráč 1 má výherní strategii ✓' : 'Hráč 1 nemá výherní strategii ✗'}
                     </span>
                     </p>
                 )}
@@ -171,7 +188,7 @@ export function StepByStepGame({ graph }) {
         </>
       ) : (
         <div className="alert alert-info text-center">
-            Probíhá výpočet nebo nejsou k dispozici žádné kroky...
+            Načítání analýzy...
         </div>
       )}
     </div>

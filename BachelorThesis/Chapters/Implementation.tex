@@ -295,12 +295,25 @@ Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní n
 
 Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie \cite{sawa}. Hrana z pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče I. Tyto hrany jsou zvýrazněny ve vizualizaci.
 
-%clear
-
 \subsection{Krokové vyhodnocení}
 \label{sec:GamesStepByStepImpl}
 
-Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu. Algoritmus zaznamenává každý krok aktualizace stavu grafu a uživatel jimi může procházet pomocí navigačních tlačítek. Aktuálně aktualizovaný uzel je v grafu zvýrazněn. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.
+Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovatelnou analýzu (viz obrázek \ref{fig:step-by-step-game}). Algoritmus průběžně zaznamenává změny stavu grafu a uživatel jimi může procházet pomocí navigačních tlačítek. Pro každý krok analýzy je zobrazeno:
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{IMGs/explainCG.png}
+    \caption{Kroková analýza kombinatorické hry}
+    \label{fig:step-by-step-game}
+\end{figure}
+
+\begin{itemize}
+    \item \textbf{Aktuálně vyhodnocovaný uzel:} Zvýrazněn přímo v grafu.
+    \item \textbf{Vysvětlení kroku:} Popis toho, co se v daném kroku děje (nalezení koncové pozice, propagace výsledku).
+    \item \textbf{Stav z pohledu Hráče 1:} Všechny zprávy konzistentně uvádějí, zda Hráč 1 z dané pozice vyhrává nebo prohrává.
+\end{itemize}
+
+Po dokončení retrográdní analýzy je přidán závěrečný krok, který zobrazuje celkový výsledek hry -- zda Hráč 1 má či nemá výherní strategii z počáteční pozice. Tento finální krok je zvýrazněn žlutým pozadím. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.
 
 \section{Bezkontextové gramatiky}
 \label{sec:ImplementationGrammars}

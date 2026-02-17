@@ -27,7 +27,8 @@ export function TreeRenderCanvas({
   width,
   height,
   fitToScreen,
-  fitTrigger = 0
+  fitTrigger = 0,
+  disableAutoCenter = false // Disable auto-centering on active node
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -168,7 +169,7 @@ export function TreeRenderCanvas({
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
-    hoverNode.current = node || null;
+    hoverNode.current = node;
     highlightNodes.current.clear();
     highlightLinks.current.clear();
 
@@ -180,10 +181,6 @@ export function TreeRenderCanvas({
       if (node.links) {
         node.links.forEach(link => highlightLinks.current.add(link));
       }
-    }
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
     }
   }, []);
 
@@ -197,10 +194,6 @@ export function TreeRenderCanvas({
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
-    
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
   }, []);
 
   // 3. Paint Functions
@@ -300,14 +293,14 @@ export function TreeRenderCanvas({
 
   // Focus Camera on Active Node
   useEffect(() => {
-    if (activeNode && fgRef.current) {
+    if (activeNode && fgRef.current && !disableAutoCenter) {
          // We need to find the node object in the current graph data to get (x,y)
          const node = graphData.nodes.find(n => n.id === activeNode.id);
          if (node && typeof node.x === 'number' && typeof node.y === 'number') {
              fgRef.current.centerAt(node.x, node.y, 500);
          }
     }
-  }, [activeNode, graphData]);
+  }, [activeNode, graphData, disableAutoCenter]);
 
   // Zoom to fit when triggered
   useEffect(() => {
@@ -372,6 +365,9 @@ export function TreeRenderCanvas({
           node.fx = node.x;
           node.fy = node.y;
         }}
+        onBackgroundClick={() => {
+          hoverNode.current = null;
+        }}
       />
     </div>
   );
@@ -391,5 +387,6 @@ TreeRenderCanvas.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,
-  fitTrigger: PropTypes.number
+  fitTrigger: PropTypes.number,
+  disableAutoCenter: PropTypes.bool
 };

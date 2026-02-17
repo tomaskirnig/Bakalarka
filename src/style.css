@@ -711,6 +711,17 @@ select {
   cursor: grabbing;
 }
 
+/* Override react-force-graph-2d's .clickable class */
+.GraphDiv .clickable,
+.GraphDiv canvas.clickable {
+  cursor: grab !important;
+}
+
+.GraphDiv:active .clickable,
+.GraphDiv:active canvas.clickable {
+  cursor: grabbing !important;
+}
+
 /* ManualInput */
 
 .manual-input-instruction {

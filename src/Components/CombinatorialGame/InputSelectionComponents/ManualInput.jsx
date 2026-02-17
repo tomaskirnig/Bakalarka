@@ -11,7 +11,6 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   const [selectedNode, setSelectedNode] = useState(null);  // Track selected node
   const [addingEdge, setAddingEdge] = useState(false);     // Track if in edge adding mode
   const [edgeSource, setEdgeSource] = useState(null);      // Track source node for edge
-  const [isDragging, setIsDragging] = useState(false);     // Track if node is being dragged
   const [startingNodeId, setStartingNodeId] = useState(null); // Track starting node ID, initialized to null
   const fgRef = useRef(); // Reference to ForceGraph component
   const containerRef = useRef(); // Reference to the graph container div
@@ -323,16 +322,10 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   // Handle hover on nodes
   const handleNodeHover = useCallback((node) => {
     setHoverNode(node || null);
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, []);
 
-  const handleLinkHover = useCallback((link) => {
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
+  const handleLinkHover = useCallback(() => {
+    // Link hover handler
   }, []);
 
   // Highlighted node and edges styling
@@ -514,7 +507,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       // Drastically reduce the charge force to prevent pushing other nodes away
       const chargeForce = fgRef.current.d3Force('charge');
       if (chargeForce) {
-        chargeForce.strength(isDragging ? 0 : -10); // Disable during drag, weak otherwise
+        chargeForce.strength(-10);
       }
 
       // Keep connected nodes closer
@@ -523,7 +516,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         linkForce.distance(50).strength(1);
       }
     }
-  }, [game, isDragging]);
+  }, [game]);
 
   return (
     <>
@@ -568,12 +561,10 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         onNodeClick={handleNodeClick}  
         onBackgroundClick={handleBackgroundClick}
         onNodeDrag={node => {
-          setIsDragging(true);
           node.fx = node.x;
           node.fy = node.y;
         }}
         onNodeDragEnd={node => {
-          setIsDragging(false);
           node.fx = node.x;
           node.fy = node.y;
         }}

@@ -75,6 +75,18 @@ export function evaluateTreeWithSteps(node) {
 
     try {
         const finalResult = evaluate(node);
+        
+        // Add final summary step
+        if (finalResult !== null) {
+            steps.push({
+                type: 'FINAL',
+                node: node,
+                childValues: [],
+                result: finalResult,
+                explanation: `Vyhodnocení dokončeno. Výsledná hodnota obvodu: ${finalResult}`
+            });
+        }
+        
         return { result: finalResult, steps };
     } catch (e) {
         console.error(e);

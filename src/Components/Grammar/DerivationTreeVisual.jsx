@@ -91,16 +91,10 @@ export function DerivationTreeVisual({ tree }) {
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
     hoverNode.current = node || null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, []);
 
-  const handleLinkHover = useCallback((link) => {
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
+  const handleLinkHover = useCallback(() => {
+    // Link hover handler
   }, []);
 
   // 3. Paint Functions

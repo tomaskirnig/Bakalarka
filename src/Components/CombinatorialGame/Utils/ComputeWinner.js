@@ -40,11 +40,15 @@ export function computeWinner(graph) {
     if (degree[id] === 0) {
       nodeStatus[id] = 'LOSE';
       queue.push(id);
+      const player = graph.positions[id].player;
+      const explanation = player === 1 
+        ? `Pozice ${id} je koncová (bez tahů). Hráč 1 zde prohrává.`
+        : `Pozice ${id} je koncová (bez tahů). Hráč 1 zde vyhrává (soupeř nemá tah).`;
       steps.push({
         type: 'TERMINAL',
         id: id,
         status: 'LOSE',
-        explanation: `Pozice ${id} nemá žádné tahy. Hráč na tahu prohrává.`
+        explanation
       });
     }
   });
@@ -67,24 +71,30 @@ export function computeWinner(graph) {
         if (!samePlayer) {
           nodeStatus[p] = 'WIN';
           queue.push(p);
+          const p1perspective = playerP === 1 
+            ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do prohrávající pozice soupeře ${u}).`
+            : `Hráč 1 prohrává z pozice ${p} (soupeř může táhnout do prohrávající pozice Hráče 1 ${u}).`;
           steps.push({
             type: 'UPDATE',
             id: p,
             status: 'WIN',
             triggerId: u,
-            explanation: `Z pozice ${p} (Hráč ${playerP}) lze táhnout do prohrávající pozice soupeře ${u} (Hráč ${playerU}). Hráč na tahu vyhrává.`
+            explanation: p1perspective
           });
         } else {
           degree[p]--;
           if (degree[p] === 0) {
             nodeStatus[p] = 'LOSE';
             queue.push(p);
+            const p1perspective = playerP === 1
+              ? `Hráč 1 prohrává z pozice ${p} (všechny tahy vedou do prohrávajících pozic).`
+              : `Hráč 1 vyhrává z pozice ${p} (soupeř nemá vyhrávající tah).`;
             steps.push({
               type: 'UPDATE',
               id: p,
               status: 'LOSE',
               triggerId: u,
-              explanation: `Všechny tahy z pozice ${p} (Hráč ${playerP}) vedou do pozic, kde tento hráč prohrává. Hráč na tahu prohrává.`
+              explanation: p1perspective
             });
           }
         }
@@ -92,24 +102,30 @@ export function computeWinner(graph) {
         if (samePlayer) {
           nodeStatus[p] = 'WIN';
           queue.push(p);
+          const p1perspective = playerP === 1
+            ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do své vyhrávající pozice ${u}).`
+            : `Hráč 1 prohrává z pozice ${p} (soupeř může táhnout do své vyhrávající pozice ${u}).`;
           steps.push({
             type: 'UPDATE',
             id: p,
             status: 'WIN',
             triggerId: u,
-            explanation: `Z pozice ${p} (Hráč ${playerP}) lze táhnout do své vyhrávající pozice ${u} (také Hráč ${playerU}). Hráč na tahu vyhrává.`
+            explanation: p1perspective
           });
         } else {
           degree[p]--;
           if (degree[p] === 0) {
             nodeStatus[p] = 'LOSE';
             queue.push(p);
+            const p1perspective = playerP === 1
+              ? `Hráč 1 prohrává z pozice ${p} (všechny tahy vedou do vyhrávajících pozic soupeře).`
+              : `Hráč 1 vyhrává z pozice ${p} (všechny tahy soupeře vedou do vítězných pozic Hráče 1).`;
             steps.push({
               type: 'UPDATE',
               id: p,
               status: 'LOSE',
               triggerId: u,
-              explanation: `Všechny tahy z pozice ${p} (Hráč ${playerP}) vedou do vyhrávajících pozic soupeře. Hráč na tahu prohrává.`
+              explanation: p1perspective
             });
           }
         }
@@ -127,7 +143,7 @@ export function computeWinner(graph) {
 
   if (startStatus === 'DRAW') {
     hasWinningStrategy = false;
-    message = "Hráč 1 nemá výherní strategii. Hra končí remízou (nikdo nemá vynucenou výhru).";
+    message = "Hráč 1 nemá výherní strategii. Hra končí remízou.";
   } else {
     if (startPlayer === 1) {
       if (startStatus === 'WIN') {
@@ -135,18 +151,26 @@ export function computeWinner(graph) {
         message = "Hráč 1 má výherní strategii.";
       } else {
         hasWinningStrategy = false;
-        message = "Hráč 1 nemá výherní strategii (Hráč 2 vyhrává).";
+        message = "Hráč 1 nemá výherní strategii. Hráč 2 vyhrává.";
       }
     } else { // startPlayer === 2
       if (startStatus === 'WIN') {
         hasWinningStrategy = false;
-        message = "Hráč 1 nemá výherní strategii (Hráč 2 vyhrává).";
+        message = "Hráč 1 nemá výherní strategii. Hráč 2 vyhrává.";
       } else {
         hasWinningStrategy = true;
-        message = "Hráč 1 má výherní strategii (Hráč 2 začíná a prohrává).";
+        message = "Hráč 1 má výherní strategii (Hráč 2 začíná v prohrávající pozici).";
       }
     }
   }
+
+  // Add final summary step
+  steps.push({
+    type: 'FINAL',
+    id: startId,
+    hasWinningStrategy,
+    explanation: `Analýza dokončena. Výsledek z počáteční pozice ${startId}: ${message}`
+  });
 
   const finalNodeStatus = {};
   positionIds.forEach(id => {
