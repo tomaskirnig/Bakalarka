@@ -10,7 +10,7 @@ import { GameAnalysisDisplay } from './Utils/GameAnalysisDisplay';
 import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
-import { Modal } from '../Common/Modal';
+import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
 
 export function CombinatorialGame({ initialData }) {
@@ -65,31 +65,62 @@ export function CombinatorialGame({ initialData }) {
         setGraph(null);
     };
 
-    const handleExport = () => {
+    const handleExport = (includePositions = false) => {
         if (!graph) return null;
-        
-        // If graph is already in flat format (nodes/edges), return it
-        if (graph.nodes || graph.edges) return graph;
+
+        // If graph is already in flat format (nodes/edges), return it (possibly with positions)
+        if (graph.nodes || graph.edges) {
+            const result = { ...graph };
+
+            // If positions were not already included but requested, try to extract them from nodes
+            if (includePositions && !graph.nodePositions && graph.nodes) {
+                const nodePositions = {};
+                graph.nodes.forEach(node => {
+                    if (typeof node.x === 'number' && typeof node.y === 'number') {
+                        nodePositions[node.id] = { x: node.x, y: node.y };
+                    }
+                });
+                if (Object.keys(nodePositions).length > 0) {
+                    result.nodePositions = nodePositions;
+                }
+            }
+
+            return result;
+        }
 
         // If graph is in positions format (internal state from ManualInput), convert to flat format
         if (graph.positions) {
-            const nodes = Object.values(graph.positions).map(p => ({ 
-                id: p.id, 
-                player: p.player 
+            const nodes = Object.values(graph.positions).map(p => ({
+                id: p.id,
+                player: p.player
             }));
             const edges = [];
+            const nodePositions = {};
+
             Object.values(graph.positions).forEach(p => {
                 if (p.children) {
                     p.children.forEach(childId => {
                         edges.push({ source: p.id, target: childId });
                     });
                 }
+
+                // Capture positions if requested
+                if (includePositions && typeof p.x === 'number' && typeof p.y === 'number') {
+                    nodePositions[p.id] = { x: p.x, y: p.y };
+                }
             });
-            return { 
-                nodes, 
-                edges, 
-                startingPosition: graph.startingPosition ? (graph.startingPosition.id || graph.startingPosition) : null 
+
+            const result = {
+                nodes,
+                edges,
+                startingPosition: graph.startingPosition ? (graph.startingPosition.id || graph.startingPosition) : null
             };
+
+            if (includePositions && Object.keys(nodePositions).length > 0) {
+                result.nodePositions = nodePositions;
+            }
+
+            return result;
         }
 
         return graph;
@@ -127,6 +158,7 @@ export function CombinatorialGame({ initialData }) {
                     onImport={handleImport}
                     instructionText="Nahrajte soubor JSON s definicí hry (uzly, hrany, startovní pozice)."
                     fileName="combinatorial_game.json"
+                    showPositionOption={false}
                 />
                 <InfoButton title="Kombinatorická hra na grafu">
                     <p>
@@ -190,11 +222,11 @@ export function CombinatorialGame({ initialData }) {
             )}
 
             {explain && (
-                <Modal onClose={() => setExplain(false)}>
+                <ConversionModal onClose={() => setExplain(false)}>
                     {graph && (
                         <StepByStepGame graph={graph} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
             
             </div>

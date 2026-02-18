@@ -13,12 +13,10 @@ import { generateTree } from '../Utils/Generator';
 export function GenerateInput( {onTreeUpdate} ) {
   const [numGates, setNumGates] = useState(1);      
   const [numVariables, setNumVariables] = useState(1); 
-  const [tree, setTree] = useState(null); 
 
   // Handler for generating the tree when the button is clicked
   const handleGenerateTree = () => {
     const generatedTree = generateTree(numGates, numVariables);
-    setTree(generatedTree); // Store the generated tree
     onTreeUpdate(generatedTree); // Pass the tree to the parent component
   };
 

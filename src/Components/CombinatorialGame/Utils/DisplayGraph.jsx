@@ -4,7 +4,16 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, fitToScreen, highlightedNode = null, winningPlayerMap = {} }) {
+export function DisplayGraph({ 
+  graph, 
+  optimalMoves = new Set(), 
+  width, 
+  height, 
+  fitToScreen, 
+  fitTrigger = 0,
+  highlightedNode = null, 
+  winningPlayerMap = {} 
+}) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
   const highlightLinks = useRef(new Set());
@@ -126,10 +135,6 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
     }
 
     hoverNode.current = node || null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, [data]);
 
   const handleLinkHover = useCallback((link) => {
@@ -142,10 +147,6 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
   }, []);
 
   const paintRing = useCallback((node, ctx) => {
@@ -228,10 +229,10 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
 
   // Zoom to fit when triggered
   useEffect(() => {
-    if (fitToScreen && fgRef.current) {
+    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
         fgRef.current.zoomToFit(400, 50);
     }
-  }, [fitToScreen]);
+  }, [fitToScreen, fitTrigger]);
 
   const getLinkWidth = useCallback((link) => {
     return highlightLinks.current.has(link) ? 5 : (link.isOptimal ? 3 : 1);
@@ -288,6 +289,14 @@ export function DisplayGraph({ graph, optimalMoves = new Set(), width, height, f
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
+          onNodeDrag={node => {
+            node.fx = node.x;
+            node.fy = node.y;
+          }}
+          onNodeDragEnd={node => {
+            node.fx = node.x;
+            node.fy = node.y;
+          }}
         />
       </div>
 
@@ -306,6 +315,7 @@ DisplayGraph.propTypes = {
   width: PropTypes.number,
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,
+  fitTrigger: PropTypes.number,
   highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2]))
 };

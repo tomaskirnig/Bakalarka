@@ -1,0 +1,102 @@
+\chapter{Analýza a návrh}
+\label{sec:AnalysisAndDesign}
+
+Tato kapitola popisuje zvolené technologie a architekturu aplikace. Dále představuje datové struktury pro reprezentaci jednotlivých problémů a principy návrhu uživatelského rozhraní.
+
+\section{Volba technologií}
+\label{sec:WebTechnologies}
+
+Aplikace byla implementována jako webová, protože nevyžaduje instalaci a běží v libovolném moderním prohlížeči. Webové řešení také umožňuje snadnou údržbu a okamžitou distribuci aktualizací.
+
+\subsection{React a Vite}
+\label{sec:ReactVite}
+
+Pro vývoj byla použita knihovna \emph{React} \cite{react2024}. React umožňuje rozdělit uživatelské rozhraní na znovupoužitelné komponenty, což usnadnilo vývoj modulů pro jednotlivé problémy. Díky reaktivitě se rozhraní automaticky synchronizuje se stavem dat bez nutnosti ruční manipulace s DOM.
+
+Pro sestavení aplikace byl použit nástroj \emph{Vite} \cite{vite2024}. Vite nabízí rychlé vývojové prostředí s okamžitou odezvou při úpravách kódu a optimalizuje soubory pro produkční verzi.
+
+\section{Architektura a struktura kódu}
+\label{sec:ComponentArchitecture}
+
+Aplikace je navržena jako \emph{Single Page Application} (SPA) – veškerá logika a navigace probíhá v rámci jedné stránky, podobně jako u desktopové aplikace. Kořenová komponenta \texttt{App.jsx} spravuje globální stav a přepínání mezi moduly.
+
+Kód je strukturován tak, aby logika byla oddělena od vizualizace. Každý modul (MCVP, hry, gramatiky) disponuje vlastní adresářovou strukturou:
+\begin{itemize}
+    \item \textbf{Hlavní komponenta:} Funguje jako kontejner, který spravuje lokální stav a propojuje vstupní data s algoritmy a vizualizací.
+    \item \textbf{Adresář Utils:} Zde jsou soustředěny čisté algoritmy – parsery pro zpracování vstupu, generátory náhodných instancí a evaluátory pro výpočet řešení.
+    \item \textbf{Vizualizační komponenty:} Starají se o vykreslení grafů a stromů pomocí knihovny \emph{react-force-graph}.
+\end{itemize}
+
+\section{Návrh datových struktur}
+\label{sec:DataStructures}
+
+Pro práci s P-úplnými problémy bylo nutné navrhnout jejich vnitřní reprezentaci v paměti.
+
+\subsection{Reprezentace obvodu MCVP}
+\label{sec:MCVPDesignStructure}
+
+Pro modelování logického obvodu byl využit orientovaný acyklický graf. Každý uzel obvodu je reprezentován instancí třídy \texttt{Node}. Tato třída, jak ukazuje třídní diagram na obrázku \ref{fig:mcvp-class}, uchovává informaci o typu operace (AND, OR) nebo hodnotě proměnné. Seznam odkazů na potomky umožňuje rekurzivní průchod stromem při vyhodnocování.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.4\textwidth]{IMGs/MCVP_class.png}
+    \caption{Třídní diagram pro hlavní třídy MCVP}
+    \label{fig:mcvp-class}
+\end{figure}
+
+\subsection{Reprezentace herního grafu}
+\label{sec:GamesDesignStructure}
+
+Na rozdíl od MCVP může herní graf obsahovat cykly, proto byly navrženy třídy \texttt{GamePosition} a \texttt{GameGraph} (viz obrázek \ref{fig:cg-class}). Třída \texttt{GamePosition} reprezentuje jednotlivou pozici a uchovává informaci o hráči na tahu spolu se seznamy předchůdců a následníků, což je nezbytné pro retrográdní analýzu.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/CG_class.png}
+    \caption{Třídní diagram pro hlavní třídy kombinatorické hry}
+    \label{fig:cg-class}
+\end{figure}
+
+\subsection{Reprezentace bezkontextové gramatiky}
+\label{sec:GrammarDesignStructure}
+
+U bezkontextových gramatik je zaměřeno na reprezentaci přepisovacích pravidel. Třída \texttt{Grammar} (obrázek \ref{fig:grammar-class}) spravuje množiny symbolů a seznamy produkcí. Každá produkce propojuje levou stranu (neterminál) s polem symbolů na pravé straně. Tato struktura umožňuje snadno identifikovat produktivní neterminály.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.3\textwidth]{IMGs/Grammar_class.png}
+    \caption{Třídní diagram pro hlavní třídu bezkontextové gramatiky}
+    \label{fig:grammar-class}
+\end{figure}
+
+\section{Návrh uživatelského rozhraní}
+\label{sec:UIDesign}
+
+Rozhraní je navrženo tak, aby student nebyl zahlcen informacemi a mohl se soustředit na podstatu problému. Rozložení stránky bylo sjednoceno napříč všemi moduly:
+\begin{itemize}
+    \item \textbf{Ovládací panel:} Horní část obrazovky, kde uživatel volí způsob zadání vstupu a spouští simulace (viz obrázek \ref{fig:ui-navigation}).
+    \item \textbf{Interaktivní plátno:} Hlavní plocha pro vizualizaci grafů, kde uživatel může s prvky přímo manipulovat (viz obrázek \ref{fig:ui-canvas}).
+    \item \textbf{Informační panely:} Modální okna nebo postranní panely zobrazující detaily o probíhajícím výpočtu nebo krokovém převodu (viz obrázek \ref{fig:ui-info-panel}).
+\end{itemize}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{IMGs/navigation.png}
+    \caption{Ovládací panel s navigací a výběrem vstupu}
+    \label{fig:ui-navigation}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{IMGs/InteractiveCanvas.png}
+    \caption{Interaktivní plátno pro vizualizaci a editaci grafů}
+    \label{fig:ui-canvas}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.6\textwidth]{IMGs/informationPanel.png}
+    \caption{Informační panel zobrazující výsledek analýzy}
+    \label{fig:ui-info-panel}
+\end{figure}
+
+Pro vizualizaci byla použita knihovna \emph{react-force-graph} \cite{reactforcegraph2024}, která pomocí fyzikální simulace automaticky rozmísťuje uzly a hrany. Stylování je realizováno frameworkem \emph{Bootstrap 5} \cite{bootstrap2024}, který zajišťuje jednotný vzhled a responzivitu na různých velikostech obrazovek.

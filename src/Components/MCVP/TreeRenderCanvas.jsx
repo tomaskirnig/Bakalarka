@@ -26,7 +26,9 @@ export function TreeRenderCanvas({
   completedSteps = [],    // Steps with results to display
   width,
   height,
-  fitToScreen
+  fitToScreen,
+  fitTrigger = 0,
+  disableAutoCenter = false // Disable auto-centering on active node
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -152,7 +154,7 @@ export function TreeRenderCanvas({
     });
 
     return { nodes, links };
-  }, [tree]);
+  }, [tree, completedSteps]);
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
@@ -167,7 +169,7 @@ export function TreeRenderCanvas({
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
-    hoverNode.current = node || null;
+    hoverNode.current = node;
     highlightNodes.current.clear();
     highlightLinks.current.clear();
 
@@ -179,10 +181,6 @@ export function TreeRenderCanvas({
       if (node.links) {
         node.links.forEach(link => highlightLinks.current.add(link));
       }
-    }
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
     }
   }, []);
 
@@ -196,10 +194,6 @@ export function TreeRenderCanvas({
       if (link.target) highlightNodes.current.add(link.target);
     }
     hoverNode.current = null;
-    
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
   }, []);
 
   // 3. Paint Functions
@@ -290,30 +284,34 @@ export function TreeRenderCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * graphData.nodes.length * mcvp.collisionRadiusMultiplier).iterations(graphData.nodes.length)); 
+        fgRef.current.d3Force('collision', 
+          window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
+            .strength(mcvp.collisionStrength)
+            .iterations(mcvp.collisionIterations)
+        );
       }
-      fgRef.current.d3Force('link').distance(mcvp.linkDistance);
+      fgRef.current.d3Force('link').distance(mcvp.linkDistance).strength(mcvp.linkStrength);
       fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
     }
   }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
 
   // Focus Camera on Active Node
   useEffect(() => {
-    if (activeNode && fgRef.current) {
+    if (activeNode && fgRef.current && !disableAutoCenter) {
          // We need to find the node object in the current graph data to get (x,y)
          const node = graphData.nodes.find(n => n.id === activeNode.id);
          if (node && typeof node.x === 'number' && typeof node.y === 'number') {
              fgRef.current.centerAt(node.x, node.y, 500);
          }
     }
-  }, [activeNode, graphData]);
+  }, [activeNode, graphData, disableAutoCenter]);
 
   // Zoom to fit when triggered
   useEffect(() => {
-    if (fitToScreen && fgRef.current) {
+    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
         fgRef.current.zoomToFit(400, 50);
     }
-  }, [fitToScreen]);
+  }, [fitToScreen, fitTrigger]);
 
   return (
     <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
@@ -338,8 +336,8 @@ export function TreeRenderCanvas({
         
         // Physics
         cooldownTime={mcvp.cooldownTime}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
+        d3AlphaDecay={mcvp.d3AlphaDecay}
+        d3VelocityDecay={mcvp.d3VelocityDecay}
         autoPauseRedraw={false}
         
         // Interaction
@@ -363,6 +361,17 @@ export function TreeRenderCanvas({
         // Events
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
+        onNodeDrag={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
+        onNodeDragEnd={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
+        onBackgroundClick={() => {
+          hoverNode.current = null;
+        }}
       />
     </div>
   );
@@ -381,5 +390,7 @@ TreeRenderCanvas.propTypes = {
   completedSteps: PropTypes.array,
   width: PropTypes.number,
   height: PropTypes.number,
-  fitToScreen: PropTypes.bool
+  fitToScreen: PropTypes.bool,
+  fitTrigger: PropTypes.number,
+  disableAutoCenter: PropTypes.bool
 };

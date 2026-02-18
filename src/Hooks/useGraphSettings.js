@@ -12,11 +12,19 @@ export function useGraphSettings() {
             labelFontSize: 12,
             labelFont: '12px monospace',
             resultLabelOffsetMultiplier: 1.4,
-            collisionRadiusMultiplier: 2,
+            // Collision force settings
+            collisionRadiusMultiplier: 1.2,
+            collisionStrength: 0.8,
+            collisionIterations: 2,
+            // Layout settings
             dagLevelDistance: 100,
             linkDistance: 100,
-            chargeStrength: -200,
-            cooldownTime: 3000
+            linkStrength: 1,
+            chargeStrength: -100,
+            // Physics settings
+            cooldownTime: 2000,
+            d3AlphaDecay: 0.08,
+            d3VelocityDecay: 0.6
         },
         game: {
              nodeRadius: 8,

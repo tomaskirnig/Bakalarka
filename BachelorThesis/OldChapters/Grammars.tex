@@ -29,7 +29,7 @@ Symbol \( \Rightarrow^* \) označuje derivaci v nula nebo více krocích \cite{u
 
 Problém neprázdnosti jazyka bezkontextové gramatiky je P-úplný \cite{sawa, miyano}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Produktivní neterminál je takový, ze kterého lze derivovat řetězec složený pouze z terminálů \cite{sawa}.
 
-I přes řešitelnost v polynomiálním čase je problém P-úplný, což naznačuje obtížnou paralelizovatelnost. Produktivita jednoho neterminálu často závisí na produktivitě jiných neterminálů. Tato vzájemná závislost vyžaduje sekvenční zpracování podobné vyhodnocování MCVP obvodu.
+Podobně jako u předchozích problémů, i zde P-úplnost vyplývá ze sekvenčních závislostí: produktivita neterminálu závisí na produktivitě jiných neterminálů, což brání paralelnímu zpracování.
 
 \section{Formát vstupu}
 \label{sec:GrammarsInput}
@@ -175,13 +175,13 @@ Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnoce
 Algoritmus pracuje iterativně a postupně označuje produktivní neterminály \cite{sawa}:
 
 \begin{enumerate}
-    \item \textbf{Inicializace:} Vytvoříme prázdnou množinu produktivních symbolů \( \mathcal{P} \).
+    \item \textbf{Inicializace:} Vytvoří se prázdná množina produktivních symbolů \( \mathcal{P} \).
     
-    \item \textbf{Základní krok:} Do \( \mathcal{P} \) přidáme všechny neterminály \( A \), které mají pravidlo \( A \to w \), kde \( w \in \Sigma^* \) (pravá strana obsahuje pouze terminály nebo je prázdná).
+    \item \textbf{Základní krok:} Do \( \mathcal{P} \) se přidají všechny neterminály \( A \), které mají pravidlo \( A \to w \), kde \( w \in \Sigma^* \) (pravá strana obsahuje pouze terminály nebo je prázdná).
     
-    \item \textbf{Iterativní rozšiřování:} Opakovaně procházíme všechna pravidla. Pokud existuje pravidlo \( A \to X_1 X_2 \dots X_k \), kde všechny symboly \( X_i \) jsou buď terminály nebo již jsou v množině \( \mathcal{P} \), přidáme \( A \) do \( \mathcal{P} \).
+    \item \textbf{Iterativní rozšiřování:} Opakovaně se procházejí všechna pravidla. Pokud existuje pravidlo \( A \to X_1 X_2 \dots X_k \), kde všechny symboly \( X_i \) jsou buď terminály nebo již jsou v množině \( \mathcal{P} \), přidá se \( A \) do \( \mathcal{P} \).
     
-    \item \textbf{Ukončení:} Opakujeme krok 3, dokud se množina \( \mathcal{P} \) mění.
+    \item \textbf{Ukončení:} Krok 3 se opakuje, dokud se množina \( \mathcal{P} \) mění.
     
     \item \textbf{Výsledek:} Pokud \( S \in \mathcal{P} \), pak jazyk \( L(G) \) není prázdný. V opačném případě je \( L(G) = \emptyset \).
 \end{enumerate}
@@ -200,15 +200,15 @@ Algoritmus během svého běhu zaznamenává pro každý produktivní neterminá
 Po dokončení analýzy produktivních neterminálů je možné provést sestavení derivačního stromu, pokud je počáteční symbol \( S \) produktivní. Sestavení probíhá rekurzivně:
 
 \begin{enumerate}
-    \item \textbf{Výběr pravidla:} Pro každý neterminál náhodně vybereme jedno z jeho produktivních pravidel. Při větší hloubce derivace (> 20 kroků) preferujeme nerekurzivní pravidla, aby se předešlo nekonečným derivacím.
+    \item \textbf{Výběr pravidla:} Pro každý neterminál se náhodně vybere jedno z jeho produktivních pravidel. Při větší hloubce derivace (> 20 kroků) jsou preferována nerekurzivní pravidla, aby se předešlo nekonečným derivacím.
     
     \item \textbf{Limitace hloubky:} Rekurzivní konstrukce stromu je omezena na maximální hloubku 30 úrovní. Pokud je tato hloubka překročena, vrátí se chyba a místo vykreslení stromu se zobrazí informační zpráva.
     
     \item \textbf{Stavba uzlů:} Strom se buduje rekurzivně funkcí \texttt{buildNode()}:
     \begin{itemize}
-        \item Pro každý neterminál vytvoříme uzel s unikátním identifikátorem
-        \item Náhodně vybereme jedno z jeho produktivních pravidel
-        \item Pro každý symbol na pravé straně pravidla rekurzivně vytvoříme potomky (zvýšíme hloubku o 1)
+        \item Pro každý neterminál se vytvoří uzel s unikátním identifikátorem
+        \item Náhodně se vybere jedno z jeho produktivních pravidel
+        \item Pro každý symbol na pravé straně pravidla rekurzivně vzniknou potomci (zvýší se hloubka o 1)
         \item Terminály a \( \epsilon \) vytvoří listy stromu bez dalších potomků
     \end{itemize}
     

@@ -6,8 +6,8 @@ import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
-import { evaluateTree } from './Utils/EvaluateTree';
-import { Modal } from '../Common/Modal';
+import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
+import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
@@ -41,8 +41,9 @@ export function MCVP({ onNavigate, initialData }) {
         }
     }, [initialData]);
 
-    const evaluationResult = useMemo(() => {
-        return tree ? evaluateTree(tree) : null;
+    // Calculate evaluation with steps once - the steps are reused for step-by-step explanation
+    const evaluation = useMemo(() => {
+        return tree ? evaluateTreeWithSteps(tree) : { result: null, steps: [] };
     }, [tree]);
 
     const handleOptionChange = (option) => {
@@ -50,9 +51,9 @@ export function MCVP({ onNavigate, initialData }) {
         setTree(null);
     };
 
-    const handleExport = () => {
+    const handleExport = (includePositions = false) => {
         if (!tree) return null;
-        return treeToFlatGraph(tree);
+        return treeToFlatGraph(tree, includePositions);
     };
 
     const handleImport = (data) => {
@@ -98,9 +99,6 @@ export function MCVP({ onNavigate, initialData }) {
                         <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
                         <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
                     </ul>
-                    <p className="mb-0">
-                        Tento problém je P-úplný, což znamená, že je těžké jej efektivně paralelizovat.
-                    </p>
                 </InfoButton>
             </div>
 
@@ -139,10 +137,10 @@ export function MCVP({ onNavigate, initialData }) {
                         Výsledek obvodu
                     </div>
                     <div className="card-body text-center">
-                        {evaluationResult !== null ? (
+                        {evaluation.result !== null ? (
                             <>
-                                <div className={`alert ${evaluationResult ? 'alert-success' : 'alert-warning'}`}>
-                                    {`Výsledek: ${evaluationResult}`}
+                                <div className={`alert ${evaluation.result ? 'alert-success' : 'alert-warning'}`}>
+                                    {`Výsledek: ${evaluation.result}`}
                                 </div>
                             </>
                         ) : (
@@ -161,27 +159,27 @@ export function MCVP({ onNavigate, initialData }) {
             )}
 
             {grammarConversion && (
-                <Modal onClose={() => setGrammarConversion(false)}>
+                <ConversionModal onClose={() => setGrammarConversion(false)}>
                     {tree && (
                         <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
 
             {gameConversion && (
-                <Modal onClose={() => setGameConversion(false)}>
+                <ConversionModal onClose={() => setGameConversion(false)}>
                     {tree && (
                         <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
 
             {explain && (
-                <Modal onClose={() => setExplain(false)}>
+                <ConversionModal onClose={() => setExplain(false)}>
                     {tree && (
-                        <StepByStepTree tree={ tree } />
+                        <StepByStepTree tree={tree} steps={evaluation.steps} />
                     )}
-                </Modal>
+                </ConversionModal>
             )}
             </div>
         </div>

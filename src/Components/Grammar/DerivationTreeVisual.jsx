@@ -91,16 +91,10 @@ export function DerivationTreeVisual({ tree }) {
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
     hoverNode.current = node || null;
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, []);
 
-  const handleLinkHover = useCallback((link) => {
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
+  const handleLinkHover = useCallback(() => {
+    // Link hover handler
   }, []);
 
   // 3. Paint Functions
@@ -146,11 +140,23 @@ export function DerivationTreeVisual({ tree }) {
     // Text Label
     const displayText = node.name || '';
     
-    ctx.fillStyle = textColor;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = grammarSettings.labelFont;
+    
+    // Add shadow/halo effect for better visibility when text extends beyond node
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)';
+    ctx.shadowBlur = 3;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+    
+    // Draw text
+    ctx.fillStyle = textColor;
     ctx.fillText(displayText, node.x, node.y);
+    
+    // Reset shadow for other elements
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
     
   }, [colors, grammarSettings]);
 
@@ -224,6 +230,14 @@ export function DerivationTreeVisual({ tree }) {
         // Events
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
+        onNodeDrag={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
+        onNodeDragEnd={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
       />
     </div>
   );

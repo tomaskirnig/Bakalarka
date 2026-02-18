@@ -277,6 +277,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             }, {});
             
             const updatedLinks = prevData.links.map(link => ({
+                id: link.id,
                 source: nodeMap[link.source.id],
                 target: nodeMap[link.target.id],
             }));
@@ -329,15 +330,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 
     const handleNodeHover = useCallback((node) => {
         setHoverNode(node);
-        if (containerRef.current) {
-            containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-        }
     }, []);
 
-    const handleLinkHover = useCallback((link) => {
-        if (containerRef.current) {
-            containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-        }
+    const handleLinkHover = useCallback(() => {
+        // Link hover handler
     }, []);
 
     // --- Canvas/Rendering Functions ---
@@ -396,9 +392,12 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         const midY = (start.y + end.y) / 2;
 
         // Determine if the link ID should be displayed
+        // Only show if the selected node is connected to this link
         let shouldDisplayLinkId = false;
         if (selectedNode && link.id !== undefined && link.id !== null) {
-            shouldDisplayLinkId = true;
+            if (link.source.id === selectedNode.id || link.target.id === selectedNode.id) {
+                shouldDisplayLinkId = true;
+            }
         }
 
         if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
@@ -410,26 +409,47 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, [selectedNode]);
 
-    // Force setup for collision
-    useEffect(() => {
-      if (fgRef.current) {
-        // Add collision force to prevent overlap
-        if (window.d3 && window.d3.forceCollide) {
-          fgRef.current.d3Force('collision', 
-            window.d3.forceCollide().radius((_node) => mcvp.nodeRadius * 1.2) // Node radius plus a 20% buffer
-              .strength(0.8) // Strong collision detection
-              .iterations(2) // 2 iterations for stability
-          );
+        // Force setup for collision and charge
+        useEffect(() => {
+          if (fgRef.current) {
+            // Add collision force to prevent overlap
+            if (window.d3 && window.d3.forceCollide) {
+              fgRef.current.d3Force('collision',
+                window.d3.forceCollide().radius(() => mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
+                  .strength(mcvp.collisionStrength)
+                  .iterations(mcvp.collisionIterations)
+              );
+            }
+    
+            // Charge force to create node separation
+            const chargeForce = fgRef.current.d3Force('charge');
+            if (chargeForce) {
+              chargeForce.strength(mcvp.chargeStrength);
+            }
+    
+            // Link force to keep connected nodes at appropriate distance
+            const linkForce = fgRef.current.d3Force('link');
+            if (linkForce) {
+              linkForce.distance(mcvp.linkDistance).strength(mcvp.linkStrength);
+            }
+          }
+        }, [mcvp]);
+     // Re-run if mcvp settings changes
+
+    const getNodeDisplayName = (node) => {
+        if (node.type === 'variable') {
+            return `${node.value}[${node.varValue}]`;
+        } else {
+            return node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
         }
-      }
-    }, [mcvp]); // Re-run if mcvp settings change
+    };
 
     return (
         <div>
             {/*Instructions*/}
             <div style={{ textAlign: 'center', margin: '5px', minHeight: '24px', color: 'var(--color-grey-medium)' }}>
-                {addingEdge && edgeSource && `Přidávání hrany z uzlu ${edgeSource.id}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
-                {selectedNode && !addingEdge && `Uzel ${selectedNode.id} vybrán.`}
+                {addingEdge && edgeSource && `Přidávání hrany z uzlu ${getNodeDisplayName(edgeSource)}. Klikněte na cílový uzel nebo na pozadí pro zrušení.`}
+                {selectedNode && !addingEdge && `Uzel ${getNodeDisplayName(selectedNode)} vybrán.`}
                 {!selectedNode && !addingEdge && 'Klikněte na pozadí pro zrušení výběru. Klikněte na uzel pro výběr.'}
             </div>
 
@@ -453,9 +473,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     dagMode="td" // Top-down layout
                     dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
                     // Physics
-                    cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
-                    d3AlphaDecay={0.05} // Faster decay
-                    d3VelocityDecay={0.4}
+                    cooldownTime={mcvp.cooldownTime}
+                    d3AlphaDecay={mcvp.d3AlphaDecay}
+                    d3VelocityDecay={mcvp.d3VelocityDecay}
                     // Nodes
                     nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
                     nodeId="id"
@@ -466,7 +486,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     // linkWidth={1} // This will be handled by paintLink
                     linkCanvasObject={paintLink} // Custom link renderer
                     linkCanvasObjectMode={() => "after"} // Draw custom object after link line
-                    linkDirectionalArrowLength={3.5}
+                    linkDirectionalArrowLength={6}
                     linkDirectionalArrowRelPos={1}
                     onDagError={handleDagError}
                     // Interaction
@@ -477,9 +497,13 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     enablePanInteraction={true}
                     enableZoomInteraction={true}
                     enableNodeDrag={true} // Allow dragging nodes
+                    onNodeDrag={node => {
+                        node.fx = node.x;
+                        node.fy = node.y;
+                    }}
                     onNodeDragEnd={node => { // Fix node position after dragging
-                    node.fx = node.x;
-                    node.fy = node.y;
+                        node.fx = node.x;
+                        node.fy = node.y;
                     }}
                 />
             </div>
@@ -495,7 +519,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
             {/* Selected Node Controls */}
             {selectedNode && !addingEdge && (
                 <div className="p-4 my-3" style={{ border: '1px solid #eee', borderRadius: '4px'}}>
-                    <h5>Vybraný uzel: {selectedNode.value === 'O' ? "OR" : selectedNode.value === 'A' ? "AND" : selectedNode.value}</h5>
+                    <h5>Vybraný uzel: {getNodeDisplayName(selectedNode)}</h5>
                     <div className="d-flex flex-wrap justify-content-center align-items-center">
                         {/* Type/Value Change */}
                          {selectedNode.type === 'operation' && (

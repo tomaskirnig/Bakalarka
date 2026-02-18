@@ -57,8 +57,8 @@ Komponenta \texttt{ManualInput} umožňuje vytvářet a upravovat herní grafy p
 
 \begin{itemize}
     \item \textbf{Přidávat uzly:} Vytvořit novou pozici.
-    
-    \item \textbf{Upravovat uzly:} Kliknutím na uzel ho označíme. Označený uzel můžeme:
+
+    \item \textbf{Upravovat uzly:} Kliknutím na uzel ho označíme. S označeným uzlem lze:
     \begin{itemize}
         \item Změnit hráče který je na tahu (Hráč I nebo Hráč II)
         \item Odstranit pozici z grafu
@@ -86,9 +86,9 @@ Modul \texttt{Generator.js} obsahuje funkci \texttt{generateGraph()} pro vytvá�
 Algoritmus generování probíhá ve dvou fázích:
 
 \begin{enumerate}
-    \item \textbf{Vytvoření kostry:} Vytvoříme uzly očíslované 0 až \( n-1 \) a každému náhodně přiřadíme hráče. Pro každý uzel \( i > 0 \) pak vytvoříme hranu z náhodného předchozího uzlu (s indexem menším než \( i \)) do uzlu \( i \). Tím zajistíme, že uzel 0 (počáteční pozice) může dosáhnout všechny ostatní uzly, a současně vytvoříme acyklickou kostru grafu.
+    \item \textbf{Vytvoření kostry:} Vytvoří se uzly očíslované 0 až \( n-1 \) a každému se náhodně přiřadí hráč. Pro každý uzel \( i > 0 \) pak vznikne hrana z náhodného předchozího uzlu (s indexem menším než \( i \)) do uzlu \( i \). Tím je zajištěno, že uzel 0 (počáteční pozice) může dosáhnout všechny ostatní uzly, a současně vznikne acyklická kostra grafu.
     
-    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti přidáme hranu \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
+    \item \textbf{Přidání dalších hran:} Pro každou dvojici uzlů \( i, j \) (kde \( i \neq j \)), podle dané pravděpodobnosti se přidá hrana \( i \to j \), pokud ještě neexistuje. Hrany mohou být přidány v libovolném směru, což umožňuje vznik cyklů v grafu.
 \end{enumerate}
 
 \subsection{Vnitřní reprezentace herního grafu}

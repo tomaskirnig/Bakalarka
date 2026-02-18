@@ -1,0 +1,118 @@
+\chapter{Teoretický základ}
+\label{sec:Theory}
+
+Tato kapitola zavádí základní pojmy z teorie složitosti a popisuje tři P-úplné problémy: Monotone Circuit Value Problem, kombinatorické hry na grafu a problém neprázdnosti bezkontextových gramatik.
+
+\section{Základní pojmy a definice}
+\label{sec:TheoryDefinitions}
+
+Nejprve jsou zavedeny klíčové pojmy z teorie složitosti, o které se tato práce opírá.
+
+\begin{definition}[P-úplnost \cite{sawa, papadimitriou}]
+Problém $A$ se nazývá \textbf{P-úplný}, jestliže platí dvě podmínky:
+\begin{enumerate}
+    \item $A \in P$ (problém patří do třídy P).
+    \item Pro každý problém $B \in P$ platí $B \leq_L A$ (každý problém z třídy P lze na problém $A$ převést pomocí redukce v logaritmickém prostoru).
+\end{enumerate}
+\end{definition}
+
+\begin{definition}[Třída P \cite{uti_turing}]
+Třída \textbf{P} (Polynomial time) obsahuje všechny rozhodovací problémy, které jsou řešitelné na deterministickém Turingově stroji v čase $O(n^k)$, kde $n$ je velikost vstupu a $k$ je nezáporná konstanta.
+\end{definition}
+
+\begin{definition}[Logaritmická redukce \cite{sawa}]
+Nechť $A$ a $B$ jsou jazyky (problémy). Řekneme, že $A$ je \textbf{převeditelný v logaritmickém prostoru} na $B$ (značíme $A \leq_L B$), jestliže existuje funkce $f$ vyčíslitelná Turingovým strojem s logaritmickou paměťovou složitostí taková, že pro každé slovo $w$ platí:
+$$ w \in A \iff f(w) \in B $$
+\end{definition}
+
+\section{Monotone Circuit Value Problem}
+\label{sec:TheoryMCVP}
+
+Monotone Circuit Value Problem je základní problém v teorii složitosti, který patří mezi P-úplné problémy \cite{sawa}. Jeho definice je následující:
+
+\begin{itemize}
+    \item \textbf{Vstup:} Booleovský obvod bez negací, tvořený pouze hradly AND ($\land$) a OR ($\lor$), společně se vstupními hodnotami (pouze hodnoty 0 nebo 1 - false nebo true).
+    \item \textbf{Výstup:} Hodnota výstupního uzlu obvodu (výstupního hradla).
+\end{itemize}
+
+Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly představují buď vstupní proměnné (listy) nebo logická hradla (vnitřní uzly). Hrany reprezentují tok logických hodnot – přenášejí výsledky vyhodnocení z jednoho uzlu jako vstupy do uzlů následujících. V monotónním obvodu chybí hradla NOT, což zajišťuje, že funkce reprezentovaná obvodem je monotónní – zvýšení hodnoty libovolného vstupu nikdy nesníží hodnotu výstupu \cite{sawa}.
+
+\subsection{P-úplnost MCVP}
+\label{sec:MCVPTheoryCompleteness}
+
+MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. MCVP je sice řešitelný v polynomiálním čase, ale jeho P-úplnost znamená, že efektivní paralelizace je pravděpodobně nemožná – vyhodnocení obvodu musí probíhat sekvenčně od vstupů k výstupu.
+
+\section{Kombinatorické hry na grafu}
+\label{sec:TheoryGames}
+
+Kombinatorická hra dvou hráčů na orientovaném grafu je další příklad P-úplného problému \cite{sawa}:
+
+\begin{itemize}
+    \item \textbf{Vstup:} Orientovaný graf, kde každý uzel představuje herní pozici přiřazenou Hráči I nebo Hráči II, hrany representují možné tahy a jeden uzel je označen jako startovní pozice.
+    \item \textbf{Výstup:} Rozhodnutí, zda Hráč I má výherní strategii ze startovní pozice.
+\end{itemize}
+
+Hráči se střídají v tazích podle toho, komu je přiřazen aktuální uzel. Hra končí, když hráč na tahu nemá žádný možný tah – tento hráč pak prohrává. Výherní strategie pro Hráče I znamená, že existuje způsob volit tahy tak, aby Hráč I vyhrál bez ohledu na to, jak hraje Hráč II \cite{sawa}.
+
+\subsection{P-úplnost kombinatorických her}
+\label{sec:GamesTheoryCompleteness}
+
+Tento problém je P-úplný \cite{sawa, miyano}. Určení výherní strategie lze provést v polynomiálním čase pomocí tzv. retrográdní analýzy \cite{sawa}, která zpětně vyhodnocuje pozice od koncových uzlů. P-úplnost problému implikuje obtížnost paralelizace: výherní strategie nelze určit efektivně paralelně, protože analýza pozic na sebe vzájemně závisí.
+
+\section{Neprázdnost bezkontextové gramatiky}
+\label{sec:TheoryGrammars}
+
+Problém neprázdnosti jazyka bezkontextové gramatiky (CFG Non-emptiness Problem) je dalším příkladem P-úplného problému \cite{sawa}. Bezkontextová gramatika generuje jazyk pomocí přepisovacích pravidel.
+
+Formálně je gramatika definována jako čtveřice \( G = (N, \Sigma, P, S) \) \cite{uti_grammars}, kde:
+
+\begin{itemize}
+    \item \( N \) je konečná množina neterminálních symbolů (neterminálů).
+    \item \( \Sigma \) je konečná množina terminálních symbolů (terminálů), disjunktní s \( N \).
+    \item \( P \) je konečná množina přepisovacích pravidel tvaru \( A \to \alpha \), kde \( A \in N \) a \( \alpha \in (N \cup \Sigma)^* \).
+    \item \( S \in N \) je počáteční symbol (start symbol).
+\end{itemize}
+
+Problém spočívá v tom, zda daná gramatika generuje alespoň jedno slovo složené pouze z terminálních symbolů.
+
+\subsection{P-úplnost problému neprázdnosti}
+\label{sec:GrammarsTheoryCompleteness}
+
+Problém neprázdnosti jazyka bezkontextové gramatiky je P-úplný \cite{sawa, miyano}. Tento problém lze vyřešit v polynomiálním čase pomocí algoritmu iterativního označování produktivních neterminálů. Podobně jako u předchozích problémů, i zde P-úplnost vyplývá ze sekvenčních závislostí: produktivita neterminálu závisí na produktivitě jiných neterminálů, což brání paralelnímu zpracování.
+
+\section{Principy převodů mezi problémy}
+\label{sec:TheoryReductions}
+
+P-úplné problémy jsou vzájemně převoditelné, což dokazuje jejich výpočetní rovnocennost. Následující převody ilustrují, jak lze MCVP převést na kombinatorickou hru a na problém neprázdnosti gramatiky.
+
+\subsection{Převod z MCVP na kombinatorickou hru}
+\label{sec:TheoryReductionToGame}
+
+Uzly obvodu MCVP odpovídají herním pozicím \cite{sawa}:
+
+\begin{itemize}
+    \item \textbf{Hradlo OR} vytváří pozici pro Hráče 1. Ten si může vybrat libovolnou následující pozici odpovídající potomkům hradla. Stačí, aby jedna z možností vedla k jeho výhře.
+    
+    \item \textbf{Hradlo AND} vytváří pozici pro Hráče 2. Ten vybírá následující pozici a~snaží se zabránit výhře Hráče 1. Hráč 1 vyhraje pouze pokud vyhrává ve všech možných pokračováních.
+    
+    \item \textbf{Proměnná s hodnotou 1} odpovídá konečné pozici, ve které Hráč 2 nemá žádné tahy – Hráč 1 tedy vyhrává.
+    
+    \item \textbf{Proměnná s hodnotou 0} odpovídá konečné pozici, ve které Hráč 1 nemá žádné tahy a~prohrává.
+\end{itemize}
+
+\subsection{Převod z MCVP na bezkontextovou gramatiku}
+\label{sec:TheoryReductionToGrammar}
+
+Každý uzel obvodu se stane symbolem gramatiky \cite{sawa}:
+
+\begin{itemize}
+    \item \textbf{Kořen obvodu} se mapuje na počáteční symbol gramatiky $S$.
+    
+    \item \textbf{Hradlo AND s potomky $A$ a $B$} vytvoří pravidlo $X \to AB$, kde $X$ reprezentuje hradlo. Řetězec lze z $X$ odvodit právě tehdy, když lze odvodit řetězce z obou potomků $A$ i $B$.
+    
+    \item \textbf{Hradlo OR s potomky $A$ a $B$} vytvoří dvě pravidla: $X \to A$ a $X \to B$.
+    
+    \item \textbf{Proměnná s hodnotou 1} generuje epsilon pravidlo $X \to \varepsilon$, což umožňuje odvození prázdného řetězce.
+    
+    \item \textbf{Proměnná s hodnotou 0} vytvoří pravidlo $X \to t$, kde $t$ je terminál bez dalších odvozovacích pravidel.
+\end{itemize}

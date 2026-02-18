@@ -131,13 +131,27 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       }
     } else if (initialGraph && (initialGraph.nodes || initialGraph.edges)) {
         // Handle flat format (nodes, edges/links)
-        const newNodes = (initialGraph.nodes || []).map(n => ({
-            ...n,
-            id: String(n.id),
-            player: n.player !== undefined ? n.player : 1, // Default to player 1 if missing
-            neighbors: []
-        }));
-        
+        const nodePositions = initialGraph.nodePositions || {};
+
+        const newNodes = (initialGraph.nodes || []).map(n => {
+            const nodeData = {
+                ...n,
+                id: String(n.id),
+                player: n.player !== undefined ? n.player : 1, // Default to player 1 if missing
+                neighbors: []
+            };
+
+            // Apply positions if available
+            if (nodePositions[n.id]) {
+                nodeData.x = nodePositions[n.id].x;
+                nodeData.y = nodePositions[n.id].y;
+                nodeData.fx = nodePositions[n.id].x;  // Fix position
+                nodeData.fy = nodePositions[n.id].y;  // Fix position
+            }
+
+            return nodeData;
+        });
+
         const edges = initialGraph.edges || initialGraph.links || [];
         const newLinks = edges.map(l => ({
             source: String(l.source.id || l.source),
@@ -308,16 +322,10 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   // Handle hover on nodes
   const handleNodeHover = useCallback((node) => {
     setHoverNode(node || null);
-
-    if (containerRef.current) {
-        containerRef.current.style.cursor = node ? 'pointer' : 'grab';
-    }
   }, []);
 
-  const handleLinkHover = useCallback((link) => {
-    if (containerRef.current) {
-        containerRef.current.style.cursor = link ? 'pointer' : 'grab';
-    }
+  const handleLinkHover = useCallback(() => {
+    // Link hover handler
   }, []);
 
   // Highlighted node and edges styling
@@ -484,6 +492,32 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       return optimalMoves.has(`${sourceId}-${targetId}`);
   }, [optimalMoves]);
 
+  // Force setup to reduce unwanted pushing of nodes
+  useEffect(() => {
+    if (fgRef.current) {
+      // Add collision force to prevent overlap
+      if (window.d3 && window.d3.forceCollide) {
+        fgRef.current.d3Force('collision',
+          window.d3.forceCollide().radius(() => game.nodeRadius * 1.2)
+            .strength(0.8)
+            .iterations(2)
+        );
+      }
+
+      // Drastically reduce the charge force to prevent pushing other nodes away
+      const chargeForce = fgRef.current.d3Force('charge');
+      if (chargeForce) {
+        chargeForce.strength(-10);
+      }
+
+      // Keep connected nodes closer
+      const linkForce = fgRef.current.d3Force('link');
+      if (linkForce) {
+        linkForce.distance(50).strength(1);
+      }
+    }
+  }, [game]);
+
   return (
     <>
     <div className="GraphDiv mb-3 shadow-sm" ref={containerRef} style={{ height: '60vh', minHeight: '500px' }}>
@@ -526,6 +560,14 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         onLinkHover={handleLinkHover}
         onNodeClick={handleNodeClick}  
         onBackgroundClick={handleBackgroundClick}
+        onNodeDrag={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
+        onNodeDragEnd={node => {
+          node.fx = node.x;
+          node.fy = node.y;
+        }}
       />
     </div>
     

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponent/ManualInput';
@@ -10,9 +10,9 @@ import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
-import { Modal } from '../Common/Modal';
+import { ConversionModal } from '../Common/ConversionModal';
 
-export function Grammar({ onNavigate, initialData }) {
+export function Grammar({ initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
     const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
@@ -34,8 +34,11 @@ export function Grammar({ onNavigate, initialData }) {
         setShowSteps(false);
     };
 
-    const handleExport = () => {
+    // eslint-disable-next-line no-unused-vars
+    const handleExport = (includePositions = false) => {
         if (!grammar) return null;
+        // Note: Grammar doesn't use positions like graph-based problems
+        // The parameter is accepted for API consistency but not used
         // Return the grammar object properties
         return {
             name: grammar.name || "Exported Grammar",
@@ -75,8 +78,10 @@ export function Grammar({ onNavigate, initialData }) {
         setShowSteps(false);
     };
 
-    // Calculate analysis result only once when grammar changes
-    const analysisResult = grammar ? isEmptyLanguage(grammar) : null;
+    // Calculate analysis result only once when grammar changes - memoized to prevent recalculation on re-renders
+    const analysisResult = useMemo(() => {
+        return grammar ? isEmptyLanguage(grammar) : null;
+    }, [grammar]);
 
     return (
         <div className='div-content pb-2 page-container'>
@@ -86,6 +91,7 @@ export function Grammar({ onNavigate, initialData }) {
                     onImport={handleImport}
                     instructionText="Nahrajte soubor JSON s definicí gramatiky (objekt nebo pole gramatik)."
                     fileName="grammar.json"
+                    showPositionOption={false}
                 />
                 <InfoButton title="Problém neprázdnosti gramatiky">
                     <p>
@@ -95,8 +101,8 @@ export function Grammar({ onNavigate, initialData }) {
                     <h6 className="mb-2">Pravidla formátu gramatiky</h6>
                     <ul className="ps-3 mb-2">
                         <li><strong>Oddělte symboly mezerami:</strong> <code>S → a S</code> (správně) vs <code>S → aS</code> (špatně)</li>
-                        <li><strong>Velká písmena (i česká) = neterminály:</strong> S, A, Č, Ř, AA</li>
-                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number</li>
+                        <li><strong>První písmeno velké (i české) = neterminály:</strong> S, A1, Abc, Č1, A_10</li>
+                        <li><strong>Vše ostatní = terminály:</strong> a, +, id, number, 1a</li>
                         <li>První neterminál na prvním řádku je počáteční symbol</li>
                         <li>Použijte <code>|</code> pro oddělení alternativ</li>
                         <li>Použijte <code>ε</code> nebo <code>epsilon</code> pro prázdný řetězec</li>
@@ -150,9 +156,9 @@ export function Grammar({ onNavigate, initialData }) {
                         
                         {/* Step-by-Step Visualization Modal */}
                         {showSteps && (
-                            <Modal onClose={() => setShowSteps(false)}>
+                            <ConversionModal onClose={() => setShowSteps(false)}>
                                 <StepByStepGrammar grammar={grammar} />
-                            </Modal>
+                            </ConversionModal>
                         )}
                         
                         {!analysisResult.isEmpty && analysisResult.derivationTree && (
