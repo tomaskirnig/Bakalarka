@@ -1,4 +1,5 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
+import PropTypes from 'prop-types';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 
 /**
@@ -165,6 +166,7 @@ const NetworkVisual = ({
   }, [dimensions]);
 
   // Initialize nodes when canvas dimensions are set
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (dimensions.width > 0 && dimensions.height > 0 && nodes.length === 0) {
       initNodes();
@@ -172,6 +174,7 @@ const NetworkVisual = ({
   }, [dimensions]);
 
   // Start animation when nodes are initialized
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (nodes.length > 0) {
       animationRef.current = requestAnimationFrame(animate);
@@ -217,6 +220,16 @@ const NetworkVisual = ({
       />
     </div>
   );
+};
+
+NetworkVisual.propTypes = {
+  nodeCount: PropTypes.number,
+  connectDistance: PropTypes.number,
+  linkColor: PropTypes.string,
+  nodeColor: PropTypes.string,
+  backgroundColor: PropTypes.string,
+  overlayColor: PropTypes.string,
+  zIndex: PropTypes.number,
 };
 
 export default NetworkVisual;

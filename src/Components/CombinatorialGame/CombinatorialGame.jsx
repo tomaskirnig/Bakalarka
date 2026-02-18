@@ -10,7 +10,6 @@ import { GameAnalysisDisplay } from './Utils/GameAnalysisDisplay';
 import { computeWinner, getOptimalMoves } from './Utils/ComputeWinner';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
-import { Modal } from '../Common/Modal';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
 

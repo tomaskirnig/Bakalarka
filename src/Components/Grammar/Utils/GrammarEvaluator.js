@@ -1,4 +1,3 @@
-import { Grammar } from './Grammar';
 
 /**
  * Determines if the grammar's language is empty.

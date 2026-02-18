@@ -36,5 +36,4 @@ export function ConversionModal({ onClose, children }) {
 ConversionModal.propTypes = {
     onClose: PropTypes.func.isRequired,
     children: PropTypes.node.isRequired,
-    title: PropTypes.string
 };

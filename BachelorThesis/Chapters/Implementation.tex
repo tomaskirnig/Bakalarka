@@ -186,7 +186,7 @@ Aplikace nabízí tři způsoby zadávání herního grafu:
     \item \textbf{Předpřipravené sady:} Načtení ukázkových připravených příkladů (viz sekce \ref{sec:GamesPreparedSetsImpl}).
 \end{itemize}
 
-Všec \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
+Vše \texttt{DisplayGraph} pro vizualizaci herního grafu (viz sekce \ref{sec:GamesVisualizationImpl}).  
 
 \subsection{Interaktivní editace grafu}
 \label{sec:GamesInteractiveImpl}
@@ -302,18 +302,21 @@ Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGam
 
 \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.9\textwidth]{IMGs/explainCG.png}
+    \includegraphics[width=1\textwidth]{IMGs/explainCG.png}
     \caption{Kroková analýza kombinatorické hry}
     \label{fig:step-by-step-game}
 \end{figure}
 
 \begin{itemize}
     \item \textbf{Aktuálně vyhodnocovaný uzel:} Zvýrazněn přímo v grafu.
-    \item \textbf{Vysvětlení kroku:} Popis toho, co se v daném kroku děje (nalezení koncové pozice, propagace výsledku).
+    \item \textbf{Vysvětlení kroku:} Popis toho, co se v daném kroku děje (nalezení koncové pozice nebo propagace výsledku).
     \item \textbf{Stav z pohledu Hráče 1:} Všechny zprávy konzistentně uvádějí, zda Hráč 1 z dané pozice vyhrává nebo prohrává.
+    \item \textbf{Zelené číslo nad uzly:} U vyhodnocených pozic je zobrazen vítězný hráč (1 nebo 2) pro danou pozici.
 \end{itemize}
 
 Po dokončení retrográdní analýzy je přidán závěrečný krok, který zobrazuje celkový výsledek hry -- zda Hráč 1 má či nemá výherní strategii z počáteční pozice. Tento finální krok je zvýrazněn žlutým pozadím. Tato funkce pomáhá pochopit, jak algoritmus postupně řeší hru a jak se vypořádává s cykly.
+
+%clear
 
 \section{Bezkontextové gramatiky}
 \label{sec:ImplementationGrammars}

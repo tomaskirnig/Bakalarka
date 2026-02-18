@@ -409,32 +409,32 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         }
     }, [selectedNode]);
 
-    // Force setup for collision and charge
-    useEffect(() => {
-      if (fgRef.current) {
-        // Add collision force to prevent overlap
-        if (window.d3 && window.d3.forceCollide) {
-          fgRef.current.d3Force('collision',
-            window.d3.forceCollide().radius((_node) => mcvp.nodeRadius * 1.2) // Node radius plus a 20% buffer
-              .strength(0.8) // Strong collision detection
-              .iterations(2) // 2 iterations for stability
-          );
-        }
-
-        // Drastically reduce the charge force to prevent pushing other nodes away
-        // Default charge is -30, we set it to a very weak value
-        const chargeForce = fgRef.current.d3Force('charge');
-        if (chargeForce) {
-          chargeForce.strength(-10);
-        }
-
-        // Reduce link force distance to keep connected nodes closer
-        const linkForce = fgRef.current.d3Force('link');
-        if (linkForce) {
-          linkForce.distance(50).strength(1);
-        }
-      }
-    }, [mcvp]); // Re-run if mcvp settings changes
+        // Force setup for collision and charge
+        useEffect(() => {
+          if (fgRef.current) {
+            // Add collision force to prevent overlap
+            if (window.d3 && window.d3.forceCollide) {
+              fgRef.current.d3Force('collision',
+                window.d3.forceCollide().radius(() => mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
+                  .strength(mcvp.collisionStrength)
+                  .iterations(mcvp.collisionIterations)
+              );
+            }
+    
+            // Charge force to create node separation
+            const chargeForce = fgRef.current.d3Force('charge');
+            if (chargeForce) {
+              chargeForce.strength(mcvp.chargeStrength);
+            }
+    
+            // Link force to keep connected nodes at appropriate distance
+            const linkForce = fgRef.current.d3Force('link');
+            if (linkForce) {
+              linkForce.distance(mcvp.linkDistance).strength(mcvp.linkStrength);
+            }
+          }
+        }, [mcvp]);
+     // Re-run if mcvp settings changes
 
     const getNodeDisplayName = (node) => {
         if (node.type === 'variable') {
@@ -473,9 +473,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     dagMode="td" // Top-down layout
                     dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
                     // Physics
-                    cooldownTime={mcvp.cooldownTime} // Stop simulation sooner
-                    d3AlphaDecay={0.05} // Faster decay
-                    d3VelocityDecay={0.4}
+                    cooldownTime={mcvp.cooldownTime}
+                    d3AlphaDecay={mcvp.d3AlphaDecay}
+                    d3VelocityDecay={mcvp.d3VelocityDecay}
                     // Nodes
                     nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
                     nodeId="id"

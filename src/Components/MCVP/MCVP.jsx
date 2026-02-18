@@ -7,7 +7,6 @@ import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput'
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
-import { Modal } from '../Common/Modal';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';

@@ -10,7 +10,6 @@ import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
-import { Modal } from '../Common/Modal';
 import { ConversionModal } from '../Common/ConversionModal';
 
 export function Grammar({ initialData }) {
@@ -35,6 +34,7 @@ export function Grammar({ initialData }) {
         setShowSteps(false);
     };
 
+    // eslint-disable-next-line no-unused-vars
     const handleExport = (includePositions = false) => {
         if (!grammar) return null;
         // Note: Grammar doesn't use positions like graph-based problems

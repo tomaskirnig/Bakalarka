@@ -498,7 +498,7 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision',
-          window.d3.forceCollide().radius((_node) => game.nodeRadius * 1.2)
+          window.d3.forceCollide().radius(() => game.nodeRadius * 1.2)
             .strength(0.8)
             .iterations(2)
         );

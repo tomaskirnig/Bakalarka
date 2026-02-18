@@ -154,7 +154,7 @@ export function TreeRenderCanvas({
     });
 
     return { nodes, links };
-  }, [tree]);
+  }, [tree, completedSteps]);
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
@@ -284,9 +284,13 @@ export function TreeRenderCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', window.d3.forceCollide(mcvp.nodeRadius * graphData.nodes.length * mcvp.collisionRadiusMultiplier).iterations(graphData.nodes.length)); 
+        fgRef.current.d3Force('collision', 
+          window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
+            .strength(mcvp.collisionStrength)
+            .iterations(mcvp.collisionIterations)
+        );
       }
-      fgRef.current.d3Force('link').distance(mcvp.linkDistance);
+      fgRef.current.d3Force('link').distance(mcvp.linkDistance).strength(mcvp.linkStrength);
       fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
     }
   }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
@@ -332,8 +336,8 @@ export function TreeRenderCanvas({
         
         // Physics
         cooldownTime={mcvp.cooldownTime}
-        d3AlphaDecay={0.02}
-        d3VelocityDecay={0.3}
+        d3AlphaDecay={mcvp.d3AlphaDecay}
+        d3VelocityDecay={mcvp.d3VelocityDecay}
         autoPauseRedraw={false}
         
         // Interaction
