@@ -16,6 +16,7 @@ export function Grammar({ initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammar, setGrammar] = useState(null); // Current grammar
     const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
+    const [regenerateTrigger, setRegenerateTrigger] = useState(0); // Trigger to force tree regeneration
 
     // Handle initial data if provided
     useEffect(() => {
@@ -78,10 +79,15 @@ export function Grammar({ initialData }) {
         setShowSteps(false);
     };
 
-    // Calculate analysis result only once when grammar changes - memoized to prevent recalculation on re-renders
+    // Calculate analysis result when grammar changes or regenerate is triggered
     const analysisResult = useMemo(() => {
         return grammar ? isEmptyLanguage(grammar) : null;
-    }, [grammar]);
+    }, [grammar, regenerateTrigger]);
+
+    // Handler to regenerate the derivation tree
+    const handleRegenerate = () => {
+        setRegenerateTrigger(prev => prev + 1);
+    };
 
     return (
         <div className='div-content pb-2 page-container'>
@@ -147,6 +153,13 @@ export function Grammar({ initialData }) {
                     <div className="card mt-3">
                         <div className="card-header d-flex justify-content-between align-items-center">
                             <h4 className="mb-0">Analýza gramatiky</h4>
+                            <button 
+                                className="btn btn-sm btn-outline-secondary"
+                                onClick={handleRegenerate}
+                                title="Generovat nový derivační strom"
+                            >
+                                <i className="bi bi-arrow-repeat"></i>
+                            </button>
                         </div>
                         <div className="card-body">
                              <p className={`alert ${!analysisResult.isEmpty ? 'alert-success' : 'alert-warning'}`}>
@@ -173,7 +186,9 @@ export function Grammar({ initialData }) {
                                     <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
                                 )}
                                 <div style={{ height: '60vh', width: '100%' }}>
-                                    <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                                    <DerivationTreeVisual 
+                                        tree={analysisResult.derivationTree}
+                                    />
                                 </div>
                             </div>
                         )}
