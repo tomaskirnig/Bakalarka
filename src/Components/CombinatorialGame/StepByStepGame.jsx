@@ -118,6 +118,7 @@ export function StepByStepGame({ graph }) {
               optimalMoves={currentOptimalMoves}
               highlightedNode={activeStep?.id}
               winningPlayerMap={currentStatusMap}
+              trackHighlightedNode={true}
             />
           </div>
           
@@ -160,7 +161,7 @@ export function StepByStepGame({ graph }) {
                     <p className="mb-0">
                     <strong>Výsledek:</strong>{' '}
                     <span className={activeStep.hasWinningStrategy ? 'fw-bold' : 'fw-bold'}>
-                        {activeStep.hasWinningStrategy ? 'Hráč 1 má výherní strategii ✓' : 'Hráč 1 nemá výherní strategii ✗'}
+                        {activeStep.hasWinningStrategy ? 'Hráč 1 má výherní strategii' : 'Hráč 1 nemá výherní strategii'}
                     </span>
                     </p>
                 )}

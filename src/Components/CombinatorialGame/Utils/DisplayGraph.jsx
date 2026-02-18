@@ -12,7 +12,8 @@ export function DisplayGraph({
   fitToScreen, 
   fitTrigger = 0,
   highlightedNode = null, 
-  winningPlayerMap = {} 
+  winningPlayerMap = {},
+  trackHighlightedNode = false
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -176,8 +177,8 @@ export function DisplayGraph({
     ctx.fillStyle = fillColor;
     ctx.fill();
     
-    // Draw node ID in center when in hover mode
-    if (hoverNode.current !== null) {
+    // Draw node ID in center when in hover mode or when this node is being tracked
+    if (hoverNode.current !== null || (highlightedNode && node.id === highlightedNode)) {
       ctx.font = '5px Arial';
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
@@ -199,11 +200,6 @@ export function DisplayGraph({
         ctx.fillText(winningPlayerMap[node.id] === 1 ? 'I' : 'II', node.x, node.y - game.nodeRadius - 10);
     }
 
-    // Draw node ID above the node
-    // ctx.font = '10px monospace';
-    // ctx.fillStyle = 'red';
-    // ctx.fillText(node.id, node.x, node.y - game.nodeRadius - 12);
-    
     // Reset alpha
     ctx.globalAlpha = 1;
   }, [colors, game, highlightedNode, winningPlayerMap]);
@@ -217,8 +213,8 @@ export function DisplayGraph({
       }, 0);
 
       // Base distance + (edgeCount * factor)
-      // This increases distance as the graph complexity grows.
-      const dynamicDistance = Math.min(20 + edgeCount / 5, 200); 
+      // Increase distance as the graph complexity grows.
+      const dynamicDistance = Math.min(50 + edgeCount * 1.5, 300); 
       
       fgRef.current.d3Force('link').distance(dynamicDistance);
       
@@ -233,6 +229,22 @@ export function DisplayGraph({
         fgRef.current.zoomToFit(400, 50);
     }
   }, [fitToScreen, fitTrigger]);
+
+  // Center camera on highlighted node when tracking is enabled
+  useEffect(() => {
+    if (trackHighlightedNode && highlightedNode && fgRef.current && data.nodes) {
+      const node = data.nodes.find(n => n.id === highlightedNode);
+      if (node && node.x !== undefined && node.y !== undefined) {
+        // Center on the node with smooth transition
+        fgRef.current.centerAt(node.x, node.y, 800);
+        // Optionally zoom in slightly for better focus, but not too much
+        const currentZoom = fgRef.current.zoom();
+        if (currentZoom < 2) {
+          fgRef.current.zoom(2, 800);
+        }
+      }
+    }
+  }, [highlightedNode, trackHighlightedNode, data.nodes]);
 
   const getLinkWidth = useCallback((link) => {
     return highlightLinks.current.has(link) ? 5 : (link.isOptimal ? 3 : 1);
@@ -305,6 +317,7 @@ export function DisplayGraph({
 }
 
 DisplayGraph.propTypes = {
+  trackHighlightedNode: PropTypes.bool,
   graph: PropTypes.shape({
     positions: PropTypes.object,
     startingPosition: PropTypes.shape({
