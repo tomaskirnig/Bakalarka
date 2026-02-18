@@ -418,7 +418,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
       </div>
       
       <div className="mt-2" style={{ flexShrink: 0 }}>
-        <div className="d-flex justify-content-center gap-2 mb-2">
+        <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
           <button 
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
@@ -437,13 +437,13 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
         </div>
         
         {finalGrammar && (
-          <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
+          <div className="step-button-group d-flex justify-content-center flex-wrap align-items-center gap-2">
               <button 
                 onClick={skipToStart}
                 disabled={currentStep === 0}
                 className="btn btn-outline-secondary btn-sm"
               >
-                ⏮️ Jít na začátek
+                <i className="bi bi-skip-start-fill"></i> Jít na začátek
               </button>
               
               <button 
@@ -451,7 +451,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
                 disabled={currentStep === steps.length - 1}
                 className="btn btn-outline-primary btn-sm"
               >
-                Jít na konec ⏭️
+                Jít na konec <i className="bi bi-skip-end-fill"></i>
               </button>
               <button className="btn btn-success" onClick={handleRedirect}>
                   Otevřít v Gramatice

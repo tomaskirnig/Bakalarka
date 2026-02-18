@@ -167,7 +167,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             </div>
 
             <div className="mt-2" style={{ flexShrink: 0 }}>
-                <div className="d-flex justify-content-center gap-2 mb-2">
+                <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
                     <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0}>
                         Předchozí
                     </button>
@@ -177,20 +177,20 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                 </div>
 
                 {finalGraph && (
-                    <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
+                    <div className="step-button-group d-flex justify-content-center flex-wrap align-items-center gap-2">
                         <button 
                             className="btn btn-outline-secondary btn-sm" 
                             onClick={skipToStart}
                             disabled={currentStep === 0}
                         >
-                            ⏮️ Jít na začátek
+                            <i className="bi bi-skip-start-fill"></i> Jít na začátek
                         </button>
                         <button 
                             className="btn btn-outline-primary btn-sm" 
                             onClick={skipToEnd}
                             disabled={currentStep === steps.length - 1}
                         >
-                            Jít na konec ⏭️
+                            Jít na konec <i className="bi bi-skip-end-fill"></i>
                         </button>
                         <button className="btn btn-success" onClick={handleRedirect}>
                             Otevřít v Kombinatorické hře
