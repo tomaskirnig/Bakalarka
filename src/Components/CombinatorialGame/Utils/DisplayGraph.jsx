@@ -20,6 +20,7 @@ export function DisplayGraph({
   const highlightLinks = useRef(new Set());
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
+  const [isFlashing, setIsFlashing] = useState(false);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -56,6 +57,13 @@ export function DisplayGraph({
   const graphHeight = height || internalDimensions.height;
   
   const nodesRef = useRef([]);
+
+  // Flash border when graph changes
+  useEffect(() => {
+    setIsFlashing(true);
+    const timer = setTimeout(() => setIsFlashing(false), 600);
+    return () => clearTimeout(timer);
+  }, [graph]);
 
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
@@ -271,7 +279,7 @@ export function DisplayGraph({
 
   return (
     <>
-      <div className="GraphDiv shadow-sm" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
+      <div className={`GraphDiv shadow-sm ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
         <div className="graph-controls">
           <button 
             className="graph-btn" 

@@ -21,13 +21,21 @@ export function DerivationTreeVisual({ tree }) {
   
   // Dimensions State
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const [isFlashing, setIsFlashing] = useState(false);
 
   // Interaction State
   const hoverNode = useRef(null);
   
   const colors = useGraphColors();
   const settings = useGraphSettings();
-  const { grammar: grammarSettings } = settings; // Use grammar settings
+  const { grammar: grammarSettings } = settings;
+
+  // Flash border when tree changes
+  useEffect(() => {
+    setIsFlashing(true);
+    const timer = setTimeout(() => setIsFlashing(false), 600);
+    return () => clearTimeout(timer);
+  }, [tree]); // Use grammar settings
 
   // ResizeObserver to handle responsive sizing
   useEffect(() => {
@@ -185,7 +193,7 @@ export function DerivationTreeVisual({ tree }) {
   }, [tree, grammarSettings]);
 
   return (
-    <div className="GraphDiv shadow-sm" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor, height: '500px' }}>
+    <div className={`GraphDiv shadow-sm ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor, height: '500px' }}>
       <div className="graph-controls">
         <button 
           className="graph-btn" 

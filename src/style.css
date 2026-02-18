@@ -705,6 +705,11 @@ select {
   position: relative;
   overflow: hidden;
   cursor: grab;
+  transition: border-color 0.6s ease;
+}
+
+.GraphDiv.flashing {
+  border-color: var(--color4);
 }
 
 .GraphDiv:active {
@@ -913,6 +918,16 @@ select {
     position: relative !important;
     top: auto !important;
     right: auto !important;
+  }
+
+  /* Make legend bubble work on mobile */
+  .legend-bubble {
+    width: 90vw !important;
+    max-width: 350px !important;
+    right: auto !important;
+    left: 50% !important;
+    transform: translateX(-71.5%) !important;
+    top: 35px !important;
   }
 
   .page-content {

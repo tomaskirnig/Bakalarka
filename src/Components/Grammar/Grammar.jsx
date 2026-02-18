@@ -185,11 +185,9 @@ export function Grammar({ initialData }) {
                                 {(analysisResult.derivedWord === undefined || analysisResult.derivedWord === null) && (
                                     <p className="text-muted small">Tento strom ukazuje jedno z možných vyvození terminálního řetězce.</p>
                                 )}
-                                <div style={{ height: '60vh', width: '100%' }}>
-                                    <DerivationTreeVisual 
-                                        tree={analysisResult.derivationTree}
-                                    />
-                                </div>
+                                <DerivationTreeVisual 
+                                    tree={analysisResult.derivationTree}
+                                />
                             </div>
                         )}
                     </div>
