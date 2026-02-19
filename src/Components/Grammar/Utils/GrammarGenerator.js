@@ -81,6 +81,7 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
 
 /**
  * Ensures that all non-terminals are reachable from the start symbol (first non-terminal).
+ * More efficient implementation: runs BFS once and fixes all unreachable symbols in one pass.
  * @param {Object} productions - The grammar productions
  * @param {string[]} nonTerminals - List of all non-terminals
  */
@@ -89,37 +90,33 @@ function ensureReachability(productions, nonTerminals) {
     
     const startSymbol = nonTerminals[0];
     
-    // Iteratively fix unreachable symbols
-    // Loop limit prevents infinite loops in pathological cases
-    let iterations = 0;
-    while (iterations < nonTerminals.length * 2) {
-        // 1. Compute Reachable Set (BFS)
-        const reachable = new Set([startSymbol]);
-        const queue = [startSymbol];
+    // 1. Compute Reachable Set (BFS) - only once!
+    const reachable = new Set([startSymbol]);
+    const queue = [startSymbol];
+    
+    while (queue.length > 0) {
+        const current = queue.shift();
+        const rules = productions[current] || [];
         
-        while (queue.length > 0) {
-            const current = queue.shift();
-            const rules = productions[current] || [];
-            
-            for (const rule of rules) {
-                for (const symbol of rule) {
-                    if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
-                        reachable.add(symbol);
-                        queue.push(symbol);
-                    }
+        for (const rule of rules) {
+            for (const symbol of rule) {
+                if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
+                    reachable.add(symbol);
+                    queue.push(symbol);
                 }
             }
         }
-        
-        // 2. Identify Unreachable
-        const unreachable = nonTerminals.filter(nt => !reachable.has(nt));
-        if (unreachable.length === 0) break; // All done!
-        
-        // 3. Fix one unreachable symbol
-        const targetUnreachable = unreachable[0];
-        
+    }
+    
+    // 2. Identify all unreachable symbols
+    const unreachable = nonTerminals.filter(nt => !reachable.has(nt));
+    if (unreachable.length === 0) return;
+    
+    // 3. Fix all unreachable symbols in one pass
+    const reachableArray = Array.from(reachable);
+    
+    for (const targetUnreachable of unreachable) {
         // Pick a reachable non-terminal to modify
-        const reachableArray = Array.from(reachable);
         const hostSymbol = getRandomElement(reachableArray);
         const hostRules = productions[hostSymbol];
         
@@ -137,11 +134,9 @@ function ensureReachability(productions, nonTerminals) {
                 hostRules[ruleIndex] = [targetUnreachable]; 
             }
         } else {
-             // Should not happen if generator works, but safety fallback: create new rule
-             productions[hostSymbol] = [[targetUnreachable]];
+            // Should not happen if generator works, but safety fallback: create new rule
+            productions[hostSymbol] = [[targetUnreachable]];
         }
-        
-        iterations++;
     }
 }
 
