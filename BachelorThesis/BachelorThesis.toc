@@ -67,12 +67,15 @@
 \contentsline {subsection}{\numberline {4.3.7}Krokové vyhodnocení}{33}{subsection.4.3.7}%
 \contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{33}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{33}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{33}{subsection.4.4.2}%
-\contentsline {chapter}{\numberline {5}Závěr}{36}{chapter.5}%
-\contentsline {section}{\numberline {5.1}Dosažené výsledky}{36}{section.5.1}%
-\contentsline {section}{\numberline {5.2}Vzdělávací přínos}{37}{section.5.2}%
-\contentsline {section}{\numberline {5.3}Možnosti dalšího rozvoje}{37}{section.5.3}%
-\contentsline {chapter}{Literatura}{38}{chapter*.21}%
+\contentsline {subsubsection}{\numberline {4.4.1.1}Implementační detaily}{35}{subsubsection.4.4.1.1}%
+\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{35}{subsection.4.4.2}%
+\contentsline {subsubsection}{\numberline {4.4.2.1}Generování symbolů gramatiky}{35}{subsubsection.4.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.4.2.2}Tvorba produkčních pravidel}{37}{subsubsection.4.4.2.2}%
+\contentsline {chapter}{\numberline {5}Závěr}{39}{chapter.5}%
+\contentsline {section}{\numberline {5.1}Dosažené výsledky}{39}{section.5.1}%
+\contentsline {section}{\numberline {5.2}Vzdělávací přínos}{40}{section.5.2}%
+\contentsline {section}{\numberline {5.3}Možnosti dalšího rozvoje}{40}{section.5.3}%
+\contentsline {chapter}{Literatura}{41}{chapter*.23}%
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 

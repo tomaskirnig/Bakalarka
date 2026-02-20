@@ -423,12 +423,10 @@ Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnoce
 
 Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
 
-%clear
-
 \begin{enumerate}
-    \item \textbf{Inicializace:} Algoritmus vytvoří prazdnou množinu produktivních neterminálů a frontu pro zpracování. Všechna pravidla jsou zpočátku neoznačená.
+    \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů a frontu pro zpracování. Všechna pravidla jsou zpočátku neoznačená.
     
-    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní a vloženy do fronty.
+    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní a vloženy do fronty. Pokud nebylo nalezeno žádné takové pravidlo, fronta zůstane prázdná a další krok iterativní propagace se neprovede vůbec (přeskočí se krok 3.).
     
     \item \textbf{Propagace produktivity:}
     \begin{itemize}
@@ -436,12 +434,13 @@ Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. 
         \item Projdou se všechna dosud neoznačená pravidla gramatiky.
         \item Pro každé pravidlo se zkontroluje, zda jsou všechny symboly na pravé straně buď terminály, nebo již označené produktivní neterminály.
         \item Pokud ano, neterminál na levé straně tohoto pravidla je označen jako produktivní, pravidlo se označí jako zpracované a neterminál je přidán do fronty (pokud tam ještě není).
+        \item Pokud ne (tedy pravá strana obsahuje alespoň jeden dosud neproduktivní neterminál), pravidlo zůstává neoznačené a bude znovu zkontrolováno v dalších iteracích.
     \end{itemize}
     
     \item \textbf{Ukončení:} Algoritmus končí, když je fronta prázdná. V tu chvíli jsou všechny produktivní neterminály nalezeny.
 \end{enumerate}
 
-Časová složitost je \( O(|P| \cdot l) \), kde \( |P| \) je počet pravidel gramatiky a \( l \) je průměrná délka pravé strany pravidla. V nejhorším případě může být každé pravidlo kontrolováno tolikrát, kolik obsahuje symbolů.
+Časová složitost je \( O(|P| \cdot |N|) \), kde \( |P| \) je počet pravidel gramatiky a \( |N| \) je počet neterminálů. V nejhorším případě je každé pravidlo kontrolováno jednou pro každý neterminál, který se stane produktivním.
 
 \subsubsection{Rekonstrukce derivace}
 \label{sec:GrammarsWitnessImpl}
@@ -451,22 +450,57 @@ Pokud je počáteční symbol \( S \) produktivní, funkce \texttt{buildNode()} 
 \subsection{Vizualizace derivačního stromu}
 \label{sec:GrammarsVisualizationImpl}
 
-Pokud gramatika generuje neprázdný jazyk, aplikace vizuálně ukáže derivační strom pomocí komponenty \texttt{DerivationTreeVisual}, využívající knihovnu \emph{react-force-graph-2d} v režimu top-down.
+Pokud gramatika generuje neprázdný jazyk, aplikace vizuálně ukáže derivační strom pomocí komponenty \texttt{DerivationTreeVisual} (viz obrázek \ref{fig:derivation-tree-impl}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.5\textwidth]{IMGs/GrammarDerivationTree.png}
+    \caption{Vizualizace derivačního stromu pro neprázdnou gramatiku}
+    \label{fig:derivation-tree-impl}
+\end{figure}
 
 \subsection{Krokové vyhodnocení}
 \label{sec:GrammarsStepByStepImpl}
 
-Komponenta \texttt{StepByStepGrammar} využívá modul \texttt{GrammarStepEvaluator.js} k interaktivní simulaci algoritmu. Zobrazuje seznam pravidel s barevným zvýrazněním aktuálního stavu a množinu dosud nalezených produktivních symbolů.
+Komponenta \texttt{GrammarStepEvaluator.js} vypočítá jednotlivé kroky pro komponentu \\\texttt{StepByStepGrammar}, která je následně interaktivně zobrazí. Zobrazuje seznam pravidel s barevným zvýrazněním aktuálního stavu a množinu dosud nalezených produktivních symbolů (viz obrázek \ref{fig:step-by-step-grammar}).
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=1\textwidth]{IMGs/GrammarSteps.png}
+    \caption{Kroková analýza bezkontextové gramatiky}
+    \label{fig:step-by-step-grammar}
+\end{figure}
+
+%clear
 
 \section{Implementace převodů mezi problémy}
 \label{sec:ImplementationReductions}
 
-Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v sekci \ref{sec:TheoryReductions} aplikace implementuje dva klíčové převody z instance MCVP.
+Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v sekci \ref{sec:TheoryReductions} aplikace implementuje převody z MCVP na ostatní dva problémy.
 
 \subsection{Převod na kombinatorickou hru}
 \label{sec:MCVPtoGameImplementationImpl}
 
-Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}. Pro efektivitu používáme memoizaci. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně (viz obrázek \ref{fig:mcvp-to-cg-impl}).
+Třída \texttt{MCVPToGameStepGenerator} implementuje převod pomocí rekurzivního průchodu MCVP grafem. Pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}.
+
+\subsubsection{Implementační detaily}
+\label{sec:MCVPtoGameDetailsImpl}
+
+Algoritmus využívá několik klíčových mechanismů:
+
+\begin{enumerate}
+    \item \textbf{Generování identifikátorů:} Každý uzel MCVP obvodu obdrží unikátní identifikátor ve formě \texttt{V0}, \texttt{V1}, \texttt{V2} atd. pomocí mapy \texttt{labelMap}, která zajišťuje konzistentní přiřazení -- tentýž uzel vždy obdrží stejný identifikátor. To je důležité pro správné propojení pozic v případě sdílených podstromů.
+    
+    \item \textbf{Sledování navštívených uzlů:} Množina \texttt{visited} zabraňuje duplicitnímu zpracování uzlů. Pokud algoritmus narazí na již navštívený uzel, rekurzivní průchod se okamžitě ukončí, protože odpovídající herní pozice již byla vytvořena. Tím je zajištěno, že každá pozice v herním grafu existuje právě jednou.
+    
+    \item \textbf{Ponechání zpětných odkazů:} Pro každou pozici jsou kromě seznamu následovníků (\texttt{children}) udržovány i zpětné odkazy na předchůdce (\texttt{parents}). Tyto zpětné odkazy umožňují efektivní retrográdní analýzu, která propaguje výsledky směrem od terminálních pozic k počáteční pozici.
+    
+    \item \textbf{Krokování převodu:} Pro každou důležitou operaci (vytvoření pozice, propojení pozic) je zaznamenán krok obsahující popis akce, zvýrazněný uzel a aktuální stav grafu. Tyto kroky umožňují komponentě postupně vizualizovat celý proces převodu.
+    
+    \item \textbf{Určení počáteční pozice:} Kořen MCVP stromu se automaticky stává počáteční pozicí hry, která je ve vizualizaci označena odlišnou barvou.
+\end{enumerate}
+
+Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverter}, která zobrazuje převod krokovatelně (viz obrázek \ref{fig:mcvp-to-cg-impl}).
 
 \begin{figure}[htbp]
     \centering
@@ -479,7 +513,35 @@ Třída \texttt{MCVPToGameStepGenerator} prochází MCVP graf rekurzivně a pro 
 \subsection{Převod na bezkontextovou gramatiku}
 \label{sec:MCVPtoGrammarImplementationImpl}
 
-Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Nejprve přiřadí uzlům unikátní symboly a poté rekurzivně generuje pravidla odpovídající typům hradel. Jak je vidět na obrázku \ref{fig:mcvp-to-grammar-impl}, každá proměnná s hodnotou 1 je převedena na unikátní terminál, zatímco proměnné s hodnotou 0 vytvářejí prázdné produkce ($\varepsilon$).
+Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Algoritmus probíhá ve dvou fázích: nejprve přiřadí uzlům unikátní symboly a poté vytvoří odpovídající pravidla.
+
+\subsubsection{Generování symbolů gramatiky}
+\label{sec:MCVPtoGrammarSymbolsImpl}
+
+Pro vytváření symbolů jsou použity dvě pomocné třídy:
+
+\begin{itemize}
+    \item \textbf{NonTerminalGenerator:} Generuje neterminální symboly ve formě velkých písmen. Kořen obvodu vždy obdrží symbol \texttt{S} (startovní symbol gramatiky). Pro další uzly jsou použity symboly \texttt{A}--\texttt{Z}, a pokud je potřeba více než 26 symbolů, pokračuje se kombinacemi \texttt{AA}, \texttt{AB}, \texttt{AC} až \texttt{ZZ}.
+    
+    \item \textbf{TerminalGenerator:} Pro každou proměnnou s hodnotou 1 generuje jedinečný terminální symbol. Postupně jsou použity znaky \texttt{a}--\texttt{z}, následně speciální znaky (\texttt{+}, \texttt{-}, \texttt{=}, \texttt{*} atd.), a pokud je symbolů nedostatek, pokračuje se číslovanými terminály \texttt{t1}, \texttt{t2} atd.
+\end{itemize}
+
+Vstupní proměnné (\texttt{variable}) (kromě případu, kdy je proměnná kořenem) \textbf{nedostávají vlastní neterminální symbol}. Místo toho jsou při tvorbě pravidel nahrazeny přímo terminály nebo prázdným řetězcem.
+
+\subsubsection{Tvorba produkčních pravidel}
+\label{sec:MCVPtoGrammarProductionsImpl}
+
+Druhá fáze algoritmu prochází stromem a vytváří pravidla:
+
+\begin{enumerate}
+    \item \textbf{Hradlo AND:} Vytvoří pravidlo ve formě \texttt{X → AB...}, kde \texttt{X} je neterminál odpovídající hradlu a \texttt{A}, \texttt{B} jsou symboly potomků. Pokud je potomek proměnná s hodnotou 1, je do pravidla vložen odpovídající terminál. Pokud je potomek proměnná s hodnotou 0, tento potomek je při tvorbě pravidla zcela vynechán. Speciálně, pokud jsou všichni potomci proměnné s hodnotou 0, vzniká pravidlo \texttt{X → $\varepsilon$}.
+    
+    \item \textbf{Hradlo OR:} Vytvoří několik alternativních pravidel, vždy jedno pro každého potomka: \texttt{X → A}, \texttt{X → B} atd. Pokud je potomek proměnná s hodnotou 0, vzniká pravidlo \texttt{X → $\varepsilon$}.
+    
+    \item \textbf{Proměnná jako kořen:} Tento speciální případ nastává, když celý MCVP obvod obsahuje pouze jednu proměnnou. Pokud má proměnná hodnotu 1, je vytvořeno pravidlo \texttt{S → t} pro nějaký terminál \texttt{t}. Pokud má hodnotu 0, vzniká pravidlo \texttt{S → $\varepsilon$}.
+\end{enumerate}
+
+Výsledná gramatika přesně odpovídá hodnotě MCVP obvodu: gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhodnotí hodnotu 1. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoGrammarConverter}, která zobrazuje převod krokovatelně (viz obrázek \ref{fig:mcvp-to-grammar-impl}).
 
 \begin{figure}[htbp]
     \centering
@@ -487,5 +549,3 @@ Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze se
     \caption{Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}
     \label{fig:mcvp-to-grammar-impl}
 \end{figure}
-
-Stejně jako u prvního převodu, komponenta \texttt{MCVPtoGrammarConverter} nabízí krokovou vizualizaci celého procesu.

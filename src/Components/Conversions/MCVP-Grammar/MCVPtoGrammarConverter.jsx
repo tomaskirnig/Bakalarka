@@ -420,11 +420,18 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
       <div className="mt-2" style={{ flexShrink: 0 }}>
         <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
           <button 
+            onClick={skipToStart}
+            disabled={currentStep === 0}
+            className="btn btn-secondary btn-sm"
+          >
+            <i className="bi bi-skip-start-fill"></i>
+          </button>
+          <button 
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
             className="btn btn-secondary"
           >
-            Předchozí
+            <i className="bi bi-chevron-left"></i> Předchozí
           </button>
           
           <button 
@@ -432,27 +439,19 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             disabled={currentStep === steps.length - 1}
             className="btn btn-primary"
           >
-            Další
+            Další <i className="bi bi-chevron-right"></i>
+          </button>
+          <button 
+            onClick={skipToEnd}
+            disabled={currentStep === steps.length - 1}
+            className="btn btn-primary btn-sm"
+          >
+            <i className="bi bi-skip-end-fill"></i>
           </button>
         </div>
         
         {finalGrammar && (
-          <div className="step-button-group d-flex justify-content-center flex-wrap align-items-center gap-2">
-              <button 
-                onClick={skipToStart}
-                disabled={currentStep === 0}
-                className="btn btn-outline-secondary btn-sm"
-              >
-                <i className="bi bi-skip-start-fill"></i> Jít na začátek
-              </button>
-              
-              <button 
-                onClick={skipToEnd}
-                disabled={currentStep === steps.length - 1}
-                className="btn btn-outline-primary btn-sm"
-              >
-                Jít na konec <i className="bi bi-skip-end-fill"></i>
-              </button>
+          <div className="d-flex justify-content-center">
               <button className="btn btn-success" onClick={handleRedirect}>
                   Otevřít v Gramatice
               </button>

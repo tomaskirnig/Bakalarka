@@ -96,7 +96,7 @@ Algoritmus generování probíhá ve dvou fázích:
 
 Pro reprezentaci struktury herního grafu v paměti aplikace slouží dvojice objektových tříd \texttt{GamePosition} a \texttt{GameGraph}, jejichž vztah ilustruje třídní diagram na obrázku \ref{fig:cg-class}. 
 
-Třída \texttt{GamePosition} modeluje jednotlivou herní pozici jako uzel grafu. Každá instance uchovává identifikátor hráče, který je v dané pozici na tahu, spolu se seznamy předchůdců a následníků. Tyto seznamy umožňují efektivní navigaci grafem při retrográdní analýze i při zobrazování možných tahů.
+Třída \texttt{GamePosition} modeluje jednotlivou herní pozici jako uzel grafu. Každá instance uchovává identifikátor hráče, který je v dané pozici na tahu, spolu se seznamy předchůdců a následovníků. Tyto seznamy umožňují efektivní navigaci grafem při retrográdní analýze i při zobrazování možných tahů.
 
 Třída \texttt{GameGraph} představuje kontejner sdružující všechny herní pozice do jednoho celku. Tato třída spravuje kolekci všech instancí \texttt{GamePosition} a uchovává referenci na počáteční uzel, ze kterého hra začíná. Struktura umožňuje rychlý přístup k~libovolné pozici v~grafu a podporuje operace potřebné pro analýzu výherní strategie.
 

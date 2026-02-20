@@ -23,8 +23,10 @@
 \contentsline {figure}{\numberline {4.7}{\ignorespaces Kroková analýza kombinatorické hry}}{27}{figure.caption.16}%
 \contentsline {figure}{\numberline {4.8}{\ignorespaces Rozhraní pro nastavení parametrů generování bezkontextových gramatik}}{30}{figure.caption.17}%
 \contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{31}{figure.caption.18}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{34}{figure.caption.19}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{35}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Vizualizace derivačního stromu pro neprázdnou gramatiku}}{33}{figure.caption.19}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Kroková analýza bezkontextové gramatiky}}{34}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{36}{figure.caption.21}%
+\contentsline {figure}{\numberline {4.13}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{38}{figure.caption.22}%
 \addvspace {10\p@ }
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 

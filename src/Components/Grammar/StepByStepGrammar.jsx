@@ -87,7 +87,7 @@ export function StepByStepGrammar({ grammar }) {
                     <div className='step-controls-info container-fluid mt-3' style={{ flexShrink: 0 }}>
                         <div className='row align-items-center'>
                             <div className='step-info col-md-7'>
-                                <div className="card p-3 bg-light">
+                                <div className={`card p-3 ${activeStep.type === 'FINISHED' ? 'bg-warning bg-opacity-25' : 'bg-light'}`}>
                                     <p className="mb-2">
                                         <strong>Množina produktivních symbolů (P):</strong>
                                     </p>
