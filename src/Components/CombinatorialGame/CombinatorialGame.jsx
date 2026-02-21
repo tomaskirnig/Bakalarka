@@ -162,7 +162,7 @@ export function CombinatorialGame({ initialData }) {
                 />
                 <InfoButton title="Kombinatorická hra na grafu">
                     <p>
-                        Jedná se o hru pro dva hráče hranou na konečném orientovaném acyklickém grafu.
+                        Jedná se o hru pro dva hráče hranou na konečném orientovaném grafu (který může obsahovat cykly).
                     </p>
                     <ul className="ps-3 text-start">
                         <li><strong>Pravidla:</strong> Každý vrchol je označen I (Hráč 1) nebo II (Hráč 2), podle tohoto označení se určuje, který hráč má v daném vrcholu provést tah. V každém tahu se hráč, který je na tahu, přesune z aktuálního vrcholu do jednoho z jeho následníků.</li>

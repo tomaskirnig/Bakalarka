@@ -1,15 +1,15 @@
 /**
- * @fileoverview Provides a function to evaluate MCVP expression trees with step tracking.
+ * @fileoverview Provides a function to evaluate MCVP circuits (DAGs) with step tracking.
  */
 import { toast } from "react-toastify";
 
 /**
- * Evaluates an MCVP expression tree and returns the evaluation steps.
+ * Evaluates an MCVP circuit (DAG) and returns the evaluation steps.
  * 
- * @param {Node} node - The root node of the tree to evaluate
+ * @param {Node} node - The root node of the circuit to evaluate
  * @returns {Object} An object containing the result and the steps array
  */
-export function evaluateTreeWithSteps(node) {
+export function evaluateCircuitWithSteps(node) {
     const steps = [];
     const memo = new Map(); // Cache results
     const visiting = new Set();

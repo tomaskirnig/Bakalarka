@@ -35,7 +35,7 @@ Pro práci s P-úplnými problémy bylo nutné navrhnout jejich vnitřní reprez
 \subsection{Reprezentace obvodu MCVP}
 \label{sec:MCVPDesignStructure}
 
-Pro modelování logického obvodu byl využit orientovaný acyklický graf. Každý uzel obvodu je reprezentován instancí třídy \texttt{Node}. Tato třída, jak ukazuje třídní diagram na obrázku \ref{fig:mcvp-class}, uchovává informaci o typu operace (AND, OR) nebo hodnotě proměnné. Seznam odkazů na potomky umožňuje rekurzivní průchod stromem při vyhodnocování.
+Pro modelování logického obvodu byl využit orientovaný acyklický graf (DAG). Každý uzel obvodu je reprezentován instancí třídy \texttt{Node}. Tato třída, jak ukazuje třídní diagram na obrázku \ref{fig:mcvp-class}, uchovává informaci o typu operace (AND, OR) nebo hodnotě proměnné. Seznam odkazů na potomky umožňuje průchod grafem při vyhodnocování.
 
 \begin{figure}[htbp]
     \centering

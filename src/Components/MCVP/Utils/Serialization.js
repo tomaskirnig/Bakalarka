@@ -1,10 +1,10 @@
 import { Node } from './NodeClass';
 
 /**
- * Converts a flat graph representation (nodes/links) to a recursive Node tree structure.
+ * Converts a flat graph representation (nodes/links) to a recursive Node DAG structure.
  *
  * @param {Object} graphData - The graph data object { nodes: [], links: [], positions?: {} }
- * @returns {Node|null} The root node of the tree or null if invalid
+ * @returns {Node|null} The root node of the DAG or null if invalid
  */
 export function flatGraphToTree(graphData) {
     if (!graphData || !graphData.nodes || !graphData.nodes.length) return null;
@@ -72,9 +72,9 @@ export function flatGraphToTree(graphData) {
 }
 
 /**
- * Converts a recursive Node tree structure to a flat graph representation.
+ * Converts a recursive Node DAG structure to a flat graph representation.
  *
- * @param {Node} rootNode - The root node of the tree
+ * @param {Node} rootNode - The root node of the DAG
  * @param {boolean} includePositions - Whether to include x, y positions in the export
  * @returns {Object} The graph data object { nodes: [], links: [], positions?: {} }
  */

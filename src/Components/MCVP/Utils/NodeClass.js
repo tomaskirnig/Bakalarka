@@ -1,5 +1,5 @@
 /**
- * @fileoverview Defines the Node class for representing nodes in an MCVP expression tree.
+ * @fileoverview Defines the Node class for representing nodes in an MCVP circuit (DAG).
  */
 
 /**

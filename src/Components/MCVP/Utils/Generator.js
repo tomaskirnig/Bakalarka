@@ -1,5 +1,5 @@
 /**
- * @fileoverview Provides utility functions for generating random MCVP expression trees.
+ * @fileoverview Provides utility functions for generating random MCVP circuits (DAGs).
  */
 
 import { toast } from "react-toastify";
@@ -59,11 +59,11 @@ function createGateNode(children = []) {
 }
 
 /**
- * Generates a random MCVP expression tree.
+ * Generates a random MCVP circuit (DAG).
  * 
  * @param {number} numGates - Number of logical gates (AND/OR) to include
  * @param {number} numVariables - Number of variables to include
- * @returns {Node} The root node of the generated tree
+ * @returns {Node} The root node of the generated circuit
  * @throws {Error} If there are not enough nodes or if generation fails
  */
 export function generateTree(numGates, numVariables) {

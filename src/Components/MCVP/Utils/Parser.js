@@ -1,5 +1,5 @@
 /**
- * @fileoverview Provides utilities for parsing MCVP expressions into tree structures.
+ * @fileoverview Provides utilities for parsing MCVP expressions into circuit (DAG) structures.
  */
 
 import { toast } from "react-toastify";
@@ -51,7 +51,7 @@ function tokenize(s) {
 }
 
 /**
- * Parser class for converting tokens into MCVP tree structure.
+ * Parser class for converting tokens into MCVP circuit structure.
  */
 class Parser {
   /**
@@ -65,9 +65,9 @@ class Parser {
   }
 
   /**
-   * Parses the tokens into an MCVP expression tree.
+   * Parses the tokens into an MCVP circuit (DAG).
    * 
-   * @returns {Node} The root node of the parsed expression tree
+   * @returns {Node} The root node of the parsed circuit
    * @throws {SyntaxError} If the syntax is invalid
    */
   parse() {
@@ -290,10 +290,10 @@ class Parser {
 }
 
 /**
- * Parses an expression string into an MCVP expression tree.
+ * Parses an expression string into an MCVP circuit DAG.
  * 
  * @param {string} exprStr - The expression string to parse
- * @returns {Node} The root node of the parsed expression tree
+ * @returns {Node} The root node of the parsed circuit
  */
 export function parseExpressionToTree(exprStr) {
   try {
