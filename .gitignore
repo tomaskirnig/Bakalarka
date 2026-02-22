@@ -26,3 +26,15 @@ dist-ssr
 # Other
 tmpclaude-*
 claude-*
+
+# BachelorThesis - keep only source and required compilation files
+BachelorThesis/**
+!BachelorThesis/**/
+!BachelorThesis/**/*.tex
+!BachelorThesis/**/*.bib
+!BachelorThesis/**/*.pdf
+!BachelorThesis/**/*.png
+!BachelorThesis/**/*.cls
+!BachelorThesis/**/*.sty
+!BachelorThesis/**/*.xmpi
+!BachelorThesis/**/*.icm
