@@ -42,17 +42,19 @@ Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly předs
 
 MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. MCVP je sice řešitelný v polynomiálním čase, ale jeho P-úplnost znamená, že efektivní paralelizace je pravděpodobně nemožná – vyhodnocení obvodu musí probíhat sekvenčně od vstupů k výstupu.
 
+Pro P-úplnost MCVP je zásadní, že obvod je reprezentován jako DAG, nikoliv jako strom. Tentýž logický výraz může být jako DAG výrazně menší než odpovídající strom, protože v~DAGu se stejné podformule vyskytují pouze jednou, zatímco ve stromě tolikrát, kolikrát je jejich hodnota dále využívána. Velikost vstupu $n$ je tedy u~DAGu menší a~při složitosti $O(n^k)$ je k~dispozici méně kroků na~provedení výpočtu. Dosáhnout polynomiální složitosti je tak na~DAGu těžší než na~stromě -- problém vyhodnocení na~stromě je sice v~P, ale není P-těžký (a tedy ani P-úplný).
+
 \section{Kombinatorické hry na grafu}
 \label{sec:TheoryGames}
 
 Kombinatorická hra dvou hráčů na orientovaném grafu je další příklad P-úplného problému \cite{sawa}:
 
 \begin{itemize}
-    \item \textbf{Vstup:} Orientovaný graf, kde každý uzel představuje herní pozici přiřazenou Hráči I nebo Hráči II, hrany representují možné tahy a jeden uzel je označen jako startovní pozice.
-    \item \textbf{Výstup:} Rozhodnutí, zda Hráč I má výherní strategii ze startovní pozice.
+    \item \textbf{Vstup:} Orientovaný graf, kde každý uzel představuje herní pozici přiřazenou Hráči 1 nebo Hráči 2, hrany reprezentují možné tahy a jeden uzel je označen jako startovní pozice.
+    \item \textbf{Výstup:} Rozhodnutí, zda Hráč 1 má výherní strategii ze startovní pozice.
 \end{itemize}
 
-Hráči se střídají v tazích podle toho, komu je přiřazen aktuální uzel. Hra končí, když hráč na tahu nemá žádný možný tah – tento hráč pak prohrává. Výherní strategie pro Hráče I znamená, že existuje způsob volit tahy tak, aby Hráč I vyhrál bez ohledu na to, jak hraje Hráč II \cite{sawa}.
+Hráči se střídají v tazích podle toho, komu je přiřazen aktuální uzel. Hra končí, když hráč na tahu nemá žádný možný tah – tento hráč pak prohrává. Výherní strategie pro Hráče 1 znamená, že existuje způsob volit tahy tak, aby Hráč 1 vyhrál bez ohledu na to, jak hraje Hráč 2 \cite{sawa}.
 
 \subsection{P-úplnost kombinatorických her}
 \label{sec:GamesTheoryCompleteness}
@@ -112,7 +114,7 @@ Každý uzel obvodu se stane symbolem gramatiky \cite{sawa}:
     
     \item \textbf{Hradlo OR s potomky $A$ a $B$} vytvoří dvě pravidla: $X \to A$ a $X \to B$.
     
-    \item \textbf{Proměnná s hodnotou 1} generuje epsilon pravidlo $X \to \varepsilon$, což umožňuje odvození prázdného řetězce.
+    \item \textbf{Proměnná s hodnotou 1} vytvoří pravidlo $X \to t$, kde $t$ je terminál.
     
-    \item \textbf{Proměnná s hodnotou 0} vytvoří pravidlo $X \to t$, kde $t$ je terminál bez dalších odvozovacích pravidel.
+    \item \textbf{Proměnná s hodnotou 0} generuje epsilon pravidlo $X \to \varepsilon$, což umožňuje odvození prázdného řetězce.
 \end{itemize}

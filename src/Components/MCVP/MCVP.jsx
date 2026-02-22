@@ -6,7 +6,7 @@ import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
-import { evaluateTreeWithSteps } from './Utils/EvaluateTree';
+import { evaluateCircuitWithSteps } from './Utils/EvaluateCircuit';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
 import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
@@ -43,7 +43,7 @@ export function MCVP({ onNavigate, initialData }) {
 
     // Calculate evaluation with steps once - the steps are reused for step-by-step explanation
     const evaluation = useMemo(() => {
-        return tree ? evaluateTreeWithSteps(tree) : { result: null, steps: [] };
+        return tree ? evaluateCircuitWithSteps(tree) : { result: null, steps: [] };
     }, [tree]);
 
     const handleOptionChange = (option) => {

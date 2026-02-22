@@ -167,31 +167,33 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
             </div>
 
             <div className="mt-2" style={{ flexShrink: 0 }}>
-                <div className="d-flex justify-content-center gap-2 mb-2">
-                    <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0}>
-                        Předchozí
+                <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
+                    <button 
+                        className="btn btn-secondary btn-sm" 
+                        onClick={skipToStart}
+                        disabled={currentStep === 0}
+                        aria-label="Přeskočit na začátek"
+                    >
+                        <i className="bi bi-skip-start-fill"></i>
                     </button>
-                    <button className="btn btn-primary" onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
-                        Další
+                    <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0} aria-label="Předchozí krok">
+                        <i className="bi bi-chevron-left"></i> Předchozí
+                    </button>
+                    <button className="btn btn-primary" onClick={goToNextStep} disabled={currentStep === steps.length - 1} aria-label="Další krok">
+                        Další <i className="bi bi-chevron-right"></i>
+                    </button>
+                    <button 
+                        className="btn btn-primary btn-sm" 
+                        onClick={skipToEnd}
+                        disabled={currentStep === steps.length - 1}
+                        aria-label="Přeskočit na konec"
+                    >
+                        <i className="bi bi-skip-end-fill"></i>
                     </button>
                 </div>
 
                 {finalGraph && (
-                    <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
-                        <button 
-                            className="btn btn-outline-secondary btn-sm" 
-                            onClick={skipToStart}
-                            disabled={currentStep === 0}
-                        >
-                            ⏮️ Jít na začátek
-                        </button>
-                        <button 
-                            className="btn btn-outline-primary btn-sm" 
-                            onClick={skipToEnd}
-                            disabled={currentStep === steps.length - 1}
-                        >
-                            Jít na konec ⏭️
-                        </button>
+                    <div className="d-flex justify-content-center">
                         <button className="btn btn-success" onClick={handleRedirect}>
                             Otevřít v Kombinatorické hře
                         </button>

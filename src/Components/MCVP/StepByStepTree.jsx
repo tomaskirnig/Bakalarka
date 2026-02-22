@@ -48,7 +48,7 @@ export function StepByStepTree({ tree, steps = [] }) {
   const goToLastStep = () => setCurrentStep(steps.length - 1);
 
   return (
-    <div className="step-by-step-container px-4 d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
+    <div className="step-by-step-container d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
       <h2 className="text-center mb-3" style={{ flexShrink: 0 }}>Postupné vyhodnocení</h2> 
       {steps.length > 0 ? (
         <>
@@ -86,18 +86,18 @@ export function StepByStepTree({ tree, steps = [] }) {
             </div>
             <div className='step-controls col-md-5 d-flex flex-column align-items-center justify-content-center'>
               <p className="text-center mb-2">Krok {currentStep + 1} z {steps.length}</p>
-              <div className="d-flex gap-2">
+              <div className="step-button-group d-flex gap-2">
                 <button className='btn btn-secondary btn-sm' onClick={goToFirstStep} disabled={currentStep === 0}>
-                  &#x23EE; Začátek
+                  <i className="bi bi-skip-start-fill"></i>
                 </button>
                 <button className='btn btn-secondary' onClick={goToPreviousStep} disabled={currentStep === 0}>
-                  &larr; Předchozí
+                  <i className="bi bi-chevron-left"></i> Předchozí
                 </button>
                 <button className='btn btn-primary' onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
-                  Další &rarr;
+                  Další <i className="bi bi-chevron-right"></i>
                 </button>
                 <button className='btn btn-primary btn-sm' onClick={goToLastStep} disabled={currentStep === steps.length - 1}>
-                  Konec &#x23ED;
+                  <i className="bi bi-skip-end-fill"></i>
                 </button>
               </div>
             </div>

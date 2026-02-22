@@ -36,6 +36,7 @@ export function TreeRenderCanvas({
   
   // Dimensions State
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
+  const [isFlashing, setIsFlashing] = useState(false);
 
   // Interaction State
   const hoverNode = useRef(null);
@@ -73,6 +74,13 @@ export function TreeRenderCanvas({
 
   const canvasWidth = width || internalDimensions.width;
   const canvasHeight = height || internalDimensions.height;
+
+  // Flash border when tree changes
+  useEffect(() => {
+    setIsFlashing(true);
+    const timer = setTimeout(() => setIsFlashing(false), 600);
+    return () => clearTimeout(timer);
+  }, [tree]);
 
   // 1. Prepare Graph Data
   // useMemo ensures we only regenerate the graph topology when tree/steps change.
@@ -314,7 +322,7 @@ export function TreeRenderCanvas({
   }, [fitToScreen, fitTrigger]);
 
   return (
-    <div className="GraphDiv" ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
+    <div className={`GraphDiv ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
       <div className="graph-controls">
         <button 
           className="graph-btn" 

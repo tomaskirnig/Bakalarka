@@ -143,7 +143,7 @@ export function computeWinner(graph) {
 
   if (startStatus === 'DRAW') {
     hasWinningStrategy = false;
-    message = "Hráč 1 nemá výherní strategii. Hra končí remízou.";
+    message = "Hráč 1 nemá výherní strategii. Hra končí remízou (cyklus v grafu).";
   } else {
     if (startPlayer === 1) {
       if (startStatus === 'WIN') {

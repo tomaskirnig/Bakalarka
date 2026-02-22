@@ -418,41 +418,44 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
       </div>
       
       <div className="mt-2" style={{ flexShrink: 0 }}>
-        <div className="d-flex justify-content-center gap-2 mb-2">
+        <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
+          <button 
+            onClick={skipToStart}
+            disabled={currentStep === 0}
+            className="btn btn-secondary btn-sm"
+            aria-label="Přeskočit na začátek"
+          >
+            <i className="bi bi-skip-start-fill"></i>
+          </button>
           <button 
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
             className="btn btn-secondary"
+            aria-label="Předchozí krok"
           >
-            Předchozí
+            <i className="bi bi-chevron-left"></i> Předchozí
           </button>
           
           <button 
             onClick={goToNextStep}
             disabled={currentStep === steps.length - 1}
             className="btn btn-primary"
+            aria-label="Další krok"
           >
-            Další
+            Další <i className="bi bi-chevron-right"></i>
+          </button>
+          <button 
+            onClick={skipToEnd}
+            disabled={currentStep === steps.length - 1}
+            className="btn btn-primary btn-sm"
+            aria-label="Přeskočit na konec"
+          >
+            <i className="bi bi-skip-end-fill"></i>
           </button>
         </div>
         
         {finalGrammar && (
-          <div className="d-flex justify-content-center flex-wrap align-items-center gap-2">
-              <button 
-                onClick={skipToStart}
-                disabled={currentStep === 0}
-                className="btn btn-outline-secondary btn-sm"
-              >
-                ⏮️ Jít na začátek
-              </button>
-              
-              <button 
-                onClick={skipToEnd}
-                disabled={currentStep === steps.length - 1}
-                className="btn btn-outline-primary btn-sm"
-              >
-                Jít na konec ⏭️
-              </button>
+          <div className="d-flex justify-content-center">
               <button className="btn btn-success" onClick={handleRedirect}>
                   Otevřít v Gramatice
               </button>

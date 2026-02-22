@@ -88,6 +88,24 @@ export function generateGrammarSteps(grammar) {
         }
     }
 
+    // Check if all non-terminals are already productive after the first scan
+    const allProductive = nonTerminals.every(nt => productive.has(nt));
+    
+    if (allProductive) {
+        // Early termination: all non-terminals are productive
+        const isEmpty = !productive.has(start);
+        steps.push({
+            type: 'FINISHED',
+            description: isEmpty 
+                ? `Hotovo. Počáteční symbol "${start}" není v množině produktivních symbolů. Jazyk je PRÁZDNÝ.` 
+                : `Hotovo. Všechny neterminály jsou produktivní již po první fázi. Počáteční symbol "${start}" je produktivní. Jazyk je NEPRÁZDNÝ.`,
+            productive: [...productive],
+            currentRule: null,
+            result: !isEmpty
+        });
+        return steps;
+    }
+
     // 2. Queue Processing
     if (queue.length > 0) {
         steps.push({
