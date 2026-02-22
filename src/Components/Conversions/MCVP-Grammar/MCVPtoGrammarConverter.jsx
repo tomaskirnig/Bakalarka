@@ -423,6 +423,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             onClick={skipToStart}
             disabled={currentStep === 0}
             className="btn btn-secondary btn-sm"
+            aria-label="Přeskočit na začátek"
           >
             <i className="bi bi-skip-start-fill"></i>
           </button>
@@ -430,6 +431,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
             className="btn btn-secondary"
+            aria-label="Předchozí krok"
           >
             <i className="bi bi-chevron-left"></i> Předchozí
           </button>
@@ -438,6 +440,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             onClick={goToNextStep}
             disabled={currentStep === steps.length - 1}
             className="btn btn-primary"
+            aria-label="Další krok"
           >
             Další <i className="bi bi-chevron-right"></i>
           </button>
@@ -445,6 +448,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             onClick={skipToEnd}
             disabled={currentStep === steps.length - 1}
             className="btn btn-primary btn-sm"
+            aria-label="Přeskočit na konec"
           >
             <i className="bi bi-skip-end-fill"></i>
           </button>

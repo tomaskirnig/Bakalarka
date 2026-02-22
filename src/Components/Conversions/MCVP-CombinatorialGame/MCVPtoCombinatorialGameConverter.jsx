@@ -172,19 +172,21 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                         className="btn btn-secondary btn-sm" 
                         onClick={skipToStart}
                         disabled={currentStep === 0}
+                        aria-label="Přeskočit na začátek"
                     >
                         <i className="bi bi-skip-start-fill"></i>
                     </button>
-                    <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0}>
+                    <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0} aria-label="Předchozí krok">
                         <i className="bi bi-chevron-left"></i> Předchozí
                     </button>
-                    <button className="btn btn-primary" onClick={goToNextStep} disabled={currentStep === steps.length - 1}>
+                    <button className="btn btn-primary" onClick={goToNextStep} disabled={currentStep === steps.length - 1} aria-label="Další krok">
                         Další <i className="bi bi-chevron-right"></i>
                     </button>
                     <button 
                         className="btn btn-primary btn-sm" 
                         onClick={skipToEnd}
                         disabled={currentStep === steps.length - 1}
+                        aria-label="Přeskočit na konec"
                     >
                         <i className="bi bi-skip-end-fill"></i>
                     </button>
