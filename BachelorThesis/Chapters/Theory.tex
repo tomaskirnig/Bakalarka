@@ -42,7 +42,6 @@ Obvod lze reprezentovat jako orientovaný acyklický graf (DAG), kde uzly předs
 
 MCVP je P-úplný problém \cite{sawa, miyano}. Vyhodnocení monotónního obvodu lze provést v polynomiálním čase postupným vyhodnocováním uzlů od vstupů směrem k výstupu. MCVP je sice řešitelný v polynomiálním čase, ale jeho P-úplnost znamená, že efektivní paralelizace je pravděpodobně nemožná – vyhodnocení obvodu musí probíhat sekvenčně od vstupů k výstupu.
 
-%refrase a little better
 Pro P-úplnost MCVP je zásadní, že obvod je reprezentován jako DAG, nikoliv jako strom. Tentýž logický výraz může být jako DAG výrazně menší než odpovídající strom, protože v~DAGu se stejné podformule vyskytují pouze jednou, zatímco ve stromě tolikrát, kolikrát je jejich hodnota dále využívána. Velikost vstupu $n$ je tedy u~DAGu menší a~při složitosti $O(n^k)$ je k~dispozici méně kroků na~provedení výpočtu. Dosáhnout polynomiální složitosti je tak na~DAGu těžší než na~stromě -- problém vyhodnocení na~stromě je sice v~P, ale není P-těžký (a tedy ani P-úplný).
 
 \section{Kombinatorické hry na grafu}
@@ -115,7 +114,7 @@ Každý uzel obvodu se stane symbolem gramatiky \cite{sawa}:
     
     \item \textbf{Hradlo OR s potomky $A$ a $B$} vytvoří dvě pravidla: $X \to A$ a $X \to B$.
     
-    \item \textbf{Proměnná s hodnotou 1} vytvoří pravidlo $X \to t$, kde $t$ je terminál bez dalších odvozovacích pravidel.
+    \item \textbf{Proměnná s hodnotou 1} vytvoří pravidlo $X \to t$, kde $t$ je terminál.
     
     \item \textbf{Proměnná s hodnotou 0} generuje epsilon pravidlo $X \to \varepsilon$, což umožňuje odvození prázdného řetězce.
 \end{itemize}
