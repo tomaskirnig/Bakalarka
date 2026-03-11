@@ -31,11 +31,10 @@ export function GenerateInput( {onTreeUpdate} ) {
         placeholder="Počet hradel"
         value={numGates}
         onChange={(e) => {
-          let val = Number(e.target.value);
-          if (val > 750) val = 750;
-          if (val < 1) val = 1;
-          setNumGates(val);
-        }} // Update state with input value
+          const val = parseInt(e.target.value, 10);
+          if (isNaN(val)) return;
+          setNumGates(Math.min(750, Math.max(1, val)));
+        }}
       />
       
       <label>Počet proměnných:</label>
@@ -47,11 +46,10 @@ export function GenerateInput( {onTreeUpdate} ) {
         placeholder="Počet proměnných"
         value={numVariables}
         onChange={(e) => {
-          let val = Number(e.target.value);
-          if (val > 750) val = 750;
-          if (val < 1) val = 1;
-          setNumVariables(val);
-        }} // Update state with input value
+          const val = parseInt(e.target.value, 10);
+          if (isNaN(val)) return;
+          setNumVariables(Math.min(750, Math.max(1, val)));
+        }}
       />
 
       <button className='btn btn-primary mt-3' onClick={handleGenerateTree}>Generovat</button> 

@@ -461,17 +461,14 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
   const changePlayer = () => {
     if (selectedNode) {
       setGraph(prevGraph => {
-        // Find the node and change its property directly
-        const node = prevGraph.nodes.find(n => n.id === selectedNode.id);
-        if (node) {
-          node.player = node.player === 1 ? 2 : 1;
-        }
-        // Return a new graph object, but with the same node references
-        return { ...prevGraph, nodes: [...prevGraph.nodes] };
+        const updatedNodes = prevGraph.nodes.map(n =>
+          n.id === selectedNode.id ? { ...n, player: n.player === 1 ? 2 : 1 } : n
+        );
+        return { ...prevGraph, nodes: updatedNodes };
       });
       // Update selectedNode to match the new state
       setSelectedNode(prev => (prev ? { ...prev, player: prev.player === 1 ? 2 : 1 } : prev));
-      
+
       if (fgRef.current) {
         fgRef.current.d3ReheatSimulation();
       }

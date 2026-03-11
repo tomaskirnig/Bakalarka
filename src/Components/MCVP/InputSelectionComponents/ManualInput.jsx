@@ -41,7 +41,7 @@ export function ManualInput( {onTreeUpdate} ) {
   return (
     <div className="inputWindow">
       <h2>Parser výrazů</h2>
-      <h3>Formát: (x1[0] O x2[1]) A (x3[1] A x4[1])</h3>
+      <p className="small mb-2">Formát: (x1[0] O x2[1]) A (x3[1] A x4[1])</p>
       <div>
         <input
           className='form-control'

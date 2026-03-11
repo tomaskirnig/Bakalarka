@@ -19,6 +19,7 @@ export function convertMCVPtoGame(mcvpTree) {
 
     const generator = new MCVPToGameStepGenerator(mcvpTree);
     const steps = generator.generate();
+    if (steps.length === 0) return null;
     // Return the graph from the last step
     return steps[steps.length - 1].graph;
 }

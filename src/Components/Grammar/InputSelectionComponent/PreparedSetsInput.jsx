@@ -33,7 +33,7 @@ const Data = Object.entries(modules)
 
 export function PreparedSetsInput({ onGrammar }) {
   const handleSelectChange = (event) => {
-    const index = parseInt(event.target.value);
+    const index = parseInt(event.target.value, 10);
     if (!isNaN(index) && index >= 0) {
       const selectedGrammar = new Grammar(Data[index]);
       

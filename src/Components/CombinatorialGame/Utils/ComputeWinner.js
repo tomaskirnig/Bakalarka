@@ -18,7 +18,7 @@
  */
 export function computeWinner(graph) {
   if (!graph || !graph.positions || !graph.startingPosition) {
-    return { hasWinningStrategy: false, error: "Invalid graph data" };
+    return { hasWinningStrategy: false, error: "Invalid graph data", steps: [], winningPositions: {}, nodeStatusRaw: {}, message: "" };
   }
 
   const positionIds = Object.keys(graph.positions);

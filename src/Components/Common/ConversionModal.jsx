@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -7,10 +7,15 @@ import PropTypes from 'prop-types';
  */
 export function ConversionModal({ onClose, children }) {
     const [isClosing, setIsClosing] = useState(false);
+    const timerRef = useRef(null);
+
+    useEffect(() => {
+        return () => clearTimeout(timerRef.current);
+    }, []);
 
     const handleClose = () => {
         setIsClosing(true);
-        setTimeout(() => {
+        timerRef.current = setTimeout(() => {
             onClose();
         }, 250);
     };

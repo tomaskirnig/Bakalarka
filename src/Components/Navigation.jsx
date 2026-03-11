@@ -1,7 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 export function Navigation({ selectedOption, onNavSelect }) {
+  const mobileMenuTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(mobileMenuTimerRef.current);
+  }, []);
   const navItems = [
     { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Domů' },
     { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP' },
@@ -64,11 +69,12 @@ export function Navigation({ selectedOption, onNavSelect }) {
   const closeMobileMenu = () => {
     const offcanvas = document.querySelector('.modern-offcanvas');
     const backdrop = document.querySelector('.offcanvas-backdrop');
-    
+
     offcanvas?.classList.remove('show');
     backdrop?.classList.remove('show');
-    
-    setTimeout(() => {
+
+    clearTimeout(mobileMenuTimerRef.current);
+    mobileMenuTimerRef.current = setTimeout(() => {
       if (backdrop && document.body.contains(backdrop)) {
         document.body.removeChild(backdrop);
       }

@@ -436,17 +436,17 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate }) {
             <i className="bi bi-chevron-left"></i> Předchozí
           </button>
           
-          <button 
+          <button
             onClick={goToNextStep}
-            disabled={currentStep === steps.length - 1}
+            disabled={steps.length === 0 || currentStep === steps.length - 1}
             className="btn btn-primary"
             aria-label="Další krok"
           >
             Další <i className="bi bi-chevron-right"></i>
           </button>
-          <button 
+          <button
             onClick={skipToEnd}
-            disabled={currentStep === steps.length - 1}
+            disabled={steps.length === 0 || currentStep === steps.length - 1}
             className="btn btn-primary btn-sm"
             aria-label="Přeskočit na konec"
           >

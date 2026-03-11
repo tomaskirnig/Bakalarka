@@ -1,7 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { DisplayGraph } from './Utils/DisplayGraph';
-import { computeWinner } from './Utils/ComputeWinner';
 
 /**
  * Component for visualizing the step-by-step winning strategy analysis for a combinatorial game.
@@ -11,27 +10,25 @@ import { computeWinner } from './Utils/ComputeWinner';
  * @param {Object} props - The component props
  * @param {Object} props.graph - The game graph to analyze
  */
-export function StepByStepGame({ graph }) {
+export function StepByStepGame({ graph, analysisSteps }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
-  
-  // Load steps from computeWinner
+
+  // Load steps from the pre-computed analysisSteps prop
   useEffect(() => {
-    if (graph) {
-      const result = computeWinner(graph);
-      // Prepend an initial "Start" step
+    if (graph && analysisSteps) {
       const allSteps = [
         {
           type: 'INIT',
           explanation: 'Začátek analýzy. Všechny pozice jsou zatím nezpracované. Nejprve identifikujeme koncové pozice bez tahů.',
           accumulatedStatus: {}
         },
-        ...result.steps
+        ...analysisSteps
       ];
       setSteps(allSteps);
       setCurrentStep(0);
     }
-  }, [graph]);
+  }, [graph, analysisSteps]);
 
   // Navigation functions
   const goToNextStep = () => {
@@ -67,7 +64,9 @@ export function StepByStepGame({ graph }) {
       if (step && step.id && step.type !== 'FINAL') {
          // Determine winning player based on status relative to node owner
          // step.status is 'WIN' or 'LOSE' for the player at step.id
-         const nodePlayer = graph.positions[step.id].player;
+         const position = graph.positions[step.id];
+         if (!position) continue;
+         const nodePlayer = position.player;
          let winner = 0;
          if (step.status === 'WIN') {
              winner = nodePlayer;
@@ -130,13 +129,13 @@ export function StepByStepGame({ graph }) {
                 
                 {activeStep?.id && activeStep?.type !== 'FINAL' && (
                     <p className="mb-1">
-                        <strong>Pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id].player})
+                        <strong>Pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id]?.player})
                     </p>
                 )}
                 
                 {activeStep?.type === 'FINAL' && (
                     <p className="mb-1">
-                        <strong>Počáteční pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id].player})
+                        <strong>Počáteční pozice:</strong> {activeStep.id} (Hráč {graph.positions[activeStep.id]?.player})
                     </p>
                 )}
                 
@@ -160,7 +159,7 @@ export function StepByStepGame({ graph }) {
                 {activeStep?.type === 'FINAL' && (
                     <p className="mb-0">
                     <strong>Výsledek:</strong>{' '}
-                    <span className={activeStep.hasWinningStrategy ? 'fw-bold' : 'fw-bold'}>
+                    <span className="fw-bold">
                         {activeStep.hasWinningStrategy ? 'Hráč 1 má výherní strategii' : 'Hráč 1 nemá výherní strategii'}
                     </span>
                     </p>
@@ -200,5 +199,6 @@ StepByStepGame.propTypes = {
   graph: PropTypes.shape({
     positions: PropTypes.object.isRequired,
     startingPosition: PropTypes.object.isRequired
-  }).isRequired
+  }).isRequired,
+  analysisSteps: PropTypes.array.isRequired
 };

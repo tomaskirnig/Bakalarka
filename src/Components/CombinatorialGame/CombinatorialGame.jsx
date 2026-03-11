@@ -26,39 +26,38 @@ export function CombinatorialGame({ initialData }) {
         }
     }, [initialData]);
 
-    const { analysisResult, optimalMoves } = useMemo(() => {
-        if (!graph || !graph.positions || !graph.startingPosition) {
-            return { analysisResult: null, optimalMoves: null };
+    // Expensive algorithm — only re-runs when graph changes
+    const rawAnalysisResult = useMemo(() => {
+        if (!graph || !graph.positions || !graph.startingPosition) return null;
+        return computeWinner(graph);
+    }, [graph]);
+
+    // Validation/display logic — re-runs when user changes options or starting player
+    const { analysisResult, optimalMoves, analysisSteps } = useMemo(() => {
+        if (!rawAnalysisResult) {
+            return { analysisResult: null, optimalMoves: null, analysisSteps: [] };
         }
 
-        const rawAnalysisResult = computeWinner(graph);
         const playerAtStartNode = graph.positions[graph.startingPosition.id]?.player;
-
-        let finalAnalysisResult = { ...rawAnalysisResult }; // Copy original result
+        let finalAnalysisResult = { ...rawAnalysisResult };
         let analysisValid = true;
-        
+
         if (playerAtStartNode === undefined) {
             finalAnalysisResult.hasWinningStrategy = false;
             finalAnalysisResult.message = "Startovní pozice nemá definovaného hráče.";
             analysisValid = false;
         } else if (chosenOpt !== 'manual' && selectedStartingPlayer !== playerAtStartNode) {
-            finalAnalysisResult.hasWinningStrategy = false; // Or null, to indicate unanalyzable
+            finalAnalysisResult.hasWinningStrategy = false;
             finalAnalysisResult.message = "Nelze analyzovat: Zvolený začínající hráč se neshoduje s hráčem určeným pro startovní pozici.";
             analysisValid = false;
         } else {
-            // The selected starting player matches the player assigned to the starting node
-            
             finalAnalysisResult.hasWinningStrategy = rawAnalysisResult.hasWinningStrategy;
-            // Use the detailed message from computeWinner (which handles Win/Lose/Draw)
             finalAnalysisResult.message = rawAnalysisResult.message;
         }
-        
-        // Optimal moves are still calculated based on Player 1's winning positions
+
         const moves = analysisValid ? getOptimalMoves(graph, rawAnalysisResult) : new Set();
-        
-        // Pass the interpreted message and winning status to the display
-        return { analysisResult: finalAnalysisResult, optimalMoves: moves };
-    }, [graph, chosenOpt, selectedStartingPlayer]);
+        return { analysisResult: finalAnalysisResult, optimalMoves: moves, analysisSteps: rawAnalysisResult.steps };
+    }, [rawAnalysisResult, graph, selectedStartingPlayer]);
 
     const handleOptionChange = (option) => {
         setChosenOpt(option);
@@ -224,7 +223,7 @@ export function CombinatorialGame({ initialData }) {
             {explain && (
                 <ConversionModal onClose={() => setExplain(false)}>
                     {graph && (
-                        <StepByStepGame graph={graph} />
+                        <StepByStepGame graph={graph} analysisSteps={analysisSteps} />
                     )}
                 </ConversionModal>
             )}

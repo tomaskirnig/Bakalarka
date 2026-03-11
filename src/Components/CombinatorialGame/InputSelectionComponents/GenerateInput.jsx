@@ -4,11 +4,11 @@ import PropTypes from 'prop-types';
 
 export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelectedStartingPlayer }) {
     const [numGameFields, setNumGameFields] = useState(1);
-    const [edgePropability, setEdgePropability] = useState(1);
+    const [edgeProbability, setEdgePropability] = useState(1);
     const [localStartingPlayer, setLocalStartingPlayer] = useState(selectedStartingPlayer || 1);
 
     const handleGenerateGraph = () => {
-        const generatedGraph = generateGraph(numGameFields, edgePropability);
+        const generatedGraph = generateGraph(numGameFields, edgeProbability);
 
         // Set the starting position's player to the selected starting player
         generatedGraph.positions[generatedGraph.startingPosition.id].player = localStartingPlayer;
@@ -54,10 +54,9 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
                 placeholder="Počet polí"
                 value={numGameFields}
                 onChange={(e) => {
-                    let val = Number(e.target.value);
-                    if (val > 750) val = 750;
-                    if (val < 1) val = 1;
-                    setNumGameFields(val);
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val)) return;
+                    setNumGameFields(Math.min(750, Math.max(1, val)));
                 }}
             />
             
@@ -68,12 +67,11 @@ export function GenerateInput({ onGraphUpdate, selectedStartingPlayer, setSelect
                 min="1"
                 max="100"
                 placeholder="Pravděpodobnost hrany (%)"
-                value={edgePropability}
+                value={edgeProbability}
                 onChange={(e) => {
-                    let val = Number(e.target.value);
-                    if (val > 100) val = 100;
-                    if (val < 1) val = 1;
-                    setEdgePropability(val);
+                    const val = parseInt(e.target.value, 10);
+                    if (isNaN(val)) return;
+                    setEdgePropability(Math.min(100, Math.max(1, val)));
                 }}
             />
    

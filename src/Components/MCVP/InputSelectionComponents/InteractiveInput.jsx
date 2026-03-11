@@ -14,14 +14,17 @@ import { useGraphSettings } from '../../../Hooks/useGraphSettings';
  * @component
  */
 export function InteractiveMCVPGraph({ onTreeUpdate }) {
-    const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+    const [graphData, setGraphData] = useState(() => ({
+        nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
+        links: []
+    }));
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
     const [hoverNode, setHoverNode] = useState(null);
     const fgRef = useRef();
     const containerRef = useRef(); // Ref for container
-    const nextNodeIdRef = useRef(0);
+    const nextNodeIdRef = useRef(1); // '0' is the initial OR node
     const nextLinkIdRef = useRef(0);
     const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
     const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
@@ -163,13 +166,6 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
         return newNode;
     }, [generateNodeId, graphData.nodes.length]);
 
-    // Add initial node if graph is empty
-    useEffect(() => {
-        if (graphData.nodes.length === 0) {
-            addNode('operation', 'O');
-        }
-    }, [graphData.nodes.length, addNode]);
-
     /**
      * Deletes a node and all connected edges from the graph.
      * @param {number|string} nodeId - The ID of the node to delete.
@@ -245,7 +241,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
     const handleDagError = (error) => {
         console.error("DAG Error:", error);
         toast.error("Chyba v DAG struktuře: Cyklus detekován nebo neplatná struktura.");
-        graphData.links.pop();
+        setGraphData(prevData => ({
+            nodes: prevData.nodes,
+            links: prevData.links.slice(0, -1),
+        }));
     };
 
     /**

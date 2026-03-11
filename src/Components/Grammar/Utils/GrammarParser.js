@@ -6,11 +6,23 @@ export function parseGrammar(inputText) {
     
     if(inputText && inputText.length > 0) {
         for(let rule of inputText.split('\n')) {
-            let [ls, rs] = rule.split('→').map(part => part.trim());
+            // Blank lines are not valid — each line must be a grammar rule
+            if (!rule.trim()) throw new Error('Vstup obsahuje prázdný řádek. Každý řádek musí obsahovat pravidlo ve formátu: L → P');
+
+            // Support both ASCII '->' and Unicode '→' arrows; split on the first occurrence only
+            const arrowIndex = rule.search(/→|->/);
+            if (arrowIndex === -1) {
+                console.warn(`Invalid rule format: ${rule}`);
+                throw new Error(`Neplatný formát pravidla: ${rule}`);
+            }
+            const arrowLen = rule.slice(arrowIndex, arrowIndex + 2) === '->' ? 2 : 1;
+            const ls = rule.slice(0, arrowIndex).trim();
+            const rs = rule.slice(arrowIndex + arrowLen).trim();
+
             if (!ls || !rs){
                 console.warn(`Invalid rule format: ${rule}`);
                 throw new Error(`Neplatný formát pravidla: ${rule}`);
-            } 
+            }
             
             if(!ls.match(/^[A-ZÁČĎÉĚÍŇÓŘŠŤÚŮÝŽ]/)) {
                 console.warn(`Invalid non-terminal symbol: ${ls}`);

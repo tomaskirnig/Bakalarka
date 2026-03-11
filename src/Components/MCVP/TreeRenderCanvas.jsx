@@ -37,6 +37,10 @@ export function TreeRenderCanvas({
   // Dimensions State
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
+  const [showLockTooltip, setShowLockTooltip] = useState(false);
+  const [unlockVersion, setUnlockVersion] = useState(0);
+  const savedPositions = useRef(new Map());
 
   // Interaction State
   const hoverNode = useRef(null);
@@ -78,22 +82,25 @@ export function TreeRenderCanvas({
   // Flash border when tree changes
   useEffect(() => {
     setIsFlashing(true);
+    setIsLocked(false);
+    savedPositions.current.clear();
     const timer = setTimeout(() => setIsFlashing(false), 600);
     return () => clearTimeout(timer);
   }, [tree]);
 
   // 1. Prepare Graph Data
-  // useMemo ensures we only regenerate the graph topology when tree/steps change.
+  // Depends only on `tree` — completedSteps are visualised via resultsMap without
+  // recreating node objects, so positions (fx/fy) survive step navigation.
   const graphData = useMemo(() => {
     if (!tree) return { nodes: [], links: [] };
-    
+
     const nodes = [];
     const links = [];
     const visited = new Set();
-    
+
     function traverse(current, parent) {
       if (!current) return;
-      
+
       // Ensure ID exists on the node object itself
       if (current.id === undefined || current.id === null) {
         current.id = idCounter.current++;
@@ -105,15 +112,22 @@ export function TreeRenderCanvas({
           target: current.id
         });
       }
-      
+
       if (visited.has(current.id)) return;
       visited.add(current.id);
-      
-      // Reset temporary display properties
-      current.evaluationResult = undefined;
-      
-      nodes.push(current);
-  
+
+      // Restore x/y from saved positions (set on unlock) so the simulation
+      // starts from the current visual position, avoiding a jarring jump.
+      const saved = savedPositions.current.get(current.id);
+      nodes.push({
+        ...current,
+        x: saved?.x,
+        y: saved?.y,
+        evaluationResult: undefined,
+        neighbors: [],
+        links: []
+      });
+
       if (current.children && Array.isArray(current.children)) {
         current.children.forEach(child => {
           if (child) traverse(child, current);
@@ -123,26 +137,8 @@ export function TreeRenderCanvas({
 
     traverse(tree, null);
 
-    // Apply evaluation results from completed steps
-    if (completedSteps && completedSteps.length > 0) {
-      completedSteps.forEach((step) => {
-        if (!step || !step.node) return;
-        const targetNode = nodes.find((nd) => nd.id === step.node.id);
-        if (targetNode) {
-          targetNode.evaluationResult = step.result;
-        }
-      });
-    }
-
     // Pre-calculate neighbors for efficient hover lookup
-    // Map IDs to node objects first
     const nodeMap = new Map(nodes.map(n => [n.id, n]));
-    
-    // Initialize neighbor arrays
-    nodes.forEach(n => {
-      n.neighbors = [];
-      n.links = [];
-    });
 
     // Populate relationships
     links.forEach(link => {
@@ -152,7 +148,7 @@ export function TreeRenderCanvas({
 
       const sourceNode = nodeMap.get(sourceId);
       const targetNode = nodeMap.get(targetId);
-      
+
       if (sourceNode && targetNode) {
           sourceNode.neighbors.push(targetNode);
           targetNode.neighbors.push(sourceNode);
@@ -162,7 +158,7 @@ export function TreeRenderCanvas({
     });
 
     return { nodes, links };
-  }, [tree, completedSteps]);
+  }, [tree, unlockVersion]);
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
@@ -292,7 +288,7 @@ export function TreeRenderCanvas({
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force('collision', 
+        fgRef.current.d3Force('collision',
           window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
             .strength(mcvp.collisionStrength)
             .iterations(mcvp.collisionIterations)
@@ -300,6 +296,7 @@ export function TreeRenderCanvas({
       }
       fgRef.current.d3Force('link').distance(mcvp.linkDistance).strength(mcvp.linkStrength);
       fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
+      fgRef.current.d3ReheatSimulation();
     }
   }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
 
@@ -314,23 +311,120 @@ export function TreeRenderCanvas({
     }
   }, [activeNode, graphData, disableAutoCenter]);
 
-  // Zoom to fit when triggered
+  // Ref to track a pending zoomToFit request across simulation ticks
+  const pendingFitRef = useRef(false);
+
+  // When the canvas starts at 0×0 (e.g. inside an unsized modal), the initial
+  // fitTrigger fires before valid dimensions exist and zoomToFit is a no-op.
+  // Track whether we owe a fit+reheat for the first time dimensions become valid.
+  const dimensionsWereZeroRef = useRef(canvasWidth === 0 || canvasHeight === 0);
   useEffect(() => {
-    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
-        fgRef.current.zoomToFit(400, 50);
+    if (!dimensionsWereZeroRef.current) return;
+    if (canvasWidth > 0 && canvasHeight > 0) {
+      dimensionsWereZeroRef.current = false;
+      if (fgRef.current) {
+        // Reset the camera to the physics origin so nodes are visible while the
+        // simulation runs. The degenerate 0×0 canvas leaves the transform at
+        // (0,0) which maps physics-origin to the top-left corner of the new
+        // larger canvas. centerAt(0,0,0) remaps it to the canvas centre.
+        fgRef.current.centerAt(0, 0, 0);
+        fgRef.current.zoom(1, 0);
+        fgRef.current.d3ReheatSimulation();
+        pendingFitRef.current = true; // handleEngineStop will zoomToFit on settle
+      }
+    }
+  }, [canvasWidth, canvasHeight]);
+
+  const handleToggleLock = useCallback(() => {
+    setIsLocked(prev => {
+      const locking = !prev;
+      if (locking) {
+        graphData.nodes.forEach(n => {
+          if (typeof n.x === 'number') {
+            n.fx = n.x;
+            n.fy = n.y;
+          }
+        });
+      } else {
+        // Save current positions before rebuilding graphData so nodes start
+        // from where they are (no visual jump) while dagMode re-initializes.
+        savedPositions.current.clear();
+        graphData.nodes.forEach(n => {
+          if (typeof n.x === 'number') {
+            savedPositions.current.set(n.id, { x: n.x, y: n.y });
+          }
+        });
+        // Incrementing unlockVersion causes graphData useMemo to re-run,
+        // giving ForceGraph2D fresh node objects so dagMode re-initializes.
+        // The force-setup useEffect then reheats the simulation automatically.
+        setUnlockVersion(v => v + 1);
+      }
+      return locking;
+    });
+  }, [graphData.nodes]);
+
+  // Mark a fit as pending and attempt it immediately.
+  // If the simulation is still running the correct fit will fire in handleEngineStop.
+  useEffect(() => {
+    if (fitToScreen || fitTrigger > 0) {
+      pendingFitRef.current = true;
+      fgRef.current?.zoomToFit(400, 50);
     }
   }, [fitToScreen, fitTrigger]);
+
+  // Called by ForceGraph2D when the physics simulation stops.
+  // Pins every node in place (keeps manually-dragged AND auto-settled positions)
+  // and executes any pending zoomToFit so the camera centres on final positions.
+  const handleEngineStop = useCallback(() => {
+    if (pendingFitRef.current && fgRef.current) {
+      pendingFitRef.current = false;
+      fgRef.current.zoomToFit(400, 50);
+    }
+  }, []);
 
   return (
     <div className={`GraphDiv ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
       <div className="graph-controls">
-        <button 
-          className="graph-btn" 
+        <button
+          className="graph-btn"
           onClick={() => fgRef.current?.zoomToFit(400, 50)}
           title="Fit Graph to Screen"
         >
           Vycentrovat
         </button>
+        <div style={{ position: 'relative' }}
+          onMouseEnter={() => setShowLockTooltip(true)}
+          onMouseLeave={() => setShowLockTooltip(false)}
+        >
+          <button
+            className="graph-btn"
+            onClick={handleToggleLock}
+            style={ isLocked ? { color: 'var(--color2)', borderColor: 'var(--color2)', fontWeight: 700 } : undefined }
+          >
+            {isLocked ? '🔒 Zamčeno' : '🔓 Zamknout'}
+          </button>
+          {showLockTooltip && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              right: 0,
+              background: 'rgba(7, 57, 60, 0.95)',
+              color: 'white',
+              fontSize: '0.75rem',
+              padding: '5px 9px',
+              borderRadius: '6px',
+              whiteSpace: 'nowrap',
+              pointerEvents: 'none',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
+              border: '1px solid rgba(144, 221, 240, 0.3)',
+              zIndex: 10,
+            }}>
+              {isLocked
+                ? 'Odemknout pozice všech uzlů'
+                : 'Zamknout pozice všech uzlů na místě'}
+            </div>
+          )}
+        </div>
       </div>
       <ForceGraph2D
         ref={fgRef}
@@ -343,10 +437,8 @@ export function TreeRenderCanvas({
         dagLevelDistance={mcvp.dagLevelDistance}
         
         // Physics
-        cooldownTime={mcvp.cooldownTime}
-        d3AlphaDecay={mcvp.d3AlphaDecay}
-        d3VelocityDecay={mcvp.d3VelocityDecay}
         autoPauseRedraw={false}
+        onEngineStop={handleEngineStop}
         
         // Interaction
         enableNodeDrag={true}

@@ -12,6 +12,11 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
     const [mcvpDimensions, setMcvpDimensions] = useState({ width: 400, height: 400 });
     const cgContainerRef = useRef(null);
     const mcvpContainerRef = useRef(null);
+    const fitTimerRef = useRef(null);
+
+    useEffect(() => {
+        return () => clearTimeout(fitTimerRef.current);
+    }, []);
 
     const steps = useMemo(() => {
         if (!mcvpTree) return [];
@@ -87,14 +92,16 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
         setCurrentStep(0);
         setShouldFitCG(true);
         setFitTrigger(prev => prev + 1);
-        setTimeout(() => setShouldFitCG(false), 150);
+        clearTimeout(fitTimerRef.current);
+        fitTimerRef.current = setTimeout(() => setShouldFitCG(false), 150);
     };
 
     const skipToEnd = () => {
         setCurrentStep(steps.length - 1);
         setShouldFitCG(true);
         setFitTrigger(prev => prev + 1);
-        setTimeout(() => setShouldFitCG(false), 150);
+        clearTimeout(fitTimerRef.current);
+        fitTimerRef.current = setTimeout(() => setShouldFitCG(false), 150);
     };
 
     const renderCurrentStep = () => {
@@ -179,13 +186,13 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                     <button className="btn btn-secondary" onClick={goToPreviousStep} disabled={currentStep === 0} aria-label="Předchozí krok">
                         <i className="bi bi-chevron-left"></i> Předchozí
                     </button>
-                    <button className="btn btn-primary" onClick={goToNextStep} disabled={currentStep === steps.length - 1} aria-label="Další krok">
+                    <button className="btn btn-primary" onClick={goToNextStep} disabled={steps.length === 0 || currentStep === steps.length - 1} aria-label="Další krok">
                         Další <i className="bi bi-chevron-right"></i>
                     </button>
-                    <button 
-                        className="btn btn-primary btn-sm" 
+                    <button
+                        className="btn btn-primary btn-sm"
                         onClick={skipToEnd}
-                        disabled={currentStep === steps.length - 1}
+                        disabled={steps.length === 0 || currentStep === steps.length - 1}
                         aria-label="Přeskočit na konec"
                     >
                         <i className="bi bi-skip-end-fill"></i>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 
@@ -47,16 +47,21 @@ export function StepByStepTree({ tree, steps = [] }) {
   const goToFirstStep = () => setCurrentStep(0);
   const goToLastStep = () => setCurrentStep(steps.length - 1);
 
+  const completedSteps = useMemo(
+    () => steps.slice(0, currentStep + 1),
+    [steps, currentStep]
+  );
+
   return (
     <div className="step-by-step-container d-flex flex-column" style={{ height: '100%', overflow: 'hidden' }}>
-      <h2 className="text-center mb-3" style={{ flexShrink: 0 }}>Postupné vyhodnocení</h2> 
+      <h2 className="text-center mb-3" style={{ flexShrink: 0 }}>Postupné vyhodnocení</h2>
       {steps.length > 0 ? (
         <>
           <div className="flex-grow-1 d-flex flex-column" style={{ minHeight: 0, overflow: 'auto' }}>
-            <TreeRenderCanvas 
+            <TreeRenderCanvas
               tree={tree}
               activeNode={steps[currentStep]?.node}
-              completedSteps={steps.slice(0, currentStep + 1)}
+              completedSteps={completedSteps}
               fitTrigger={fitTrigger}
               disableAutoCenter={steps[currentStep]?.type === 'FINAL'}
             />

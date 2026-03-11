@@ -4,9 +4,11 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 
-export function DisplayGraph({ 
-  graph, 
-  optimalMoves = new Set(), 
+const EMPTY_SET = new Set();
+
+export function DisplayGraph({
+  graph,
+  optimalMoves = EMPTY_SET,
   width, 
   height, 
   fitToScreen, 
@@ -79,6 +81,8 @@ export function DisplayGraph({
         y: prev ? prev.y : node.y,
         vx: prev ? prev.vx : undefined,
         vy: prev ? prev.vy : undefined,
+        fx: prev ? prev.fx : undefined,
+        fy: prev ? prev.fy : undefined,
         isStartingPosition: node.id === graph.startingPosition.id,
         neighbors: [...(node.parents || []), ...(node.children || [])]
       };
@@ -231,12 +235,31 @@ export function DisplayGraph({
     }
   }, [graph]);
 
-  // Zoom to fit when triggered
+  // Ref to track a pending zoomToFit request across simulation ticks
+  const pendingFitRef = useRef(false);
+
+  // Mark a fit as pending and attempt it immediately.
+  // If the simulation is still running the correct fit will fire in handleEngineStop.
   useEffect(() => {
-    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
-        fgRef.current.zoomToFit(400, 50);
+    if (fitToScreen || fitTrigger > 0) {
+      pendingFitRef.current = true;
+      fgRef.current?.zoomToFit(400, 50);
     }
   }, [fitToScreen, fitTrigger]);
+
+  // Freeze every node after the simulation settles, then execute any pending fit.
+  const handleEngineStop = useCallback(() => {
+    data.nodes.forEach(n => {
+      if (typeof n.x === 'number') {
+        n.fx = n.x;
+        n.fy = n.y;
+      }
+    });
+    if (pendingFitRef.current && fgRef.current) {
+      pendingFitRef.current = false;
+      fgRef.current.zoomToFit(400, 50);
+    }
+  }, [data.nodes]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
@@ -309,6 +332,7 @@ export function DisplayGraph({
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
+          onEngineStop={handleEngineStop}
           onNodeDrag={node => {
             node.fx = node.x;
             node.fy = node.y;

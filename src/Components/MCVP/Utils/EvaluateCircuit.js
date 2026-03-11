@@ -46,7 +46,7 @@ export function evaluateCircuitWithSteps(node) {
             if (childVal !== null) childValues.push(childVal);
         }
 
-        if (childValues.length === 0 || childValues.some(v => v === null)) {
+        if (childValues.length === 0) {
             visiting.delete(currentNode.id);
             return null;
         }

@@ -1,12 +1,17 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
 export function Modal({ onClose, children, title }) {
     const [isClosing, setIsClosing] = useState(false);
+    const timerRef = useRef(null);
+
+    useEffect(() => {
+        return () => clearTimeout(timerRef.current);
+    }, []);
 
     const handleClose = () => {
         setIsClosing(true);
-        setTimeout(() => {
+        timerRef.current = setTimeout(() => {
             onClose();
         }, 250);
     };
