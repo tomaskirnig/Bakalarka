@@ -13,7 +13,7 @@ import { useGraphSettings } from '../../../Hooks/useGraphSettings';
  * 
  * @component
  */
-export function InteractiveMCVPGraph({ onTreeUpdate }) {
+export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) {
     const [graphData, setGraphData] = useState(() => ({
         nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
         links: []
@@ -469,8 +469,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     height={dimensions.height}
                     graphData={graphData}
                     // Layout
-                    dagMode="td" // Top-down layout
-                    dagLevelDistance={mcvp.dagLevelDistance} // Distance between levels
+                    dagMode={useTopDownLayout ? 'td' : undefined}
+                    dagLevelDistance={useTopDownLayout ? mcvp.dagLevelDistance : undefined}
                     // Physics
                     cooldownTime={mcvp.cooldownTime}
                     d3AlphaDecay={mcvp.d3AlphaDecay}
@@ -487,7 +487,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
                     linkCanvasObjectMode={() => "after"} // Draw custom object after link line
                     linkDirectionalArrowLength={6}
                     linkDirectionalArrowRelPos={1}
-                    onDagError={handleDagError}
+                    onDagError={useTopDownLayout ? handleDagError : undefined}
                     // Interaction
                     onNodeClick={handleNodeClick}
                     onBackgroundClick={handleBackgroundClick}
@@ -575,5 +575,6 @@ export function InteractiveMCVPGraph({ onTreeUpdate }) {
 }
 
 InteractiveMCVPGraph.propTypes = {
-    onTreeUpdate: PropTypes.func
+    onTreeUpdate: PropTypes.func,
+    useTopDownLayout: PropTypes.bool
 };

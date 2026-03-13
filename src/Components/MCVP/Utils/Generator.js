@@ -69,58 +69,94 @@ function createGateNode(children = []) {
 export function generateTree(numGates, numVariables) {
   Node.resetIdCounter(); // Reset IDs for clean numbering
   const nodes = [];
+  const nodeById = new Map();
+  const rootNodeIds = new Set(); // Nodes without parents (candidates for current roots)
 
   // Create variable nodes
   for (let i = 1; i <= numVariables; i++) {
-      nodes.push(createVariableNode(i));
+      const variableNode = createVariableNode(i);
+      nodes.push(variableNode);
+      nodeById.set(variableNode.id, variableNode);
+      rootNodeIds.add(variableNode.id);
   }
 
-  // Create gates and combine nodes
+  // Helper to pick unique random nodes from a pool
+  const pickDistinctNodes = (pool, count, excluded = new Set()) => {
+    const available = pool.filter(node => node && !excluded.has(node.id));
+    const picked = [];
+
+    while (picked.length < count && available.length > 0) {
+      const randomIndex = Math.floor(Math.random() * available.length);
+      picked.push(available.splice(randomIndex, 1)[0]);
+    }
+
+    return picked;
+  };
+
+  // Create gates and allow reusing existing nodes as shared inputs (DAG)
   for (let i = 0; i < numGates; i++) {
-      if (nodes.length < 1) {
+      if (rootNodeIds.size < 1) {
         toast.error('Nedostatek uzlů!');
         throw new Error("Nedostatek uzlů!");
       }
 
-      // Decide how many child nodes to use
-      let childCount;
       const remainingGates = numGates - i;
+      const rootNodes = Array.from(rootNodeIds)
+        .map(id => nodeById.get(id))
+        .filter(Boolean);
+      const selectedChildren = [];
       
-      // If this is the last gate, it must connect all remaining nodes
+      // Last gate consumes all current roots so the result has one root.
       if (remainingGates === 1) {
-          childCount = nodes.length;
+          selectedChildren.push(...rootNodes);
       } else {
-          // Calculate equal distribution of children
-          const targetChildren = Math.ceil(nodes.length / remainingGates);
-          
-          // Add random variance: ±20% of target
-          const variance = Math.max(1, Math.floor(targetChildren * 0.2));
+          // Pick children from current roots to keep the graph connected.
+          const targetRootChildren = Math.ceil(rootNodes.length / remainingGates);
+          const variance = Math.max(1, Math.floor(targetRootChildren * 0.2));
           const randomVariance = Math.floor(Math.random() * (2 * variance + 1)) - variance;
-          
-          // Ensure we don't try to take more nodes than available
-          // If only 1 node is left, we must take 1, otherwise we prefer at least 2
-          const minAllowed = nodes.length < 2 ? 1 : 2;
-          childCount = Math.max(minAllowed, Math.min(nodes.length, targetChildren + randomVariance));
-      }
-      
-      const children = [];
-      
-      // Select random nodes to be children of new gate
-      for (let j = 0; j < childCount; j++) {
-        const randomIndex = Math.floor(Math.random() * nodes.length);
-        children.push(nodes.splice(randomIndex, 1)[0]);
+          const minRootChildren = rootNodes.length < 2 ? 1 : 2;
+          const rootChildCount = Math.max(
+            minRootChildren,
+            Math.min(rootNodes.length, targetRootChildren + randomVariance)
+          );
+
+          selectedChildren.push(...pickDistinctNodes(rootNodes, rootChildCount));
+
+          // Reuse non-root nodes as additional inputs to produce true DAGs.
+          const nonRootNodes = nodes.filter(node => !rootNodeIds.has(node.id));
+          if (nonRootNodes.length > 0 && Math.random() < 0.65) {
+            const maxExtraReuse = Math.min(nonRootNodes.length, Math.max(1, Math.floor(rootChildCount / 2)));
+            const extraReuseCount = Math.floor(Math.random() * (maxExtraReuse + 1));
+            if (extraReuseCount > 0) {
+              const alreadySelected = new Set(selectedChildren.map(node => node.id));
+              selectedChildren.push(...pickDistinctNodes(nonRootNodes, extraReuseCount, alreadySelected));
+            }
+          }
       }
 
-      // Create a gate (AND or OR) with selected children
-      const gateNode = createGateNode(children);
+      if (selectedChildren.length < 1) {
+        toast.error('Generování DAG selhalo: chybí potomci pro nové hradlo.');
+        throw new Error('Generování DAG selhalo: chybí potomci pro nové hradlo.');
+      }
+
+      // Create a gate (AND or OR) with selected children.
+      const gateNode = createGateNode(selectedChildren);
       nodes.push(gateNode);
+      nodeById.set(gateNode.id, gateNode);
+
+      // Children that were roots now have a parent; the new gate becomes a new root.
+      selectedChildren.forEach(child => {
+        rootNodeIds.delete(child.id);
+      });
+      rootNodeIds.add(gateNode.id);
   }
 
-  // The last remaining node is the root of the tree
-  if (nodes.length !== 1) {
-      toast.error('Generování neuspělo, zbyl špatný počet uzlů.');
-      throw new Error("Generování neuspělo, zbyl špatný počet uzlů.");
+  // Exactly one root is expected at the end.
+  if (rootNodeIds.size !== 1) {
+      toast.error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
+      throw new Error("Generování neuspělo, zbyl špatný počet kořenových uzlů.");
   }
 
-  return nodes[0]; // Return the root of the tree
+  const [rootId] = Array.from(rootNodeIds);
+  return nodeById.get(rootId); // Return the root of the DAG
 }

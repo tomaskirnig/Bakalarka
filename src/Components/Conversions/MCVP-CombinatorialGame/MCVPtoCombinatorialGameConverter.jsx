@@ -4,7 +4,7 @@ import { MCVPToGameStepGenerator } from './ConversionCombinatorialGame';
 import { DisplayGraph } from '../../CombinatorialGame/Utils/DisplayGraph';
 import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 
-export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate }) {
+export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate, useTopDownLayout = true }) {
     const [currentStep, setCurrentStep] = useState(0);
     const [fitTrigger, setFitTrigger] = useState(0);
     const [shouldFitCG, setShouldFitCG] = useState(false);
@@ -130,6 +130,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
                                 height={mcvpDimensions.height}
                                 fitToScreen={false}
                                 fitTrigger={fitTrigger}
+                                useTopDownLayout={useTopDownLayout}
                             />
                         </div>
                     </div>
@@ -213,5 +214,6 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate 
 
 MCVPtoCombinatorialGameConverter.propTypes = {
     mcvpTree: PropTypes.object.isRequired,
-    onNavigate: PropTypes.func
+    onNavigate: PropTypes.func,
+    useTopDownLayout: PropTypes.bool
 };

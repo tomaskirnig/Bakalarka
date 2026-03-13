@@ -11,7 +11,7 @@ import { TreeRenderCanvas } from './TreeRenderCanvas';
  * @param {Object} props.tree - The MCVP tree to evaluate
  * @param {Array} props.steps - Pre-calculated evaluation steps
  */
-export function StepByStepTree({ tree, steps = [] }) {
+export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
 
@@ -64,6 +64,7 @@ export function StepByStepTree({ tree, steps = [] }) {
               completedSteps={completedSteps}
               fitTrigger={fitTrigger}
               disableAutoCenter={steps[currentStep]?.type === 'FINAL'}
+              useTopDownLayout={useTopDownLayout}
             />
           </div>
           
@@ -130,5 +131,6 @@ StepByStepTree.propTypes = {
     node: PropTypes.object,
     childValues: PropTypes.array,
     result: PropTypes.number
-  }))
+  })),
+  useTopDownLayout: PropTypes.bool
 };

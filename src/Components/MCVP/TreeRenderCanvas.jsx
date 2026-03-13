@@ -28,7 +28,8 @@ export function TreeRenderCanvas({
   height,
   fitToScreen,
   fitTrigger = 0,
-  disableAutoCenter = false // Disable auto-centering on active node
+  disableAutoCenter = false, // Disable auto-centering on active node
+  useTopDownLayout = true
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -158,7 +159,7 @@ export function TreeRenderCanvas({
     });
 
     return { nodes, links };
-  }, [tree, unlockVersion]);
+  }, [tree, unlockVersion, useTopDownLayout]);
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
@@ -433,8 +434,8 @@ export function TreeRenderCanvas({
         graphData={graphData}
         
         // Layout
-        dagMode="td"
-        dagLevelDistance={mcvp.dagLevelDistance}
+        dagMode={useTopDownLayout ? "td" : undefined}
+        dagLevelDistance={useTopDownLayout ? mcvp.dagLevelDistance : undefined}
         
         // Physics
         autoPauseRedraw={false}
@@ -492,5 +493,6 @@ TreeRenderCanvas.propTypes = {
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,
   fitTrigger: PropTypes.number,
-  disableAutoCenter: PropTypes.bool
+  disableAutoCenter: PropTypes.bool,
+  useTopDownLayout: PropTypes.bool
 };

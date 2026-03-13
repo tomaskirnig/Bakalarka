@@ -31,6 +31,7 @@ export function MCVP({ onNavigate, initialData }) {
     const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
     const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
     const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
+    const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
 
     // Handle initial data if provided (e.g., from reverse conversion)
     useEffect(() => {
@@ -104,6 +105,22 @@ export function MCVP({ onNavigate, initialData }) {
 
             <h1 className='display-4 mt-4 mb-lg-4'>MCVP</h1>
 
+            <div className='d-flex justify-content-center mb-2'>
+                <div className='form-check form-switch' title='Dev nástroj pro přepnutí rozložení MCVP grafu'>
+                    <input
+                        className='form-check-input clickable'
+                        type='checkbox'
+                        role='switch'
+                        id='mcvp-layout-mode-switch'
+                        checked={useTopDownLayout}
+                        onChange={(e) => setUseTopDownLayout(e.target.checked)}
+                    />
+                    <label className='form-check-label clickable' htmlFor='mcvp-layout-mode-switch' style={{ color: 'black' }}>
+                        Režim rozložení (dev): {useTopDownLayout ? 'Top-down (TD)' : 'Volný graf'}
+                    </label>
+                </div>
+            </div>
+
             <div className='page-content'>
             <GenericInputMethodSelector
                 selectedOption={chosenOpt}
@@ -119,7 +136,7 @@ export function MCVP({ onNavigate, initialData }) {
                         case 'manual': return <ManualInput onTreeUpdate={setTree} />;
                         case 'generate': return <GenerateInput onTreeUpdate={setTree} />;
                         case 'sets': return <PreparedSetsInput onTreeUpdate={setTree} />;
-                        case 'interactive': return <InteractiveMCVPGraph onTreeUpdate={setTree} />;
+                        case 'interactive': return <InteractiveMCVPGraph onTreeUpdate={setTree} useTopDownLayout={useTopDownLayout} />;
                         default: return null;
                     }
                 }}
@@ -127,7 +144,7 @@ export function MCVP({ onNavigate, initialData }) {
 
             {(tree && chosenOpt !== 'interactive') && (
                 <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                    <TreeRenderCanvas tree={tree} />
+                    <TreeRenderCanvas tree={tree} useTopDownLayout={useTopDownLayout} />
                 </div>
             )}
 
@@ -161,7 +178,7 @@ export function MCVP({ onNavigate, initialData }) {
             {grammarConversion && (
                 <ConversionModal onClose={() => setGrammarConversion(false)}>
                     {tree && (
-                        <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} />
+                        <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} useTopDownLayout={useTopDownLayout} />
                     )}
                 </ConversionModal>
             )}
@@ -169,7 +186,7 @@ export function MCVP({ onNavigate, initialData }) {
             {gameConversion && (
                 <ConversionModal onClose={() => setGameConversion(false)}>
                     {tree && (
-                        <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} />
+                        <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} useTopDownLayout={useTopDownLayout} />
                     )}
                 </ConversionModal>
             )}
@@ -177,7 +194,7 @@ export function MCVP({ onNavigate, initialData }) {
             {explain && (
                 <ConversionModal onClose={() => setExplain(false)}>
                     {tree && (
-                        <StepByStepTree tree={tree} steps={evaluation.steps} />
+                        <StepByStepTree tree={tree} steps={evaluation.steps} useTopDownLayout={useTopDownLayout} />
                     )}
                 </ConversionModal>
             )}
