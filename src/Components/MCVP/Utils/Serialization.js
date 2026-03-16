@@ -49,6 +49,10 @@ export function flatGraphToTree(graphData) {
         const targetNode = nodeMap.get(targetId);
 
         if (sourceNode && targetNode) {
+            if (sourceNode.type === 'operation' && sourceNode.children.length >= 2) {
+                console.warn(`Uzel operace ${sourceNode.id} má více než 2 potomky.`);
+                return null;
+            }
             // Add target as child of source
             sourceNode.children.push(targetNode);
             // Add source as parent of target

@@ -18,6 +18,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
         links: []
     }));
+    const [isGraphLocked, setIsGraphLocked] = useState(false);
     const [selectedNode, setSelectedNode] = useState(null);
     const [addingEdge, setAddingEdge] = useState(false);
     const [edgeSource, setEdgeSource] = useState(null);
@@ -130,6 +131,40 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         }
     }, [graphData, onTreeUpdate, GraphDataToNodeClass]);
 
+    const pinNodePosition = useCallback((node) => {
+        if (typeof node?.x === 'number' && typeof node?.y === 'number') {
+            node.fx = node.x;
+            node.fy = node.y;
+        }
+    }, []);
+
+    const unpinNodePosition = useCallback((node) => {
+        if (!node) return;
+        node.fx = undefined;
+        node.fy = undefined;
+    }, []);
+
+    const handleToggleGraphLock = useCallback(() => {
+        setIsGraphLocked(prevLocked => {
+            const nextLocked = !prevLocked;
+
+            if (nextLocked) {
+                graphData.nodes.forEach(pinNodePosition);
+            } else {
+                graphData.nodes.forEach(unpinNodePosition);
+                fgRef.current?.d3ReheatSimulation();
+            }
+
+            return nextLocked;
+        });
+    }, [graphData.nodes, pinNodePosition, unpinNodePosition]);
+
+    // Keep newly added nodes fixed while lock is enabled.
+    useEffect(() => {
+        if (!isGraphLocked) return;
+        graphData.nodes.forEach(pinNodePosition);
+    }, [graphData.nodes, isGraphLocked, pinNodePosition]);
+
     // --- Core Graph Functions ---
 
     const addNode = useCallback((type, value = null, varValue = null) => {
@@ -191,6 +226,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         );
     }, [graphData.links]);
 
+    const getOutgoingEdgeCount = useCallback((sourceId) => {
+        return graphData.links.filter(link => link.source.id === sourceId).length;
+    }, [graphData.links]);
+
     /**
      * Adds a directed edge between two nodes.
      * @param {number|string} sourceId - The ID of the source node (parent).
@@ -211,6 +250,17 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
             return false;
         }
 
+        if (sourceNode.type !== 'operation') {
+            toast.error('Hranu lze vést pouze z uzlu typu operace.');
+            return false;
+        }
+
+        const outgoingCount = getOutgoingEdgeCount(sourceId);
+        if (outgoingCount >= 2) {
+            toast.error('Uzel operace může mít maximálně 2 potomky.');
+            return false;
+        }
+
         const newLink = {
             id: generateLinkId(),
             source: sourceNode, 
@@ -222,7 +272,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
             links: [...prevData.links, newLink],
         }));
         return true;
-    }, [graphData.nodes, edgeExists, generateLinkId]);
+    }, [graphData.nodes, edgeExists, generateLinkId, getOutgoingEdgeCount]);
 
     /**
      * Deletes an edge between two nodes.
@@ -317,6 +367,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 
     const startAddEdge = () => {
         if (selectedNode) {
+            if (selectedNode.type !== 'operation') {
+                toast.error('Hranu lze přidat pouze z uzlu operace.');
+                return;
+            }
+            if (getOutgoingEdgeCount(selectedNode.id) >= 2) {
+                toast.error('Vybraný uzel už má 2 potomky.');
+                return;
+            }
             setAddingEdge(true);
             setEdgeSource(selectedNode);
             setSelectedNode(null);
@@ -325,6 +383,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 
     const hasChildren = (nodeId) => {
         return graphData.links.some(link => link.source.id === nodeId);
+    };
+
+    const canAddChild = (nodeId) => {
+        return getOutgoingEdgeCount(nodeId) < 2;
     };
 
     const handleNodeHover = useCallback((node) => {
@@ -462,6 +524,13 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
                   >
                     Vycentrovat
                   </button>
+                                    <button
+                                        className="graph-btn"
+                                        onClick={handleToggleGraphLock}
+                                        title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
+                                    >
+                                        {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
+                                    </button>
                 </div>
                 <ForceGraph2D
                     ref={fgRef}
@@ -495,7 +564,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
                     onLinkHover={handleLinkHover}
                     enablePanInteraction={true}
                     enableZoomInteraction={true}
-                    enableNodeDrag={true} // Allow dragging nodes
+                    enableNodeDrag={true} // Keep dragging enabled even when graph is locked
                     onNodeDrag={node => {
                         node.fx = node.x;
                         node.fy = node.y;
@@ -530,7 +599,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
                                     Nastavit na proměnnou
                                 </button>
                             )}
-                            <button className="btn btn-success mx-1" onClick={startAddEdge}>Propojit uzel</button>
+                                     <button className="btn btn-success mx-1" onClick={startAddEdge} disabled={!canAddChild(selectedNode.id)}>Propojit uzel</button>
                             </>
                          )}
                          {selectedNode.type === 'variable' && (

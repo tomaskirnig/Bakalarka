@@ -40,6 +40,10 @@ export function evaluateCircuitWithSteps(node) {
             return null;
         }
 
+        if (currentNode.type === 'operation' && currentNode.children.length > 2) {
+            throw new Error(`Uzel operace ${currentNode.id} má více než 2 potomky.`);
+        }
+
         const childValues = [];
         for (const child of currentNode.children) {
             const childVal = evaluate(child);

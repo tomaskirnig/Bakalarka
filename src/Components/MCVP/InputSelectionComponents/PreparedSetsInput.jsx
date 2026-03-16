@@ -59,6 +59,9 @@ export function PreparedSetsInput({ onTreeUpdate }) {
         const target = nodeMap.get(edge.target);
 
         if (source && target) {
+          if (source.type === 'operation' && source.children.length >= 2) {
+            throw new Error(`Uzel operace ${source.id} má více než 2 potomky.`);
+          }
           // In the JSON format, edges represent parent -> child relationships
           // (e.g., parent node n7(A) has child n5(O)).
           source.children.push(target);
@@ -88,9 +91,13 @@ export function PreparedSetsInput({ onTreeUpdate }) {
     const index = parseInt(event.target.value);
     if (!isNaN(index) && index >= 0) {
       const graphData = Data[index];
-      const tree = buildTreeFromGraphData(graphData);
-      if (tree) {
-        onTreeUpdate(tree);
+      try {
+        const tree = buildTreeFromGraphData(graphData);
+        if (tree) {
+          onTreeUpdate(tree);
+        }
+      } catch (error) {
+        toast.error(error.message || 'Nepodařilo se načíst sadu MCVP.');
       }
     }
   };

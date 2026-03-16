@@ -72,12 +72,18 @@ export function generateTree(numGates, numVariables) {
   const nodeById = new Map();
   const rootNodeIds = new Set(); // Nodes without parents (candidates for current roots)
 
+  // With arity <= 2 and all variables connected, we need at least N-1 gates.
+  if (numVariables > numGates + 1) {
+    toast.error('Pro binární obvod musí platit: počet hradel >= počet proměnných - 1.');
+    throw new Error('Nedostatek hradel pro binární strukturu obvodu.');
+  }
+
   // Create variable nodes
   for (let i = 1; i <= numVariables; i++) {
-      const variableNode = createVariableNode(i);
-      nodes.push(variableNode);
-      nodeById.set(variableNode.id, variableNode);
-      rootNodeIds.add(variableNode.id);
+    const variableNode = createVariableNode(i);
+    nodes.push(variableNode);
+    nodeById.set(variableNode.id, variableNode);
+    rootNodeIds.add(variableNode.id);
   }
 
   // Helper to pick unique random nodes from a pool
@@ -93,68 +99,72 @@ export function generateTree(numGates, numVariables) {
     return picked;
   };
 
-  // Create gates and allow reusing existing nodes as shared inputs (DAG)
+  // Create gates and allow reuse while enforcing max 2 children per operation node.
   for (let i = 0; i < numGates; i++) {
-      if (rootNodeIds.size < 1) {
-        toast.error('Nedostatek uzlů!');
-        throw new Error("Nedostatek uzlů!");
+    if (rootNodeIds.size < 1) {
+      toast.error('Nedostatek uzlů!');
+      throw new Error('Nedostatek uzlů!');
+    }
+
+    const remainingGates = numGates - i;
+    const rootNodes = Array.from(rootNodeIds)
+      .map(id => nodeById.get(id))
+      .filter(Boolean);
+    const selectedChildren = [];
+
+    // Feasibility guard: after this gate, roots must stay low enough
+    // so remaining gates can still reduce to one root.
+    const minRequiredRootChildren = rootNodes.length - remainingGates + 1;
+    if (minRequiredRootChildren > 2) {
+      toast.error('Nelze dokončit binární strukturu: příliš mnoho kořenů vzhledem ke zbývajícím hradlům.');
+      throw new Error('Generování neuspělo: nelze dosáhnout jediného kořene s aritou <= 2.');
+    }
+
+    const forcedRootChildren = Math.max(1, minRequiredRootChildren);
+    let rootChildCount = forcedRootChildren;
+
+    // Prefer binary gates when it does not break feasibility.
+    if (rootNodes.length >= 2 && forcedRootChildren < 2) {
+      rootChildCount = Math.random() < 0.75 ? 2 : 1;
+    }
+
+    selectedChildren.push(...pickDistinctNodes(rootNodes, rootChildCount));
+
+    // If unary so far, try to reuse one non-root input to keep gate binary.
+    if (selectedChildren.length < 2) {
+      const alreadySelected = new Set(selectedChildren.map(node => node.id));
+      const nonRootNodes = nodes.filter(node => !rootNodeIds.has(node.id));
+      const reused = pickDistinctNodes(nonRootNodes, 1, alreadySelected);
+
+      if (reused.length === 1) {
+        selectedChildren.push(reused[0]);
+      } else if (rootNodes.length >= 2) {
+        const extraRoot = pickDistinctNodes(rootNodes, 1, alreadySelected);
+        if (extraRoot.length === 1) {
+          selectedChildren.push(extraRoot[0]);
+        }
       }
+    }
 
-      const remainingGates = numGates - i;
-      const rootNodes = Array.from(rootNodeIds)
-        .map(id => nodeById.get(id))
-        .filter(Boolean);
-      const selectedChildren = [];
-      
-      // Last gate consumes all current roots so the result has one root.
-      if (remainingGates === 1) {
-          selectedChildren.push(...rootNodes);
-      } else {
-          // Pick children from current roots to keep the graph connected.
-          const targetRootChildren = Math.ceil(rootNodes.length / remainingGates);
-          const variance = Math.max(1, Math.floor(targetRootChildren * 0.2));
-          const randomVariance = Math.floor(Math.random() * (2 * variance + 1)) - variance;
-          const minRootChildren = rootNodes.length < 2 ? 1 : 2;
-          const rootChildCount = Math.max(
-            minRootChildren,
-            Math.min(rootNodes.length, targetRootChildren + randomVariance)
-          );
+    if (selectedChildren.length < 1 || selectedChildren.length > 2) {
+      toast.error('Generování DAG selhalo: neplatný počet potomků pro nové hradlo.');
+      throw new Error('Generování DAG selhalo: neplatný počet potomků pro nové hradlo.');
+    }
 
-          selectedChildren.push(...pickDistinctNodes(rootNodes, rootChildCount));
+    const gateNode = createGateNode(selectedChildren);
+    nodes.push(gateNode);
+    nodeById.set(gateNode.id, gateNode);
 
-          // Reuse non-root nodes as additional inputs to produce true DAGs.
-          const nonRootNodes = nodes.filter(node => !rootNodeIds.has(node.id));
-          if (nonRootNodes.length > 0 && Math.random() < 0.65) {
-            const maxExtraReuse = Math.min(nonRootNodes.length, Math.max(1, Math.floor(rootChildCount / 2)));
-            const extraReuseCount = Math.floor(Math.random() * (maxExtraReuse + 1));
-            if (extraReuseCount > 0) {
-              const alreadySelected = new Set(selectedChildren.map(node => node.id));
-              selectedChildren.push(...pickDistinctNodes(nonRootNodes, extraReuseCount, alreadySelected));
-            }
-          }
-      }
-
-      if (selectedChildren.length < 1) {
-        toast.error('Generování DAG selhalo: chybí potomci pro nové hradlo.');
-        throw new Error('Generování DAG selhalo: chybí potomci pro nové hradlo.');
-      }
-
-      // Create a gate (AND or OR) with selected children.
-      const gateNode = createGateNode(selectedChildren);
-      nodes.push(gateNode);
-      nodeById.set(gateNode.id, gateNode);
-
-      // Children that were roots now have a parent; the new gate becomes a new root.
-      selectedChildren.forEach(child => {
-        rootNodeIds.delete(child.id);
-      });
-      rootNodeIds.add(gateNode.id);
+    // Selected root children lose root status; new gate becomes root.
+    selectedChildren.forEach(child => {
+      rootNodeIds.delete(child.id);
+    });
+    rootNodeIds.add(gateNode.id);
   }
 
-  // Exactly one root is expected at the end.
   if (rootNodeIds.size !== 1) {
-      toast.error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
-      throw new Error("Generování neuspělo, zbyl špatný počet kořenových uzlů.");
+    toast.error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
+    throw new Error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
   }
 
   const [rootId] = Array.from(rootNodeIds);

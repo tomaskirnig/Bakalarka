@@ -2,8 +2,8 @@
 
 - [x] MCVP generator: investigate why it produces only trees instead of general DAGs and allow reusing node outputs.
 - [x] MCVP prepared sets: add non-trivial DAG examples (not only trees).
-- [ ] MCVP core logic: operation node should have max 2 childe nodes.
-- [ ] MCVP generation of graph: we should aim for two children for one parent node if possible. 
+- [x] MCVP core logic: operation node should have max 2 childe nodes.
+- [x] MCVP generation of graph: we should aim for two children for one parent node if possible. 
 - [ ] MCVP interactive editor: stabilize layout when adding edges/nodes so manual positioning is preserved.
 - [ ] MCVP all display components: prevent node overlaps.
 - [ ] MCVP expression parser: fix conflict detection for same variable with different values in one expression and when one variable is mentioned more times, use the same variable and not new one.
