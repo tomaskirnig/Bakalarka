@@ -21,3 +21,4 @@
 - [x] Grammar generator: if useful, add “max alternatives per nonterminal” as a configurable generation parameter.
 - [ ] Combinatory Game display component: Check if we can add viewport as a boundary for nodes, so they dont ecape - only for not connected ones. 
 - [ ] MCVP node structure: enforce binary arity for conjunction/disjunction so each such node has exactly 2 children.
+- [ ] Check the whole project for dead or redundant code

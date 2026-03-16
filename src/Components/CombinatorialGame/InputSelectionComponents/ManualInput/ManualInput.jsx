@@ -353,22 +353,27 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       return optimalMoves.has(`${sourceId}-${targetId}`);
   }, [optimalMoves]);
 
-  // Force setup to reduce unwanted pushing of nodes
+  // Force setup to avoid drift while keeping overlap prevention
   useEffect(() => {
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision',
-          window.d3.forceCollide().radius(() => game.nodeRadius * 1.2)
-            .strength(0.8)
-            .iterations(2)
+          window.d3.forceCollide().radius(() => game.nodeRadius * 1.8)
+            .strength(1)
+            .iterations(6)
         );
       }
 
-      // Drastically reduce the charge force to prevent pushing other nodes away
+      // Disable repulsive force so disconnected components do not keep drifting apart.
       const chargeForce = fgRef.current.d3Force('charge');
       if (chargeForce) {
-        chargeForce.strength(-10);
+        chargeForce.strength(0);
+      }
+
+      // Keep the graph centered in simulation space.
+      if (window.d3 && window.d3.forceCenter) {
+        fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
       }
 
       // Keep connected nodes closer
@@ -376,6 +381,8 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       if (linkForce) {
         linkForce.distance(50).strength(1);
       }
+
+      fgRef.current.d3ReheatSimulation();
     }
   }, [game]);
 
@@ -438,8 +445,14 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
           node.fy = node.y;
         }}
         onNodeDragEnd={node => {
-          node.fx = node.x;
-          node.fy = node.y;
+          if (isGraphLocked) {
+            node.fx = node.x;
+            node.fy = node.y;
+          } else {
+            node.fx = undefined;
+            node.fy = undefined;
+            fgRef.current?.d3ReheatSimulation();
+          }
         }}
         onEngineStop={handleEngineStop}
       />

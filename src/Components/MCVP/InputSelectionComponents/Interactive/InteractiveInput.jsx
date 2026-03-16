@@ -354,7 +354,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         createPaintLink({ selectedNode })
     ), [selectedNode]);
 
-        // Force setup for collision and charge
+                // Force setup for collision and stable centering (without repulsion drift)
         useEffect(() => {
           if (fgRef.current) {
             // Add collision force to prevent overlap
@@ -366,11 +366,16 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
               );
             }
     
-            // Charge force to create node separation
+                        // Disable repulsive force to avoid disconnected components drifting apart.
             const chargeForce = fgRef.current.d3Force('charge');
             if (chargeForce) {
-              chargeForce.strength(mcvp.chargeStrength);
+                            chargeForce.strength(0);
             }
+
+                        // Keep the whole graph centered in the viewport simulation space.
+                        if (window.d3 && window.d3.forceCenter) {
+                            fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
+                        }
     
             // Link force to keep connected nodes at appropriate distance
             const linkForce = fgRef.current.d3Force('link');

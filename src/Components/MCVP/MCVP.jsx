@@ -1,9 +1,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
-import { ManualInput } from './InputSelectionComponents/Manual/ManualInput';
-import { GenerateInput } from './InputSelectionComponents/Generate/GenerateInput';
-import { PreparedSetsInput } from './InputSelectionComponents/PreparedSets/PreparedSetsInput';
+import { ManualInput } from './InputSelectionComponents/ManualInput';
+import { GenerateInput } from './InputSelectionComponents/GenerateInput';
+import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { InteractiveMCVPGraph } from './InputSelectionComponents/Interactive/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateCircuitWithSteps } from './Utils/EvaluateCircuit';
