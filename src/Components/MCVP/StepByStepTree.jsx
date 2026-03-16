@@ -65,6 +65,7 @@ export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
               fitTrigger={fitTrigger}
               disableAutoCenter={steps[currentStep]?.type === 'FINAL'}
               useTopDownLayout={useTopDownLayout}
+              defaultLocked={true}
             />
           </div>
           

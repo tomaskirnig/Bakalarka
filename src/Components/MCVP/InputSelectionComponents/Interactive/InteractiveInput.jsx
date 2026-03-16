@@ -345,6 +345,19 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         // Link hover handler
     }, []);
 
+    const persistNodePositionInGraphData = useCallback((node) => {
+        if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+        setGraphData(prevData => ({
+            ...prevData,
+            nodes: prevData.nodes.map(n =>
+                n.id === node.id
+                    ? { ...n, x: node.x, y: node.y, fx: node.x, fy: node.y }
+                    : n
+            )
+        }));
+    }, []);
+
     // --- Canvas/Rendering Functions ---
     const paintNode = useMemo(() => (
         createPaintNode({ selectedNode, hoverNode, edgeSource, colors, mcvp })
@@ -360,9 +373,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
             // Add collision force to prevent overlap
             if (window.d3 && window.d3.forceCollide) {
               fgRef.current.d3Force('collision',
-                window.d3.forceCollide().radius(() => mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
-                  .strength(mcvp.collisionStrength)
-                  .iterations(mcvp.collisionIterations)
+                                window.d3.forceCollide().radius(() => Math.max(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier, mcvp.nodeRadius + 6))
+                                    .strength(Math.max(0.95, mcvp.collisionStrength))
+                                    .iterations(Math.max(6, mcvp.collisionIterations))
               );
             }
     
@@ -430,6 +443,13 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
                     nodeId="id"
                     nodeCanvasObject={paintNode}
                     nodeCanvasObjectMode={() => "after"} // Draw text after circle
+                    nodePointerAreaPaint={(node, color, ctx) => {
+                        // Make the whole rendered circle clickable/hoverable.
+                        ctx.fillStyle = color;
+                        ctx.beginPath();
+                        ctx.arc(node.x, node.y, mcvp.nodeRadius + 2, 0, 2 * Math.PI, false);
+                        ctx.fill();
+                    }}
                     // Links
                     // linkColor={() => 'rgba(0,0,0,0.4)'} // This will be handled by paintLink
                     // linkWidth={1} // This will be handled by paintLink
@@ -453,6 +473,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
                     onNodeDragEnd={node => { // Fix node position after dragging
                         node.fx = node.x;
                         node.fy = node.y;
+                        persistNodePositionInGraphData(node);
                     }}
                 />
             </div>

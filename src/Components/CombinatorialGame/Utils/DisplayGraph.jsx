@@ -16,7 +16,8 @@ export function DisplayGraph({
   highlightedNode = null, 
   winningPlayerMap = {},
   trackHighlightedNode = false,
-  showLockControl = false
+  showLockControl = false,
+  defaultLocked = false
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -24,7 +25,7 @@ export function DisplayGraph({
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
-  const [isGraphLocked, setIsGraphLocked] = useState(false);
+  const [isGraphLocked, setIsGraphLocked] = useState(defaultLocked);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -68,6 +69,10 @@ export function DisplayGraph({
     const timer = setTimeout(() => setIsFlashing(false), 600);
     return () => clearTimeout(timer);
   }, [graph]);
+
+  useEffect(() => {
+    setIsGraphLocked(defaultLocked);
+  }, [graph, defaultLocked]);
 
   // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
   const data = useMemo(() => {
@@ -240,6 +245,16 @@ export function DisplayGraph({
   // Ref to track a pending zoomToFit request across simulation ticks
   const pendingFitRef = useRef(false);
 
+  const persistGraphPosition = useCallback((node) => {
+    if (!graph?.positions || !node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+    const position = graph.positions[node.id];
+    if (!position) return;
+
+    position.x = node.x;
+    position.y = node.y;
+  }, [graph]);
+
   const pinNodePosition = useCallback((node) => {
     if (typeof node?.x === 'number' && typeof node?.y === 'number') {
       node.fx = node.x;
@@ -268,6 +283,19 @@ export function DisplayGraph({
     });
   }, [data.nodes, pinNodePosition, unpinNodePosition]);
 
+  // Apply lock as soon as node coordinates are available from the engine.
+  const handleEngineTick = useCallback(() => {
+    if (!isGraphLocked) return;
+
+    data.nodes.forEach(n => {
+      if (typeof n.x === 'number' && typeof n.y === 'number') {
+        n.fx = n.x;
+        n.fy = n.y;
+        persistGraphPosition(n);
+      }
+    });
+  }, [data.nodes, isGraphLocked, persistGraphPosition]);
+
   // Mark a fit as pending and attempt it immediately.
   // If the simulation is still running the correct fit will fire in handleEngineStop.
   useEffect(() => {
@@ -283,6 +311,7 @@ export function DisplayGraph({
       if (typeof n.x === 'number') {
         n.fx = n.x;
         n.fy = n.y;
+        persistGraphPosition(n);
       }
     });
 
@@ -294,7 +323,7 @@ export function DisplayGraph({
       pendingFitRef.current = false;
       fgRef.current.zoomToFit(400, 50);
     }
-  }, [data.nodes, isGraphLocked, pinNodePosition]);
+  }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
@@ -362,6 +391,7 @@ export function DisplayGraph({
           height={graphHeight}
           enablePanInteraction={true}
           enableZoomInteraction={true}
+          enableNodeDrag={true}
           graphData={data}
           nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
@@ -376,14 +406,17 @@ export function DisplayGraph({
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
+          onEngineTick={handleEngineTick}
           onEngineStop={handleEngineStop}
           onNodeDrag={node => {
             node.fx = node.x;
             node.fy = node.y;
+            persistGraphPosition(node);
           }}
           onNodeDragEnd={node => {
             node.fx = node.x;
             node.fy = node.y;
+            persistGraphPosition(node);
           }}
         />
       </div>
@@ -407,7 +440,8 @@ DisplayGraph.propTypes = {
   fitTrigger: PropTypes.number,
   highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
-  showLockControl: PropTypes.bool
+  showLockControl: PropTypes.bool,
+  defaultLocked: PropTypes.bool
 };
 
 export default DisplayGraph;

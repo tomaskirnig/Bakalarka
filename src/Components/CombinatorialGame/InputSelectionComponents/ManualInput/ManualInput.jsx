@@ -353,15 +353,28 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
       return optimalMoves.has(`${sourceId}-${targetId}`);
   }, [optimalMoves]);
 
+  const persistNodePositionInState = useCallback((node) => {
+    if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+    setGraph(prevGraph => ({
+      ...prevGraph,
+      nodes: prevGraph.nodes.map(n =>
+        n.id === node.id
+          ? { ...n, x: node.x, y: node.y }
+          : n
+      )
+    }));
+  }, []);
+
   // Force setup to avoid drift while keeping overlap prevention
   useEffect(() => {
     if (fgRef.current) {
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision',
-          window.d3.forceCollide().radius(() => game.nodeRadius * 1.8)
+          window.d3.forceCollide().radius(() => game.nodeRadius * 2.1)
             .strength(1)
-            .iterations(6)
+            .iterations(8)
         );
       }
 
@@ -436,6 +449,13 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
         linkCanvasObject={paintLink}
         nodeCanvasObjectMode={() => 'after'}
         nodeCanvasObject={paintRing}
+        nodePointerAreaPaint={(node, color, ctx) => {
+          // Make the full node circle an interaction hitbox.
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.arc(node.x, node.y, game.nodeRadius + 2, 0, 2 * Math.PI, false);
+          ctx.fill();
+        }}
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
         onNodeClick={handleNodeClick}  
@@ -445,6 +465,8 @@ export function ManualInput({ initialGraph, onGraphUpdate, analysisResult, optim
           node.fy = node.y;
         }}
         onNodeDragEnd={node => {
+          persistNodePositionInState(node);
+
           if (isGraphLocked) {
             node.fx = node.x;
             node.fy = node.y;

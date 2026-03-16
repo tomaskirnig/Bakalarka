@@ -19,6 +19,14 @@ export function graphDataToNodeClass(graphData) {
       [],
       graphNode.id
     );
+
+    if (typeof graphNode.x === 'number' && typeof graphNode.y === 'number') {
+      node.x = graphNode.x;
+      node.y = graphNode.y;
+      node.fx = graphNode.x;
+      node.fy = graphNode.y;
+    }
+
     nodeMap.set(graphNode.id, node);
   }
 

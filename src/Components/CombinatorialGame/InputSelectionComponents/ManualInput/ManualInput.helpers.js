@@ -21,6 +21,8 @@ export function toFormattedGraph(graph, startingNodeId) {
       acc[node.id] = {
         id: node.id,
         player: node.player,
+        x: node.x,
+        y: node.y,
         children: graph.links
           .filter(link => resolveNodeId(link.source) === node.id)
           .map(link => resolveNodeId(link.target)),

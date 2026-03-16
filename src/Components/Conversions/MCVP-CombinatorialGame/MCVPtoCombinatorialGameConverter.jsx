@@ -131,6 +131,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate,
                                 fitToScreen={false}
                                 fitTrigger={fitTrigger}
                                 useTopDownLayout={useTopDownLayout}
+                                defaultLocked={true}
                             />
                         </div>
                     </div>
@@ -147,6 +148,7 @@ export default function MCVPtoCombinatorialGameConverter({ mcvpTree, onNavigate,
                                 height={cgDimensions.height}
                                 fitToScreen={shouldFitCG}
                                 fitTrigger={fitTrigger}
+                                defaultLocked={true}
                             />
                         </div>
                     </div>

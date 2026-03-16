@@ -119,6 +119,7 @@ export function StepByStepGame({ graph, analysisSteps }) {
               winningPlayerMap={currentStatusMap}
               trackHighlightedNode={true}
               showLockControl={true}
+              defaultLocked={true}
             />
           </div>
           

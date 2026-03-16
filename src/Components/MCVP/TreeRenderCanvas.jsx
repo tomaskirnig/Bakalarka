@@ -29,7 +29,8 @@ export function TreeRenderCanvas({
   fitToScreen,
   fitTrigger = 0,
   disableAutoCenter = false, // Disable auto-centering on active node
-  useTopDownLayout = true
+  useTopDownLayout = true,
+  defaultLocked = false
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -38,10 +39,11 @@ export function TreeRenderCanvas({
   // Dimensions State
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
+  const [isLocked, setIsLocked] = useState(defaultLocked);
   const [showLockTooltip, setShowLockTooltip] = useState(false);
   const [unlockVersion, setUnlockVersion] = useState(0);
   const savedPositions = useRef(new Map());
+  const sourceNodesByIdRef = useRef(new Map());
 
   // Interaction State
   const hoverNode = useRef(null);
@@ -83,21 +85,23 @@ export function TreeRenderCanvas({
   // Flash border when tree changes
   useEffect(() => {
     setIsFlashing(true);
-    setIsLocked(false);
+    setIsLocked(defaultLocked);
     savedPositions.current.clear();
     const timer = setTimeout(() => setIsFlashing(false), 600);
     return () => clearTimeout(timer);
-  }, [tree]);
+  }, [tree, defaultLocked]);
 
   // 1. Prepare Graph Data
   // Depends only on `tree` — completedSteps are visualised via resultsMap without
   // recreating node objects, so positions (fx/fy) survive step navigation.
   const graphData = useMemo(() => {
     if (!tree) return { nodes: [], links: [] };
+    const rebuildVersion = unlockVersion;
 
     const nodes = [];
     const links = [];
     const visited = new Set();
+    const sourceNodesById = new Map();
 
     function traverse(current, parent) {
       if (!current) return;
@@ -116,12 +120,14 @@ export function TreeRenderCanvas({
 
       if (visited.has(current.id)) return;
       visited.add(current.id);
+      sourceNodesById.set(current.id, current);
 
       // Restore x/y from saved positions (set on unlock) so the simulation
       // starts from the current visual position, avoiding a jarring jump.
       const saved = savedPositions.current.get(current.id);
       nodes.push({
         ...current,
+        rebuildVersion,
         x: saved?.x,
         y: saved?.y,
         evaluationResult: undefined,
@@ -158,8 +164,21 @@ export function TreeRenderCanvas({
       }
     });
 
+    sourceNodesByIdRef.current = sourceNodesById;
     return { nodes, links };
-  }, [tree, unlockVersion, useTopDownLayout]);
+  }, [tree, unlockVersion]);
+
+  const persistNodePosition = useCallback((node) => {
+    if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+    const sourceNode = sourceNodesByIdRef.current.get(node.id);
+    if (!sourceNode) return;
+
+    sourceNode.x = node.x;
+    sourceNode.y = node.y;
+    sourceNode.fx = node.x;
+    sourceNode.fy = node.y;
+  }, []);
   // Map of evaluation results for quick lookup in paintNode
   const resultsMap = useMemo(() => {
     const map = new Map();
@@ -287,19 +306,31 @@ export function TreeRenderCanvas({
   // Initial Forces Setup
   useEffect(() => {
     if (fgRef.current) {
+      const collisionRadius = useTopDownLayout
+        ? Math.max(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier, mcvp.nodeRadius + 10)
+        : mcvp.nodeRadius * mcvp.collisionRadiusMultiplier;
+      const collisionIterations = useTopDownLayout
+        ? Math.max(6, mcvp.collisionIterations)
+        : mcvp.collisionIterations;
+      const collisionStrength = useTopDownLayout
+        ? Math.max(0.95, mcvp.collisionStrength)
+        : mcvp.collisionStrength;
+
       // Add collision force to prevent overlap
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force('collision',
-          window.d3.forceCollide(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier)
-            .strength(mcvp.collisionStrength)
-            .iterations(mcvp.collisionIterations)
+          window.d3.forceCollide(collisionRadius)
+            .strength(collisionStrength)
+            .iterations(collisionIterations)
         );
       }
-      fgRef.current.d3Force('link').distance(mcvp.linkDistance).strength(mcvp.linkStrength);
-      fgRef.current.d3Force('charge').strength(mcvp.chargeStrength);
+      const linkDistance = useTopDownLayout ? Math.max(130, mcvp.linkDistance) : mcvp.linkDistance;
+      const chargeStrength = useTopDownLayout ? Math.min(-220, mcvp.chargeStrength) : mcvp.chargeStrength;
+      fgRef.current.d3Force('link').distance(linkDistance).strength(mcvp.linkStrength);
+      fgRef.current.d3Force('charge').strength(chargeStrength);
       fgRef.current.d3ReheatSimulation();
     }
-  }, [tree, mcvp, graphData]); // Re-run if tree or graphData changes (new simulation)
+  }, [tree, mcvp, graphData, useTopDownLayout]); // Re-run if tree or graphData changes (new simulation)
 
   // Focus Camera on Active Node
   useEffect(() => {
@@ -331,10 +362,13 @@ export function TreeRenderCanvas({
         fgRef.current.centerAt(0, 0, 0);
         fgRef.current.zoom(1, 0);
         fgRef.current.d3ReheatSimulation();
-        pendingFitRef.current = true; // handleEngineStop will zoomToFit on settle
+        // Only schedule automatic fit when explicitly requested.
+        if (fitToScreen || fitTrigger > 0) {
+          pendingFitRef.current = true; // handleEngineStop will zoomToFit on settle
+        }
       }
     }
-  }, [canvasWidth, canvasHeight]);
+  }, [canvasWidth, canvasHeight, fitToScreen, fitTrigger]);
 
   const handleToggleLock = useCallback(() => {
     setIsLocked(prev => {
@@ -364,6 +398,19 @@ export function TreeRenderCanvas({
     });
   }, [graphData.nodes]);
 
+  // Ensure lock applies even if nodes get coordinates after initial render.
+  const handleEngineTick = useCallback(() => {
+    if (!isLocked) return;
+
+    graphData.nodes.forEach(n => {
+      if (typeof n.x === 'number' && typeof n.y === 'number') {
+        n.fx = n.x;
+        n.fy = n.y;
+        persistNodePosition(n);
+      }
+    });
+  }, [graphData.nodes, isLocked, persistNodePosition]);
+
   // Mark a fit as pending and attempt it immediately.
   // If the simulation is still running the correct fit will fire in handleEngineStop.
   useEffect(() => {
@@ -377,11 +424,22 @@ export function TreeRenderCanvas({
   // Pins every node in place (keeps manually-dragged AND auto-settled positions)
   // and executes any pending zoomToFit so the camera centres on final positions.
   const handleEngineStop = useCallback(() => {
+    graphData.nodes.forEach(persistNodePosition);
+
+    if (isLocked) {
+      graphData.nodes.forEach(n => {
+        if (typeof n.x === 'number') {
+          n.fx = n.x;
+          n.fy = n.y;
+        }
+      });
+    }
+
     if (pendingFitRef.current && fgRef.current) {
       pendingFitRef.current = false;
       fgRef.current.zoomToFit(400, 50);
     }
-  }, []);
+  }, [graphData.nodes, isLocked, persistNodePosition]);
 
   return (
     <div className={`GraphDiv ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
@@ -439,6 +497,7 @@ export function TreeRenderCanvas({
         
         // Physics
         autoPauseRedraw={false}
+        onEngineTick={handleEngineTick}
         onEngineStop={handleEngineStop}
         
         // Interaction
@@ -465,10 +524,12 @@ export function TreeRenderCanvas({
         onNodeDrag={node => {
           node.fx = node.x;
           node.fy = node.y;
+          persistNodePosition(node);
         }}
         onNodeDragEnd={node => {
           node.fx = node.x;
           node.fy = node.y;
+          persistNodePosition(node);
         }}
         onBackgroundClick={() => {
           hoverNode.current = null;
@@ -494,5 +555,6 @@ TreeRenderCanvas.propTypes = {
   fitToScreen: PropTypes.bool,
   fitTrigger: PropTypes.number,
   disableAutoCenter: PropTypes.bool,
-  useTopDownLayout: PropTypes.bool
+  useTopDownLayout: PropTypes.bool,
+  defaultLocked: PropTypes.bool
 };
