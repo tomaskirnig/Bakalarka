@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
-import { ManualInput } from './InputSelectionComponents/ManualInput';
+import { ManualInput } from './InputSelectionComponents/ManualInput/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
 import { DisplayGraph } from './Utils/DisplayGraph';
@@ -12,6 +12,16 @@ import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
+
+function countIsolatedNodes(graph) {
+    if (!graph?.positions) return 0;
+
+    return Object.values(graph.positions).reduce((count, pos) => {
+        const outCount = (pos.children || []).length;
+        const inCount = (pos.parents || []).length;
+        return count + (outCount === 0 && inCount === 0 ? 1 : 0);
+    }, 0);
+}
 
 export function CombinatorialGame({ initialData }) {
     const [graph, setGraph] = useState(null); // Current tree
@@ -26,7 +36,8 @@ export function CombinatorialGame({ initialData }) {
         }
     }, [initialData]);
 
-    // Expensive algorithm — only re-runs when graph changes
+    const isolatedNodeCount = useMemo(() => countIsolatedNodes(graph), [graph]);
+
     const rawAnalysisResult = useMemo(() => {
         if (!graph || !graph.positions || !graph.startingPosition) return null;
         return computeWinner(graph);
@@ -57,7 +68,7 @@ export function CombinatorialGame({ initialData }) {
 
         const moves = analysisValid ? getOptimalMoves(graph, rawAnalysisResult) : new Set();
         return { analysisResult: finalAnalysisResult, optimalMoves: moves, analysisSteps: rawAnalysisResult.steps };
-    }, [rawAnalysisResult, graph, selectedStartingPlayer]);
+    }, [rawAnalysisResult, graph, selectedStartingPlayer, chosenOpt]);
 
     const handleOptionChange = (option) => {
         setChosenOpt(option);
@@ -201,6 +212,12 @@ export function CombinatorialGame({ initialData }) {
 
             {graph && (
                 <>
+                    {isolatedNodeCount > 0 && (
+                        <div className="alert alert-info mt-2 mx-auto" style={{ maxWidth: '900px' }}>
+                            V grafu jsou nalezeny izolované uzly bez hran ({isolatedNodeCount}). Tyto uzly nemají vliv na průchod hrou ze startovní pozice.
+                        </div>
+                    )}
+
                     {chosenOpt !== 'manual' && (
                         <>
                             <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>

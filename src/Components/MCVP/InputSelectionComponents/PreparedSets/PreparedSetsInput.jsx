@@ -1,9 +1,9 @@
 import PropTypes from "prop-types";
-import { Node } from "../Utils/NodeClass";
+import { Node } from "../../Utils/NodeClass";
 import { toast } from "react-toastify";
 
 // Load all JSON files from the Sady/MCVP directory
-const modules = import.meta.glob('../../../../Sady/MCVP/*.json', { eager: true });
+const modules = import.meta.glob('../../../../../Sady/MCVP/*.json', { eager: true });
 const Data = Object.entries(modules)
     .map(([path, mod]) => {
         const data = mod.default || mod;

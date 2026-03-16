@@ -118,6 +118,7 @@ export function StepByStepGame({ graph, analysisSteps }) {
               highlightedNode={activeStep?.id}
               winningPlayerMap={currentStatusMap}
               trackHighlightedNode={true}
+              showLockControl={true}
             />
           </div>
           

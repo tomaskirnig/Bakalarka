@@ -1,10 +1,10 @@
 import { useMemo, useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
-import { ManualInput } from './InputSelectionComponents/ManualInput';
-import { GenerateInput } from './InputSelectionComponents/GenerateInput';
-import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
-import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
+import { ManualInput } from './InputSelectionComponents/Manual/ManualInput';
+import { GenerateInput } from './InputSelectionComponents/Generate/GenerateInput';
+import { PreparedSetsInput } from './InputSelectionComponents/PreparedSets/PreparedSetsInput';
+import { InteractiveMCVPGraph } from './InputSelectionComponents/Interactive/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateCircuitWithSteps } from './Utils/EvaluateCircuit';
 import { ConversionModal } from '../Common/ConversionModal';
@@ -46,6 +46,8 @@ export function MCVP({ onNavigate, initialData }) {
     const evaluation = useMemo(() => {
         return tree ? evaluateCircuitWithSteps(tree) : { result: null, steps: [] };
     }, [tree]);
+    const hasTree = Boolean(tree);
+    const isTreeValid = hasTree && evaluation.result !== null;
 
     const handleOptionChange = (option) => {
         setChosenOpt(option);
@@ -80,6 +82,30 @@ export function MCVP({ onNavigate, initialData }) {
         } else {
             throw new Error("Nepodařilo se vytvořit strom z importovaných dat.");
         }
+    };
+
+    const handleOpenGameConversion = () => {
+        if (!isTreeValid) {
+            toast.error('Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.');
+            return;
+        }
+        setGameConversion(true);
+    };
+
+    const handleOpenGrammarConversion = () => {
+        if (!isTreeValid) {
+            toast.error('Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.');
+            return;
+        }
+        setGrammarConversion(true);
+    };
+
+    const handleOpenExplain = () => {
+        if (!isTreeValid) {
+            toast.error('Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.');
+            return;
+        }
+        setExplain(true);
     };
 
     return (
@@ -167,11 +193,44 @@ export function MCVP({ onNavigate, initialData }) {
                 </div>
             )}
 
+            {tree && !isTreeValid && (
+                <div className="alert alert-warning mt-3 mx-auto" style={{ maxWidth: '700px' }}>
+                    Obvod není kompletní nebo platný. Doplňte chybějící propojení tak, aby měl právě jeden kořenový uzel a šel vyhodnotit.
+                </div>
+            )}
+
+            {!tree && chosenOpt === 'interactive' && (
+                <div className="alert alert-warning mt-3 mx-auto" style={{ maxWidth: '700px' }}>
+                    Graf není platný pro vyhodnocení. Upravte propojení tak, aby neobsahoval volné/disconnected části a měl právě jeden kořen.
+                </div>
+            )}
+
             {tree && (
                 <div>
-                    <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn btn-primary mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
-                    <button className='btn btn-primary mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
+                    <button
+                        className='btn btn-primary m-2'
+                        onClick={handleOpenExplain}
+                        disabled={!isTreeValid}
+                        title={!isTreeValid ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).' : undefined}
+                    >
+                        Vysvětlit
+                    </button>
+                    <button
+                        className='btn btn-primary mx-2'
+                        onClick={handleOpenGameConversion}
+                        disabled={!isTreeValid}
+                        title={!isTreeValid ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).' : undefined}
+                    >
+                        Převést na Kombinatorickou hru
+                    </button>
+                    <button
+                        className='btn btn-primary mx-2'
+                        onClick={handleOpenGrammarConversion}
+                        disabled={!isTreeValid}
+                        title={!isTreeValid ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).' : undefined}
+                    >
+                        Převést na Gramatiku
+                    </button>
                 </div>
             )}
 

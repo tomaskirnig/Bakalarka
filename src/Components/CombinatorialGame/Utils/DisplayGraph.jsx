@@ -15,7 +15,8 @@ export function DisplayGraph({
   fitTrigger = 0,
   highlightedNode = null, 
   winningPlayerMap = {},
-  trackHighlightedNode = false
+  trackHighlightedNode = false,
+  showLockControl = false
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -23,6 +24,7 @@ export function DisplayGraph({
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
+  const [isGraphLocked, setIsGraphLocked] = useState(false);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -238,6 +240,34 @@ export function DisplayGraph({
   // Ref to track a pending zoomToFit request across simulation ticks
   const pendingFitRef = useRef(false);
 
+  const pinNodePosition = useCallback((node) => {
+    if (typeof node?.x === 'number' && typeof node?.y === 'number') {
+      node.fx = node.x;
+      node.fy = node.y;
+    }
+  }, []);
+
+  const unpinNodePosition = useCallback((node) => {
+    if (!node) return;
+    node.fx = undefined;
+    node.fy = undefined;
+  }, []);
+
+  const handleToggleGraphLock = useCallback(() => {
+    setIsGraphLocked(prevLocked => {
+      const nextLocked = !prevLocked;
+
+      if (nextLocked) {
+        data.nodes.forEach(pinNodePosition);
+      } else {
+        data.nodes.forEach(unpinNodePosition);
+        fgRef.current?.d3ReheatSimulation();
+      }
+
+      return nextLocked;
+    });
+  }, [data.nodes, pinNodePosition, unpinNodePosition]);
+
   // Mark a fit as pending and attempt it immediately.
   // If the simulation is still running the correct fit will fire in handleEngineStop.
   useEffect(() => {
@@ -255,11 +285,16 @@ export function DisplayGraph({
         n.fy = n.y;
       }
     });
+
+    if (isGraphLocked) {
+      data.nodes.forEach(pinNodePosition);
+    }
+
     if (pendingFitRef.current && fgRef.current) {
       pendingFitRef.current = false;
       fgRef.current.zoomToFit(400, 50);
     }
-  }, [data.nodes]);
+  }, [data.nodes, isGraphLocked, pinNodePosition]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
@@ -311,6 +346,15 @@ export function DisplayGraph({
           >
             Vycentrovat
           </button>
+          {showLockControl && (
+            <button
+              className="graph-btn"
+              onClick={handleToggleGraphLock}
+              title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
+            >
+              {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
+            </button>
+          )}
         </div>
         <ForceGraph2D
           ref={fgRef}
@@ -362,7 +406,8 @@ DisplayGraph.propTypes = {
   fitToScreen: PropTypes.bool,
   fitTrigger: PropTypes.number,
   highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2]))
+  winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
+  showLockControl: PropTypes.bool
 };
 
 export default DisplayGraph;

@@ -2,8 +2,8 @@ import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { toast } from 'react-toastify';
-import { useGraphColors } from '../../../Hooks/useGraphColors';
-import { useGraphSettings } from '../../../Hooks/useGraphSettings';
+import { useGraphColors } from '../../../../Hooks/useGraphColors';
+import { useGraphSettings } from '../../../../Hooks/useGraphSettings';
 import { graphDataToNodeClass, getNodeDisplayName } from './InteractiveInput.helpers';
 import { createPaintLink, createPaintNode } from './InteractiveInput.renderers';
 import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeControls';
@@ -75,9 +75,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     useEffect(() => {
         if (onTreeUpdate && graphData.nodes.length > 0) {
             const tree = graphDataToNodeClass(graphData);
-            if (tree) {
-                onTreeUpdate(tree);
-            }
+            onTreeUpdate(tree);
         }
     }, [graphData, onTreeUpdate]);
 

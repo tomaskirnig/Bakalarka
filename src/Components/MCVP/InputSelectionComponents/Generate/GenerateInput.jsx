@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { generateTree } from '../Utils/Generator'; 
+import { generateTree } from '../../Utils/Generator'; 
 
 /**
  * Component for generating a random MCVP tree based on user input.

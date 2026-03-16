@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { parseExpressionToTree } from '../Utils/Parser'; 
+import { parseExpressionToTree } from '../../Utils/Parser'; 
 
 import { toast } from 'react-toastify';
 
