@@ -11,7 +11,7 @@ export function ManualInputPanels({
   onSetAsStartingNode,
   onDeleteNode,
   onStartAddEdge,
-  onDeleteEdge
+  onDeleteEdge,
 }) {
   const connectedLinks = selectedNode ? getConnectedLinks(links, selectedNode.id) : [];
 
@@ -19,13 +19,13 @@ export function ManualInputPanels({
     <div className="row g-4 mb-3">
       <div className="col-md-6">
         <div className="card h-100 shadow-sm">
-          <div className="card-header bg-light fw-bold">
-            Analýza hry
-          </div>
+          <div className="card-header bg-light fw-bold">Analýza hry</div>
           <div className="card-body text-center d-flex flex-column justify-content-center">
             {analysisResult ? (
               (() => {
-                const startStatus = analysisResult.nodeStatusRaw ? analysisResult.nodeStatusRaw[startingNodeId] : null;
+                const startStatus = analysisResult.nodeStatusRaw
+                  ? analysisResult.nodeStatusRaw[startingNodeId]
+                  : null;
                 let alertClass = 'alert-secondary';
 
                 if (analysisResult.hasWinningStrategy) {
@@ -38,9 +38,7 @@ export function ManualInputPanels({
 
                 return (
                   <>
-                    <div className={`alert ${alertClass}`}>
-                      {analysisResult.message}
-                    </div>
+                    <div className={`alert ${alertClass}`}>{analysisResult.message}</div>
                     <p className="text-muted small mb-0">
                       Zlatě vyznačené hrany představují optimální tahy pro Hráče I.
                     </p>
@@ -58,18 +56,27 @@ export function ManualInputPanels({
 
       <div className="col-md-6">
         <div className="card h-100 shadow-sm">
-          <div className="card-header bg-light fw-bold">
-            Ovládání grafu
-          </div>
+          <div className="card-header bg-light fw-bold">Ovládání grafu</div>
           <div className="card-body">
             {selectedNode && !addingEdge ? (
               <>
                 <h5 className="card-title mb-3">Vybraný uzel: {selectedNode.id}</h5>
                 <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                  <button className="btn btn-primary btn-sm" onClick={onChangePlayer}>Změnit hráče</button>
-                  <button className="btn btn-info btn-sm" onClick={onSetAsStartingNode}>Nastavit jako startovní</button>
-                  <button className="btn btn-danger btn-sm" onClick={() => onDeleteNode(selectedNode.id)}>Smazat uzel</button>
-                  <button className="btn btn-success btn-sm" onClick={onStartAddEdge}>Přidat hranu</button>
+                  <button className="btn btn-primary btn-sm" onClick={onChangePlayer}>
+                    Změnit hráče
+                  </button>
+                  <button className="btn btn-info btn-sm" onClick={onSetAsStartingNode}>
+                    Nastavit jako startovní
+                  </button>
+                  <button
+                    className="btn btn-danger btn-sm"
+                    onClick={() => onDeleteNode(selectedNode.id)}
+                  >
+                    Smazat uzel
+                  </button>
+                  <button className="btn btn-success btn-sm" onClick={onStartAddEdge}>
+                    Přidat hranu
+                  </button>
                 </div>
 
                 <div>
@@ -112,24 +119,26 @@ ManualInputPanels.propTypes = {
   analysisResult: PropTypes.object,
   startingNodeId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   selectedNode: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   }),
   addingEdge: PropTypes.bool.isRequired,
-  links: PropTypes.arrayOf(PropTypes.shape({
-    source: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-      PropTypes.shape({ id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]) })
-    ]),
-    target: PropTypes.oneOfType([
-      PropTypes.string,
-      PropTypes.number,
-      PropTypes.shape({ id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]) })
-    ])
-  })).isRequired,
+  links: PropTypes.arrayOf(
+    PropTypes.shape({
+      source: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.shape({ id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]) }),
+      ]),
+      target: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.shape({ id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]) }),
+      ]),
+    })
+  ).isRequired,
   onChangePlayer: PropTypes.func.isRequired,
   onSetAsStartingNode: PropTypes.func.isRequired,
   onDeleteNode: PropTypes.func.isRequired,
   onStartAddEdge: PropTypes.func.isRequired,
-  onDeleteEdge: PropTypes.func.isRequired
+  onDeleteEdge: PropTypes.func.isRequired,
 };

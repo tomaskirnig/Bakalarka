@@ -3,12 +3,7 @@
   "nonTerminals": ["S", "E"],
   "terminals": ["+", "id"],
   "productions": {
-    "S": [
-      ["E"]
-    ],
-    "E": [
-      ["E", "+", "id"],
-      ["id"]
-    ]
+    "S": [["E"]],
+    "E": [["E", "+", "id"], ["id"]]
   }
 }

@@ -8,7 +8,7 @@
 export class GamePosition {
   /**
    * Creates a new game position.
-   * 
+   *
    * @param {string} id - The unique identifier for this position
    * @param {number} player - The player who moves from this position (1 or 2)
    * @param {Array<string>} parents - Array of parent position IDs
@@ -21,14 +21,14 @@ export class GamePosition {
     this.children = children; // List of child positions
   }
 }
-  
+
 /**
  * Class representing the entire combinatorial game graph with all positions.
  */
 export class GameGraph {
   /**
    * Creates a new game graph.
-   * 
+   *
    * @param {Object<string, GamePosition>} positions - Object mapping position IDs to GamePosition objects, representing all positions in the game
    * @param {GamePosition} startingPosition - The starting position of the game
    */

@@ -2,47 +2,35 @@
  * @fileoverview Provides utility functions for generating random MCVP circuits (DAGs).
  */
 
-import { toast } from "react-toastify";
-import { Node } from "./NodeClass";
+import { toast } from 'react-toastify';
+import { Node } from './NodeClass';
 
 /**
  * Creates a random variable node with a specified index.
- * 
+ *
  * @param {number} varIndex - The index to use for the variable name (e.g., x1, x2)
  * @returns {Node} A new variable node with random value (0 or 1)
  */
 function createVariableNode(varIndex) {
-  const varName = 'x' + varIndex; // Variable name 
+  const varName = 'x' + varIndex; // Variable name
   const varValue = Math.floor(Math.random() * 2); // Random binary value (0 or 1)
-  
-  return new Node(
-    varName,
-    varValue,
-    'variable',
-    [],
-    []
-  ); 
+
+  return new Node(varName, varValue, 'variable', [], []);
 }
 
 /**
  * Creates a random operator node (AND or OR).
- * 
+ *
  * @param {Array<Node>} children - Array of child nodes for this gate
  * @returns {Node} A new operator node (AND or OR)
  */
 function createGateNode(children = []) {
   const operator = Math.random() < 0.5 ? 'A' : 'O'; // AND (A) or OR (O)
-  
-  const node = new Node(
-    operator,
-    null,
-    'operation',
-    children,
-    []
-  );
-  
+
+  const node = new Node(operator, null, 'operation', children, []);
+
   // Set parent relationship for each child
-  children.forEach(child => {
+  children.forEach((child) => {
     if (child) {
       // Ensure parents array exists
       if (!child.parents) {
@@ -54,13 +42,13 @@ function createGateNode(children = []) {
       }
     }
   });
-  
+
   return node;
 }
 
 /**
  * Generates a random MCVP circuit (DAG).
- * 
+ *
  * @param {number} numGates - Number of logical gates (AND/OR) to include
  * @param {number} numVariables - Number of variables to include
  * @returns {Node} The root node of the generated circuit
@@ -88,7 +76,7 @@ export function generateTree(numGates, numVariables) {
 
   // Helper to pick unique random nodes from a pool
   const pickDistinctNodes = (pool, count, excluded = new Set()) => {
-    const available = pool.filter(node => node && !excluded.has(node.id));
+    const available = pool.filter((node) => node && !excluded.has(node.id));
     const picked = [];
 
     while (picked.length < count && available.length > 0) {
@@ -108,7 +96,7 @@ export function generateTree(numGates, numVariables) {
 
     const remainingGates = numGates - i;
     const rootNodes = Array.from(rootNodeIds)
-      .map(id => nodeById.get(id))
+      .map((id) => nodeById.get(id))
       .filter(Boolean);
     const selectedChildren = [];
 
@@ -116,7 +104,9 @@ export function generateTree(numGates, numVariables) {
     // so remaining gates can still reduce to one root.
     const minRequiredRootChildren = rootNodes.length - remainingGates + 1;
     if (minRequiredRootChildren > 2) {
-      toast.error('Nelze dokončit binární strukturu: příliš mnoho kořenů vzhledem ke zbývajícím hradlům.');
+      toast.error(
+        'Nelze dokončit binární strukturu: příliš mnoho kořenů vzhledem ke zbývajícím hradlům.'
+      );
       throw new Error('Generování neuspělo: nelze dosáhnout jediného kořene s aritou <= 2.');
     }
 
@@ -132,8 +122,8 @@ export function generateTree(numGates, numVariables) {
 
     // If unary so far, try to reuse one non-root input to keep gate binary.
     if (selectedChildren.length < 2) {
-      const alreadySelected = new Set(selectedChildren.map(node => node.id));
-      const nonRootNodes = nodes.filter(node => !rootNodeIds.has(node.id));
+      const alreadySelected = new Set(selectedChildren.map((node) => node.id));
+      const nonRootNodes = nodes.filter((node) => !rootNodeIds.has(node.id));
       const reused = pickDistinctNodes(nonRootNodes, 1, alreadySelected);
 
       if (reused.length === 1) {
@@ -156,7 +146,7 @@ export function generateTree(numGates, numVariables) {
     nodeById.set(gateNode.id, gateNode);
 
     // Selected root children lose root status; new gate becomes root.
-    selectedChildren.forEach(child => {
+    selectedChildren.forEach((child) => {
       rootNodeIds.delete(child.id);
     });
     rootNodeIds.add(gateNode.id);

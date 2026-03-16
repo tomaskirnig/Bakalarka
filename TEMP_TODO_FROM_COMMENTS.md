@@ -3,11 +3,11 @@
 - [x] MCVP generator: investigate why it produces only trees instead of general DAGs and allow reusing node outputs.
 - [x] MCVP prepared sets: add non-trivial DAG examples (not only trees).
 - [x] MCVP core logic: operation node should have max 2 childe nodes.
-- [x] MCVP generation of graph: we should aim for two children for one parent node if possible. 
-- [ ] MCVP expression parser: fix conflict detection for same variable with different values in one expression and when one variable is mentioned more times, use the same variable and not new one.
+- [x] MCVP generation of graph: we should aim for two children for one parent node if possible.
+- [x] MCVP expression parser: fix conflict detection for same variable with different values in one expression and when one variable is mentioned more times, use the same variable and not new one.
 - [ ] MCVP edge visualization: reverse arrow direction to match value propagation flow.
 - [ ] MCVP -> Combinatorial Game conversion: in the Combinatorial Game make the node ids visible permanently like in the MCVP graph.
-- [ ] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called. 
+- [ ] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called.
 - [x] MCVP explanation and conversion modals: the graph displayed in the modals doesnt have the same node positions as in the default display component - when user positions the nodes and they have saved position, this data should be passed to and used in the explaination and conversion modals.
 - [x] Combinatorial Game explanation modal: preserve manual node positions from the main view when opening the step-by-step explanation.
 - [ ] Step-by-step winning strategy analysis: improve wording of per-step status message (e.g., “In this node, Player 1 has a winning strategy.”).
@@ -19,6 +19,6 @@
 - [x] Grammar generator: verify whether number of alternatives per nonterminal (`|`) is hard-limited in code.
 - [x] Grammar generator: if useful, add “max alternatives per nonterminal” as a configurable generation parameter.
 - [ ] MCVP all display components: prevent node overlaps.
-- [ ] Combinatory Game display component: Check if we can add viewport as a boundary for nodes, so they dont ecape - only for not connected ones. 
+- [ ] Combinatory Game display component: Check if we can add viewport as a boundary for nodes, so they dont ecape - only for not connected ones.
 - [ ] MCVP node structure: enforce binary arity for conjunction/disjunction so each such node has exactly 2 children.
 - [ ] Check the whole project for dead or redundant code

@@ -1,6 +1,14 @@
 import { resolveNodeId } from './ManualInput.helpers';
 
-export function createPaintRing({ game, selectedNode, hoverNode, addingEdge, edgeSource, colors, startingNodeId }) {
+export function createPaintRing({
+  game,
+  selectedNode,
+  hoverNode,
+  addingEdge,
+  edgeSource,
+  colors,
+  startingNodeId,
+}) {
   return (node, ctx) => {
     const radius = game.nodeRadius;
 
@@ -65,7 +73,7 @@ export function createPaintLink({ selectedNode }) {
 
       const textPos = {
         x: start.x + (end.x - start.x) * 0.5,
-        y: start.y + (end.y - start.y) * 0.5
+        y: start.y + (end.y - start.y) * 0.5,
       };
 
       const connectedId = sourceId === selectedNode.id ? targetId : sourceId;
@@ -73,7 +81,7 @@ export function createPaintLink({ selectedNode }) {
       const fontSize = 4 + 1 / globalScale;
       ctx.font = `${fontSize}px Sans-Serif`;
       const textWidth = ctx.measureText(label).width;
-      const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.8);
+      const bckgDimensions = [textWidth, fontSize].map((n) => n + fontSize * 0.8);
 
       ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
       ctx.fillRect(

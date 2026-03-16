@@ -4,12 +4,12 @@ import { Grammar } from '../../Grammar/Utils/Grammar';
  * Helper class for managing Grammar with conversion-specific methods
  */
 export default class ConversionGrammar extends Grammar {
-  constructor(startSymbol = "S") {
+  constructor(startSymbol = 'S') {
     super({
       name: 'MCVP Conversion',
       nonTerminals: [startSymbol],
       terminals: [],
-      productions: {}
+      productions: {},
     });
     this.startSymbol = startSymbol;
   }
@@ -43,7 +43,7 @@ export default class ConversionGrammar extends Grammar {
       nonTerminals: [...this.nonTerminals],
       terminals: [...this.terminals],
       productions: { ...this.productions },
-      startSymbol: this.startSymbol
+      startSymbol: this.startSymbol,
     };
   }
 

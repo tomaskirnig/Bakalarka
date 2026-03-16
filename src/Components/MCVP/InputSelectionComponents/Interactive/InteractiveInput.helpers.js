@@ -40,7 +40,7 @@ export function graphDataToNodeClass(graphData) {
     }
   }
 
-  const rootNodes = Array.from(nodeMap.values()).filter(node => node.parents.length === 0);
+  const rootNodes = Array.from(nodeMap.values()).filter((node) => node.parents.length === 0);
 
   // Interactive editor validity: exactly one root is required.
   // Multiple roots mean there are disconnected/free nodes.
@@ -64,5 +64,5 @@ export function getNodeDisplayName(node) {
   if (node.type === 'variable') {
     return `${node.value}[${node.varValue}]`;
   }
-  return node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
+  return node.value === 'A' ? 'AND' : node.value === 'O' ? 'OR' : node.value;
 }

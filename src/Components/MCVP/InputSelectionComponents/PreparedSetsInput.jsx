@@ -1,28 +1,28 @@
-import PropTypes from "prop-types";
-import { Node } from "../Utils/NodeClass";
-import { toast } from "react-toastify";
+import PropTypes from 'prop-types';
+import { Node } from '../Utils/NodeClass';
+import { toast } from 'react-toastify';
 
 // Load all JSON files from the Sady/MCVP directory
 const modules = import.meta.glob('../../../../Sady/MCVP/*.json', { eager: true });
 const Data = Object.entries(modules)
-    .map(([path, mod]) => {
-        const data = mod.default || mod;
-        // Validation
-        if (!data || typeof data !== 'object') {
-            console.warn(`Skipping invalid MCVP file (not an object): ${path}`);
-            return null;
-        }
-        if (!data.name) {
-             console.warn(`Skipping invalid MCVP file (missing name): ${path}`);
-             return null;
-        }
-        if (!Array.isArray(data.nodes)) {
-             console.warn(`Skipping invalid MCVP file (missing nodes array): ${path}`);
-             return null;
-        }
-        return data;
-    })
-    .filter(item => item !== null);
+  .map(([path, mod]) => {
+    const data = mod.default || mod;
+    // Validation
+    if (!data || typeof data !== 'object') {
+      console.warn(`Skipping invalid MCVP file (not an object): ${path}`);
+      return null;
+    }
+    if (!data.name) {
+      console.warn(`Skipping invalid MCVP file (missing name): ${path}`);
+      return null;
+    }
+    if (!Array.isArray(data.nodes)) {
+      console.warn(`Skipping invalid MCVP file (missing nodes array): ${path}`);
+      return null;
+    }
+    return data;
+  })
+  .filter((item) => item !== null);
 
 /**
  * Component for selecting a pre-defined MCVP problem set.
@@ -71,12 +71,10 @@ export function PreparedSetsInput({ onTreeUpdate }) {
     }
 
     // 3. Find Root (Node with no parents)
-    const rootNodes = Array.from(nodeMap.values()).filter(
-      (node) => node.parents.length === 0
-    );
+    const rootNodes = Array.from(nodeMap.values()).filter((node) => node.parents.length === 0);
 
     if (rootNodes.length === 0) {
-      const msg = "V připravené sadě nebyl nalezen kořenový uzel (možný cyklus).";
+      const msg = 'V připravené sadě nebyl nalezen kořenový uzel (možný cyklus).';
       console.warn(msg);
       toast.error(msg);
       return null; // Cycle or empty?

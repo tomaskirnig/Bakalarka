@@ -18,11 +18,11 @@ export class Grammar {
     this.productions = data.productions || {};
     // StartSymbol is derived as the first nonTerminal, not stored separately
   }
-  
+
   toText() {
     let text = '';
     for (const [nonTerminal, productions] of Object.entries(this.productions)) {
-      const rightSides = productions.map(production => 
+      const rightSides = productions.map((production) =>
         production.length > 0 ? production.join(' ') : 'ε'
       );
       text += `${nonTerminal} → ${rightSides.join(' | ')}\n`;

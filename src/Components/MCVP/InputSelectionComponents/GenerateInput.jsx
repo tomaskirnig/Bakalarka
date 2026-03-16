@@ -1,18 +1,18 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
-import { generateTree } from '../Utils/Generator'; 
+import { generateTree } from '../Utils/Generator';
 
 /**
  * Component for generating a random MCVP tree based on user input.
  * Allows the user to specify the number of gates and variables.
- * 
+ *
  * @component
  * @param {Object} props - The component props
  * @param {function} props.onTreeUpdate - Callback function called when a new tree is generated. Receives the root node of the generated tree.
  */
-export function GenerateInput( {onTreeUpdate} ) {
-  const [numGates, setNumGates] = useState(1);      
-  const [numVariables, setNumVariables] = useState(1); 
+export function GenerateInput({ onTreeUpdate }) {
+  const [numGates, setNumGates] = useState(1);
+  const [numVariables, setNumVariables] = useState(1);
 
   // Handler for generating the tree when the button is clicked
   const handleGenerateTree = () => {
@@ -24,7 +24,7 @@ export function GenerateInput( {onTreeUpdate} ) {
     <div className="inputWindow">
       <label>Počet hradel:</label>
       <input
-        className='form-control'
+        className="form-control"
         type="number"
         min="1"
         max="750"
@@ -36,10 +36,10 @@ export function GenerateInput( {onTreeUpdate} ) {
           setNumGates(Math.min(750, Math.max(1, val)));
         }}
       />
-      
+
       <label>Počet proměnných:</label>
       <input
-        className='form-control'
+        className="form-control"
         type="number"
         min="1"
         max="750"
@@ -52,11 +52,13 @@ export function GenerateInput( {onTreeUpdate} ) {
         }}
       />
 
-      <button className='btn btn-primary mt-3' onClick={handleGenerateTree}>Generovat</button> 
+      <button className="btn btn-primary mt-3" onClick={handleGenerateTree}>
+        Generovat
+      </button>
     </div>
   );
 }
 
 GenerateInput.propTypes = {
-  onTreeUpdate: PropTypes.func.isRequired
+  onTreeUpdate: PropTypes.func.isRequired,
 };

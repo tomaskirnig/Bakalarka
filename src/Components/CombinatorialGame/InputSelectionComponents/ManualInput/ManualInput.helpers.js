@@ -4,7 +4,7 @@ export function resolveNodeId(nodeOrId) {
 
 export function buildNodeMap(nodes) {
   const map = {};
-  nodes.forEach(node => {
+  nodes.forEach((node) => {
     map[node.id] = node;
   });
   return map;
@@ -13,7 +13,7 @@ export function buildNodeMap(nodes) {
 export function toFormattedGraph(graph, startingNodeId) {
   if (!graph || graph.nodes.length === 0 || !startingNodeId) return null;
 
-  const startNode = graph.nodes.find(node => node.id === startingNodeId);
+  const startNode = graph.nodes.find((node) => node.id === startingNodeId);
   if (!startNode) return null;
 
   return {
@@ -24,15 +24,15 @@ export function toFormattedGraph(graph, startingNodeId) {
         x: node.x,
         y: node.y,
         children: graph.links
-          .filter(link => resolveNodeId(link.source) === node.id)
-          .map(link => resolveNodeId(link.target)),
+          .filter((link) => resolveNodeId(link.source) === node.id)
+          .map((link) => resolveNodeId(link.target)),
         parents: graph.links
-          .filter(link => resolveNodeId(link.target) === node.id)
-          .map(link => resolveNodeId(link.source))
+          .filter((link) => resolveNodeId(link.target) === node.id)
+          .map((link) => resolveNodeId(link.source)),
       };
       return acc;
     }, {}),
-    startingPosition: startNode
+    startingPosition: startNode,
   };
 }
 
@@ -43,23 +43,23 @@ export function mapInitialGraphToState(initialGraph) {
     const newNodes = [];
     const newLinks = [];
 
-    Object.values(initialGraph.positions).forEach(pos => {
+    Object.values(initialGraph.positions).forEach((pos) => {
       newNodes.push({
         id: String(pos.id),
         player: pos.player,
         x: pos.x,
         y: pos.y,
-        neighbors: []
+        neighbors: [],
       });
     });
 
-    Object.values(initialGraph.positions).forEach(pos => {
+    Object.values(initialGraph.positions).forEach((pos) => {
       if (pos.children) {
-        pos.children.forEach(childId => {
+        pos.children.forEach((childId) => {
           if (initialGraph.positions[childId]) {
             newLinks.push({
               source: String(pos.id),
-              target: String(childId)
+              target: String(childId),
             });
           }
         });
@@ -70,19 +70,19 @@ export function mapInitialGraphToState(initialGraph) {
       graph: { nodes: newNodes, links: newLinks },
       startingNodeId: initialGraph.startingPosition
         ? String(initialGraph.startingPosition.id || initialGraph.startingPosition)
-        : null
+        : null,
     };
   }
 
   if (initialGraph.nodes || initialGraph.edges || initialGraph.links) {
     const nodePositions = initialGraph.nodePositions || {};
 
-    const newNodes = (initialGraph.nodes || []).map(n => {
+    const newNodes = (initialGraph.nodes || []).map((n) => {
       const nodeData = {
         ...n,
         id: String(n.id),
         player: n.player !== undefined ? n.player : 1,
-        neighbors: []
+        neighbors: [],
       };
 
       if (nodePositions[n.id]) {
@@ -96,16 +96,16 @@ export function mapInitialGraphToState(initialGraph) {
     });
 
     const edges = initialGraph.edges || initialGraph.links || [];
-    const newLinks = edges.map(l => ({
+    const newLinks = edges.map((l) => ({
       source: String(resolveNodeId(l.source)),
-      target: String(resolveNodeId(l.target))
+      target: String(resolveNodeId(l.target)),
     }));
 
     return {
       graph: { nodes: newNodes, links: newLinks },
       startingNodeId: initialGraph.startingPosition
         ? String(initialGraph.startingPosition.id || initialGraph.startingPosition)
-        : null
+        : null,
     };
   }
 
@@ -113,7 +113,7 @@ export function mapInitialGraphToState(initialGraph) {
 }
 
 export function getConnectedLinks(links, selectedNodeId) {
-  return links.filter(link => {
+  return links.filter((link) => {
     const sourceId = resolveNodeId(link.source);
     const targetId = resolveNodeId(link.target);
     return sourceId === selectedNodeId || targetId === selectedNodeId;

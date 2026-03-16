@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Navigation } from './Components/Navigation'
+import { useState } from 'react';
+import { Navigation } from './Components/Navigation';
 import { HomePage } from './Components/HomePage';
 import { MCVP } from './Components/MCVP/MCVP';
 import CombinatorialGame from './Components/CombinatorialGame/CombinatorialGame';
@@ -23,13 +23,19 @@ function App() {
     <>
       <Navigation selectedOption={currentPage} onNavSelect={handleNavSelection} />
       <ErrorBoundary key={currentPage}>
-        {currentPage === 'Home' && <HomePage onNavigate={handleNavSelection} initialData={pageData} />}
+        {currentPage === 'Home' && (
+          <HomePage onNavigate={handleNavSelection} initialData={pageData} />
+        )}
         {currentPage === 'MCVP' && <MCVP onNavigate={handleNavSelection} initialData={pageData} />}
-        {currentPage === 'CombinatorialGame' && <CombinatorialGame onNavigate={handleNavSelection} initialData={pageData} />}
-        {currentPage === 'Grammar' && <Grammar onNavigate={handleNavSelection} initialData={pageData} />}
+        {currentPage === 'CombinatorialGame' && (
+          <CombinatorialGame onNavigate={handleNavSelection} initialData={pageData} />
+        )}
+        {currentPage === 'Grammar' && (
+          <Grammar onNavigate={handleNavSelection} initialData={pageData} />
+        )}
       </ErrorBoundary>
 
-      <ToastContainer 
+      <ToastContainer
         position="top-right"
         autoClose={2000}
         hideProgressBar={false}
@@ -42,7 +48,7 @@ function App() {
         theme="light"
       />
     </>
-  )
+  );
 }
 
-export default App
+export default App;

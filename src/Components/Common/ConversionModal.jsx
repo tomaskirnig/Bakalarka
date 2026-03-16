@@ -6,39 +6,36 @@ import PropTypes from 'prop-types';
  * Takes up most of the screen for better visibility of conversion steps
  */
 export function ConversionModal({ onClose, children }) {
-    const [isClosing, setIsClosing] = useState(false);
-    const timerRef = useRef(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const timerRef = useRef(null);
 
-    useEffect(() => {
-        return () => clearTimeout(timerRef.current);
-    }, []);
+  useEffect(() => {
+    return () => clearTimeout(timerRef.current);
+  }, []);
 
-    const handleClose = () => {
-        setIsClosing(true);
-        timerRef.current = setTimeout(() => {
-            onClose();
-        }, 250);
-    };
+  const handleClose = () => {
+    setIsClosing(true);
+    timerRef.current = setTimeout(() => {
+      onClose();
+    }, 250);
+  };
 
-    return (
-        <div className={`modal-overlay ${isClosing ? 'modal-closing' : ''}`} onClick={handleClose}>
-            <div className={`conversion-modal-content ${isClosing ? 'modal-content-closing' : ''}`} onClick={(e) => e.stopPropagation()}>
-                <button 
-                    onClick={handleClose} 
-                    className="conversion-modal-close-btn"
-                    aria-label="Close"
-                >
-                    <i className="bi bi-x-lg"></i>
-                </button>
-                <div className="conversion-modal-body">
-                    {children}
-                </div>
-            </div>
-        </div>
-    );
+  return (
+    <div className={`modal-overlay ${isClosing ? 'modal-closing' : ''}`} onClick={handleClose}>
+      <div
+        className={`conversion-modal-content ${isClosing ? 'modal-content-closing' : ''}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button onClick={handleClose} className="conversion-modal-close-btn" aria-label="Close">
+          <i className="bi bi-x-lg"></i>
+        </button>
+        <div className="conversion-modal-body">{children}</div>
+      </div>
+    </div>
+  );
 }
 
 ConversionModal.propTypes = {
-    onClose: PropTypes.func.isRequired,
-    children: PropTypes.node.isRequired,
+  onClose: PropTypes.func.isRequired,
+  children: PropTypes.node.isRequired,
 };

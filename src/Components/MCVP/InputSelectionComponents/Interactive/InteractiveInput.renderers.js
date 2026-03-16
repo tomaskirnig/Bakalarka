@@ -7,7 +7,7 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
 
     ctx.beginPath();
     ctx.arc(node.x, node.y, radius, 0, 2 * Math.PI, false);
-    ctx.fillStyle = (isSelected || isEdgeSource) ? colors.selected : colors.defaultNode;
+    ctx.fillStyle = isSelected || isEdgeSource ? colors.selected : colors.defaultNode;
     ctx.fill();
 
     ctx.strokeStyle = colors.outerCircle;
@@ -22,7 +22,7 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
     if (node.type === 'variable') {
       displayText = `${node.value}[${node.varValue}]`;
     } else {
-      displayText = node.value === 'A' ? 'AND' : (node.value === 'O' ? 'OR' : node.value);
+      displayText = node.value === 'A' ? 'AND' : node.value === 'O' ? 'OR' : node.value;
     }
 
     ctx.font = mcvp.labelFont;
@@ -35,7 +35,12 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
 
 export function createPaintLink({ selectedNode }) {
   return (link, ctx) => {
-    if (!link.source || !link.target || typeof link.source.x === 'undefined' || typeof link.target.x === 'undefined') {
+    if (
+      !link.source ||
+      !link.target ||
+      typeof link.source.x === 'undefined' ||
+      typeof link.target.x === 'undefined'
+    ) {
       return;
     }
 
