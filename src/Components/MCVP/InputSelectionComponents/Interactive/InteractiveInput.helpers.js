@@ -1,4 +1,4 @@
-import { Node } from '../../Utils/NodeClass';
+import { graphToTree } from '../../Utils/GraphToTree';
 
 /**
  * Converts force-graph data to the internal Node class tree/DAG structure.
@@ -6,52 +6,13 @@ import { Node } from '../../Utils/NodeClass';
  * @returns {Node|null}
  */
 export function graphDataToNodeClass(graphData) {
-  if (!graphData?.nodes?.length) return null;
-
-  const nodeMap = new Map();
-
-  for (const graphNode of graphData.nodes) {
-    const node = new Node(
-      graphNode.value,
-      graphNode.varValue,
-      graphNode.type,
-      [],
-      [],
-      graphNode.id
-    );
-
-    if (typeof graphNode.x === 'number' && typeof graphNode.y === 'number') {
-      node.x = graphNode.x;
-      node.y = graphNode.y;
-      node.fx = graphNode.x;
-      node.fy = graphNode.y;
-    }
-
-    nodeMap.set(graphNode.id, node);
-  }
-
-  for (const link of graphData.links || []) {
-    const sourceNode = nodeMap.get(link.source.id);
-    const targetNode = nodeMap.get(link.target.id);
-
-    if (sourceNode && targetNode) {
-      sourceNode.children.push(targetNode);
-      targetNode.parents.push(sourceNode);
-    }
-  }
-
-  const rootNodes = Array.from(nodeMap.values()).filter((node) => node.parents.length === 0);
-
-  // Interactive editor validity: exactly one root is required.
-  // Multiple roots mean there are disconnected/free nodes.
-  if (rootNodes.length !== 1) {
-    if (rootNodes.length === 0) {
-      console.warn('No root node found - graph may have cycles');
-    }
-    return null;
-  }
-
-  return rootNodes[0];
+  return graphToTree(graphData, {
+    requireSingleRoot: true,
+    acceptEdgesOrLinks: true,
+    preservePositions: true,
+    maxChildrenCheck: true,
+    throwOnInvalid: false,
+  });
 }
 
 /**

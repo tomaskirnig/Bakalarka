@@ -1,3 +1,5 @@
+import { drawReversedArrowhead } from '../../Utils/drawReversedArrowhead';
+
 export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, mcvp }) {
   return (node, ctx) => {
     const radius = mcvp.nodeRadius;
@@ -33,7 +35,7 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
   };
 }
 
-export function createPaintLink({ selectedNode }) {
+export function createPaintLink({ selectedNode, nodeRadius }) {
   return (link, ctx) => {
     if (
       !link.source ||
@@ -53,6 +55,9 @@ export function createPaintLink({ selectedNode }) {
     ctx.strokeStyle = 'rgba(0,0,0,0.4)';
     ctx.lineWidth = 1;
     ctx.stroke();
+
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
+    drawReversedArrowhead(ctx, start.x, start.y, end.x, end.y, nodeRadius || 10);
 
     const midX = (start.x + end.x) / 2;
     const midY = (start.y + end.y) / 2;

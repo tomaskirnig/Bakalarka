@@ -1,0 +1,98 @@
+import { Node } from './NodeClass';
+
+/**
+ * Converts flat graph data into internal Node DAG structure.
+ *
+ * @param {Object} graphData
+ * @param {Object} options
+ * @param {boolean} [options.requireSingleRoot=false] - Requires exactly one root.
+ * @param {boolean} [options.acceptEdgesOrLinks=true] - Accepts either `links` or `edges` arrays.
+ * @param {boolean} [options.preservePositions=true] - Copies x/y positions into created nodes.
+ * @param {boolean} [options.maxChildrenCheck=true] - Enforces max 2 children for operation nodes.
+ * @param {boolean} [options.throwOnInvalid=false] - Throws on invalid input instead of returning null.
+ * @returns {Node|null}
+ */
+export function graphToTree(
+  graphData,
+  {
+    requireSingleRoot = false,
+    acceptEdgesOrLinks = true,
+    preservePositions = true,
+    maxChildrenCheck = true,
+    throwOnInvalid = false,
+  } = {}
+) {
+  if (!graphData || !Array.isArray(graphData.nodes) || graphData.nodes.length === 0) {
+    return null;
+  }
+
+  const fail = (message) => {
+    if (throwOnInvalid) {
+      throw new Error(message);
+    }
+    console.warn(message);
+    return null;
+  };
+
+  const nodeMap = new Map();
+
+  for (const graphNode of graphData.nodes) {
+    const node = new Node(
+      graphNode.value,
+      graphNode.varValue,
+      graphNode.type,
+      [],
+      [],
+      graphNode.id
+    );
+
+    if (preservePositions) {
+      if (typeof graphNode.x === 'number' && typeof graphNode.y === 'number') {
+        node.x = graphNode.x;
+        node.y = graphNode.y;
+        node.fx = graphNode.x;
+        node.fy = graphNode.y;
+      } else if (graphData.positions && graphData.positions[graphNode.id]) {
+        const pos = graphData.positions[graphNode.id];
+        node.x = pos.x;
+        node.y = pos.y;
+        node.fx = pos.x;
+        node.fy = pos.y;
+      }
+    }
+
+    nodeMap.set(graphNode.id, node);
+  }
+
+  const links = acceptEdgesOrLinks
+    ? graphData.links || graphData.edges || []
+    : graphData.edges || [];
+
+  for (const link of links) {
+    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+
+    const sourceNode = nodeMap.get(sourceId);
+    const targetNode = nodeMap.get(targetId);
+    if (!sourceNode || !targetNode) continue;
+
+    if (maxChildrenCheck && sourceNode.type === 'operation' && sourceNode.children.length >= 2) {
+      return fail(`Uzel operace ${sourceNode.id} má více než 2 potomky.`);
+    }
+
+    sourceNode.children.push(targetNode);
+    targetNode.parents.push(sourceNode);
+  }
+
+  const rootNodes = Array.from(nodeMap.values()).filter((node) => node.parents.length === 0);
+
+  if (rootNodes.length === 0) {
+    return fail('Nenalezen kořenový uzel - graf může obsahovat cykly.');
+  }
+
+  if (requireSingleRoot && rootNodes.length !== 1) {
+    return fail(`Byl nalezen neplatný počet kořenů: ${rootNodes.length}.`);
+  }
+
+  return rootNodes[0];
+}

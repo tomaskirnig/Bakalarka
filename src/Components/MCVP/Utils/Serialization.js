@@ -1,4 +1,4 @@
-import { Node } from './NodeClass';
+import { graphToTree } from './GraphToTree';
 
 /**
  * Converts a flat graph representation (nodes/links) to a recursive Node DAG structure.
@@ -7,70 +7,13 @@ import { Node } from './NodeClass';
  * @returns {Node|null} The root node of the DAG or null if invalid
  */
 export function flatGraphToTree(graphData) {
-  if (!graphData || !graphData.nodes || !graphData.nodes.length) return null;
-
-  // Create a map of Node instances
-  const nodeMap = new Map();
-
-  // First pass: Create all Node instances
-  for (const graphNode of graphData.nodes) {
-    const node = new Node(
-      graphNode.value,
-      graphNode.varValue,
-      graphNode.type,
-      [], // Initialize empty children array
-      [], // Initialize empty parents array
-      graphNode.id // Pass the ID explicitly
-    );
-
-    // Apply positions if available
-    if (graphData.positions && graphData.positions[graphNode.id]) {
-      const pos = graphData.positions[graphNode.id];
-      node.x = pos.x;
-      node.y = pos.y;
-      node.fx = pos.x; // Fix position
-      node.fy = pos.y; // Fix position
-    }
-
-    nodeMap.set(graphNode.id, node);
-  }
-
-  // Second pass: Build parent-child relationships
-  // Handle both 'links' (interactive) and 'edges' (stored sets) formats
-  const edges = graphData.links || graphData.edges || [];
-
-  for (const link of edges) {
-    // Link might be object {source: id, target: id} or {source: object, target: object}
-    // Handle both ID references and direct object references
-    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-
-    const sourceNode = nodeMap.get(sourceId);
-    const targetNode = nodeMap.get(targetId);
-
-    if (sourceNode && targetNode) {
-      if (sourceNode.type === 'operation' && sourceNode.children.length >= 2) {
-        console.warn(`Uzel operace ${sourceNode.id} má více než 2 potomky.`);
-        return null;
-      }
-      // Add target as child of source
-      sourceNode.children.push(targetNode);
-      // Add source as parent of target
-      targetNode.parents.push(sourceNode);
-    }
-  }
-
-  // Find the root node (node with no parents)
-  const rootNodes = Array.from(nodeMap.values()).filter((node) => node.parents.length === 0);
-
-  if (rootNodes.length === 0) {
-    console.warn('Nenalezen kořenový uzel - graf může obsahovat cykly');
-    return null;
-  }
-
-  // If multiple roots, typically pick the first one or the logic depends on context.
-  // For MCVP evaluation, we expect a single output (root).
-  return rootNodes[0];
+  return graphToTree(graphData, {
+    requireSingleRoot: false,
+    acceptEdgesOrLinks: true,
+    preservePositions: true,
+    maxChildrenCheck: true,
+    throwOnInvalid: false,
+  });
 }
 
 /**

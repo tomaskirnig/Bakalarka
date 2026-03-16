@@ -377,7 +377,10 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     [selectedNode, hoverNode, edgeSource, colors, mcvp]
   );
 
-  const paintLink = useMemo(() => createPaintLink({ selectedNode }), [selectedNode]);
+  const paintLink = useMemo(
+    () => createPaintLink({ selectedNode, nodeRadius: mcvp.nodeRadius }),
+    [selectedNode, mcvp.nodeRadius]
+  );
 
   // Force setup for collision and stable centering (without repulsion drift)
   useEffect(() => {
@@ -481,9 +484,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
           // Links
           linkCanvasObject={paintLink} // Custom link renderer
           linkCanvasObjectMode={() => 'after'} // Draw custom object after link line
-          linkDirectionalArrowLength={6}
-          linkDirectionalArrowRelPos={0}
-          linkDirec
+          linkDirectionalArrowLength={0}
           onDagError={useTopDownLayout ? handleDagError : undefined}
           // Interaction
           onNodeClick={handleNodeClick}

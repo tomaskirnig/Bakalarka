@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../Hooks/useGraphSettings';
+import { drawReversedArrowhead } from './Utils/drawReversedArrowhead';
 
 // Constant accessor functions to prevent re-renders of the graph engine
 const MODE_REPLACE = () => 'replace';
@@ -302,16 +303,33 @@ export function TreeRenderCanvas({
       if (!link.source || !link.target) return;
 
       const isHighlighted = highlightLinks.current.has(link);
+      const sourceX = link.source.x;
+      const sourceY = link.source.y;
+      const targetX = link.target.x;
+      const targetY = link.target.y;
+
+      if (
+        typeof sourceX !== 'number' ||
+        typeof sourceY !== 'number' ||
+        typeof targetX !== 'number' ||
+        typeof targetY !== 'number'
+      ) {
+        return;
+      }
 
       ctx.strokeStyle = isHighlighted ? colors.accentRed : colors.defaultLink;
       ctx.lineWidth = isHighlighted ? 3 : 1;
 
       ctx.beginPath();
-      ctx.moveTo(link.source.x, link.source.y);
-      ctx.lineTo(link.target.x, link.target.y);
+      ctx.moveTo(sourceX, sourceY);
+      ctx.lineTo(targetX, targetY);
       ctx.stroke();
+
+      // Keep link semantics parent->child, but draw reversed visual arrowheads.
+      ctx.fillStyle = isHighlighted ? colors.accentRed : colors.defaultLink;
+      drawReversedArrowhead(ctx, sourceX, sourceY, targetX, targetY, mcvp.nodeRadius);
     },
-    [colors]
+    [colors, mcvp.nodeRadius]
   );
 
   // 4. Effects
@@ -520,8 +538,7 @@ export function TreeRenderCanvas({
         maxZoom={8}
         // Rendering Props
         nodeRelSize={mcvp.nodeRadius} // Matches paintNode radius
-        linkDirectionalArrowLength={6}
-        linkDirectionalArrowRelPos={0}
+        linkDirectionalArrowLength={0}
         // Custom Painters
         linkCanvasObjectMode={MODE_REPLACE}
         linkCanvasObject={paintLink}

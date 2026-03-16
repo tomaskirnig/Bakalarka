@@ -92,8 +92,8 @@ export function InteractiveSelectedNodeControls({
       <div style={{ marginTop: '10px' }}>
         <h6>Spojené hrany:</h6>
         <div className="d-flex flex-wrap justify-content-center">
-          {connectedLinks.map((link, index) => (
-            <div key={`${link.source}-${link.target}-${index}`} className="m-1">
+          {connectedLinks.map((link) => (
+            <div key={link.id} className="m-1">
               <button
                 className="btn btn-outline-danger btn-sm"
                 onClick={() => onDeleteEdge(link.source.id, link.target.id)}
