@@ -165,6 +165,7 @@ export default function MCVPtoCombinatorialGameConverter({
                 fitToScreen={shouldFitCG}
                 fitTrigger={fitTrigger}
                 defaultLocked={true}
+                showLockControl={true}
                 showNodeIdsAlways={true}
               />
             </div>

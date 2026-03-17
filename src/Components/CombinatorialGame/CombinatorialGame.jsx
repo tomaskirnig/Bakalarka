@@ -260,7 +260,7 @@ export function CombinatorialGame({ initialData }) {
             {chosenOpt !== 'manual' && (
               <>
                 <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                  <DisplayGraph graph={graph} optimalMoves={optimalMoves} />
+                  <DisplayGraph graph={graph} optimalMoves={optimalMoves} showLockControl={true} />
                 </div>
                 <GameAnalysisDisplay analysisResult={analysisResult} />
               </>

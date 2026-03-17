@@ -4,6 +4,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../Hooks/useGraphSettings';
 import { drawReversedArrowhead } from './Utils/drawReversedArrowhead';
+import GraphLockButton from '../Common/GraphControls/GraphLockButton';
 
 // Constant accessor functions to prevent re-renders of the graph engine
 const MODE_REPLACE = () => 'replace';
@@ -41,7 +42,6 @@ export function TreeRenderCanvas({
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
   const [isLocked, setIsLocked] = useState(defaultLocked);
-  const [showLockTooltip, setShowLockTooltip] = useState(false);
   const [unlockVersion, setUnlockVersion] = useState(0);
   const savedPositions = useRef(new Map());
   const sourceNodesByIdRef = useRef(new Map());
@@ -479,44 +479,7 @@ export function TreeRenderCanvas({
         >
           Vycentrovat
         </button>
-        <div
-          style={{ position: 'relative' }}
-          onMouseEnter={() => setShowLockTooltip(true)}
-          onMouseLeave={() => setShowLockTooltip(false)}
-        >
-          <button
-            className="graph-btn"
-            onClick={handleToggleLock}
-            style={
-              isLocked
-                ? { color: 'var(--color2)', borderColor: 'var(--color2)', fontWeight: 700 }
-                : undefined
-            }
-          >
-            {isLocked ? '🔒 Zamčeno' : '🔓 Zamknout'}
-          </button>
-          {showLockTooltip && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                right: 0,
-                background: 'rgba(7, 57, 60, 0.95)',
-                color: 'white',
-                fontSize: '0.75rem',
-                padding: '5px 9px',
-                borderRadius: '6px',
-                whiteSpace: 'nowrap',
-                pointerEvents: 'none',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                border: '1px solid rgba(144, 221, 240, 0.3)',
-                zIndex: 10,
-              }}
-            >
-              {isLocked ? 'Odemknout pozice všech uzlů' : 'Zamknout pozice všech uzlů na místě'}
-            </div>
-          )}
-        </div>
+        <GraphLockButton isLocked={isLocked} onToggle={handleToggleLock} />
       </div>
       <ForceGraph2D
         ref={fgRef}

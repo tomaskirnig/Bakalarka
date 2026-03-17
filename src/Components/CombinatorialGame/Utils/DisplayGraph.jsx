@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
+import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
 
 const EMPTY_SET = new Set();
 
@@ -319,12 +320,18 @@ export function DisplayGraph({
     }
   }, [fitToScreen, fitTrigger]);
 
-  // Freeze every node after the simulation settles.
+  // Persist coordinates after simulation settles.
+  // Only pin nodes when lock mode is enabled.
   const handleEngineStop = useCallback(() => {
     data.nodes.forEach((n) => {
       if (typeof n.x === 'number') {
-        n.fx = n.x;
-        n.fy = n.y;
+        if (isGraphLocked) {
+          n.fx = n.x;
+          n.fy = n.y;
+        } else {
+          n.fx = undefined;
+          n.fy = undefined;
+        }
         persistGraphPosition(n);
       }
     });
@@ -392,13 +399,7 @@ export function DisplayGraph({
             Vycentrovat
           </button>
           {showLockControl && (
-            <button
-              className="graph-btn"
-              onClick={handleToggleGraphLock}
-              title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
-            >
-              {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
-            </button>
+            <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
           )}
         </div>
         <ForceGraph2D
@@ -430,8 +431,14 @@ export function DisplayGraph({
             persistGraphPosition(node);
           }}
           onNodeDragEnd={(node) => {
-            node.fx = node.x;
-            node.fy = node.y;
+            if (isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            } else {
+              node.fx = undefined;
+              node.fy = undefined;
+              fgRef.current?.d3ReheatSimulation();
+            }
             persistGraphPosition(node);
           }}
         />
