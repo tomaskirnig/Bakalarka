@@ -143,6 +143,7 @@ export default function MCVPtoCombinatorialGameConverter({
                 fitTrigger={fitTrigger}
                 useTopDownLayout={useTopDownLayout}
                 defaultLocked={true}
+                showLockControl={false}
               />
             </div>
           </div>
@@ -165,8 +166,8 @@ export default function MCVPtoCombinatorialGameConverter({
                 fitToScreen={shouldFitCG}
                 fitTrigger={fitTrigger}
                 defaultLocked={true}
-                showLockControl={true}
                 showNodeIdsAlways={true}
+                showLockControl={true}
               />
             </div>
           </div>

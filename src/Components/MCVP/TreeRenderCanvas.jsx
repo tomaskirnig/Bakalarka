@@ -33,6 +33,7 @@ export function TreeRenderCanvas({
   disableAutoCenter = false, // Disable auto-centering on active node
   useTopDownLayout = true,
   defaultLocked = false,
+  showLockControl = true,
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -445,10 +446,17 @@ export function TreeRenderCanvas({
 
   // Immediate fit when explicitly requested.
   useEffect(() => {
-    if (fitToScreen || fitTrigger > 0) {
+    const shouldFit = fitToScreen || fitTrigger > 0;
+    if (!shouldFit) return;
+    if (!fgRef.current) return;
+    if (canvasWidth <= 0 || canvasHeight <= 0) return;
+    if (!graphData.nodes || graphData.nodes.length === 0) return;
+
+    // Defer to next frame so modal/layout sizing settles before fitting.
+    requestAnimationFrame(() => {
       fgRef.current?.zoomToFit(400, 50);
-    }
-  }, [fitToScreen, fitTrigger]);
+    });
+  }, [fitToScreen, fitTrigger, canvasWidth, canvasHeight, graphData.nodes]);
 
   // Called by ForceGraph2D when the physics simulation stops.
   // Pins every node in place (keeps manually-dragged AND auto-settled positions).
@@ -479,7 +487,7 @@ export function TreeRenderCanvas({
         >
           Vycentrovat
         </button>
-        <GraphLockButton isLocked={isLocked} onToggle={handleToggleLock} />
+        {showLockControl && <GraphLockButton isLocked={isLocked} onToggle={handleToggleLock} />}
       </div>
       <ForceGraph2D
         ref={fgRef}
@@ -546,4 +554,5 @@ TreeRenderCanvas.propTypes = {
   disableAutoCenter: PropTypes.bool,
   useTopDownLayout: PropTypes.bool,
   defaultLocked: PropTypes.bool,
+  showLockControl: PropTypes.bool,
 };
