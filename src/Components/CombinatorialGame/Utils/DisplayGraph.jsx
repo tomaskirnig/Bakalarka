@@ -18,6 +18,7 @@ export function DisplayGraph({
   trackHighlightedNode = false,
   showLockControl = false,
   defaultLocked = false,
+  showNodeIdsAlways = false,
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -200,8 +201,12 @@ export function DisplayGraph({
       ctx.fillStyle = fillColor;
       ctx.fill();
 
-      // Draw node ID in center when in hover mode or when this node is being tracked
-      if (hoverNode.current !== null || (highlightedNode && node.id === highlightedNode)) {
+      // Draw node ID in center when hovered, tracked, or explicitly always enabled.
+      if (
+        showNodeIdsAlways ||
+        hoverNode.current !== null ||
+        (highlightedNode && node.id === highlightedNode)
+      ) {
         ctx.font = '5px Arial';
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
@@ -230,7 +235,7 @@ export function DisplayGraph({
       // Reset alpha
       ctx.globalAlpha = 1;
     },
-    [colors, game, highlightedNode, winningPlayerMap]
+    [colors, game, highlightedNode, showNodeIdsAlways, winningPlayerMap]
   );
 
   // Adjust link distance based on edge count
@@ -452,6 +457,7 @@ DisplayGraph.propTypes = {
   winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
   showLockControl: PropTypes.bool,
   defaultLocked: PropTypes.bool,
+  showNodeIdsAlways: PropTypes.bool,
 };
 
 export default DisplayGraph;

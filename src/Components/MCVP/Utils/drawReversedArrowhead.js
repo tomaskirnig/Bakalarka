@@ -10,8 +10,8 @@ export function drawReversedArrowhead(ctx, sourceX, sourceY, targetX, targetY, n
 
   const ux = dx / linkLength;
   const uy = dy / linkLength;
-  const arrowLength = 8;
-  const arrowWidth = 6;
+  const arrowLength = 6;
+  const arrowWidth = 4;
 
   const tipX = sourceX + ux * (nodeRadius + 1);
   const tipY = sourceY + uy * (nodeRadius + 1);

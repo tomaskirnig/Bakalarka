@@ -5,8 +5,8 @@
 - [x] MCVP core logic: operation node should have max 2 childe nodes.
 - [x] MCVP generation of graph: we should aim for two children for one parent node if possible.
 - [x] MCVP expression parser: fix conflict detection for same variable with different values in one expression and when one variable is mentioned more times, use the same variable and not new one.
-- [ ] MCVP edge visualization: reverse arrow direction to match value propagation flow.
-- [ ] MCVP -> Combinatorial Game conversion: in the Combinatorial Game make the node ids visible permanently like in the MCVP graph.
+- [x] MCVP edge visualization: reverse arrow direction to match value propagation flow.
+- [x] MCVP -> Combinatorial Game conversion: in the Combinatorial Game make the node ids visible permanently like in the MCVP graph.
 - [ ] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called.
 - [x] MCVP explanation and conversion modals: the graph displayed in the modals doesnt have the same node positions as in the default display component - when user positions the nodes and they have saved position, this data should be passed to and used in the explaination and conversion modals.
 - [x] Combinatorial Game explanation modal: preserve manual node positions from the main view when opening the step-by-step explanation.
