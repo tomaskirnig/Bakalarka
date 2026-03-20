@@ -1,10 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { generateGrammarSteps } from './Utils/GrammarStepEvaluator';
 
 export function StepByStepGrammar({ grammar }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
+  const currentRuleRef = useRef(null);
 
   useEffect(() => {
     if (grammar) {
@@ -13,6 +14,12 @@ export function StepByStepGrammar({ grammar }) {
       setCurrentStep(0);
     }
   }, [grammar]);
+
+  useEffect(() => {
+    if (currentRuleRef.current) {
+      currentRuleRef.current.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+  }, [currentStep, steps]);
 
   // Navigation functions
   const goToNextStep = () => {
@@ -69,6 +76,7 @@ export function StepByStepGrammar({ grammar }) {
                   return (
                     <div
                       key={idx}
+                      ref={isCurrent ? currentRuleRef : null}
                       className={`p-2 mb-1 rounded step-rule-item ${isCurrent ? 'step-rule-current' : 'bg-light'}`}
                     >
                       <div className="d-flex justify-content-between align-items-center">
