@@ -378,8 +378,13 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
   );
 
   const paintLink = useMemo(
-    () => createPaintLink({ selectedNode, nodeRadius: mcvp.nodeRadius }),
-    [selectedNode, mcvp.nodeRadius]
+    () =>
+      createPaintLink({
+        selectedNode,
+        nodeRadius: mcvp.nodeRadius,
+        linkIdFont: mcvp.linkIdFont,
+      }),
+    [selectedNode, mcvp.nodeRadius, mcvp.linkIdFont]
   );
 
   // Force setup for collision and stable centering (without repulsion drift)

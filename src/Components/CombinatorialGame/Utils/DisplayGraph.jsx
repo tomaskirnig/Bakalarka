@@ -208,7 +208,7 @@ export function DisplayGraph({
         hoverNode.current !== null ||
         (highlightedNode && node.id === highlightedNode)
       ) {
-        ctx.font = '5px Arial';
+        ctx.font = game.nodeIdFont;
         ctx.fillStyle = 'black';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
@@ -220,16 +220,20 @@ export function DisplayGraph({
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
+      ctx.fillText(
+        node.player === 1 ? 'I' : 'II',
+        node.x,
+        node.y + game.nodeRadius + game.playerLabelOffset
+      );
 
       // Draw winning player info if available
       if (winningPlayerMap && winningPlayerMap[node.id]) {
-        ctx.font = 'bold 10px monospace';
-        ctx.fillStyle = '#198754'; // Bootstrap success green
+        ctx.font = game.winningLabelFont;
+        ctx.fillStyle = game.winningLabelColor;
         ctx.fillText(
           winningPlayerMap[node.id] === 1 ? 'I' : 'II',
           node.x,
-          node.y - game.nodeRadius - 10
+          node.y - game.nodeRadius - game.playerLabelOffset
         );
       }
 
@@ -249,14 +253,17 @@ export function DisplayGraph({
 
       // Base distance + (edgeCount * factor)
       // Increase distance as the graph complexity grows.
-      const dynamicDistance = Math.min(50 + edgeCount * 1.5, 300);
+      const dynamicDistance = Math.min(
+        game.dynamicLinkDistanceBase + edgeCount * game.dynamicLinkDistancePerEdge,
+        game.dynamicLinkDistanceMax
+      );
 
       fgRef.current.d3Force('link').distance(dynamicDistance);
 
       // Re-heat simulation to apply changes smoothly
       fgRef.current.d3ReheatSimulation();
     }
-  }, [graph]);
+  }, [graph, game]);
 
   const persistGraphPosition = useCallback(
     (node) => {
@@ -416,7 +423,7 @@ export function DisplayGraph({
           linkColor={getLinkColor}
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={(link) => (highlightLinks.current.has(link) ? 4 : 0)}
-          linkDirectionalArrowLength={6}
+          linkDirectionalArrowLength={game.linkDirectionalArrowLength}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           nodeCanvasObjectMode={() => 'after'}

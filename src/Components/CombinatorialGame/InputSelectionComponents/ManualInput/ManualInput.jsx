@@ -391,9 +391,9 @@ export function ManualInput({
           'collision',
           window.d3
             .forceCollide()
-            .radius(() => game.nodeRadius * 2.1)
-            .strength(1)
-            .iterations(8)
+            .radius(() => game.nodeRadius * game.manualInputCollisionRadiusMultiplier)
+            .strength(game.manualInputCollisionStrength)
+            .iterations(game.manualInputCollisionIterations)
         );
       }
 
@@ -411,7 +411,7 @@ export function ManualInput({
       // Keep connected nodes closer
       const linkForce = fgRef.current.d3Force('link');
       if (linkForce) {
-        linkForce.distance(50).strength(1);
+        linkForce.distance(game.manualInputLinkDistance).strength(game.manualInputLinkStrength);
       }
 
       fgRef.current.d3ReheatSimulation();
@@ -464,7 +464,7 @@ export function ManualInput({
           linkColor={(link) => (isEdgeOptimal(link) ? colors.accentYellow : colors.defaultLink)}
           linkDirectionalParticles={3}
           linkDirectionalParticleWidth={0}
-          linkDirectionalArrowLength={6}
+          linkDirectionalArrowLength={game.linkDirectionalArrowLength}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           linkLabel={getLinkLabel}

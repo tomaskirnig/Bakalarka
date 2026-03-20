@@ -35,7 +35,7 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
   };
 }
 
-export function createPaintLink({ selectedNode, nodeRadius }) {
+export function createPaintLink({ selectedNode, nodeRadius, linkIdFont }) {
   return (link, ctx) => {
     if (
       !link.source ||
@@ -70,7 +70,7 @@ export function createPaintLink({ selectedNode, nodeRadius }) {
     }
 
     if (shouldDisplayLinkId && link.id !== undefined && link.id !== null) {
-      ctx.font = '8px Sans-Serif';
+      ctx.font = linkIdFont;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillStyle = 'red';

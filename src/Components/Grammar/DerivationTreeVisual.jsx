@@ -192,11 +192,13 @@ export function DerivationTreeVisual({ tree }) {
       if (window.d3 && window.d3.forceCollide) {
         fgRef.current.d3Force(
           'collision',
-          window.d3.forceCollide(grammarSettings.nodeRadius * 1.5).iterations(2)
+          window.d3
+            .forceCollide(grammarSettings.nodeRadius * grammarSettings.collisionRadiusMultiplier)
+            .iterations(grammarSettings.collisionIterations)
         );
       }
-      fgRef.current.d3Force('link').distance(40);
-      fgRef.current.d3Force('charge').strength(-100);
+      fgRef.current.d3Force('link').distance(grammarSettings.linkDistance);
+      fgRef.current.d3Force('charge').strength(grammarSettings.chargeStrength);
     }
   }, [tree, grammarSettings]);
 
@@ -222,10 +224,10 @@ export function DerivationTreeVisual({ tree }) {
         graphData={graphData}
         // Layout
         dagMode="td"
-        dagLevelDistance={50}
+        dagLevelDistance={grammarSettings.dagLevelDistance}
         // Physics
-        cooldownTime={3000}
-        d3AlphaDecay={0.02}
+        cooldownTime={grammarSettings.cooldownTime}
+        d3AlphaDecay={grammarSettings.d3AlphaDecay}
         // Interaction
         enableNodeDrag={true}
         enablePanInteraction={true}
@@ -234,7 +236,7 @@ export function DerivationTreeVisual({ tree }) {
         maxZoom={8}
         // Rendering Props
         nodeRelSize={grammarSettings.nodeRadius}
-        linkDirectionalArrowLength={4}
+        linkDirectionalArrowLength={grammarSettings.linkDirectionalArrowLength}
         linkDirectionalArrowRelPos={1}
         // Custom Painters
         linkCanvasObjectMode={MODE_REPLACE}
