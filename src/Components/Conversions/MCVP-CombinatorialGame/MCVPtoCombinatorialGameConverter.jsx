@@ -111,6 +111,10 @@ export default function MCVPtoCombinatorialGameConverter({
   const renderCurrentStep = () => {
     if (!steps.length) return <p>Žádné kroky konverze.</p>;
     const step = steps[currentStep];
+    const highlightedCgNodeId =
+      step.highlightNode && Array.isArray(step.labels)
+        ? (step.labels.find((label) => label.node === step.highlightNode)?.result ?? null)
+        : null;
 
     return (
       <div className="conversion-step d-flex flex-column pb-2">
@@ -165,6 +169,8 @@ export default function MCVPtoCombinatorialGameConverter({
                 height={cgDimensions.height}
                 fitToScreen={shouldFitCG}
                 fitTrigger={fitTrigger}
+                highlightedNode={highlightedCgNodeId}
+                trackHighlightedNode={true}
                 defaultLocked={true}
                 showNodeIdsAlways={true}
                 showLockControl={true}

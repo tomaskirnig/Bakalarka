@@ -96,6 +96,13 @@ class TerminalGenerator {
     this.currentIndex++;
     return terminal;
   }
+
+  getAllSymbols() {
+    return Array.from(this.variableMap.entries()).map(([node, symbol]) => ({
+      node,
+      result: symbol,
+    }));
+  }
 }
 
 /**
@@ -110,6 +117,7 @@ class MCVPToGrammarConverter {
     this.steps = [];
     this.processedNodes = new Set();
     this.productionNodes = new Set();
+    this.variableVisualMap = new Map(); // variable node -> terminal or epsilon visual label
   }
 
   /**
@@ -146,7 +154,7 @@ class MCVPToGrammarConverter {
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
       visualNote: `Inicializace: Počáteční symbol S. Proměnné s hodnotou 1 budou nahrazeny unikátními terminály (a-z, +, -, atd.), proměnné s hodnotou 0 vytvoří prázdnou produkci (ε).`,
-      symbols: this.symbolGenerator.getAllSymbols(),
+      symbols: this.getVisualSymbols(),
     });
   }
 
@@ -157,7 +165,7 @@ class MCVPToGrammarConverter {
       grammar: this.grammar.serialize(),
       visualNote:
         'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Každá proměnná s hodnotou 1 má unikátní terminál, proměnné s hodnotou 0 vytváří prázdné produkce (ε).',
-      symbols: this.symbolGenerator.getAllSymbols(),
+      symbols: this.getVisualSymbols(),
     });
   }
 
@@ -167,8 +175,28 @@ class MCVPToGrammarConverter {
       mcvpHighlight: highlightNode,
       grammar: this.grammar.serialize(),
       visualNote,
-      symbols: this.symbolGenerator.getAllSymbols(),
+      symbols: this.getVisualSymbols(),
     });
+  }
+
+  getVisualSymbols() {
+    const visualMap = new Map();
+
+    this.symbolGenerator.getAllSymbols().forEach(({ node, result }) => {
+      visualMap.set(node, result);
+    });
+
+    // Terminal labels should be visible on variable nodes when available.
+    this.terminalGenerator.getAllSymbols().forEach(({ node, result }) => {
+      visualMap.set(node, result);
+    });
+
+    // Variable visual labels (including epsilon for value 0) have highest priority.
+    this.variableVisualMap.forEach((result, node) => {
+      visualMap.set(node, result);
+    });
+
+    return Array.from(visualMap.entries()).map(([node, result]) => ({ node, result }));
   }
 
   processNodes() {
@@ -227,6 +255,7 @@ class MCVPToGrammarConverter {
     if (node.type === 'variable') {
       if (node.varValue === 1) {
         const terminal = this.terminalGenerator.getTerminalForVariable(node);
+        this.variableVisualMap.set(node, terminal);
         this.grammar.addTerminal(terminal);
         this.grammar.setProductions(nodeSymbol, [[terminal]]);
         this.addStep(
@@ -235,6 +264,7 @@ class MCVPToGrammarConverter {
           `Kořen je proměnná s hodnotou 1, generuje terminál '${terminal}'.`
         );
       } else {
+        this.variableVisualMap.set(node, 'ε');
         this.grammar.setProductions(nodeSymbol, [[]]);
         this.addStep(
           `Pravidlo pro kořen: ${nodeSymbol} → ε`,
@@ -302,10 +332,12 @@ class MCVPToGrammarConverter {
     if (child.type === 'variable') {
       if (child.varValue === 1) {
         const terminal = this.terminalGenerator.getTerminalForVariable(child);
+        this.variableVisualMap.set(child, terminal);
         this.grammar.addTerminal(terminal);
         return terminal;
       } else {
         // Variable with value 0 contributes nothing (epsilon)
+        this.variableVisualMap.set(child, 'ε');
         return null;
       }
     }

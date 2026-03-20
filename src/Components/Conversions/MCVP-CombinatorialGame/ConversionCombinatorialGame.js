@@ -142,12 +142,16 @@ export class MCVPToGameStepGenerator {
       }
     }
 
-    // Create node in graph
+    const hasValidX = typeof node.x === 'number' && Number.isFinite(node.x);
+    const hasValidY = typeof node.y === 'number' && Number.isFinite(node.y);
+
+    // Create node in graph and preserve source layout when available.
     this.positions[nodeId] = {
       id: nodeId,
       player: player,
       children: [],
       parents: [],
+      ...(hasValidX && hasValidY ? { x: node.x, y: node.y } : {}),
     };
 
     this.addStep(description, node, `${typeDesc} -> Player ${player}`);

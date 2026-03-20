@@ -14,10 +14,12 @@
 - [x] Combinatorial Game explanation modal: preserve manual node positions from the main view when opening the step-by-step explanation.
 - [x] Main combinatorial game view: show node classification (I/II/no number) directly in the main view, not only in explanation.
 
+# Clered documentation to here
+
 # To do
 
-- [ ] MCVP -> Combinatorial Game conversion: Use stored position values for CG graph so the new graph has the same layout
-- [ ] MCVP -> Grammar conversion: show the created terminal symbol above the MCVP variable node
+- [x] MCVP -> Combinatorial Game conversion: Use stored position values for CG graph so the new graph has the same layout
+- [x] MCVP -> Grammar conversion: show the created terminal symbol above the MCVP variable node
 - [ ] Step-by-step winning strategy analysis: improve wording of per-step status message (e.g., “In this node, Player 1 has a winning strategy.”).
 - [ ] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called.
 - [ ] Manual combinatorial game editor: fix unwanted graph scaling/spacing drift after pressing “Change player”.
