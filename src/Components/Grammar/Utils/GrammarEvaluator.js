@@ -1,12 +1,193 @@
 /**
- * Determines if the grammar's language is empty.
+ * Builds a small finite derivation witness for a productive start symbol.
+ *
+ * The helper chooses productions using a constructive shortest-derivation heuristic
+ * and then builds the tree iteratively (non-recursively) for robustness.
+ *
+ * @param {string} start
+ * @param {string[]} nonTerminals
+ * @param {string[]} terminals
+ * @param {Map<string, string[][]>} allWitnesses Productive rules grouped by nonterminal.
+ * @returns {{ derivationTree: Object, derivedWord: string }}
+ */
+function buildDerivationTree(start, nonTerminals, terminals, allWitnesses) {
+  const nonTerminalSet = new Set(nonTerminals);
+  const INF = Number.POSITIVE_INFINITY;
+  const productiveRules = Array.from(allWitnesses.entries()).flatMap(([left, rights]) =>
+    rights.map((right) => ({ left, right }))
+  );
+
+  const symbolCost = (sym, distance) => {
+    if (sym === 'ε') return 0;
+    if (terminals.includes(sym)) return 1;
+    if (nonTerminalSet.has(sym)) return distance.get(sym) ?? INF;
+    return INF;
+  };
+
+  const ruleCost = (right, distance) => {
+    if (!Array.isArray(right) || right.length === 0) return 0;
+
+    let total = 0;
+    for (const sym of right) {
+      const cost = symbolCost(sym, distance);
+      if (!Number.isFinite(cost)) return INF;
+      total += cost;
+    }
+    return total;
+  };
+
+  // Fixed-point computation of minimum terminal-length derivations for productive NTs.
+  const minDistance = new Map(nonTerminals.map((nt) => [nt, INF]));
+  let changed = true;
+  let iterations = 0;
+  const maxIterations = Math.max(1, nonTerminals.length * 3);
+
+  while (changed && iterations < maxIterations) {
+    changed = false;
+    iterations += 1;
+
+    for (const { left, right } of productiveRules) {
+      const candidate = ruleCost(right, minDistance);
+      if (candidate < (minDistance.get(left) ?? INF)) {
+        minDistance.set(left, candidate);
+        changed = true;
+      }
+    }
+  }
+
+  const bestRuleFor = new Map();
+  const productiveNonTerminals = Array.from(allWitnesses.keys()).filter((nt) =>
+    nonTerminalSet.has(nt)
+  );
+
+  for (const nt of productiveNonTerminals) {
+    const options = allWitnesses.get(nt) || [];
+    if (options.length === 0) continue;
+
+    let best = null;
+    let bestCost = INF;
+    let bestComplexity = INF;
+
+    for (const right of options) {
+      const cost = ruleCost(right, minDistance);
+      if (!Number.isFinite(cost)) continue;
+
+      // Prefer fewer RHS symbols as a secondary criterion.
+      const complexity = Array.isArray(right) ? right.length : 0;
+      if (cost < bestCost || (cost === bestCost && complexity < bestComplexity)) {
+        best = right;
+        bestCost = cost;
+        bestComplexity = complexity;
+      }
+    }
+
+    if (!best && options.length > 0) {
+      // Fallback: first productive option to avoid returning no witness.
+      best = options[0];
+    }
+
+    if (best) bestRuleFor.set(nt, best);
+  }
+
+  let idCounter = 0;
+  const makeNode = (name, type) => ({
+    name,
+    id: `node_${idCounter++}`,
+    attributes: { type },
+  });
+
+  // Iterative construction avoids deep recursive calls and stack overflows.
+  const root = makeNode(start, 'non-terminal');
+  const stack = [root];
+
+  while (stack.length > 0) {
+    const current = stack.pop();
+    const symbol = current.name;
+
+    if (terminals.includes(symbol)) {
+      current.attributes.type = 'terminal';
+      continue;
+    }
+
+    if (symbol === 'ε') {
+      current.attributes.type = 'epsilon';
+      continue;
+    }
+
+    if (!nonTerminalSet.has(symbol)) {
+      current.attributes.type = 'terminal';
+      continue;
+    }
+
+    current.attributes.type = 'non-terminal';
+    const rhs = bestRuleFor.get(symbol);
+
+    if (!rhs || rhs.length === 0 || (rhs.length === 1 && rhs[0] === 'ε')) {
+      current.children = [makeNode('ε', 'epsilon')];
+      continue;
+    }
+
+    current.children = rhs.map((sym) => {
+      if (sym === 'ε') return makeNode('ε', 'epsilon');
+      if (terminals.includes(sym)) return makeNode(sym, 'terminal');
+      if (nonTerminalSet.has(sym)) return makeNode(sym, 'non-terminal');
+      return makeNode(sym, 'terminal');
+    });
+
+    // Push in reverse order to preserve left-to-right expansion.
+    for (let i = current.children.length - 1; i >= 0; i -= 1) {
+      const child = current.children[i];
+      if (child.attributes.type === 'non-terminal') {
+        stack.push(child);
+      }
+    }
+  }
+
+  // Extract derived word from leaves in left-to-right order.
+  const collect = [root];
+  const output = [];
+
+  while (collect.length > 0) {
+    const node = collect.pop();
+    if (!node) continue;
+
+    if (node.attributes?.type === 'terminal') {
+      output.push(node.name);
+      continue;
+    }
+
+    if (node.attributes?.type === 'epsilon') {
+      continue;
+    }
+
+    if (node.children && node.children.length > 0) {
+      for (let i = node.children.length - 1; i >= 0; i -= 1) {
+        collect.push(node.children[i]);
+      }
+    }
+  }
+
+  return {
+    derivationTree: root,
+    derivedWord: output.join(''),
+  };
+}
+
+/**
+ * Determines whether the grammar defines an empty language.
+ *
+ * It first computes productive nonterminals via a queue-based fixed-point process.
+ * If the start symbol is productive, it also constructs a compact example derivation
+ * tree and the corresponding derived terminal word.
+ *
  * @param {Grammar} grammar
  * @returns {{
  *   isEmpty: boolean,
  *   productive: string[],
  *   nonproductive: string[],
  *   explanation: string,
- *   derivationTree: Object|null
+ *   derivationTree: Object|null,
+ *   derivedWord: string
  * }}
  */
 export function isEmptyLanguage(grammar) {
@@ -78,111 +259,14 @@ export function isEmptyLanguage(grammar) {
 
   const isEmpty = !productive.has(start);
 
-  // Construct Derivation Tree if not empty
+  // Construct a small finite witness derivation if the language is non-empty.
   let derivationTree = null;
   let derivedWord = '';
 
   if (!isEmpty) {
-    let idCounter = 0;
-    const MAX_DEPTH = 30; // Prevent infinite recursion and visualization stack overflow
-
-    // Helper to randomly select one production from available options
-    const selectRandomProduction = (symbol, depth) => {
-      const availableProductions = allWitnesses.get(symbol);
-      if (!availableProductions || availableProductions.length === 0) return null;
-
-      // If depth is getting high, prefer non-recursive productions
-      if (depth > 20) {
-        // Filter for productions that don't contain the symbol itself (non-recursive)
-        const nonRecursive = availableProductions.filter(
-          (prod) => !prod.some((sym) => sym === symbol)
-        );
-
-        if (nonRecursive.length > 0) {
-          // Strongly prefer non-recursive rules when deep
-          const randomIndex = Math.floor(Math.random() * nonRecursive.length);
-          return nonRecursive[randomIndex];
-        }
-      }
-
-      // Normal random selection with equal probability
-      const randomIndex = Math.floor(Math.random() * availableProductions.length);
-      return availableProductions[randomIndex];
-    };
-
-    const buildNode = (symbol, depth = 0) => {
-      // Prevent infinite recursion
-      if (depth > MAX_DEPTH) {
-        throw new Error(
-          `Překročena maximální hloubka derivace (${MAX_DEPTH}). Gramatika pravděpodobně obsahuje nekonečnou rekurzi.`
-        );
-      }
-
-      const node = {
-        name: symbol,
-        id: `node_${idCounter++}`, // Unique ID for visualization
-        attributes: {},
-      };
-
-      if (terminals.includes(symbol)) {
-        node.attributes.type = 'terminal';
-      } else if (symbol === 'ε') {
-        node.attributes.type = 'epsilon';
-      } else if (allWitnesses.has(symbol)) {
-        node.attributes.type = 'non-terminal';
-        const rhs = selectRandomProduction(symbol, depth);
-        if (!rhs) {
-          // Shouldn't happen if witnesses are properly set
-          node.attributes.type = 'terminal';
-        } else if (rhs.length === 0) {
-          // Implicit epsilon
-          node.children = [
-            {
-              name: 'ε',
-              id: `node_${idCounter++}`,
-              attributes: { type: 'epsilon' },
-            },
-          ];
-        } else {
-          node.children = rhs.map((s) => buildNode(s, depth + 1));
-        }
-      } else {
-        // Fallback for symbols that might be in RHS but not in terminals list explicitly?
-        // Or if logic is slightly off. Assume terminal or error.
-        node.attributes.type = 'terminal';
-      }
-      return node;
-    };
-
-    try {
-      derivationTree = buildNode(start);
-    } catch (error) {
-      // If we hit recursion limit, return error info
-      return {
-        isEmpty: false,
-        productive: [...productive],
-        nonproductive: nonTerminals.filter((nt) => !productive.has(nt)),
-        explanation: `Gramatika definuje neprázdný jazyk, ale nepodařilo se vygenerovat ukázkový strom: ${error.message}`,
-        derivationTree: null,
-        derivedWord: '',
-      };
-    }
-
-    // Extract the derived word (terminal symbols from left to right)
-    const extractTerminals = (node) => {
-      if (!node) return '';
-
-      if (node.attributes?.type === 'terminal') {
-        return node.name;
-      } else if (node.attributes?.type === 'epsilon') {
-        return ''; // Epsilon contributes nothing to the word
-      } else if (node.children && node.children.length > 0) {
-        return node.children.map((child) => extractTerminals(child)).join('');
-      }
-      return '';
-    };
-
-    derivedWord = extractTerminals(derivationTree);
+    const witness = buildDerivationTree(start, nonTerminals, terminals, allWitnesses);
+    derivationTree = witness.derivationTree;
+    derivedWord = witness.derivedWord;
   }
 
   return {

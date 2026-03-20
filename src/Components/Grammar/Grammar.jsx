@@ -16,7 +16,6 @@ export function Grammar({ initialData }) {
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammar, setGrammar] = useState(null); // Current grammar
   const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
-  const [regenerateTrigger, setRegenerateTrigger] = useState(0); // Trigger to force tree regeneration
 
   // Handle initial data if provided
   useEffect(() => {
@@ -79,15 +78,10 @@ export function Grammar({ initialData }) {
     setShowSteps(false);
   };
 
-  // Calculate analysis result when grammar changes or regenerate is triggered
+  // Calculate analysis result when grammar changes
   const analysisResult = useMemo(() => {
     return grammar ? isEmptyLanguage(grammar) : null;
-  }, [grammar, regenerateTrigger]);
-
-  // Handler to regenerate the derivation tree
-  const handleRegenerate = () => {
-    setRegenerateTrigger((prev) => prev + 1);
-  };
+  }, [grammar]);
 
   return (
     <div className="div-content pb-2 page-container">
@@ -170,15 +164,8 @@ export function Grammar({ initialData }) {
             </div>
 
             <div className="card mt-3">
-              <div className="card-header d-flex justify-content-between align-items-center">
+              <div className="card-header">
                 <h4 className="mb-0">Analýza gramatiky</h4>
-                <button
-                  className="btn btn-sm btn-outline-secondary"
-                  onClick={handleRegenerate}
-                  title="Generovat nový derivační strom"
-                >
-                  <i className="bi bi-arrow-repeat"></i>
-                </button>
               </div>
               <div className="card-body">
                 <p

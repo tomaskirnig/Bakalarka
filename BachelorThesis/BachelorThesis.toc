@@ -62,14 +62,14 @@
 \contentsline {subsection}{\numberline {4.3.4}Předpřipravené sady}{32}{subsection.4.3.4}%
 \contentsline {subsection}{\numberline {4.3.5}Algoritmus vyhodnocení}{32}{subsection.4.3.5}%
 \contentsline {subsubsection}{\numberline {4.3.5.1}Identifikace produktivních neterminálů}{32}{subsubsection.4.3.5.1}%
-\contentsline {subsubsection}{\numberline {4.3.5.2}Rekonstrukce derivace}{34}{subsubsection.4.3.5.2}%
+\contentsline {subsubsection}{\numberline {4.3.5.2}Rekonstrukce derivace}{33}{subsubsection.4.3.5.2}%
 \contentsline {subsection}{\numberline {4.3.6}Vizualizace derivačního stromu}{34}{subsection.4.3.6}%
 \contentsline {subsection}{\numberline {4.3.7}Krokové vyhodnocení}{34}{subsection.4.3.7}%
-\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{34}{section.4.4}%
+\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{36}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{36}{subsection.4.4.1}%
 \contentsline {subsubsection}{\numberline {4.4.1.1}Implementační detaily}{36}{subsubsection.4.4.1.1}%
 \contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{36}{subsection.4.4.2}%
-\contentsline {subsubsection}{\numberline {4.4.2.1}Generování symbolů gramatiky}{36}{subsubsection.4.4.2.1}%
+\contentsline {subsubsection}{\numberline {4.4.2.1}Generování symbolů gramatiky}{38}{subsubsection.4.4.2.1}%
 \contentsline {subsubsection}{\numberline {4.4.2.2}Tvorba produkčních pravidel}{38}{subsubsection.4.4.2.2}%
 \contentsline {chapter}{\numberline {5}Závěr}{40}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{40}{section.5.1}%
