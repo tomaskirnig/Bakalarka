@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import { DisplayGraph } from './Utils/DisplayGraph';
 
@@ -11,25 +11,30 @@ import { DisplayGraph } from './Utils/DisplayGraph';
  * @param {Object} props.graph - The game graph to analyze
  */
 export function StepByStepGame({ graph, analysisSteps }) {
-  const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
 
-  // Load steps from the pre-computed analysisSteps prop
+  const steps = useMemo(() => {
+    if (!graph || !analysisSteps) {
+      return [];
+    }
+
+    return [
+      {
+        type: 'INIT',
+        explanation:
+          'Začátek analýzy. Všechny pozice jsou zatím nezpracované. Nejprve identifikujeme koncové pozice bez tahů.',
+        accumulatedStatus: {},
+      },
+      ...analysisSteps,
+    ];
+  }, [graph, analysisSteps]);
+
+  // Reset navigation when a new analysis is loaded.
   useEffect(() => {
-    if (graph && analysisSteps) {
-      const allSteps = [
-        {
-          type: 'INIT',
-          explanation:
-            'Začátek analýzy. Všechny pozice jsou zatím nezpracované. Nejprve identifikujeme koncové pozice bez tahů.',
-          accumulatedStatus: {},
-        },
-        ...analysisSteps,
-      ];
-      setSteps(allSteps);
+    if (steps.length > 0) {
       setCurrentStep(0);
     }
-  }, [graph, analysisSteps]);
+  }, [steps]);
 
   // Navigation functions
   const goToNextStep = () => {

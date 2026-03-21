@@ -101,10 +101,6 @@ export function DerivationTreeVisual({ tree }) {
     hoverNode.current = node || null;
   }, []);
 
-  const handleLinkHover = useCallback(() => {
-    // Link hover handler
-  }, []);
-
   // 3. Paint Functions
   const paintNode = useCallback(
     (node, ctx) => {
@@ -245,7 +241,6 @@ export function DerivationTreeVisual({ tree }) {
         nodeCanvasObject={paintNode}
         // Events
         onNodeHover={handleNodeHover}
-        onLinkHover={handleLinkHover}
         onNodeDrag={(node) => {
           node.fx = node.x;
           node.fy = node.y;

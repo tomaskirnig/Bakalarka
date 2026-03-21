@@ -40,11 +40,8 @@ export function Grammar({ initialData }) {
     setShowSteps(false);
   };
 
-  // eslint-disable-next-line no-unused-vars
-  const handleExport = (includePositions = false) => {
+  const handleExport = () => {
     if (!grammar) return null;
-    // Note: Grammar doesn't use positions like graph-based problems
-    // The parameter is accepted for API consistency but not used
     // Return the grammar object properties
     return {
       name: grammar.name || 'Exported Grammar',
