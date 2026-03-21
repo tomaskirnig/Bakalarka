@@ -1,5 +1,11 @@
 import { drawReversedArrowhead } from '../../Utils/drawReversedArrowhead';
 
+/**
+ * Creates a custom node painter for the interactive MCVP editor canvas.
+ *
+ * @param {Object} params - Painter configuration.
+ * @returns {(node: Object, ctx: CanvasRenderingContext2D) => void} Node paint callback.
+ */
 export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, mcvp }) {
   return (node, ctx) => {
     const radius = mcvp.nodeRadius;
@@ -35,6 +41,12 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
   };
 }
 
+/**
+ * Creates a custom link painter for the interactive MCVP editor canvas.
+ *
+ * @param {Object} params - Painter configuration.
+ * @returns {(link: Object, ctx: CanvasRenderingContext2D) => void} Link paint callback.
+ */
 export function createPaintLink({ selectedNode, nodeRadius, linkIdFont }) {
   return (link, ctx) => {
     if (

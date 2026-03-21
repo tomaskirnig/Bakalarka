@@ -1,5 +1,10 @@
 import NetworkVisual from './HPVisual/NodeVisual';
 
+/**
+ * Landing page that introduces available theoretical informatics modules.
+ *
+ * @returns {JSX.Element} Home page content.
+ */
 export function HomePage() {
   return (
     <>

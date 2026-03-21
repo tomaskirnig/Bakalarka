@@ -1,6 +1,13 @@
 import PropTypes from 'prop-types';
 import { getNodeDisplayName } from './InteractiveInput.helpers';
 
+/**
+ * Renders action controls for the currently selected node
+ * in the interactive MCVP editor.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element|null} Controls panel for selected node, or null.
+ */
 export function InteractiveSelectedNodeControls({
   selectedNode,
   graphLinks,

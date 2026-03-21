@@ -1,7 +1,19 @@
+/**
+ * Resolves a graph node identifier from either a node object or a raw id value.
+ *
+ * @param {{id: string|number}|string|number|null|undefined} nodeOrId - Node-like value or raw id.
+ * @returns {string|number|undefined} Resolved id, or undefined for unsupported input.
+ */
 export function resolveNodeId(nodeOrId) {
   return typeof nodeOrId === 'object' && nodeOrId !== null ? nodeOrId.id : nodeOrId;
 }
 
+/**
+ * Builds an object map keyed by node id for O(1) lookup.
+ *
+ * @param {Array<{id: string|number}>} nodes - Graph nodes.
+ * @returns {Record<string|number, object>} Node map indexed by id.
+ */
 export function buildNodeMap(nodes) {
   const map = {};
   nodes.forEach((node) => {
@@ -10,6 +22,13 @@ export function buildNodeMap(nodes) {
   return map;
 }
 
+/**
+ * Converts force-graph state into the combinatorial game analysis format.
+ *
+ * @param {{nodes: Array, links: Array}} graph - Interactive graph state.
+ * @param {string|number|null} startingNodeId - Selected starting node id.
+ * @returns {{positions: Object, startingPosition: Object}|null} Formatted analysis graph, or null when invalid.
+ */
 export function toFormattedGraph(graph, startingNodeId) {
   if (!graph || graph.nodes.length === 0 || !startingNodeId) return null;
 
@@ -36,6 +55,13 @@ export function toFormattedGraph(graph, startingNodeId) {
   };
 }
 
+/**
+ * Maps imported graph input into local editor state.
+ * Supports both `positions`-based and `nodes/edges`-based payloads.
+ *
+ * @param {Object|null|undefined} initialGraph - Imported graph payload.
+ * @returns {{graph: {nodes: Array, links: Array}, startingNodeId: string|null}|null} State ready for the editor.
+ */
 export function mapInitialGraphToState(initialGraph) {
   if (!initialGraph) return null;
 
@@ -112,6 +138,13 @@ export function mapInitialGraphToState(initialGraph) {
   return null;
 }
 
+/**
+ * Returns all links connected to the selected node.
+ *
+ * @param {Array<{source: any, target: any}>} links - Graph links.
+ * @param {string|number} selectedNodeId - Node id to match.
+ * @returns {Array<{source: any, target: any}>} Connected links.
+ */
 export function getConnectedLinks(links, selectedNodeId) {
   return links.filter((link) => {
     const sourceId = resolveNodeId(link.source);

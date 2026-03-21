@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { generateGrammar } from '../Utils/GrammarGenerator';
 
+/**
+ * Form for random grammar generation with basic and advanced options.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Grammar generator UI.
+ */
 export function GenerateInput({ onGrammar }) {
   // Basic parameters
   const [numTerminals, setNumTerminals] = useState(2);

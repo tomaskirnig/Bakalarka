@@ -31,6 +31,12 @@ const Data = Object.entries(modules)
   })
   .filter((item) => item !== null);
 
+/**
+ * Selector for loading predefined grammar examples from JSON sets.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Prepared grammar sets selector UI.
+ */
 export function PreparedSetsInput({ onGrammar }) {
   const handleSelectChange = (event) => {
     const index = parseInt(event.target.value, 10);

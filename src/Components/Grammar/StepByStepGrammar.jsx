@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { generateGrammarSteps } from './Utils/GrammarStepEvaluator';
 
+/**
+ * Visualizes productive-symbol analysis of a grammar step by step.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Step-by-step analysis view.
+ */
 export function StepByStepGrammar({ grammar }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);

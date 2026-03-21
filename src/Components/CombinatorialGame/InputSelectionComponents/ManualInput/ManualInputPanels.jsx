@@ -1,6 +1,13 @@
 import PropTypes from 'prop-types';
 import { getConnectedLinks, resolveNodeId } from './ManualInput.helpers';
 
+/**
+ * Renders side panels for game analysis and selected-node actions
+ * in the manual combinatorial game editor.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Manual input panels layout.
+ */
 export function ManualInputPanels({
   analysisResult,
   startingNodeId,

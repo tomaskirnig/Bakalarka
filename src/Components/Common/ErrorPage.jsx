@@ -1,5 +1,11 @@
 import PropTypes from 'prop-types';
 
+/**
+ * Full-page fallback UI shown when a fatal render error is caught.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Error fallback page.
+ */
 function ErrorPage({ error, onReset }) {
   return (
     <div

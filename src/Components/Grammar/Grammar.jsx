@@ -12,6 +12,12 @@ import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
 import { ConversionModal } from '../Common/ConversionModal';
 
+/**
+ * Main page component for context-free grammar input, analysis, and visualization.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Grammar module UI.
+ */
 export function Grammar({ initialData }) {
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammar, setGrammar] = useState(null); // Current grammar

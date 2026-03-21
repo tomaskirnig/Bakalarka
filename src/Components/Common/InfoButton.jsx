@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Hover-activated info button that displays contextual help content.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Info button with popover content.
+ */
 export function InfoButton({ title, children }) {
   const [showLegend, setShowLegend] = useState(false);
 

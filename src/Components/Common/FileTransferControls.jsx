@@ -4,6 +4,12 @@ import { toast } from 'react-toastify';
 import { Modal } from './Modal';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 
+/**
+ * Shared import/export control widget for JSON-based module data.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Import/export action controls and dialogs.
+ */
 export function FileTransferControls({
   onExport,
   onImport,

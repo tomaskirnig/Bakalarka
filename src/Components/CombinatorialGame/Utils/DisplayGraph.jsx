@@ -7,6 +7,13 @@ import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
 
 const EMPTY_SET = new Set();
 
+/**
+ * Force-graph visualization for combinatorial game positions and moves.
+ * Supports highlighting, optimal move rendering, and optional lock controls.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Graph visualization canvas.
+ */
 export function DisplayGraph({
   graph,
   optimalMoves = EMPTY_SET,

@@ -1,5 +1,12 @@
 import { resolveNodeId } from './ManualInput.helpers';
 
+/**
+ * Creates a node painter used by ForceGraph's nodeCanvasObject callback.
+ * It draws node circles, selection state, and player labels.
+ *
+ * @param {Object} params - Painter configuration.
+ * @returns {(node: Object, ctx: CanvasRenderingContext2D) => void} Node paint callback.
+ */
 export function createPaintRing({
   game,
   selectedNode,
@@ -49,6 +56,13 @@ export function createPaintRing({
   };
 }
 
+/**
+ * Creates a link label formatter that only shows labels for links connected
+ * to the currently selected node.
+ *
+ * @param {{selectedNode: {id: string|number}|null}} params - Label formatter config.
+ * @returns {(link: Object) => string} Link label callback.
+ */
 export function createGetLinkLabel({ selectedNode }) {
   return (link) => {
     if (!selectedNode) return '';
@@ -62,6 +76,13 @@ export function createGetLinkLabel({ selectedNode }) {
   };
 }
 
+/**
+ * Creates a custom link painter that renders connected-node ids next to edges
+ * touching the selected node.
+ *
+ * @param {{selectedNode: {id: string|number}|null}} params - Link painter config.
+ * @returns {(link: Object, ctx: CanvasRenderingContext2D, globalScale: number) => void} Link paint callback.
+ */
 export function createPaintLink({ selectedNode }) {
   return (link, ctx, globalScale) => {
     const sourceId = resolveNodeId(link.source);

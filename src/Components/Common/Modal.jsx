@@ -1,6 +1,12 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Reusable modal dialog with closing animation support.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Modal wrapper with title and content.
+ */
 export function Modal({ onClose, children, title }) {
   const [isClosing, setIsClosing] = useState(false);
   const timerRef = useRef(null);

@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Main navigation component with desktop and mobile/off-canvas variants.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Navigation UI.
+ */
 export function Navigation({ selectedOption, onNavSelect }) {
   const mobileMenuTimerRef = useRef(null);
 

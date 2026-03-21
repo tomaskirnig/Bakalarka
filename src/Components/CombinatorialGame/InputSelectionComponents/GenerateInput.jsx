@@ -2,6 +2,12 @@ import { useState } from 'react';
 import { generateGraph } from '../Utils/Generator';
 import PropTypes from 'prop-types';
 
+/**
+ * Form for generating random combinatorial game graphs.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Generator input UI.
+ */
 export function GenerateInput({
   onGraphUpdate,
   selectedStartingPlayer,

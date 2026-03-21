@@ -13,6 +13,12 @@ import {
 import { createGetLinkLabel, createPaintLink, createPaintRing } from './ManualInput.renderers';
 import { ManualInputPanels } from './ManualInputPanels';
 
+/**
+ * Interactive graph editor for manual combinatorial game input.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Manual input editor with graph canvas and controls.
+ */
 export function ManualInput({
   initialGraph,
   onGraphUpdate,

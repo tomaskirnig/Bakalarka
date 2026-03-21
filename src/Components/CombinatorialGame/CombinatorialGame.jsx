@@ -13,6 +13,12 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
 
+/**
+ * Counts positions with no incoming and no outgoing edges.
+ *
+ * @param {{positions?: Object}|null} graph - Internal graph format.
+ * @returns {number} Number of isolated positions.
+ */
 function countIsolatedNodes(graph) {
   if (!graph?.positions) return 0;
 
@@ -23,6 +29,12 @@ function countIsolatedNodes(graph) {
   }, 0);
 }
 
+/**
+ * Main page component for combinatorial game input, analysis, and visualization.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Combinatorial game module UI.
+ */
 export function CombinatorialGame({ initialData }) {
   const [graph, setGraph] = useState(null); // Current tree
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method

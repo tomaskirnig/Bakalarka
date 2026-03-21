@@ -1,6 +1,12 @@
 import { useState } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Toggle button for locking or unlocking graph node positions.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Lock control button.
+ */
 export default function GraphLockButton({ isLocked, onToggle }) {
   const [showTooltip, setShowTooltip] = useState(false);
 

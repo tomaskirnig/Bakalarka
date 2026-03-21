@@ -27,6 +27,12 @@ const Data = Object.entries(modules)
   })
   .filter((item) => item !== null);
 
+/**
+ * Selector for loading predefined combinatorial game instances from JSON sets.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Prepared sets selector UI.
+ */
 export function PreparedSetsInput({
   onGraphUpdate,
   selectedStartingPlayer,

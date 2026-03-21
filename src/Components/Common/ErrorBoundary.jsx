@@ -2,6 +2,10 @@ import { Component } from 'react';
 import PropTypes from 'prop-types';
 import ErrorPage from './ErrorPage';
 
+/**
+ * React error boundary that catches runtime rendering errors
+ * and shows a recoverable fallback UI.
+ */
 class ErrorBoundary extends Component {
   constructor(props) {
     super(props);

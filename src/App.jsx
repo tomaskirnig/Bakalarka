@@ -8,6 +8,12 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from './Components/Common/ErrorBoundary';
 
+/**
+ * Root SPA component.
+ * Handles top-level navigation state and renders the selected module page.
+ *
+ * @returns {JSX.Element} Application shell.
+ */
 function App() {
   // Track selected page and data passed to it
   const [currentPage, setCurrentPage] = useState('Home');

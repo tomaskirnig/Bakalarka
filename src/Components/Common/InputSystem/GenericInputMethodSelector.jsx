@@ -1,5 +1,11 @@
 import PropTypes from 'prop-types';
 
+/**
+ * Generic tab-like selector that switches between alternative input modes.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Input mode selector and content container.
+ */
 export function GenericInputMethodSelector({
   selectedOption,
   onOptionSelect,

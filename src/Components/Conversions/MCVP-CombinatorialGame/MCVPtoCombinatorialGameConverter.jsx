@@ -4,6 +4,12 @@ import { MCVPToGameStepGenerator } from './ConversionCombinatorialGame';
 import { DisplayGraph } from '../../CombinatorialGame/Utils/DisplayGraph';
 import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 
+/**
+ * Step-by-step visual converter from MCVP graphs to combinatorial game graphs.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Conversion walkthrough UI.
+ */
 export default function MCVPtoCombinatorialGameConverter({
   mcvpTree,
   onNavigate,

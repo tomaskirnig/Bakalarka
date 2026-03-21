@@ -3,6 +3,12 @@ import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { parseGrammar } from '../Utils/GrammarParser';
 
+/**
+ * Manual text input for grammar rules that are parsed into the internal model.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Manual grammar input UI.
+ */
 export function ManualInput({ onGrammar }) {
   const [inputText, setInputText] = useState('');
 

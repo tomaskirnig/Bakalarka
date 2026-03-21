@@ -1,5 +1,11 @@
 import PropTypes from 'prop-types';
 
+/**
+ * Displays the high-level result of combinatorial game analysis.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Analysis status card.
+ */
 export function GameAnalysisDisplay({ analysisResult }) {
   return (
     <div className="card mt-4 shadow-sm mx-auto" style={{ maxWidth: '600px' }}>
