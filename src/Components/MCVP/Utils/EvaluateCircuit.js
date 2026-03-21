@@ -78,7 +78,7 @@ export function evaluateCircuitWithSteps(node) {
       return null;
     }
 
-    // Only add step if we actually computed it (which we did, since we are here)
+    // Record evaluation step.
     steps.push({
       node: currentNode,
       childValues: childValues,

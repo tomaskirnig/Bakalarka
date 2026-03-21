@@ -371,7 +371,7 @@ export function TreeRenderCanvas({
   // Focus Camera on Active Node
   useEffect(() => {
     if (activeNode && fgRef.current && !disableAutoCenter) {
-      // We need to find the node object in the current graph data to get (x,y)
+      // Resolve current node coordinates.
       const node = graphData.nodes.find((n) => n.id === activeNode.id);
       if (node && typeof node.x === 'number' && typeof node.y === 'number') {
         fgRef.current.centerAt(node.x, node.y, 500);
@@ -414,24 +414,21 @@ export function TreeRenderCanvas({
           }
         });
       } else {
-        // Save current positions before rebuilding graphData so nodes start
-        // from where they are (no visual jump) while dagMode re-initializes.
+        // Preserve current positions before dag layout reset.
         savedPositions.current.clear();
         graphData.nodes.forEach((n) => {
           if (typeof n.x === 'number') {
             savedPositions.current.set(n.id, { x: n.x, y: n.y });
           }
         });
-        // Incrementing unlockVersion causes graphData useMemo to re-run,
-        // giving ForceGraph2D fresh node objects so dagMode re-initializes.
-        // The force-setup useEffect then reheats the simulation automatically.
+        // Rebuild node objects and re-run dag layout.
         setUnlockVersion((v) => v + 1);
       }
       return locking;
     });
   }, [graphData.nodes]);
 
-  // Ensure lock applies even if nodes get coordinates after initial render.
+  // Keep lock active after coordinates are assigned.
   const handleEngineTick = useCallback(() => {
     if (!isLocked) return;
 

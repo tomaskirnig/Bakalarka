@@ -68,7 +68,7 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
 
     const maxProductions = config.maxProductionsPerNonTerminal || 3;
 
-    // If we reached the max productions limit, replace a random rule
+    // Replace a random rule when the limit is reached.
     if (productions[randomNt].length >= maxProductions) {
       const replaceIndex = getRandomInt(0, productions[randomNt].length - 1);
       productions[randomNt][replaceIndex] = [];
@@ -251,11 +251,11 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
     return [];
   }
 
-  // 1. Determine if we WANT recursion
+  // 1. Decide whether recursion is used.
   let useLeft = config.allowLeftRecursion && Math.random() < 0.3;
   let useRight = config.allowRightRecursion && Math.random() < 0.3;
 
-  // 2. Check if we have SPACE for recursion
+  // 2. Validate length budget for recursion.
   const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);
   let maxBaseLength = config.maxRuleLength - recursionCost;
 
@@ -293,7 +293,7 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   const rule = [];
 
   // Determine which non-terminals can be used
-  // We exclude the current non-terminal to prevent accidental direct recursion in the base rule.
+  // Exclude current non-terminal from base rule symbols.
   // Direct recursion (Left/Right) is handled explicitly in createProductionRule based on config.
   let availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
 

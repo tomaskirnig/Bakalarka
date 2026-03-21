@@ -72,7 +72,7 @@ export function treeToFlatGraph(rootNode, includePositions = false) {
     links: links, // Using 'links' to be consistent with InteractiveInput
   };
 
-  // Only include positions if they are requested and we have at least one position
+  // Include positions only when requested and available.
   if (includePositions && Object.keys(positions).length > 0) {
     result.positions = positions;
   }

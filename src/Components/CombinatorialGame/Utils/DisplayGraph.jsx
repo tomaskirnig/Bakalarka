@@ -83,7 +83,7 @@ export function DisplayGraph({
     setIsGraphLocked(defaultLocked);
   }, [graph, defaultLocked]);
 
-  // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
+  // Memoize graph data for react-force-graph-2d.
   const data = useMemo(() => {
     const prevNodesMap = new Map(nodesRef.current.map((n) => [n.id, n]));
 

@@ -52,20 +52,16 @@ export function StepByStepGame({ graph, analysisSteps }) {
     setCurrentStep(steps.length - 1);
   };
 
-  // Construct the accumulated winning map for the current step
-  // We can't rely on the step object having the full map unless we build it here.
-  // The steps from computeWinner are incremental updates.
-  // So we need to compute the state at `currentStep`.
+  // Rebuild status map up to current step.
 
   const currentStatusMap = useMemo(() => {
     const map = {};
-    // Replay steps up to currentStep
+    // Replay incremental updates.
     for (let i = 1; i <= currentStep; i++) {
-      // Skip INIT step 0
+      // Skip INIT step.
       const step = steps[i];
       if (step && step.id && step.type !== 'FINAL') {
-        // Determine winning player based on status relative to node owner
-        // step.status is 'WIN' or 'LOSE' for the player at step.id
+        // Resolve winner from node owner and step status.
         const position = graph.positions[step.id];
         if (!position) continue;
         const nodePlayer = position.player;
@@ -84,15 +80,11 @@ export function StepByStepGame({ graph, analysisSteps }) {
     return map;
   }, [currentStep, steps, graph]);
 
-  // Determine optimal moves for visualization
-  // Optimal moves are edges from P1-Winning node to P1-Winning node.
-  // We use currentStatusMap where 1 = P1 Win, 2 = P2 Win (P1 Lose).
+  // Highlight P1-to-P1 winning moves.
   const currentOptimalMoves = useMemo(() => {
     const moves = new Set();
     for (const posId in graph.positions) {
-      // If this position is determined as P1 Winning (map value 1) AND it's P1's turn
-      // (Wait, optimal moves logic in DisplayGraph usually just highlights P1 winning paths)
-      // Let's stick to: From P1-Win to P1-Win.
+      // Use positions where Player 1 is winning and moves next.
 
       if (currentStatusMap[posId] === 1 && graph.positions[posId].player === 1) {
         const children = graph.positions[posId].children || [];

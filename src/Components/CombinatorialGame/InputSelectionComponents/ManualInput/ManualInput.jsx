@@ -136,7 +136,7 @@ export function ManualInput({
     graph.nodes.forEach(pinNodePosition);
   }, [graph.nodes, isGraphLocked, pinNodePosition]);
 
-  // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
+  // Memoize graph data for react-force-graph-2d.
   const data = useMemo(() => {
     const currentNodesById = new Map(graph.nodes.map((node) => [String(node.id), node]));
     const normalizedLinks = graph.links.map((link) => {
@@ -321,7 +321,7 @@ export function ManualInput({
   // Handle node click for editing/deleting actions
   const handleNodeClick = (node) => {
     if (addingEdge) {
-      // If adding an edge and click a different node, create the edge
+      // Create edge when a different target node is selected.
       if (edgeSource && node.id !== edgeSource.id) {
         const success = addEdge(edgeSource.id, node.id);
         if (success) {
@@ -329,7 +329,7 @@ export function ManualInput({
           setEdgeSource(null);
         }
       } else {
-        // If we click the same node, cancel the operation
+        // Cancel when source node is clicked again.
         cancelAddEdge();
       }
     } else {
@@ -337,7 +337,7 @@ export function ManualInput({
     }
   };
 
-  // Handle background click
+  // Clear selection or cancel pending edge creation.
   const handleBackgroundClick = () => {
     if (addingEdge) {
       cancelAddEdge();

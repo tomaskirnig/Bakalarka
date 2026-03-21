@@ -35,7 +35,7 @@ export function generateGrammarSteps(grammar) {
     currentRule: null,
   });
 
-  // We use the queue-based approach (work-list algorithm) to match the logic described in the thesis.
+  // Queue-based work-list algorithm.
   const queue = [];
 
   // 1. Initial Scan
@@ -68,7 +68,7 @@ export function generateGrammarSteps(grammar) {
           highlight: 'success',
         });
       } else {
-        // Already marked, but we found another terminal rule
+        // Already productive, but another terminal-only rule was found.
         steps.push({
           type: 'CHECK_RULE',
           description: `Pravidlo "${ruleStr}" obsahuje pouze terminály ( "${left}" je již produktivní).`,
@@ -126,11 +126,10 @@ export function generateGrammarSteps(grammar) {
       currentRule: null,
     });
 
-    // Check all rules that use this symbol
-    // (In a real optimized engine we'd have a map, here we iterate for visualization clarity or simulate the map)
+    // Scan rules that reference this symbol.
     for (const rule of rules) {
       const { left, right } = rule;
-      // Only interested if the rule actually uses the symbol we just popped
+      // Skip unrelated rules.
       if (right.includes(newlyProd)) {
         const ruleStr = `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
 

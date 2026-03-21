@@ -171,8 +171,7 @@ export class MCVPToGameStepGenerator {
         const childId = this.getUniqueId(child);
         childIds.push(childId);
 
-        // Add link in graph state
-        // We need to update both parent (current node) and child
+        // Update parent and child adjacency.
         if (this.positions[nodeId]) {
           if (!this.positions[nodeId].children.includes(childId)) {
             this.positions[nodeId].children.push(childId);

@@ -84,7 +84,7 @@ class TerminalGenerator {
     }
 
     if (this.currentIndex >= this.terminals.length) {
-      // If we run out of symbols, generate numbered terminals
+      // Fallback to numbered terminals when symbol pool is exhausted.
       const terminal = `t${this.currentIndex - this.terminals.length + 1}`;
       this.variableMap.set(variable, terminal);
       this.currentIndex++;
@@ -209,8 +209,7 @@ class MCVPToGrammarConverter {
     if (!node || this.processedNodes.has(node)) return;
     this.processedNodes.add(node);
 
-    // If node is a variable AND NOT the root, we don't create a non-terminal for it.
-    // It will be replaced directly by a terminal or epsilon in parent's rule.
+    // Non-root variable nodes do not get a non-terminal.
     const isRoot = node === this.mcvpTree;
     if (node.type === 'variable' && !isRoot) {
       return;
@@ -244,7 +243,7 @@ class MCVPToGrammarConverter {
     if (!node || this.productionNodes.has(node)) return;
     this.productionNodes.add(node);
 
-    // If variable and NOT root, we don't create productions for it (it has no NT)
+    // Skip productions for non-root variable nodes.
     const isRoot = node === this.mcvpTree;
     if (node.type === 'variable' && !isRoot) return;
 

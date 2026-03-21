@@ -60,7 +60,7 @@ export function generateTree(numGates, numVariables) {
   const nodeById = new Map();
   const rootNodeIds = new Set(); // Nodes without parents (candidates for current roots)
 
-  // With arity <= 2 and all variables connected, we need at least N-1 gates.
+  // Binary arity requires at least N-1 gates to connect all variables.
   if (numVariables > numGates + 1) {
     toast.error('Pro binární obvod musí platit: počet hradel >= počet proměnných - 1.');
     throw new Error('Nedostatek hradel pro binární strukturu obvodu.');
