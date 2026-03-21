@@ -44,6 +44,7 @@ export function PreparedSetsInput({ onTreeUpdate }) {
           acceptEdgesOrLinks: true,
           preservePositions: false,
           maxChildrenCheck: true,
+          normalizeUnaryOperationNodes: true,
           throwOnInvalid: true,
         });
         if (tree) {

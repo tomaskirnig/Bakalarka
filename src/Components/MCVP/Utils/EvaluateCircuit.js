@@ -48,8 +48,13 @@ export function evaluateCircuitWithSteps(node) {
       throw new Error(`Uzel operace ${currentNode.id} má více než 2 potomky.`);
     }
 
+    const normalizedChildren =
+      currentNode.type === 'operation' && currentNode.children.length === 1
+        ? [currentNode.children[0], currentNode.children[0]]
+        : currentNode.children;
+
     const childValues = [];
-    for (const child of currentNode.children) {
+    for (const child of normalizedChildren) {
       const childVal = evaluate(child);
       if (childVal !== null) childValues.push(childVal);
     }

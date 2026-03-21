@@ -455,7 +455,7 @@ Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. 
 \subsubsection{Rekonstrukce derivace}
 \label{sec:GrammarsWitnessImpl}
 
-Pokud je počáteční symbol \( S \) produktivní, aplikace sestaví ukázkový derivašní strom. Nejprve se z množiny produktivních pravidel vypočítá pro každý neterminál odhad minimální délky odvoditelného terminálního řetězce. Tento krok je realizován jako iterativní relaxace hodnot nad pravidly (fixed-point výpočet), což odpovídá obecnému principu postupného zpřesňování odhadů známému z algoritmů pro nejkratší cesty \cite{clrs}.
+Pokud je počáteční symbol \( S \) produktivní, aplikace sestaví ukázkový derivašní strom. Nejprve se z množiny produktivních pravidel vypočítá pro každý neterminál odhad minimální délky odvoditelného terminálního řetězce. Tento krok opakovaně přepočítává hodnoty pravidel, dokud se už nemění (fixed-point výpočet), a vychází ze stejné myšlenky jako algoritmy pro hledání nejkratší cesty \cite{clrs}.
 
 Na základě vypočtených hodnot se pro každý produktivní neterminál vybere pravidlo s nejmenší cenou (a při shodě pravidlo s menším počtem symbolů na pravé straně). Tím vznikne malá konečná svědecká derivace, která upřednostňuje krátké a přehledné příklady. Samotná konstrukce stromu je pak provedena iterativně pomocí zásobníku namísto hluboké rekurze, aby byla robustní i pro gramatiky s výraznou rekurzí. Použitý postup navazuje na standardní fixpoint/work-list přístup při analýze bezkontextových gramatik \cite{uti_grammars}.
 

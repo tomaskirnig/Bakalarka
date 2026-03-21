@@ -87,7 +87,7 @@ export function generateTree(numGates, numVariables) {
     return picked;
   };
 
-  // Create gates and allow reuse while enforcing max 2 children per operation node.
+  // Create gates and allow reuse while enforcing exactly 2 children per operation node.
   for (let i = 0; i < numGates; i++) {
     if (rootNodeIds.size < 1) {
       toast.error('Nedostatek uzlů!');
@@ -136,9 +136,14 @@ export function generateTree(numGates, numVariables) {
       }
     }
 
-    if (selectedChildren.length < 1 || selectedChildren.length > 2) {
-      toast.error('Generování DAG selhalo: neplatný počet potomků pro nové hradlo.');
-      throw new Error('Generování DAG selhalo: neplatný počet potomků pro nové hradlo.');
+    if (selectedChildren.length === 1) {
+      // Unary gate is normalized to binary by reusing the only input on both ports.
+      selectedChildren.push(selectedChildren[0]);
+    }
+
+    if (selectedChildren.length !== 2) {
+      toast.error('Generování DAG selhalo: hradlo musí mít přesně 2 vstupy.');
+      throw new Error('Generování DAG selhalo: hradlo musí mít přesně 2 vstupy.');
     }
 
     const gateNode = createGateNode(selectedChildren);

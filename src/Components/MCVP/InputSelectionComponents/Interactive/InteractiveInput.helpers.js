@@ -11,6 +11,7 @@ export function graphDataToNodeClass(graphData) {
     acceptEdgesOrLinks: true,
     preservePositions: true,
     maxChildrenCheck: true,
+    normalizeUnaryOperationNodes: true,
     throwOnInvalid: false,
   });
 }
