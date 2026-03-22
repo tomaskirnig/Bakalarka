@@ -40,11 +40,10 @@ export function PreparedSetsInput({ onTreeUpdate }) {
       const graphData = Data[index];
       try {
         const tree = graphToTree(graphData, {
-          requireSingleRoot: false,
           acceptEdgesOrLinks: true,
           preservePositions: false,
-          maxChildrenCheck: true,
-          normalizeUnaryOperationNodes: true,
+          requireBinaryOperationNodes: true,
+          normalizeUnaryOperationNodes: false,
           throwOnInvalid: true,
         });
         if (tree) {

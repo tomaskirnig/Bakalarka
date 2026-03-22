@@ -5,22 +5,20 @@ import { Node } from './NodeClass';
  *
  * @param {Object} graphData
  * @param {Object} options
- * @param {boolean} [options.requireSingleRoot=false] - Requires exactly one root.
  * @param {boolean} [options.acceptEdgesOrLinks=true] - Accepts either `links` or `edges` arrays.
  * @param {boolean} [options.preservePositions=true] - Copies x/y positions into created nodes.
- * @param {boolean} [options.maxChildrenCheck=true] - Enforces max 2 children for operation nodes.
- * @param {boolean} [options.normalizeUnaryOperationNodes=true] - Duplicates a single child for operation nodes so they behave as binary gates.
+ * @param {boolean} [options.requireBinaryOperationNodes=false] - Requires exactly 2 children for every operation node.
+ * @param {boolean} [options.normalizeUnaryOperationNodes=false] - Duplicates a single child for operation nodes so they behave as binary gates.
  * @param {boolean} [options.throwOnInvalid=false] - Throws on invalid input instead of returning null.
  * @returns {Node|null}
  */
 export function graphToTree(
   graphData,
   {
-    requireSingleRoot = false,
     acceptEdgesOrLinks = true,
     preservePositions = true,
-    maxChildrenCheck = true,
-    normalizeUnaryOperationNodes = true,
+    requireBinaryOperationNodes = false,
+    normalizeUnaryOperationNodes = false,
     throwOnInvalid = false,
   } = {}
 ) {
@@ -78,7 +76,7 @@ export function graphToTree(
     const targetNode = nodeMap.get(targetId);
     if (!sourceNode || !targetNode) continue;
 
-    if (maxChildrenCheck && sourceNode.type === 'operation' && sourceNode.children.length >= 2) {
+    if (sourceNode.type === 'operation' && sourceNode.children.length >= 2) {
       return fail(`Uzel operace ${sourceNode.id} má více než 2 potomky.`);
     }
 
@@ -86,20 +84,22 @@ export function graphToTree(
     targetNode.parents.push(sourceNode);
   }
 
-  if (maxChildrenCheck) {
-    for (const node of nodeMap.values()) {
-      if (node.type !== 'operation') {
-        continue;
-      }
+  for (const node of nodeMap.values()) {
+    if (node.type !== 'operation') {
+      continue;
+    }
 
-      if (node.children.length > 2) {
-        return fail(`Uzel operace ${node.id} má více než 2 potomky.`);
-      }
+    if (node.children.length > 2) {
+      return fail(`Uzel operace ${node.id} má více než 2 potomky.`);
+    }
 
-      if (normalizeUnaryOperationNodes && node.children.length === 1) {
-        // Unary operation behaves as f(x, x) in all downstream algorithms.
-        node.children.push(node.children[0]);
-      }
+    if (normalizeUnaryOperationNodes && node.children.length === 1) {
+      // Unary operation behaves as f(x, x) in all downstream algorithms.
+      node.children.push(node.children[0]);
+    }
+
+    if (requireBinaryOperationNodes && node.children.length !== 2) {
+      return fail(`Uzel operace ${node.id} musí mít přesně 2 potomky.`);
     }
   }
 
@@ -109,7 +109,7 @@ export function graphToTree(
     return fail('Nenalezen kořenový uzel - graf může obsahovat cykly.');
   }
 
-  if (requireSingleRoot && rootNodes.length !== 1) {
+  if (rootNodes.length !== 1) {
     return fail(`Byl nalezen neplatný počet kořenů: ${rootNodes.length}.`);
   }
 

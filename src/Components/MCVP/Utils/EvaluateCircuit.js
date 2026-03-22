@@ -44,17 +44,12 @@ export function evaluateCircuitWithSteps(node) {
       return null;
     }
 
-    if (currentNode.type === 'operation' && currentNode.children.length > 2) {
-      throw new Error(`Uzel operace ${currentNode.id} má více než 2 potomky.`);
+    if (currentNode.type === 'operation' && currentNode.children.length !== 2) {
+      throw new Error(`Uzel operace ${currentNode.id} musí mít přesně 2 potomky.`);
     }
 
-    const normalizedChildren =
-      currentNode.type === 'operation' && currentNode.children.length === 1
-        ? [currentNode.children[0], currentNode.children[0]]
-        : currentNode.children;
-
     const childValues = [];
-    for (const child of normalizedChildren) {
+    for (const child of currentNode.children) {
       const childVal = evaluate(child);
       if (childVal !== null) childValues.push(childVal);
     }

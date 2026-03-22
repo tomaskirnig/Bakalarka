@@ -7,11 +7,10 @@ import { graphToTree } from '../../Utils/GraphToTree';
  */
 export function graphDataToNodeClass(graphData) {
   return graphToTree(graphData, {
-    requireSingleRoot: true,
     acceptEdgesOrLinks: true,
     preservePositions: true,
-    maxChildrenCheck: true,
-    normalizeUnaryOperationNodes: true,
+    requireBinaryOperationNodes: true,
+    normalizeUnaryOperationNodes: false,
     throwOnInvalid: false,
   });
 }

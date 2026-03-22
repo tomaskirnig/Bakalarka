@@ -8,11 +8,10 @@ import { graphToTree } from './GraphToTree';
  */
 export function flatGraphToTree(graphData) {
   return graphToTree(graphData, {
-    requireSingleRoot: false,
     acceptEdgesOrLinks: true,
     preservePositions: true,
-    maxChildrenCheck: true,
-    normalizeUnaryOperationNodes: true,
+    requireBinaryOperationNodes: true,
+    normalizeUnaryOperationNodes: false,
     throwOnInvalid: false,
   });
 }
