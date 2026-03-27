@@ -4,7 +4,7 @@ import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMe
 import { ManualInput } from './InputSelectionComponents/ManualInput';
 import { GenerateInput } from './InputSelectionComponents/GenerateInput';
 import { PreparedSetsInput } from './InputSelectionComponents/PreparedSetsInput';
-import { InteractiveMCVPGraph } from './InputSelectionComponents/InteractiveInput';
+import { InteractiveMCVPGraph } from './InputSelectionComponents/Interactive/InteractiveInput';
 import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateCircuitWithSteps } from './Utils/EvaluateCircuit';
 import { ConversionModal } from '../Common/ConversionModal';
@@ -19,174 +19,304 @@ import { toast } from 'react-toastify';
 /**
  * Main component for the Monotone Circuit Value Problem (MCVP) module.
  * Coordinates input selection, graph visualization, evaluation, and problem conversions.
- * 
+ *
  * @component
  * @param {Object} props - The component props
  * @param {function} [props.onNavigate] - Callback to navigate to other modules (e.g., Combinatorial Game).
  * @param {Object} [props.initialData] - Initial tree data to load (e.g., when coming from another module).
  */
 export function MCVP({ onNavigate, initialData }) {
-    const [tree, setTree] = useState(null); // Current tree
-    const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
-    const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
-    const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
-    const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
+  const [tree, setTree] = useState(null); // Current tree
+  const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
+  const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
+  const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
+  const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
+  const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
 
-    // Handle initial data if provided (e.g., from reverse conversion)
-    useEffect(() => {
-        if (initialData) {
-            // If initialData is an MCVP tree structure, set it
-            // This assumes initialData structure matches what setTree expects
-            setTree(initialData);
+  // Handle initial data if provided (e.g., from reverse conversion)
+  useEffect(() => {
+    if (initialData) {
+      // If initialData is an MCVP tree structure, set it
+      // This assumes initialData structure matches what setTree expects
+      setTree(initialData);
+    }
+  }, [initialData]);
+
+  // Calculate evaluation with steps once - the steps are reused for step-by-step explanation
+  const evaluation = useMemo(() => {
+    return tree ? evaluateCircuitWithSteps(tree) : { result: null, steps: [] };
+  }, [tree]);
+  const hasTree = Boolean(tree);
+  const isTreeValid = hasTree && evaluation.result !== null;
+
+  const handleOptionChange = (option) => {
+    setChosenOpt(option);
+    setTree(null);
+  };
+
+  const handleExport = (includePositions = false) => {
+    if (!tree) return null;
+    return treeToFlatGraph(tree, includePositions);
+  };
+
+  const handleImport = (data) => {
+    let graphData = data;
+
+    // Handle SadyMCVP format (Object with keys)
+    if (!data.nodes && !data.edges && !data.links) {
+      const keys = Object.keys(data);
+      if (keys.length > 0) {
+        // Try to take the first set found
+        const firstSet = data[keys[0]];
+        if (firstSet && (firstSet.nodes || firstSet.edges || firstSet.links)) {
+          graphData = firstSet;
+          toast.info(`Importována sada: ${keys[0]}`);
         }
-    }, [initialData]);
+      }
+    }
 
-    // Calculate evaluation with steps once - the steps are reused for step-by-step explanation
-    const evaluation = useMemo(() => {
-        return tree ? evaluateCircuitWithSteps(tree) : { result: null, steps: [] };
-    }, [tree]);
+    const newTree = flatGraphToTree(graphData);
+    if (newTree) {
+      setTree(newTree);
+      setChosenOpt('manual'); // Switch to view/manual mode
+    } else {
+      throw new Error('Nepodařilo se vytvořit strom z importovaných dat.');
+    }
+  };
 
-    const handleOptionChange = (option) => {
-        setChosenOpt(option);
-        setTree(null);
-    };
+  const handleOpenGameConversion = () => {
+    if (!isTreeValid) {
+      toast.error(
+        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
+      );
+      return;
+    }
+    setGameConversion(true);
+  };
 
-    const handleExport = (includePositions = false) => {
-        if (!tree) return null;
-        return treeToFlatGraph(tree, includePositions);
-    };
+  const handleOpenGrammarConversion = () => {
+    if (!isTreeValid) {
+      toast.error(
+        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
+      );
+      return;
+    }
+    setGrammarConversion(true);
+  };
 
-    const handleImport = (data) => {
-        let graphData = data;
-        
-        // Handle SadyMCVP format (Object with keys)
-        if (!data.nodes && !data.edges && !data.links) {
-            const keys = Object.keys(data);
-            if (keys.length > 0) {
-                // Try to take the first set found
-                const firstSet = data[keys[0]];
-                if (firstSet && (firstSet.nodes || firstSet.edges || firstSet.links)) {
-                    graphData = firstSet;
-                    toast.info(`Importována sada: ${keys[0]}`);
-                }
-            }
-        }
+  const handleOpenExplain = () => {
+    if (!isTreeValid) {
+      toast.error(
+        'Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
+      );
+      return;
+    }
+    setExplain(true);
+  };
 
-        const newTree = flatGraphToTree(graphData);
-        if (newTree) {
-            setTree(newTree);
-            setChosenOpt('manual'); // Switch to view/manual mode
-        } else {
-            throw new Error("Nepodařilo se vytvořit strom z importovaných dat.");
-        }
-    };
+  return (
+    <div className="div-content page-container">
+      <div className="page-controls">
+        <FileTransferControls
+          onExport={handleExport}
+          onImport={handleImport}
+          instructionText="Nahrajte soubor JSON s definicí obvodu ({nodes, edges/links})."
+          fileName="mcvp_circuit.json"
+        />
+        <InfoButton title="Monotónní obvody (MCVP)">
+          <p>
+            Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu,
+            který obsahuje pouze hradla AND a OR (bez negací).
+          </p>
+          <ul className="ps-3">
+            <li>
+              <strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.
+            </li>
+            <li>
+              <strong>Hradla:</strong> AND (logický součin) a OR (logický součet).
+            </li>
+            <li>
+              <strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).
+            </li>
+          </ul>
+        </InfoButton>
+      </div>
 
-    return (
-        <div className='div-content page-container'>
-            <div className='page-controls'>
-                <FileTransferControls 
-                    onExport={handleExport}
-                    onImport={handleImport}
-                    instructionText="Nahrajte soubor JSON s definicí obvodu ({nodes, edges/links})."
-                    fileName="mcvp_circuit.json"
-                />
-                <InfoButton title="Monotónní obvody (MCVP)">
-                    <p>
-                        Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu, který obsahuje pouze hradla AND a OR (bez negací).
-                    </p>
-                    <ul className="ps-3">
-                        <li><strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.</li>
-                        <li><strong>Hradla:</strong> AND (logický součin) a OR (logický součet).</li>
-                        <li><strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).</li>
-                    </ul>
-                </InfoButton>
-            </div>
+      <h1 className="display-4 mt-4 mb-lg-4">MCVP</h1>
 
-            <h1 className='display-4 mt-4 mb-lg-4'>MCVP</h1>
-
-            <div className='page-content'>
-            <GenericInputMethodSelector
-                selectedOption={chosenOpt}
-                onOptionSelect={handleOptionChange}
-                options={[
-                    { value: 'manual', label: 'Manuálně' },
-                    { value: 'generate', label: 'Generovat' },
-                    { value: 'sets', label: 'Načíst ze sady' },
-                    { value: 'interactive', label: 'Interaktivně' }
-                ]}
-                renderContent={(opt) => {
-                    switch (opt) {
-                        case 'manual': return <ManualInput onTreeUpdate={setTree} />;
-                        case 'generate': return <GenerateInput onTreeUpdate={setTree} />;
-                        case 'sets': return <PreparedSetsInput onTreeUpdate={setTree} />;
-                        case 'interactive': return <InteractiveMCVPGraph onTreeUpdate={setTree} />;
-                        default: return null;
-                    }
-                }}
-            />
-
-            {(tree && chosenOpt !== 'interactive') && (
-                <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                    <TreeRenderCanvas tree={tree} />
-                </div>
-            )}
-
-            {tree && (
-                <div className="card mt-3 mx-auto shadow-sm" style={{ maxWidth: '600px' }}>
-                    <div className="card-header bg-light fw-bold text-center">
-                        Výsledek obvodu
-                    </div>
-                    <div className="card-body text-center">
-                        {evaluation.result !== null ? (
-                            <>
-                                <div className={`alert ${evaluation.result ? 'alert-success' : 'alert-warning'}`}>
-                                    {`Výsledek: ${evaluation.result}`}
-                                </div>
-                            </>
-                        ) : (
-                            <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
-                        )}
-                    </div>
-                </div>
-            )}
-
-            {tree && (
-                <div>
-                    <button className='btn btn-primary m-2' onClick={() => setExplain(true)}> Vysvětlit</button>
-                    <button className='btn btn-primary mx-2' onClick={() => setGameConversion(true)}>Převést na Kombinatorickou hru</button>
-                    <button className='btn btn-primary mx-2' onClick={() => setGrammarConversion(true)} >Převést na Gramatiku</button>
-                </div>
-            )}
-
-            {grammarConversion && (
-                <ConversionModal onClose={() => setGrammarConversion(false)}>
-                    {tree && (
-                        <MCVPtoGrammarConverter mcvpTree={tree} onNavigate={onNavigate} />
-                    )}
-                </ConversionModal>
-            )}
-
-            {gameConversion && (
-                <ConversionModal onClose={() => setGameConversion(false)}>
-                    {tree && (
-                        <MCVPtoCombinatorialGameConverter mcvpTree={tree} onNavigate={onNavigate} />
-                    )}
-                </ConversionModal>
-            )}
-
-            {explain && (
-                <ConversionModal onClose={() => setExplain(false)}>
-                    {tree && (
-                        <StepByStepTree tree={tree} steps={evaluation.steps} />
-                    )}
-                </ConversionModal>
-            )}
-            </div>
+      <div className="d-flex justify-content-center mb-2">
+        <div
+          className="form-check form-switch"
+          title="Dev nástroj pro přepnutí rozložení MCVP grafu"
+        >
+          <input
+            className="form-check-input clickable"
+            type="checkbox"
+            role="switch"
+            id="mcvp-layout-mode-switch"
+            checked={useTopDownLayout}
+            onChange={(e) => setUseTopDownLayout(e.target.checked)}
+          />
+          <label
+            className="form-check-label clickable"
+            htmlFor="mcvp-layout-mode-switch"
+            style={{ color: 'black' }}
+          >
+            Režim rozložení (dev): {useTopDownLayout ? 'Top-down (TD)' : 'Volný graf'}
+          </label>
         </div>
-    );
+      </div>
+
+      <div className="page-content">
+        <GenericInputMethodSelector
+          selectedOption={chosenOpt}
+          onOptionSelect={handleOptionChange}
+          options={[
+            { value: 'manual', label: 'Manuálně' },
+            { value: 'generate', label: 'Generovat' },
+            { value: 'sets', label: 'Načíst ze sady' },
+            { value: 'interactive', label: 'Interaktivně' },
+          ]}
+          renderContent={(opt) => {
+            switch (opt) {
+              case 'manual':
+                return <ManualInput onTreeUpdate={setTree} />;
+              case 'generate':
+                return <GenerateInput onTreeUpdate={setTree} />;
+              case 'sets':
+                return <PreparedSetsInput onTreeUpdate={setTree} />;
+              case 'interactive':
+                return (
+                  <InteractiveMCVPGraph
+                    onTreeUpdate={setTree}
+                    useTopDownLayout={useTopDownLayout}
+                  />
+                );
+              default:
+                return null;
+            }
+          }}
+        />
+
+        {tree && chosenOpt !== 'interactive' && (
+          <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+            <TreeRenderCanvas tree={tree} useTopDownLayout={useTopDownLayout} />
+          </div>
+        )}
+
+        {tree && (
+          <div className="card mt-3 mx-auto shadow-sm" style={{ maxWidth: '600px' }}>
+            <div className="card-header bg-light fw-bold text-center">Výsledek obvodu</div>
+            <div className="card-body text-center">
+              {evaluation.result !== null ? (
+                <>
+                  <div className={`alert ${evaluation.result ? 'alert-success' : 'alert-warning'}`}>
+                    {`Výsledek: ${evaluation.result}`}
+                  </div>
+                </>
+              ) : (
+                <p className="text-muted">Přidejte více uzlů a propojte je pro analýzu.</p>
+              )}
+            </div>
+          </div>
+        )}
+
+        {tree && !isTreeValid && (
+          <div className="alert alert-warning mt-3 mx-auto" style={{ maxWidth: '700px' }}>
+            Obvod není kompletní nebo platný. Doplňte chybějící propojení tak, aby měl právě jeden
+            kořenový uzel a šel vyhodnotit.
+          </div>
+        )}
+
+        {!tree && chosenOpt === 'interactive' && (
+          <div className="alert alert-warning mt-3 mx-auto" style={{ maxWidth: '700px' }}>
+            Graf není platný pro vyhodnocení. Upravte propojení tak, aby neobsahoval
+            volné/disconnected části a měl právě jeden kořen.
+          </div>
+        )}
+
+        {tree && (
+          <div>
+            <button
+              className="btn btn-primary m-2"
+              onClick={handleOpenExplain}
+              disabled={!isTreeValid}
+              title={
+                !isTreeValid
+                  ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).'
+                  : undefined
+              }
+            >
+              Vysvětlit
+            </button>
+            <button
+              className="btn btn-primary mx-2"
+              onClick={handleOpenGameConversion}
+              disabled={!isTreeValid}
+              title={
+                !isTreeValid
+                  ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).'
+                  : undefined
+              }
+            >
+              Převést na Kombinatorickou hru
+            </button>
+            <button
+              className="btn btn-primary mx-2"
+              onClick={handleOpenGrammarConversion}
+              disabled={!isTreeValid}
+              title={
+                !isTreeValid
+                  ? 'Nejprve dokončete obvod (jeden kořen, bez volných uzlů).'
+                  : undefined
+              }
+            >
+              Převést na Gramatiku
+            </button>
+          </div>
+        )}
+
+        {grammarConversion && (
+          <ConversionModal onClose={() => setGrammarConversion(false)}>
+            {tree && (
+              <MCVPtoGrammarConverter
+                mcvpTree={tree}
+                onNavigate={onNavigate}
+                useTopDownLayout={useTopDownLayout}
+              />
+            )}
+          </ConversionModal>
+        )}
+
+        {gameConversion && (
+          <ConversionModal onClose={() => setGameConversion(false)}>
+            {tree && (
+              <MCVPtoCombinatorialGameConverter
+                mcvpTree={tree}
+                onNavigate={onNavigate}
+                useTopDownLayout={useTopDownLayout}
+              />
+            )}
+          </ConversionModal>
+        )}
+
+        {explain && (
+          <ConversionModal onClose={() => setExplain(false)}>
+            {tree && (
+              <StepByStepTree
+                tree={tree}
+                steps={evaluation.steps}
+                useTopDownLayout={useTopDownLayout}
+              />
+            )}
+          </ConversionModal>
+        )}
+      </div>
+    </div>
+  );
 }
 
 MCVP.propTypes = {
-    onNavigate: PropTypes.func,
-    initialData: PropTypes.object
+  onNavigate: PropTypes.func,
+  initialData: PropTypes.object,
 };

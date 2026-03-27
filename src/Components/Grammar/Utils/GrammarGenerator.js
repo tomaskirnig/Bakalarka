@@ -32,10 +32,10 @@ export function generateGrammar(config) {
   ensureReachability(productions, nonTerminals);
 
   return new Grammar({
-    name: "Generated Context-Free Grammar",
+    name: 'Generated Context-Free Grammar',
     nonTerminals,
     terminals,
-    productions
+    productions,
   });
 }
 
@@ -47,7 +47,7 @@ export function generateGrammar(config) {
  */
 function ensureEpsilonExists(productions, nonTerminals, config) {
   let hasEpsilon = false;
-  
+
   // Check if epsilon already exists
   for (const nt of nonTerminals) {
     if (productions[nt]) {
@@ -60,15 +60,15 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
     }
     if (hasEpsilon) break;
   }
-  
+
   // If not, add one to a random non-terminal
   if (!hasEpsilon) {
     const randomNt = getRandomElement(nonTerminals);
     if (!productions[randomNt]) productions[randomNt] = [];
-    
+
     const maxProductions = config.maxProductionsPerNonTerminal || 3;
-    
-    // If we reached the max productions limit, replace a random rule
+
+    // Replace a random rule when the limit is reached.
     if (productions[randomNt].length >= maxProductions) {
       const replaceIndex = getRandomInt(0, productions[randomNt].length - 1);
       productions[randomNt][replaceIndex] = [];
@@ -86,58 +86,58 @@ function ensureEpsilonExists(productions, nonTerminals, config) {
  * @param {string[]} nonTerminals - List of all non-terminals
  */
 function ensureReachability(productions, nonTerminals) {
-    if (nonTerminals.length === 0) return;
-    
-    const startSymbol = nonTerminals[0];
-    
-    // 1. Compute Reachable Set (BFS) - only once!
-    const reachable = new Set([startSymbol]);
-    const queue = [startSymbol];
-    
-    while (queue.length > 0) {
-        const current = queue.shift();
-        const rules = productions[current] || [];
-        
-        for (const rule of rules) {
-            for (const symbol of rule) {
-                if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
-                    reachable.add(symbol);
-                    queue.push(symbol);
-                }
-            }
+  if (nonTerminals.length === 0) return;
+
+  const startSymbol = nonTerminals[0];
+
+  // 1. Compute Reachable Set (BFS) - only once!
+  const reachable = new Set([startSymbol]);
+  const queue = [startSymbol];
+
+  while (queue.length > 0) {
+    const current = queue.shift();
+    const rules = productions[current] || [];
+
+    for (const rule of rules) {
+      for (const symbol of rule) {
+        if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
+          reachable.add(symbol);
+          queue.push(symbol);
         }
+      }
     }
-    
-    // 2. Identify all unreachable symbols
-    const unreachable = nonTerminals.filter(nt => !reachable.has(nt));
-    if (unreachable.length === 0) return;
-    
-    // 3. Fix all unreachable symbols in one pass
-    const reachableArray = Array.from(reachable);
-    
-    for (const targetUnreachable of unreachable) {
-        // Pick a reachable non-terminal to modify
-        const hostSymbol = getRandomElement(reachableArray);
-        const hostRules = productions[hostSymbol];
-        
-        if (hostRules && hostRules.length > 0) {
-            // Pick a random rule
-            const ruleIndex = getRandomInt(0, hostRules.length - 1);
-            const rule = hostRules[ruleIndex];
-            
-            if (rule.length > 0) {
-                // Replace a random symbol in this rule with the unreachable one
-                const replaceIndex = getRandomInt(0, rule.length - 1);
-                rule[replaceIndex] = targetUnreachable;
-            } else {
-                // If rule is empty or epsilon, replace entire rule
-                hostRules[ruleIndex] = [targetUnreachable]; 
-            }
-        } else {
-            // Should not happen if generator works, but safety fallback: create new rule
-            productions[hostSymbol] = [[targetUnreachable]];
-        }
+  }
+
+  // 2. Identify all unreachable symbols
+  const unreachable = nonTerminals.filter((nt) => !reachable.has(nt));
+  if (unreachable.length === 0) return;
+
+  // 3. Fix all unreachable symbols in one pass
+  const reachableArray = Array.from(reachable);
+
+  for (const targetUnreachable of unreachable) {
+    // Pick a reachable non-terminal to modify
+    const hostSymbol = getRandomElement(reachableArray);
+    const hostRules = productions[hostSymbol];
+
+    if (hostRules && hostRules.length > 0) {
+      // Pick a random rule
+      const ruleIndex = getRandomInt(0, hostRules.length - 1);
+      const rule = hostRules[ruleIndex];
+
+      if (rule.length > 0) {
+        // Replace a random symbol in this rule with the unreachable one
+        const replaceIndex = getRandomInt(0, rule.length - 1);
+        rule[replaceIndex] = targetUnreachable;
+      } else {
+        // If rule is empty or epsilon, replace entire rule
+        hostRules[ruleIndex] = [targetUnreachable];
+      }
+    } else {
+      // Should not happen if generator works, but safety fallback: create new rule
+      productions[hostSymbol] = [[targetUnreachable]];
     }
+  }
 }
 
 /**
@@ -145,20 +145,21 @@ function ensureReachability(productions, nonTerminals) {
  * @param {GrammarConfig} config - Configuration to validate
  */
 function validateConfig(config) {
-  const { 
-    nonTerminalCount, 
-    terminalCount, 
+  const {
+    nonTerminalCount,
+    terminalCount,
     maxRuleLength,
     minProductionsPerNonTerminal,
-    maxProductionsPerNonTerminal
+    maxProductionsPerNonTerminal,
   } = config;
 
   if (nonTerminalCount <= 0) throw new Error('Počet neterminálů musí být kladný.');
   if (terminalCount <= 0) throw new Error('Počet terminálů musí být kladný.');
   if (maxRuleLength <= 0) throw new Error('Maximální délka pravidla musí být kladná.');
-  
+
   if (minProductionsPerNonTerminal !== undefined && maxProductionsPerNonTerminal !== undefined) {
-    if (minProductionsPerNonTerminal <= 0) throw new Error('Minimální počet pravidel musí být kladný.');
+    if (minProductionsPerNonTerminal <= 0)
+      throw new Error('Minimální počet pravidel musí být kladný.');
     if (minProductionsPerNonTerminal > maxProductionsPerNonTerminal) {
       throw new Error('Minimální počet pravidel nemůže překročit maximální počet pravidel.');
     }
@@ -173,18 +174,19 @@ function validateConfig(config) {
 function generateNonTerminals(count) {
   const symbols = ['S'];
   let currentCode = 65; // ASCII for 'A'
-  
+
   while (symbols.length < count) {
     let symbol;
-    
-    if (currentCode <= 90) { // A-Z
+
+    if (currentCode <= 90) {
+      // A-Z
       symbol = String.fromCharCode(currentCode);
     } else {
-       // Generate AA, AB, etc.
-       const index = currentCode - 91; 
-       const firstChar = Math.floor(index / 26);
-       const secondChar = index % 26;
-       symbol = String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar);
+      // Generate AA, AB, etc.
+      const index = currentCode - 91;
+      const firstChar = Math.floor(index / 26);
+      const secondChar = index % 26;
+      symbol = String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar);
     }
 
     if (symbol !== 'S') {
@@ -213,22 +215,22 @@ function generateTerminals(count) {
  */
 function generateProductions(nonTerminals, terminals, config) {
   const productions = {};
-  
-  nonTerminals.forEach(nonTerminal => {
+
+  nonTerminals.forEach((nonTerminal) => {
     // Use config values or default to 1-3
     const min = config.minProductionsPerNonTerminal || 1;
     const max = config.maxProductionsPerNonTerminal || 3;
     const productionCount = getRandomInt(min, max);
 
     productions[nonTerminal] = [];
-    
+
     for (let i = 0; i < productionCount; i++) {
       const production = createProductionRule(nonTerminal, nonTerminals, terminals, config);
       productions[nonTerminal].push(production);
     }
   });
-  
-  return productions; 
+
+  return productions;
 }
 
 /**
@@ -242,40 +244,40 @@ function generateProductions(nonTerminals, terminals, config) {
 function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   // Handle epsilon rule based on mode
   const epsilonMode = config.epsilonMode || 'never';
-  
+
   if (epsilonMode === 'always' && Math.random() < 0.15) {
     return [];
   } else if (epsilonMode === 'random' && Math.random() < 0.08) {
     return [];
   }
-  
-  // 1. Determine if we WANT recursion
+
+  // 1. Decide whether recursion is used.
   let useLeft = config.allowLeftRecursion && Math.random() < 0.3;
   let useRight = config.allowRightRecursion && Math.random() < 0.3;
-  
-  // 2. Check if we have SPACE for recursion
+
+  // 2. Validate length budget for recursion.
   const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);
   let maxBaseLength = config.maxRuleLength - recursionCost;
-  
+
   // Drop recursion if it doesn't fit within maxRuleLength with at least one base symbol.
   if (maxBaseLength < 1) {
-      useLeft = false;
-      useRight = false;
-      maxBaseLength = config.maxRuleLength;
+    useLeft = false;
+    useRight = false;
+    maxBaseLength = config.maxRuleLength;
   }
-  
+
   // 3. Generate the base rule
   const ruleLength = getRandomInt(1, maxBaseLength);
   const rule = generateRuleSymbols(ruleLength, nonTerminal, nonTerminals, terminals);
-  
+
   // 4. Apply Recursion
   if (useLeft) {
-      rule.unshift(nonTerminal);
+    rule.unshift(nonTerminal);
   }
   if (useRight) {
-      rule.push(nonTerminal);
+    rule.push(nonTerminal);
   }
-  
+
   return rule;
 }
 
@@ -289,12 +291,12 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
  */
 function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals) {
   const rule = [];
-  
+
   // Determine which non-terminals can be used
-  // We exclude the current non-terminal to prevent accidental direct recursion in the base rule.
+  // Exclude current non-terminal from base rule symbols.
   // Direct recursion (Left/Right) is handled explicitly in createProductionRule based on config.
-  let availableNonTerminals = nonTerminals.filter(nt => nt !== currentNonTerminal);
-  
+  let availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
+
   for (let j = 0; j < length; j++) {
     // If no non-terminals are available, always use terminal
     if (availableNonTerminals.length === 0) {
@@ -307,7 +309,7 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
       rule.push(getRandomElement(availableNonTerminals));
     }
   }
-  
+
   return rule;
 }
 

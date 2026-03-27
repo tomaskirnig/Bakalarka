@@ -1,0 +1,14 @@
+node_modules
+dist
+coverage
+*.log
+BachelorThesis/**/*.aux
+BachelorThesis/**/*.bbl
+BachelorThesis/**/*.bcf
+BachelorThesis/**/*.blg
+BachelorThesis/**/*.lof
+BachelorThesis/**/*.lot
+BachelorThesis/**/*.out
+BachelorThesis/**/*.run.xml
+BachelorThesis/**/*.toc
+texput.log

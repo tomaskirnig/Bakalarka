@@ -1,12 +1,27 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+/**
+ * Main navigation component with desktop and mobile/off-canvas variants.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Navigation UI.
+ */
 export function Navigation({ selectedOption, onNavSelect }) {
+  const mobileMenuTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => clearTimeout(mobileMenuTimerRef.current);
+  }, []);
   const navItems = [
-    { key: 'Home',       labelDesktop: 'Domů',           labelMobile: 'Domů' },
-    { key: 'MCVP',       labelDesktop: 'MCVP',           labelMobile: 'MCVP' },
-    { key: 'CombinatorialGame', labelDesktop: 'Kombinatorická hra', labelMobile: 'Kombinatorická hra' },
-    { key: 'Grammar',    labelDesktop: 'Gramatika',      labelMobile: 'Gramatika' },
+    { key: 'Home', labelDesktop: 'Domů', labelMobile: 'Domů' },
+    { key: 'MCVP', labelDesktop: 'MCVP', labelMobile: 'MCVP' },
+    {
+      key: 'CombinatorialGame',
+      labelDesktop: 'Kombinatorická hra',
+      labelMobile: 'Kombinatorická hra',
+    },
+    { key: 'Grammar', labelDesktop: 'Gramatika', labelMobile: 'Gramatika' },
   ];
 
   // Handle offcanvas functionality
@@ -23,7 +38,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
           backdrop.classList.add('show');
           offcanvas.classList.add('show');
         }, 10);
-        
+
         backdrop.addEventListener('click', hideOffcanvas);
       };
 
@@ -38,19 +53,19 @@ export function Navigation({ selectedOption, onNavSelect }) {
       };
 
       toggler?.addEventListener('click', showOffcanvas);
-      
+
       // Handle close button and nav links
       const closeBtn = document.querySelector('.modern-btn-close');
       const navLinks = document.querySelectorAll('[data-bs-dismiss="offcanvas"]');
-      
+
       closeBtn?.addEventListener('click', hideOffcanvas);
-      navLinks.forEach(link => link.addEventListener('click', hideOffcanvas));
+      navLinks.forEach((link) => link.addEventListener('click', hideOffcanvas));
 
       // Cleanup
       return () => {
         toggler?.removeEventListener('click', showOffcanvas);
         closeBtn?.removeEventListener('click', hideOffcanvas);
-        navLinks.forEach(link => link.removeEventListener('click', hideOffcanvas));
+        navLinks.forEach((link) => link.removeEventListener('click', hideOffcanvas));
         if (document.body.contains(backdrop)) {
           document.body.removeChild(backdrop);
         }
@@ -64,11 +79,12 @@ export function Navigation({ selectedOption, onNavSelect }) {
   const closeMobileMenu = () => {
     const offcanvas = document.querySelector('.modern-offcanvas');
     const backdrop = document.querySelector('.offcanvas-backdrop');
-    
+
     offcanvas?.classList.remove('show');
     backdrop?.classList.remove('show');
-    
-    setTimeout(() => {
+
+    clearTimeout(mobileMenuTimerRef.current);
+    mobileMenuTimerRef.current = setTimeout(() => {
       if (backdrop && document.body.contains(backdrop)) {
         document.body.removeChild(backdrop);
       }
@@ -93,11 +109,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
       <nav className="navbar">
         {/* Mobile toggle */}
         <div className="mobile-nav-container">
-          <button
-            className="navbar-toggler"
-            type="button"
-            aria-label="Přepnout navigaci"
-          >
+          <button className="navbar-toggler" type="button" aria-label="Přepnout navigaci">
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>
@@ -107,7 +119,9 @@ export function Navigation({ selectedOption, onNavSelect }) {
         {/* Desktop menu */}
         <div className="desktop-nav-container">
           <div className="nav-items-container">
-            {navItems.map(item => renderButton({ ...item, label: item.labelDesktop, isMobile: false }))}
+            {navItems.map((item) =>
+              renderButton({ ...item, label: item.labelDesktop, isMobile: false })
+            )}
           </div>
         </div>
       </nav>
@@ -123,17 +137,15 @@ export function Navigation({ selectedOption, onNavSelect }) {
           <h5 className="offcanvas-title-modern" id="offcanvasNavbarLabel">
             Menu
           </h5>
-          <button
-            type="button"
-            className="modern-btn-close"
-            aria-label="Zavřít"
-          >
+          <button type="button" className="modern-btn-close" aria-label="Zavřít">
             ✕
           </button>
         </div>
         <div className="offcanvas-body-modern">
           <div className="mobile-nav-items">
-            {navItems.map(item => renderButton({ ...item, label: item.labelMobile, isMobile: true }))}
+            {navItems.map((item) =>
+              renderButton({ ...item, label: item.labelMobile, isMobile: true })
+            )}
           </div>
         </div>
       </div>
@@ -143,5 +155,5 @@ export function Navigation({ selectedOption, onNavSelect }) {
 
 Navigation.propTypes = {
   selectedOption: PropTypes.string.isRequired,
-  onNavSelect: PropTypes.func.isRequired
+  onNavSelect: PropTypes.func.isRequired,
 };

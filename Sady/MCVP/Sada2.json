@@ -1,13 +1,14 @@
 {
-  "name": "Sada 2 (4x Proměnné, 3x Operace)",
+  "name": "Sada 2 (DAG: sdílený podgraf)",
   "nodes": [
     { "id": 1, "type": "variable", "value": "x1", "varValue": 1 },
-    { "id": 2, "type": "variable", "value": "x2", "varValue": 1 },
-    { "id": 3, "type": "variable", "value": "x3", "varValue": 0 },
+    { "id": 2, "type": "variable", "value": "x2", "varValue": 0 },
+    { "id": 3, "type": "variable", "value": "x3", "varValue": 1 },
     { "id": 4, "type": "variable", "value": "x4", "varValue": 1 },
     { "id": 5, "type": "operation", "value": "O" },
     { "id": 6, "type": "operation", "value": "A" },
-    { "id": 7, "type": "operation", "value": "O" }
+    { "id": 7, "type": "operation", "value": "O" },
+    { "id": 8, "type": "operation", "value": "A" }
   ],
   "edges": [
     { "source": 5, "target": 1 },
@@ -15,6 +16,8 @@
     { "source": 6, "target": 3 },
     { "source": 6, "target": 4 },
     { "source": 7, "target": 5 },
-    { "source": 7, "target": 6 }
+    { "source": 7, "target": 6 },
+    { "source": 8, "target": 5 },
+    { "source": 8, "target": 7 }
   ]
 }

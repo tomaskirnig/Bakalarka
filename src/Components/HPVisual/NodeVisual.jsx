@@ -11,12 +11,12 @@ const NetworkVisual = ({
   linkColor,
   nodeColor,
   backgroundColor,
-  overlayColor = "rgba(0, 0, 0, 0.3)",
+  overlayColor = 'rgba(0, 0, 0, 0.3)',
   zIndex = -1,
 }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
-  
+
   const [nodes, setNodes] = useState([]);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
@@ -49,24 +49,24 @@ const NetworkVisual = ({
 
       let finalX = this.x + this.moveX;
       let finalY = this.y + this.moveY;
-      
+
       // X boundary
       if (finalX - this.radius < 0 || finalX + this.radius > canvas.width) {
         this.moveX *= -1;
         finalX = this.x + this.moveX;
-      } 
-      
+      }
+
       // Y boundary
       if (finalY - this.radius < 0 || finalY + this.radius > canvas.height) {
         this.moveY *= -1;
         finalY = this.y + this.moveY;
-      } 
+      }
 
-      if ((this.x < 0 || this.x > canvas.width) || (this.y < 0 || this.y > canvas.height)) {
+      if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
         this.x = Math.random() * 10 + 20;
         this.y = Math.random() * 10 + 20;
       }
-      
+
       this.x = finalX;
       this.y = finalY;
     }
@@ -76,18 +76,18 @@ const NetworkVisual = ({
   const initNodes = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const newNodes = [];
     for (let i = 0; i < nodeCount; i++) {
       let x = Math.random() * canvas.width;
       let y = Math.random() * canvas.height;
       let radius = Math.random() * 8 + 10;
-      let moveX = ((Math.random() * 2) - 1);
-      let moveY = ((Math.random() * 2) - 1);
-      
+      let moveX = Math.random() * 2 - 1;
+      let moveY = Math.random() * 2 - 1;
+
       newNodes.push(new Node(x, y, radius, moveX, moveY));
     }
-    
+
     setNodes(newNodes);
   };
 
@@ -101,16 +101,15 @@ const NetworkVisual = ({
 
   // Draw all nodes
   const drawAll = (ctx) => {
-    nodes.forEach(node => node.draw(ctx, effectiveNodeColor));
+    nodes.forEach((node) => node.draw(ctx, effectiveNodeColor));
   };
 
   // Draw edges between nodes
   const drawEdges = (ctx) => {
     for (let i = 0; i < nodes.length; i++) {
-      for (let ii = i+1; ii < nodes.length; ii++) {
+      for (let ii = i + 1; ii < nodes.length; ii++) {
         let dist = Math.sqrt(
-          Math.pow(nodes[i].x - nodes[ii].x, 2) + 
-          Math.pow(nodes[i].y - nodes[ii].y, 2)
+          Math.pow(nodes[i].x - nodes[ii].x, 2) + Math.pow(nodes[i].y - nodes[ii].y, 2)
         );
 
         if (dist < connectDistance) {
@@ -118,7 +117,7 @@ const NetworkVisual = ({
           ctx.moveTo(nodes[i].x, nodes[i].y);
           ctx.lineTo(nodes[ii].x, nodes[ii].y);
           ctx.strokeStyle = effectiveLinkColor;
-          ctx.lineWidth = 5 - ((dist / connectDistance) * 4);
+          ctx.lineWidth = 5 - (dist / connectDistance) * 4;
           ctx.stroke();
         }
       }
@@ -129,13 +128,13 @@ const NetworkVisual = ({
   const animate = () => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    
+
     const ctx = canvas.getContext('2d');
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
+
     drawEdges(ctx);
     drawAll(ctx);
-    
+
     animationRef.current = requestAnimationFrame(animate);
   };
 
@@ -145,9 +144,9 @@ const NetworkVisual = ({
   // Initialize on mount and handle cleanup
   useEffect(() => {
     handleResize();
-    
+
     window.addEventListener('resize', handleResize);
-    
+
     return () => {
       window.removeEventListener('resize', handleResize);
       if (animationRef.current) {
@@ -190,13 +189,13 @@ const NetworkVisual = ({
     <div
       ref={containerRef}
       style={{
-        position: "fixed",
+        position: 'fixed',
         top: 0,
         left: 0,
-        width: "100%",
-        height: "100%",
+        width: '100%',
+        height: '100%',
         zIndex: zIndex,
-        overflow: "hidden",
+        overflow: 'hidden',
       }}
     >
       <canvas
@@ -210,11 +209,11 @@ const NetworkVisual = ({
       />
       <div
         style={{
-          position: "absolute",
+          position: 'absolute',
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
+          width: '100%',
+          height: '100%',
           backgroundColor: overlayColor,
         }}
       />

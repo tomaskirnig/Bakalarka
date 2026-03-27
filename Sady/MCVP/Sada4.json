@@ -1,7 +1,24 @@
 {
-  "name": "Sada 4 (1x Proměnná)",
+  "name": "Sada 4 (stromová struktura)",
   "nodes": [
-    { "id": 1, "type": "variable", "value": "x1", "varValue": 1 }
+    { "id": 1, "type": "variable", "value": "x1", "varValue": 1 },
+    { "id": 2, "type": "variable", "value": "x2", "varValue": 0 },
+    { "id": 3, "type": "variable", "value": "x3", "varValue": 1 },
+    { "id": 4, "type": "variable", "value": "x4", "varValue": 1 },
+    { "id": 5, "type": "variable", "value": "x5", "varValue": 0 },
+    { "id": 6, "type": "operation", "value": "O" },
+    { "id": 7, "type": "operation", "value": "A" },
+    { "id": 8, "type": "operation", "value": "O" },
+    { "id": 9, "type": "operation", "value": "A" }
   ],
-  "edges": []
+  "edges": [
+    { "source": 6, "target": 1 },
+    { "source": 6, "target": 2 },
+    { "source": 7, "target": 3 },
+    { "source": 7, "target": 4 },
+    { "source": 8, "target": 6 },
+    { "source": 8, "target": 7 },
+    { "source": 9, "target": 8 },
+    { "source": 9, "target": 5 }
+  ]
 }

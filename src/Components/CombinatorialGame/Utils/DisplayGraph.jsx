@@ -3,17 +3,30 @@ import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
+import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
 
-export function DisplayGraph({ 
-  graph, 
-  optimalMoves = new Set(), 
-  width, 
-  height, 
-  fitToScreen, 
+const EMPTY_SET = new Set();
+
+/**
+ * Force-graph visualization for combinatorial game positions and moves.
+ * Supports highlighting, optimal move rendering, and optional lock controls.
+ *
+ * @param {Object} props - Component props.
+ * @returns {JSX.Element} Graph visualization canvas.
+ */
+export function DisplayGraph({
+  graph,
+  optimalMoves = EMPTY_SET,
+  width,
+  height,
+  fitToScreen,
   fitTrigger = 0,
-  highlightedNode = null, 
+  highlightedNode = null,
   winningPlayerMap = {},
-  trackHighlightedNode = false
+  trackHighlightedNode = false,
+  showLockControl = false,
+  defaultLocked = false,
+  showNodeIdsAlways = false,
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -21,6 +34,7 @@ export function DisplayGraph({
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
+  const [isGraphLocked, setIsGraphLocked] = useState(defaultLocked);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -34,16 +48,16 @@ export function DisplayGraph({
     if (!containerRef.current) return;
 
     const updateDimensions = () => {
-        if (!containerRef.current) return;
-        const { width, height } = containerRef.current.getBoundingClientRect();
-        setInternalDimensions({ width, height });
+      if (!containerRef.current) return;
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      setInternalDimensions({ width, height });
     };
 
     // Initial call
     updateDimensions();
 
     const resizeObserver = new ResizeObserver(() => {
-        updateDimensions();
+      updateDimensions();
     });
 
     resizeObserver.observe(containerRef.current);
@@ -52,10 +66,10 @@ export function DisplayGraph({
       resizeObserver.disconnect();
     };
   }, [width, height]);
-  
+
   const graphWidth = width || internalDimensions.width;
   const graphHeight = height || internalDimensions.height;
-  
+
   const nodesRef = useRef([]);
 
   // Flash border when graph changes
@@ -65,12 +79,16 @@ export function DisplayGraph({
     return () => clearTimeout(timer);
   }, [graph]);
 
-  // Memoize the conversion of your graph into the structure expected by react-force-graph-2d.
+  useEffect(() => {
+    setIsGraphLocked(defaultLocked);
+  }, [graph, defaultLocked]);
+
+  // Memoize graph data for react-force-graph-2d.
   const data = useMemo(() => {
-    const prevNodesMap = new Map(nodesRef.current.map(n => [n.id, n]));
+    const prevNodesMap = new Map(nodesRef.current.map((n) => [n.id, n]));
 
     // Create nodes with a temporary "neighbors" as union of parents and children.
-    const nodes = Object.values(graph.positions).map(node => {
+    const nodes = Object.values(graph.positions).map((node) => {
       const prev = prevNodesMap.get(node.id);
       return {
         id: node.id,
@@ -79,72 +97,77 @@ export function DisplayGraph({
         y: prev ? prev.y : node.y,
         vx: prev ? prev.vx : undefined,
         vy: prev ? prev.vy : undefined,
+        fx: prev ? prev.fx : undefined,
+        fy: prev ? prev.fy : undefined,
         isStartingPosition: node.id === graph.startingPosition.id,
-        neighbors: [...(node.parents || []), ...(node.children || [])]
+        neighbors: [...(node.parents || []), ...(node.children || [])],
       };
     });
 
     // Build a mapping from node id to node object.
     const nodeMap = {};
-    nodes.forEach(n => {
+    nodes.forEach((n) => {
       nodeMap[n.id] = n;
     });
 
     // Replace neighbor IDs with actual node objects.
-    nodes.forEach(n => {
-      n.neighbors = n.neighbors.map(id => nodeMap[id]).filter(Boolean);
+    nodes.forEach((n) => {
+      n.neighbors = n.neighbors.map((id) => nodeMap[id]).filter(Boolean);
     });
 
     // Build links from each node's children.
     const links = [];
-    Object.values(graph.positions).forEach(node => {
+    Object.values(graph.positions).forEach((node) => {
       if (node.children) {
-        node.children.forEach(childId => {
+        node.children.forEach((childId) => {
           links.push({
             source: node.id,
-            target: childId
+            target: childId,
           });
         });
       }
     });
-    
+
     // Convert link endpoints to node objects.
-    const linksWithOptimal = links.map(link => {
-        const source = nodeMap[link.source];
-        const target = nodeMap[link.target];
-        const isOptimal = optimalMoves.has(`${link.source}-${link.target}`);
-        
-        return {
-            source,
-            target,
-            isOptimal
-        };
+    const linksWithOptimal = links.map((link) => {
+      const source = nodeMap[link.source];
+      const target = nodeMap[link.target];
+      const isOptimal = optimalMoves.has(`${link.source}-${link.target}`);
+
+      return {
+        source,
+        target,
+        isOptimal,
+      };
     });
-    
+
     const newData = { nodes, links: linksWithOptimal };
     nodesRef.current = newData.nodes;
     return newData;
   }, [graph, optimalMoves]);
 
   // When a node is hovered, create new highlight sets.
-  const handleNodeHover = useCallback((node) => {
-    highlightNodes.current.clear();
-    highlightLinks.current.clear();
+  const handleNodeHover = useCallback(
+    (node) => {
+      highlightNodes.current.clear();
+      highlightLinks.current.clear();
 
-    if (node) {
-      highlightNodes.current.add(node);
-      if (node.neighbors) {
-        node.neighbors.forEach(neighbor => highlightNodes.current.add(neighbor));
-      }
-      data.links.forEach(link => {
-        if (link.source.id === node.id || link.target.id === node.id) {
-          highlightLinks.current.add(link);
+      if (node) {
+        highlightNodes.current.add(node);
+        if (node.neighbors) {
+          node.neighbors.forEach((neighbor) => highlightNodes.current.add(neighbor));
         }
-      });
-    }
+        data.links.forEach((link) => {
+          if (link.source.id === node.id || link.target.id === node.id) {
+            highlightLinks.current.add(link);
+          }
+        });
+      }
 
-    hoverNode.current = node || null;
-  }, [data]);
+      hoverNode.current = node || null;
+    },
+    [data]
+  );
 
   const handleLinkHover = useCallback((link) => {
     highlightNodes.current.clear();
@@ -158,59 +181,74 @@ export function DisplayGraph({
     hoverNode.current = null;
   }, []);
 
-  const paintRing = useCallback((node, ctx) => {
-    // Determine opacity
-    const isHoverActive = hoverNode.current !== null;
-    const isHighlighted = highlightNodes.current.has(node);
-    
-    ctx.globalAlpha = isHoverActive && !isHighlighted ? 0.15 : 1;
+  const paintRing = useCallback(
+    (node, ctx) => {
+      // Determine opacity
+      const isHoverActive = hoverNode.current !== null;
+      const isHighlighted = highlightNodes.current.has(node);
 
-    // Draw a ring around highlighted nodes.
-    ctx.beginPath();
-    ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
-    
-    // Color nodes based on player and starting position
-    let fillColor;
-    if (hoverNode.current === node) {
-      fillColor = colors.highlightNode;
-    } else if (highlightedNode && node.id === highlightedNode) {
-      // Step-by-step highlighted node - use same color as hover
-      fillColor = colors.highlightNode;
-    } else if (node.isStartingPosition) {
-      fillColor = colors.accentRed;
-    } else {
-      fillColor = colors.defaultNode;
-    }
-    
-    ctx.fillStyle = fillColor;
-    ctx.fill();
-    
-    // Draw node ID in center when in hover mode or when this node is being tracked
-    if (hoverNode.current !== null || (highlightedNode && node.id === highlightedNode)) {
-      ctx.font = '5px Arial';
+      ctx.globalAlpha = isHoverActive && !isHighlighted ? 0.15 : 1;
+
+      // Draw a ring around highlighted nodes.
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, game.nodeRadius * game.highlightScale, 0, 2 * Math.PI, false);
+
+      // Color nodes based on player and starting position
+      let fillColor;
+      if (hoverNode.current === node) {
+        fillColor = colors.highlightNode;
+      } else if (highlightedNode && node.id === highlightedNode) {
+        // Step-by-step highlighted node - use same color as hover
+        fillColor = colors.highlightNode;
+      } else if (node.isStartingPosition) {
+        fillColor = colors.accentRed;
+      } else {
+        fillColor = colors.defaultNode;
+      }
+
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+
+      // Draw node ID in center when hovered, tracked, or explicitly always enabled.
+      if (
+        showNodeIdsAlways ||
+        hoverNode.current !== null ||
+        (highlightedNode && node.id === highlightedNode)
+      ) {
+        ctx.font = game.nodeIdFont;
+        ctx.fillStyle = 'black';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node.id, node.x, node.y);
+      }
+
+      // Draw the player label below the node.
+      ctx.font = game.labelFont;
       ctx.fillStyle = 'black';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(node.id, node.x, node.y);
-    }
-    
-    // Draw the player label below the node.
-    ctx.font = game.labelFont; 
-    ctx.fillStyle = 'black';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(node.player === 1 ? 'I' : 'II', node.x, node.y + game.nodeRadius + 10);
-    
-    // Draw winning player info if available
-    if (winningPlayerMap && winningPlayerMap[node.id]) {
-        ctx.font = 'bold 10px monospace';
-        ctx.fillStyle = '#198754'; // Bootstrap success green
-        ctx.fillText(winningPlayerMap[node.id] === 1 ? 'I' : 'II', node.x, node.y - game.nodeRadius - 10);
-    }
+      ctx.fillText(
+        node.player === 1 ? 'I' : 'II',
+        node.x,
+        node.y + game.nodeRadius + game.playerLabelOffset
+      );
 
-    // Reset alpha
-    ctx.globalAlpha = 1;
-  }, [colors, game, highlightedNode, winningPlayerMap]);
+      // Draw winning player info if available
+      if (winningPlayerMap && winningPlayerMap[node.id]) {
+        ctx.font = game.winningLabelFont;
+        ctx.fillStyle = game.winningLabelColor;
+        ctx.fillText(
+          winningPlayerMap[node.id] === 1 ? 'I' : 'II',
+          node.x,
+          node.y - game.nodeRadius - game.playerLabelOffset
+        );
+      }
+
+      // Reset alpha
+      ctx.globalAlpha = 1;
+    },
+    [colors, game, highlightedNode, showNodeIdsAlways, winningPlayerMap]
+  );
 
   // Adjust link distance based on edge count
   useEffect(() => {
@@ -222,26 +260,105 @@ export function DisplayGraph({
 
       // Base distance + (edgeCount * factor)
       // Increase distance as the graph complexity grows.
-      const dynamicDistance = Math.min(50 + edgeCount * 1.5, 300); 
-      
+      const dynamicDistance = Math.min(
+        game.dynamicLinkDistanceBase + edgeCount * game.dynamicLinkDistancePerEdge,
+        game.dynamicLinkDistanceMax
+      );
+
       fgRef.current.d3Force('link').distance(dynamicDistance);
-      
+
       // Re-heat simulation to apply changes smoothly
       fgRef.current.d3ReheatSimulation();
     }
-  }, [graph]);
+  }, [graph, game]);
 
-  // Zoom to fit when triggered
+  const persistGraphPosition = useCallback(
+    (node) => {
+      if (!graph?.positions || !node || typeof node.x !== 'number' || typeof node.y !== 'number')
+        return;
+
+      const position = graph.positions[node.id];
+      if (!position) return;
+
+      position.x = node.x;
+      position.y = node.y;
+    },
+    [graph]
+  );
+
+  const pinNodePosition = useCallback((node) => {
+    if (typeof node?.x === 'number' && typeof node?.y === 'number') {
+      node.fx = node.x;
+      node.fy = node.y;
+    }
+  }, []);
+
+  const unpinNodePosition = useCallback((node) => {
+    if (!node) return;
+    node.fx = undefined;
+    node.fy = undefined;
+  }, []);
+
+  const handleToggleGraphLock = useCallback(() => {
+    setIsGraphLocked((prevLocked) => {
+      const nextLocked = !prevLocked;
+
+      if (nextLocked) {
+        data.nodes.forEach(pinNodePosition);
+      } else {
+        data.nodes.forEach(unpinNodePosition);
+        fgRef.current?.d3ReheatSimulation();
+      }
+
+      return nextLocked;
+    });
+  }, [data.nodes, pinNodePosition, unpinNodePosition]);
+
+  // Apply lock as soon as node coordinates are available from the engine.
+  const handleEngineTick = useCallback(() => {
+    if (!isGraphLocked) return;
+
+    data.nodes.forEach((n) => {
+      if (typeof n.x === 'number' && typeof n.y === 'number') {
+        n.fx = n.x;
+        n.fy = n.y;
+        persistGraphPosition(n);
+      }
+    });
+  }, [data.nodes, isGraphLocked, persistGraphPosition]);
+
+  // Immediate fit when explicitly requested.
   useEffect(() => {
-    if ((fitToScreen || fitTrigger > 0) && fgRef.current) {
-        fgRef.current.zoomToFit(400, 50);
+    if (fitToScreen || fitTrigger > 0) {
+      fgRef.current?.zoomToFit(400, 50);
     }
   }, [fitToScreen, fitTrigger]);
+
+  // Persist coordinates after simulation settles.
+  // Only pin nodes when lock mode is enabled.
+  const handleEngineStop = useCallback(() => {
+    data.nodes.forEach((n) => {
+      if (typeof n.x === 'number') {
+        if (isGraphLocked) {
+          n.fx = n.x;
+          n.fy = n.y;
+        } else {
+          n.fx = undefined;
+          n.fy = undefined;
+        }
+        persistGraphPosition(n);
+      }
+    });
+
+    if (isGraphLocked) {
+      data.nodes.forEach(pinNodePosition);
+    }
+  }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
     if (trackHighlightedNode && highlightedNode && fgRef.current && data.nodes) {
-      const node = data.nodes.find(n => n.id === highlightedNode);
+      const node = data.nodes.find((n) => n.id === highlightedNode);
       if (node && node.x !== undefined && node.y !== undefined) {
         // Center on the node with smooth transition
         fgRef.current.centerAt(node.x, node.y, 800);
@@ -255,23 +372,26 @@ export function DisplayGraph({
   }, [highlightedNode, trackHighlightedNode, data.nodes]);
 
   const getLinkWidth = useCallback((link) => {
-    return highlightLinks.current.has(link) ? 5 : (link.isOptimal ? 3 : 1);
+    return highlightLinks.current.has(link) ? 5 : link.isOptimal ? 3 : 1;
   }, []);
 
-  const getLinkColor = useCallback((link) => {
-    // Base color logic
-    let color = link.isOptimal ? colors.accentYellow : colors.defaultLink;
-    
-    // Opacity logic
-    if (hoverNode.current) {
+  const getLinkColor = useCallback(
+    (link) => {
+      // Base color logic
+      let color = link.isOptimal ? colors.accentYellow : colors.defaultLink;
+
+      // Opacity logic
+      if (hoverNode.current) {
         if (highlightLinks.current.has(link)) {
-            return color; // Full opacity for highlighted
+          return color; // Full opacity for highlighted
         } else {
-            return colors.dimmedLink; 
+          return colors.dimmedLink;
         }
-    }
-    return color;
-  }, [colors]);
+      }
+      return color;
+    },
+    [colors]
+  );
 
   if (!graph || !graph.positions) {
     return <div>Žádná data grafu nejsou k dispozici.</div>;
@@ -279,15 +399,22 @@ export function DisplayGraph({
 
   return (
     <>
-      <div className={`GraphDiv shadow-sm ${isFlashing ? 'flashing' : ''}`} ref={containerRef} style={{ backgroundColor: colors.canvasBackgroundColor }}>
+      <div
+        className={`GraphDiv shadow-sm ${isFlashing ? 'flashing' : ''}`}
+        ref={containerRef}
+        style={{ backgroundColor: colors.canvasBackgroundColor }}
+      >
         <div className="graph-controls">
-          <button 
-            className="graph-btn" 
+          <button
+            className="graph-btn"
             onClick={() => fgRef.current?.zoomToFit(400, 50)}
             title="Fit Graph to Screen"
           >
             Vycentrovat
           </button>
+          {showLockControl && (
+            <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
+          )}
         </div>
         <ForceGraph2D
           ref={fgRef}
@@ -295,31 +422,41 @@ export function DisplayGraph({
           height={graphHeight}
           enablePanInteraction={true}
           enableZoomInteraction={true}
+          enableNodeDrag={true}
           graphData={data}
           nodeRelSize={game.nodeRadius}
           autoPauseRedraw={false}
           linkWidth={getLinkWidth}
-          linkColor={getLinkColor} 
+          linkColor={getLinkColor}
           linkDirectionalParticles={3}
-          linkDirectionalParticleWidth={link => highlightLinks.current.has(link) ? 4 : 0}
-          linkDirectionalArrowLength={6}
+          linkDirectionalParticleWidth={(link) => (highlightLinks.current.has(link) ? 4 : 0)}
+          linkDirectionalArrowLength={game.linkDirectionalArrowLength}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           nodeCanvasObjectMode={() => 'after'}
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
-          onNodeDrag={node => {
+          onEngineTick={handleEngineTick}
+          onEngineStop={handleEngineStop}
+          onNodeDrag={(node) => {
             node.fx = node.x;
             node.fy = node.y;
+            persistGraphPosition(node);
           }}
-          onNodeDragEnd={node => {
-            node.fx = node.x;
-            node.fy = node.y;
+          onNodeDragEnd={(node) => {
+            if (isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            } else {
+              node.fx = undefined;
+              node.fy = undefined;
+              fgRef.current?.d3ReheatSimulation();
+            }
+            persistGraphPosition(node);
           }}
         />
       </div>
-
     </>
   );
 }
@@ -329,8 +466,8 @@ DisplayGraph.propTypes = {
   graph: PropTypes.shape({
     positions: PropTypes.object,
     startingPosition: PropTypes.shape({
-      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number])
-    })
+      id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    }),
   }),
   optimalMoves: PropTypes.object,
   width: PropTypes.number,
@@ -338,7 +475,10 @@ DisplayGraph.propTypes = {
   fitToScreen: PropTypes.bool,
   fitTrigger: PropTypes.number,
   highlightedNode: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2]))
+  winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
+  showLockControl: PropTypes.bool,
+  defaultLocked: PropTypes.bool,
+  showNodeIdsAlways: PropTypes.bool,
 };
 
 export default DisplayGraph;

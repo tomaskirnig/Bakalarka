@@ -19,6 +19,7 @@ Pro spuštění a vývoj projektu postupujte podle následujících kroků:
    npm install
    ```
 4. Spusťte aplikaci v režimu vývoje:
+
    ```bash
    npm run dev
    ```

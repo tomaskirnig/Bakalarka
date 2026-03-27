@@ -2,25 +2,25 @@
  * @fileoverview Provides utilities for parsing MCVP expressions into circuit (DAG) structures.
  */
 
-import { toast } from "react-toastify";
-import { Node } from "./NodeClass";
+import { toast } from 'react-toastify';
+import { Node } from './NodeClass';
 
 /**
  * Converts an input string into tokens for parsing.
- * 
+ *
  * @param {string} s - The expression string to tokenize
  * @returns {Array<Array<string>>} Array of tokens, each a [kind, value] pair
  * @throws {SyntaxError} If an unexpected character is encountered
  */
 function tokenize(s) {
-  s = s.replace(/\s+/g, ''); // Remove whitespace characters 
+  s = s.replace(/\s+/g, ''); // Remove whitespace characters
 
   // Define token patterns
   const tokenSpecification = [
     ['LPAREN', /\(/],
     ['RPAREN', /\)/],
     ['OPERATOR', /A|O/],
-    ['VARIABLE', /x\d+\[\d+\]/],  // Matches x followed by digits
+    ['VARIABLE', /x\d+\[(?:0|1)\]/], // Matches xN[0|1]
   ];
 
   const tokens = [];
@@ -43,10 +43,12 @@ function tokenize(s) {
       const contextStart = Math.max(0, pos - 3);
       const contextEnd = Math.min(s.length, pos + 3);
       const context = s.slice(contextStart, contextEnd);
-      throw new SyntaxError(`Neočekávaný znak "${s[pos]}" na pozici ${pos}. Okolí chyby: "...${context}..."`);
+      throw new SyntaxError(
+        `Neočekávaný znak "${s[pos]}" na pozici ${pos}. Okolí chyby: "...${context}..."`
+      );
     }
   }
-  
+
   return tokens;
 }
 
@@ -56,17 +58,19 @@ function tokenize(s) {
 class Parser {
   /**
    * Creates a new Parser instance
-   * 
+   *
    * @param {Array<Array<string>>} tokens - Array of tokens to parse
    */
   constructor(tokens) {
     this.tokens = tokens;
     this.pos = 0;
+    this.variableNodes = new Map();
+    this.variableValues = new Map();
   }
 
   /**
    * Parses the tokens into an MCVP circuit (DAG).
-   * 
+   *
    * @returns {Node} The root node of the parsed circuit
    * @throws {SyntaxError} If the syntax is invalid
    */
@@ -74,14 +78,16 @@ class Parser {
     const node = this.parseExpression();
     if (this.pos !== this.tokens.length) {
       const current = this.currentToken();
-      throw new SyntaxError(`Neočekávané tokeny na konci vstupu: "${current[1]}". Očekával se konec výrazu.`);
+      throw new SyntaxError(
+        `Neočekávané tokeny na konci vstupu: "${current[1]}". Očekával se konec výrazu.`
+      );
     }
     return node;
   }
 
   /**
    * Parses an expression.
-   * 
+   *
    * @returns {Node} The root node of the parsed expression
    */
   parseExpression() {
@@ -90,7 +96,7 @@ class Parser {
 
   /**
    * Parses an OR expression.
-   * 
+   *
    * @returns {Node} The root node of the parsed OR expression
    */
   parseOrExpr() {
@@ -98,27 +104,31 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'O')) {
       this.consume('OPERATOR', 'O');
       const right = this.parseAndExpr();
-      
+
       // Create new node with children array
       const newNode = new Node(
-        'O',             // value
-        null,            // varValue
-        'operation',     // type
-        [node, right],   // children
-        null             // parents
+        'O', // value
+        null, // varValue
+        'operation', // type
+        [node, right], // children
+        null // parents
       );
-      
+
       // Update parent references
       if (node) {
         node.parents = node.parents || [];
-        node.parents.push(newNode);
+        if (!node.parents.includes(newNode)) {
+          node.parents.push(newNode);
+        }
       }
-      
+
       if (right) {
         right.parents = right.parents || [];
-        right.parents.push(newNode);
+        if (!right.parents.includes(newNode)) {
+          right.parents.push(newNode);
+        }
       }
-      
+
       node = newNode;
     }
     return node;
@@ -126,7 +136,7 @@ class Parser {
 
   /**
    * Parses an AND expression.
-   * 
+   *
    * @returns {Node} The root node of the parsed AND expression
    */
   parseAndExpr() {
@@ -134,27 +144,31 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'A')) {
       this.consume('OPERATOR', 'A');
       const right = this.parseFactor();
-      
+
       // Create new node with children array
       const newNode = new Node(
-        'A',             // value
-        null,            // varValue
-        'operation',     // type
-        [node, right],   // children
-        null             // parents
+        'A', // value
+        null, // varValue
+        'operation', // type
+        [node, right], // children
+        null // parents
       );
-      
+
       // Update parent references
       if (node) {
         node.parents = node.parents || [];
-        node.parents.push(newNode);
+        if (!node.parents.includes(newNode)) {
+          node.parents.push(newNode);
+        }
       }
-      
+
       if (right) {
         right.parents = right.parents || [];
-        right.parents.push(newNode);
+        if (!right.parents.includes(newNode)) {
+          right.parents.push(newNode);
+        }
       }
-      
+
       node = newNode;
     }
     return node;
@@ -162,7 +176,7 @@ class Parser {
 
   /**
    * Parses a factor (variable or parenthesized expression).
-   * 
+   *
    * @returns {Node} The node representing the factor
    * @throws {SyntaxError} If an unexpected token is encountered
    */
@@ -170,50 +184,68 @@ class Parser {
     if (this.currentTokenIs('VARIABLE')) {
       const varToken = this.consume('VARIABLE');
       const [varName, varValue] = this.parseVariable(varToken[1]);
-      
-      // Create variable node with new constructor signature
-      return new Node(
-        varName,         // value
-        varValue,        // varValue
-        'variable',      // type
-        [],              // children (empty for variables)
-        []               // parents (will be updated by parent node)
+
+      if (this.variableValues.has(varName)) {
+        const existingValue = this.variableValues.get(varName);
+        if (existingValue !== varValue) {
+          throw new SyntaxError(
+            `Konflikt hodnot proměnné: ${varName} je použita s hodnotami ${existingValue} a ${varValue}.`
+          );
+        }
+      }
+
+      if (this.variableNodes.has(varName)) {
+        return this.variableNodes.get(varName);
+      }
+
+      const variableNode = new Node(
+        varName, // value
+        varValue, // varValue
+        'variable', // type
+        [], // children (empty for variables)
+        [] // parents (will be updated by parent node)
       );
-    } 
-    else if (this.currentTokenIs('LPAREN')) {
+
+      this.variableValues.set(varName, varValue);
+      this.variableNodes.set(varName, variableNode);
+      return variableNode;
+    } else if (this.currentTokenIs('LPAREN')) {
       this.consume('LPAREN');
       const node = this.parseExpression();
       this.consume('RPAREN');
       return node;
-    } 
-    else {
+    } else {
       const current = this.currentToken();
       const found = current[0] === 'EOF' ? 'KONEC VSTUPU' : `"${current[1]}"`;
-      throw new SyntaxError(`Chyba syntaxe: Očekávala se proměnná (např. x1[0]) nebo levá závorka "(", ale nalezeno: ${found}.`);
+      throw new SyntaxError(
+        `Chyba syntaxe: Očekávala se proměnná (např. x1[0]) nebo levá závorka "(", ale nalezeno: ${found}.`
+      );
     }
   }
 
   /**
    * Parses a variable token into name and value.
-   * 
+   *
    * @param {string} varStr - The variable string to parse ("x1[0]")
    * @returns {Array} A pair of [variableName, variableValue]
    * @throws {SyntaxError} If the variable format is not valid
    */
   parseVariable(varStr) {
-    const match = varStr.match(/(x\d+)(?:\[(\d)\])?/);
+    const match = varStr.match(/^(x\d+)\[(0|1)\]$/);
     if (match) {
       const varName = match[1];
-      const varValue = Number(match[2]) !== 0 ? 1 : 0;
+      const varValue = Number(match[2]);
       return [varName, varValue];
     } else {
-      throw new SyntaxError(`Neplatný formát proměnné: "${varStr}". Očekávaný formát je xN[H], kde N je číslo proměnné a H je hodnota (0 nebo 1).`);
+      throw new SyntaxError(
+        `Neplatný formát proměnné: "${varStr}". Očekávaný formát je xN[H], kde N je číslo proměnné a H je hodnota (0 nebo 1).`
+      );
     }
   }
 
   /**
    * Gets the current token.
-   * 
+   *
    * @returns {Array<string>} The current token as [kind, value] or ['EOF', ''] if at end
    */
   currentToken() {
@@ -226,7 +258,7 @@ class Parser {
 
   /**
    * Checks if the current token matches the specified kind and optional value.
-   * 
+   *
    * @param {string} kind - The token kind to check for
    * @param {string|null} value - The token value to check for (or null to check only kind)
    * @returns {boolean} True if the current token matches, false otherwise
@@ -244,7 +276,7 @@ class Parser {
 
   /**
    * Converts a token kind to a string representation.
-   * 
+   *
    * @param {string} kind - The token kind to convert
    * @returns {string} The string representation of the token kind
    */
@@ -267,7 +299,7 @@ class Parser {
 
   /**
    * Consumes the current token if it matches the specified kind and optional value.
-   * 
+   *
    * @param {string} kind - The expected token kind
    * @param {string|null} value - The expected token value (or null to check only kind)
    * @returns {Array<string>} The consumed token
@@ -277,21 +309,23 @@ class Parser {
     const tok = this.currentToken();
     if (tok[0] !== kind) {
       const found = tok[0] === 'EOF' ? 'KONEC VSTUPU' : `"${tok[1]}"`;
-      throw new SyntaxError(`Chyba syntaxe: Očekával se ${this.convertToString(kind)}, ale nalezeno: ${found}.`);
+      throw new SyntaxError(
+        `Chyba syntaxe: Očekával se ${this.convertToString(kind)}, ale nalezeno: ${found}.`
+      );
     }
     if (value !== null && tok[1] !== value) {
-      throw new SyntaxError(`Chyba syntaxe: Očekávána hodnota "${value}", ale nalezena "${tok[1]}".`);
+      throw new SyntaxError(
+        `Chyba syntaxe: Očekávána hodnota "${value}", ale nalezena "${tok[1]}".`
+      );
     }
     this.pos += 1;
     return tok;
   }
-
-  
 }
 
 /**
  * Parses an expression string into an MCVP circuit DAG.
- * 
+ *
  * @param {string} exprStr - The expression string to parse
  * @returns {Node} The root node of the parsed circuit
  */
@@ -307,8 +341,7 @@ export function parseExpressionToTree(exprStr) {
     const tree = parser.parse();
     // console.log("Parsed tree:");
     return tree;
-  } 
-  catch (error) {
+  } catch (error) {
     if (error instanceof SyntaxError) {
       toast.error('Chyba při parsování: ' + error.message);
     } else {
@@ -316,5 +349,4 @@ export function parseExpressionToTree(exprStr) {
     }
     return null;
   }
-  
 }
