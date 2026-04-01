@@ -117,7 +117,8 @@ class MCVPToGrammarConverter {
     this.steps = [];
     this.processedNodes = new Set();
     this.productionNodes = new Set();
-    this.variableVisualMap = new Map(); // variable node -> terminal or epsilon visual label
+    this.variableVisualMap = new Map(); // variable node -> preferred visual label
+    this.epsilonChanceForTrueVariable = 0.15;
   }
 
   /**
@@ -153,7 +154,8 @@ class MCVPToGrammarConverter {
       description: 'Inicializace gramatiky',
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
-      visualNote: `Inicializace: Počáteční symbol S. Proměnné s hodnotou 1 budou nahrazeny unikátními terminály (a-z, +, -, atd.), proměnné s hodnotou 0 vytvoří prázdnou produkci (ε).`,
+      visualNote:
+        'Inicializace: Počáteční symbol S. Každý uzel operace dostane neterminál. Proměnné s hodnotou 1 se převedou na terminál (včetně možnosti ε s pravděpodobností 15 %). Proměnné s hodnotou 0 dostanou neterminální smyčku X -> X, takže nemohou vygenerovat žádné slovo.',
       symbols: this.getVisualSymbols(),
     });
   }
@@ -164,7 +166,7 @@ class MCVPToGrammarConverter {
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
       visualNote:
-        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Každá proměnná s hodnotou 1 má unikátní terminál, proměnné s hodnotou 0 vytváří prázdné produkce (ε).',
+        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Uzly operací mají neterminály, proměnné s hodnotou 1 dávají terminál (včetně ε) a proměnné s hodnotou 0 dávají smyčku X -> X, která negeneruje žádné slovo.',
       symbols: this.getVisualSymbols(),
     });
   }
@@ -191,7 +193,7 @@ class MCVPToGrammarConverter {
       visualMap.set(node, result);
     });
 
-    // Variable visual labels (including epsilon for value 0) have highest priority.
+    // Variable visual labels have highest priority when explicitly set.
     this.variableVisualMap.forEach((result, node) => {
       visualMap.set(node, result);
     });
@@ -209,23 +211,25 @@ class MCVPToGrammarConverter {
     if (!node || this.processedNodes.has(node)) return;
     this.processedNodes.add(node);
 
-    // Non-root variable nodes do not get a non-terminal.
-    const isRoot = node === this.mcvpTree;
-    if (node.type === 'variable' && !isRoot) {
-      return;
-    }
-
     const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
     this.grammar.addNonTerminal(nodeSymbol);
 
     const nodeTypeDisplay =
       node.type === 'operation' ? (node.value === 'A' ? 'AND' : 'OR') : `proměnná ${node.value}`;
 
-    this.addStep(
-      `Vytvořit neterminál ${nodeSymbol}`,
-      node,
-      `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
-    );
+    if (node.type === 'operation') {
+      this.addStep(
+        `Vytvořit neterminál ${nodeSymbol}`,
+        node,
+        `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
+      );
+    } else {
+      this.addStep(
+        `Připravit proměnnou ${nodeSymbol}`,
+        node,
+        `Proměnná ${node.value} bude převedena buď na terminál (případně ε), nebo na smyčku ${nodeSymbol} → ${nodeSymbol} podle své hodnoty.`
+      );
+    }
 
     // Process children
     if (node.children && node.children.length > 0) {
@@ -243,32 +247,37 @@ class MCVPToGrammarConverter {
     if (!node || this.productionNodes.has(node)) return;
     this.productionNodes.add(node);
 
-    // Skip productions for non-root variable nodes.
-    const isRoot = node === this.mcvpTree;
-    if (node.type === 'variable' && !isRoot) return;
-
-    const nodeSymbol = this.symbolGenerator.getSymbol(node); // Should be 'S' if root variable, or NT for op
+    const nodeSymbol = this.symbolGenerator.getSymbol(node);
     if (!nodeSymbol) return;
 
-    // Handle variable nodes (Only if Root)
+    // Handle variable nodes.
     if (node.type === 'variable') {
       if (node.varValue === 1) {
-        const terminal = this.terminalGenerator.getTerminalForVariable(node);
-        this.variableVisualMap.set(node, terminal);
-        this.grammar.addTerminal(terminal);
-        this.grammar.setProductions(nodeSymbol, [[terminal]]);
-        this.addStep(
-          `Pravidlo pro kořen: ${nodeSymbol} → ${terminal}`,
-          node,
-          `Kořen je proměnná s hodnotou 1, generuje terminál '${terminal}'.`
-        );
+        if (Math.random() < this.epsilonChanceForTrueVariable) {
+          this.variableVisualMap.set(node, 'ε');
+          this.grammar.setProductions(nodeSymbol, [[]]);
+          this.addStep(
+            `Pravidlo pro proměnnou: ${nodeSymbol} → ε`,
+            node,
+            'Proměnná s hodnotou 1 byla náhodně (15%) převedena na epsilon produkci.'
+          );
+        } else {
+          const terminal = this.terminalGenerator.getTerminalForVariable(node);
+          this.variableVisualMap.set(node, terminal);
+          this.grammar.addTerminal(terminal);
+          this.grammar.setProductions(nodeSymbol, [[terminal]]);
+          this.addStep(
+            `Pravidlo pro proměnnou: ${nodeSymbol} → ${terminal}`,
+            node,
+            `Proměnná s hodnotou 1 má pravidlo na terminál '${terminal}'.`
+          );
+        }
       } else {
-        this.variableVisualMap.set(node, 'ε');
-        this.grammar.setProductions(nodeSymbol, [[]]);
+        this.grammar.setProductions(nodeSymbol, [[nodeSymbol]]);
         this.addStep(
-          `Pravidlo pro kořen: ${nodeSymbol} → ε`,
+          `Cyklické pravidlo: ${nodeSymbol} → ${nodeSymbol}`,
           node,
-          `Kořen je proměnná s hodnotou 0, generuje prázdnou produkci (ε).`
+          `Proměnná s hodnotou 0 dostane cyklické pravidlo ${nodeSymbol} → ${nodeSymbol}, takže neterminál ${nodeSymbol} není produktivní.`
         );
       }
       return;
@@ -277,11 +286,9 @@ class MCVPToGrammarConverter {
     // Handle operation nodes
     if (node.value === 'A') {
       // AND node
-      // For AND: filter out nulls (epsilon children contribute nothing to concatenation)
       const childSymbols = node.children
         .filter((child) => child != null)
-        .map((child) => this.getProductionSymbolForChild(child))
-        .filter(Boolean);
+        .map((child) => this.getProductionSymbolForChild(child));
 
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
       const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : 'ε';
@@ -292,21 +299,14 @@ class MCVPToGrammarConverter {
       );
     } else if (node.value === 'O') {
       // OR node
-      // For OR: keep nulls to create epsilon productions
-      const childSymbolsOrNull = node.children
+      const childSymbols = node.children
         .filter((child) => child != null)
         .map((child) => this.getProductionSymbolForChild(child));
 
-      // Create production for each child: null becomes [], others become [symbol]
-      const productions = childSymbolsOrNull.map((symbol) => (symbol === null ? [] : [symbol]));
+      const productions = childSymbols.map((symbol) => [symbol]);
       this.grammar.setProductions(nodeSymbol, productions);
 
-      const rules = childSymbolsOrNull
-        .map((s) => {
-          const rhs = s === null ? 'ε' : s;
-          return `${nodeSymbol} → ${rhs}`;
-        })
-        .join(', ');
+      const rules = childSymbols.map((s) => `${nodeSymbol} → ${s}`).join(', ');
 
       this.addStep(
         `Přidat OR pravidla: ${rules}`,
@@ -325,22 +325,13 @@ class MCVPToGrammarConverter {
 
   getProductionSymbolForChild(child) {
     if (!child) {
-      console.warn('getProductionSymbolForChild called with null/undefined child');
-      return null;
+      throw new Error('getProductionSymbolForChild called with null/undefined child');
     }
-    if (child.type === 'variable') {
-      if (child.varValue === 1) {
-        const terminal = this.terminalGenerator.getTerminalForVariable(child);
-        this.variableVisualMap.set(child, terminal);
-        this.grammar.addTerminal(terminal);
-        return terminal;
-      } else {
-        // Variable with value 0 contributes nothing (epsilon)
-        this.variableVisualMap.set(child, 'ε');
-        return null;
-      }
+    const symbol = this.symbolGenerator.getSymbol(child);
+    if (!symbol) {
+      throw new Error('Missing non-terminal symbol for child node during production creation');
     }
-    return this.symbolGenerator.getSymbol(child);
+    return symbol;
   }
 }
 

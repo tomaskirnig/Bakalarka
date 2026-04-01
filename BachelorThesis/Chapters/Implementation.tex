@@ -1,4 +1,4 @@
-\chapter{Implementace}
+﻿\chapter{Implementace}
 \label{sec:Implementation}
 
 Tato kapitola detailně popisuje implementaci jednotlivých modulů aplikace. Zaměřuje se na technické řešení algoritmů pro parsování, vyhodnocování a generování instancí P-úplných problémů.
@@ -27,12 +27,12 @@ Aplikace nabízí čtyři způsoby zadávání monotónního obvodu (viz obráze
     \label{fig:input-selector-mcvp-impl}
 \end{figure}
 
-\subsubsection{Manuální zadání a parsování výrazů}
+\subsection{Manuální zadání a parsování výrazů}
 \label{sec:MCVPParsingImpl}
 
 Textový zápis ve formě logického výrazu je první metodou zadání vstupu. Tento zápis je následně převeden na strukturu obvodu (DAG).
 
-\paragraph{Gramatika vstupního jazyka}
+\subsection{Gramatika vstupního jazyka}
 \label{sec:MCVPGrammarImpl}
 
 Vstupní výrazy odpovídají jednoduché gramatice popsané v kapitole \ref{sec:TheoryMCVP}. Pro připomenutí:
@@ -45,7 +45,7 @@ Vstupní výrazy odpovídají jednoduché gramatice popsané v kapitole \ref{sec
 
 Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
 
-\subsubsection{Lexikální a syntaktická analýza}
+\subsection{Lexikální a syntaktická analýza}
 \label{sec:MCVPLexerImpl}
 
 Převod textového výrazu na grafovou strukturu obvodu (DAG) probíhá ve dvou fázích, které jsou implementovány v modulu \texttt{Parser.js}:
@@ -65,7 +65,7 @@ Výsledkem parsování je orientovaný graf, kde vstupní uzly jsou proměnné s
 
 Vyhodnocení monotónního obvodu probíhá rekurzivním průchodem grafu, který je implementován v modulu \texttt{EvaluateCircuit.js}.
 
-\subsubsection{Algoritmus vyhodnocení}
+\subsection{Algoritmus vyhodnocení}
 \label{sec:MCVPAlgorithmImpl}
 
 Funkce \texttt{evaluateCircuitWithSteps()} používá algoritmus průchodu do hloubky (DFS) s memoizací. Pro maximální využití vypočítaných dat funkce vrací jak výsledek vyhodnocení, tak i sekvenci všech mezivýpočtů, které můžou být použity pro krokovou vizualizaci. Průběh algoritmu:
@@ -84,7 +84,7 @@ Funkce \texttt{evaluateCircuitWithSteps()} používá algoritmus průchodu do hl
 
 Časová složitost algoritmu je $O(n)$, kde $n$ je počet uzlů v obvodu, protože každý uzel je vyhodnocen právě jednou díky memoizaci. Funkce vrací objekt obsahující samotný výsledek a pole všech kroků výpočtu.
 
-\subsubsection{Krokové vyhodnocení}
+\subsection{Krokové vyhodnocení}
 \label{sec:MCVPStepByStepImpl}
 
 Vyhodnocení obvodu je provedeno pouze jednou při načtení, výsledek ve formě výstupní hodnoty obvodu je využit pro běžné zobrazení a zaznamenané kroky jsou předány modální komponentě \texttt{StepByStepTree} pro krokovou vizualizaci. Tím se předchází opakovanému průchodu grafem a duplicitnímu výpočtu, což je výhodné zejména u rozsáhlejších obvodů.
@@ -175,7 +175,7 @@ Vizualizace monotónního obvodu je implementována v komponentě \texttt{TreeRe
     \label{fig:tree-render-canvas-impl}
 \end{figure}
 
-\subsubsection{Hierarchické rozložení}
+\subsection{Hierarchické rozložení}
 \label{sec:MCVPLayoutImpl}
 
 Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s fyzikálními silami pro optimální vizuální uspořádání grafu.
@@ -250,7 +250,7 @@ Ve složce \texttt{Sady/CombinatorialGame} najdeme předpřipravené herní graf
     \label{fig:prepared-sets-cg}
 \end{figure}
 
-\subsubsection{Ukládání a načítání her}
+\subsection{Ukládání a načítání her}
 \label{sec:GamesSerializationImpl}
 
 Herní grafy lze exportovat a importovat ve formátu JSON pomocí komponenty \texttt{FileTransferControls} (viz obrázek \ref{fig:import-export-controls-cg}). Formát obsahuje pole \texttt{nodes} s uzly, pole \texttt{edges} s hranami a identifikátor \texttt{startingPosition} (viz obrázek \ref{fig:prepared-sets-cg}).
@@ -278,7 +278,7 @@ Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}. Graf zob
 
 Řešení problému kombinatorických her je implementováno v modulu \texttt{ComputeWinner.js}. Algoritmus využívá retrográdní analýzu založenou na principech uvedených v sekci \ref{sec:TheoryGames}.
 
-\subsubsection{Vyhodnocení výherních pozic}
+\subsection{Vyhodnocení výherních pozic}
 \label{sec:GamesRetrogradeImpl}
 
 Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní na tahu, nebo zda skončí remízou. Vyhodnocení probíhá následovně:
@@ -298,7 +298,7 @@ Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní n
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
 
-\subsubsection{Optimální tahy}
+\subsection{Optimální tahy}
 \label{sec:GamesOptimalMovesImpl}
 
 Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie \cite{sawa}. Hrana z pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče 1. Tyto hrany jsou zvýrazněny ve vizualizaci.
@@ -352,12 +352,12 @@ Parser akceptuje jak zápis šipky \texttt{->} z klávesnice, tak i jako symbol 
 
 Modul \texttt{GrammarGenerator.js} obsahuje funkci \texttt{generateGrammar()} pro vytváření náhodných bezkontextových gramatik na základě vstupních parametrů.
 
-\subsubsection{Základní parametry}
+\subsection{Základní parametry}
 \label{sec:GrammarsGenerationBasicImpl}
 
 Základní parametry určují počet neterminálů (1--10), počet terminálů (1--10) a maximální délku pravé strany (1--5).
 
-\subsubsection{Pokročilé parametry}
+\subsection{Pokročilé parametry}
 \label{sec:GrammarsGenerationAdvancedImpl}
 
 Pokročilé parametry umožňují jemnější kontrolu nad vlastnostmi generované gramatiky (viz obrázek \ref{fig:grammar-generation-params}):
@@ -382,7 +382,7 @@ Pokročilé parametry umožňují jemnější kontrolu nad vlastnostmi generovan
     \label{fig:grammar-generation-params}
 \end{figure}
 
-\subsubsection{Algoritmus generování}
+\subsection{Algoritmus generování}
 \label{sec:GrammarsGenerationAlgorithmImpl}
 
 Algoritmus implementovaný ve funkci \texttt{generateGrammar()} prochází několika fázemi:
@@ -428,7 +428,7 @@ Ve složce \texttt{Sady/Grammar} jsou uloženy předpřipravené příklady gram
 
 Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení neprázdnosti gramatiky založenou na teorii popsané v sekci \ref{sec:TheoryGrammars}.
 
-\subsubsection{Identifikace produktivních neterminálů}
+\subsection{Identifikace produktivních neterminálů}
 \label{sec:GrammarsProductiveImpl}
 
 Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
@@ -452,7 +452,7 @@ Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. 
 
 Časová složitost je \( O(|P| \cdot |N|) \), kde \( |P| \) je počet pravidel gramatiky a \( |N| \) je počet neterminálů. V nejhorším případě je každé pravidlo kontrolováno jednou pro každý neterminál, který se stane produktivním.
 
-\subsubsection{Rekonstrukce derivace}
+\subsection{Rekonstrukce derivace}
 \label{sec:GrammarsWitnessImpl}
 
 Pokud je počáteční symbol \( S \) produktivní, aplikace sestaví ukázkový derivašní strom. Nejprve se z množiny produktivních pravidel vypočítá pro každý neterminál odhad minimální délky odvoditelného terminálního řetězce. Tento krok opakovaně přepočítává hodnoty pravidel, dokud se už nemění (fixed-point výpočet), a vychází ze stejné myšlenky jako algoritmy pro hledání nejkratší cesty \cite{clrs}.
@@ -493,7 +493,7 @@ Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v sekc
 
 Třída \texttt{MCVPToGameStepGenerator} implementuje převod pomocí rekurzivního průchodu MCVP grafem. Pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v sekci \ref{sec:TheoryReductionToGame}.
 
-\subsubsection{Implementační detaily}
+\subsection{Implementační detaily}
 \label{sec:MCVPtoGameDetailsImpl}
 
 Algoritmus využívá několik klíčových mechanismů:
@@ -525,7 +525,7 @@ Vizualizace probíhá pomocí komponenty \texttt{MCVPtoCombinatorialGameConverte
 
 Převod implementuje třída \texttt{MCVPToGrammarConverter} dle principů ze sekce \ref{sec:TheoryReductionToGrammar}. Algoritmus probíhá ve dvou fázích: nejprve přiřadí uzlům unikátní symboly a poté vytvoří odpovídající pravidla.
 
-\subsubsection{Generování symbolů gramatiky}
+\subsection{Generování symbolů gramatiky}
 \label{sec:MCVPtoGrammarSymbolsImpl}
 
 Pro vytváření symbolů jsou použity dvě pomocné třídy:
@@ -533,22 +533,24 @@ Pro vytváření symbolů jsou použity dvě pomocné třídy:
 \begin{itemize}
     \item \textbf{NonTerminalGenerator:} Generuje neterminální symboly ve formě velkých písmen. Kořen obvodu vždy obdrží symbol \texttt{S} (startovní symbol gramatiky). Pro další uzly jsou použity symboly \texttt{A}--\texttt{Z}, a pokud je potřeba více než 26 symbolů, pokračuje se kombinacemi \texttt{AA}, \texttt{AB}, \texttt{AC} až \texttt{ZZ}.
     
-    \item \textbf{TerminalGenerator:} Pro každou proměnnou s hodnotou 1 generuje jedinečný terminální symbol. Postupně jsou použity znaky \texttt{a}--\texttt{z}, následně speciální znaky (\texttt{+}, \texttt{-}, \texttt{=}, \texttt{*} atd.), a pokud je symbolů nedostatek, pokračuje se číslovanými terminály \texttt{t1}, \texttt{t2} atd.
+    \item \textbf{TerminalGenerator:} Pro proměnné s hodnotou 1 generuje jedinečný terminální symbol. Postupně jsou použity znaky \texttt{a}--\texttt{z}, následně speciální znaky (\texttt{+}, \texttt{-}, \texttt{=}, \texttt{*} atd.), a pokud je symbolů nedostatek, pokračuje se číslovanými terminály \texttt{t1}, \texttt{t2} atd. Je nastavena pravděpodobnost 15\%, že proměnná s hodnotou 1 bude místo terminálu převedena na prázdné pravidlo ($\varepsilon$).
 \end{itemize}
 
-Vstupní proměnné (\texttt{variable}) (kromě případu, kdy je proměnná kořenem) \textbf{nedostávají vlastní neterminální symbol}. Místo toho jsou při tvorbě pravidel nahrazeny přímo terminály nebo prázdným řetězcem.
+Uzly operací jsou reprezentovány neterminály. Proměnné s hodnotou 1 se převádějí na terminál (včetně možnosti $\varepsilon$) a proměnné s hodnotou 0 jsou reprezentovány neterminální smyčkou \texttt{X → X}.
 
-\subsubsection{Tvorba produkčních pravidel}
+\subsection{Tvorba produkčních pravidel}
 \label{sec:MCVPtoGrammarProductionsImpl}
 
 Druhá fáze algoritmu prochází DAGem a vytváří pravidla:
 
 \begin{enumerate}
-    \item \textbf{Hradlo AND:} Vytvoří pravidlo ve formě \texttt{X → AB...}, kde \texttt{X} je neterminál odpovídající hradlu a \texttt{A}, \texttt{B} jsou symboly potomků. Pokud je potomek proměnná s hodnotou 1, je do pravidla vložen odpovídající terminál. Pokud je potomek proměnná s hodnotou 0, tento potomek je při tvorbě pravidla zcela vynechán. Speciálně, pokud jsou všichni potomci proměnné s hodnotou 0, vzniká pravidlo \texttt{X → $\varepsilon$}.
+    \item \textbf{Hradlo AND:} Vytvoří pravidlo ve formě \texttt{X → AB...}, kde \texttt{X} je neterminál odpovídající hradlu a \texttt{A}, \texttt{B} jsou symboly odpovídající potomkům.
     
-    \item \textbf{Hradlo OR:} Vytvoří několik alternativních pravidel, vždy jedno pro každého potomka: \texttt{X → A}, \texttt{X → B} atd. Pokud je potomek proměnná s hodnotou 0, vzniká pravidlo \texttt{X → $\varepsilon$}.
+    \item \textbf{Hradlo OR:} Vytvoří několik alternativních pravidel, vždy jedno pro každého potomka: \texttt{X → A}, \texttt{X → B} atd., kde \texttt{A}, \texttt{B} jsou symboly odpovídající potomkům.
     
-    \item \textbf{Proměnná jako kořen:} Tento speciální případ nastává, když celý MCVP obvod obsahuje pouze jednu proměnnou. Pokud má proměnná hodnotu 1, je vytvořeno pravidlo \texttt{S → t} pro nějaký terminál \texttt{t}. Pokud má hodnotu 0, vzniká pravidlo \texttt{S → $\varepsilon$}.
+    \item \textbf{Proměnná s hodnotou 1:} Vznikne pravidlo \texttt{X → a} pro terminál \texttt{a}, včetně možnosti pravidla \texttt{X → $\varepsilon$} s pravděpodobností 15\%.
+
+    \item \textbf{Proměnná s hodnotou 0:} Pro odpovídající neterminál \texttt{X} vznikne cyklické pravidlo \texttt{X → X}. Takový neterminál není produktivní, protože z něj nelze odvodit řetězec složený pouze z terminálů.
 \end{enumerate}
 
 Výsledná gramatika přesně odpovídá hodnotě MCVP obvodu: gramatika generuje neprázdný jazyk právě tehdy, když obvod vyhodnotí hodnotu 1. Vizualizace probíhá pomocí komponenty \texttt{MCVPtoGrammarConverter}, která zobrazuje převod krokovatelně (viz obrázek \ref{fig:mcvp-to-grammar-impl}).

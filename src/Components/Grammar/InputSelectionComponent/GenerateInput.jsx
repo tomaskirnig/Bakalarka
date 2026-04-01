@@ -3,6 +3,10 @@ import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { generateGrammar } from '../Utils/GrammarGenerator';
 
+const SOFT_COMPLEXITY_LIMIT = 240;
+const HARD_COMPLEXITY_LIMIT = 420;
+const MAX_PRODUCTIONS_INPUT = 8;
+
 /**
  * Form for random grammar generation with basic and advanced options.
  *
@@ -22,6 +26,20 @@ export function GenerateInput({ onGrammar }) {
   const [minProductions, setMinProductions] = useState(1);
   const [maxProductions, setMaxProductions] = useState(3);
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const estimateComplexity = () => {
+    const estimatedRules = Number(numNonTerminals || 1) * Number(maxProductions || 1);
+    const estimatedSymbolSlots = estimatedRules * Number(maxRuleLength || 1);
+    const recursionMultiplier = (allowLeftRecursion ? 1.25 : 1) * (allowRightRecursion ? 1.25 : 1);
+    const estimatedComplexity = Math.round(estimatedSymbolSlots * recursionMultiplier);
+
+    return {
+      estimatedRules,
+      estimatedSymbolSlots,
+      recursionMultiplier,
+      estimatedComplexity,
+    };
+  };
 
   const handleIntChange = (setter, min, max) => (e) => {
     const val = e.target.value;
@@ -54,6 +72,36 @@ export function GenerateInput({ onGrammar }) {
 
   // Handler for generating the grammar when the button is clicked
   const handleGenerateGrammar = () => {
+    const complexity = estimateComplexity();
+    const { estimatedComplexity } = complexity;
+
+    console.debug('[GrammarGenerator] Complexity estimate', {
+      ...complexity,
+      currentInputs: {
+        numTerminals,
+        numNonTerminals,
+        maxRuleLength,
+        minProductions,
+        maxProductions,
+        allowLeftRecursion,
+        allowRightRecursion,
+        epsilonMode,
+      },
+    });
+
+    if (estimatedComplexity >= HARD_COMPLEXITY_LIMIT) {
+      toast.error(
+        'Tahle kombinace je pro generování příliš náročná. Zkuste snížit počet pravidel nebo vypnout část rekurze.'
+      );
+      return;
+    }
+
+    if (estimatedComplexity >= SOFT_COMPLEXITY_LIMIT) {
+      toast.warn(
+        'Tato konfigurace může být pomalejší. Pokud by se stránka zpomalovala, upravte parametry.'
+      );
+    }
+
     // Create config object based on form inputs
     // Ensure values are numbers (in case of temporary empty string state)
     const config = {
@@ -74,7 +122,8 @@ export function GenerateInput({ onGrammar }) {
       // Pass the grammar to the parent component
       onGrammar(generatedGrammar);
     } catch (error) {
-      toast.error(`Chyba při generování gramatiky: ${error.message}`);
+      console.error('[GrammarGenerator] Generation failed', { error, config });
+      toast.error('Generování se nepodařilo. Zkontrolujte parametry a zkuste to prosím znovu.');
     }
   };
 
@@ -153,9 +202,9 @@ export function GenerateInput({ onGrammar }) {
                   className="form-control"
                   type="number"
                   min="1"
-                  max="10"
+                  max={MAX_PRODUCTIONS_INPUT}
                   value={minProductions}
-                  onChange={handleIntChange(setMinProductions, 1, 10)}
+                  onChange={handleIntChange(setMinProductions, 1, MAX_PRODUCTIONS_INPUT)}
                   onBlur={handleBlur(setMinProductions, minProductions, 1)}
                 />
               </div>
@@ -168,9 +217,13 @@ export function GenerateInput({ onGrammar }) {
                   className="form-control"
                   type="number"
                   min={minProductions}
-                  max="10"
+                  max={MAX_PRODUCTIONS_INPUT}
                   value={maxProductions}
-                  onChange={handleIntChange(setMaxProductions, minProductions, 10)}
+                  onChange={handleIntChange(
+                    setMaxProductions,
+                    minProductions,
+                    MAX_PRODUCTIONS_INPUT
+                  )}
                   onBlur={handleBlur(setMaxProductions, maxProductions, minProductions)}
                 />
               </div>

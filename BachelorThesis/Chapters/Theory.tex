@@ -90,7 +90,7 @@ P-úplné problémy jsou vzájemně převoditelné, což dokazuje jejich výpoč
 \subsection{Převod z MCVP na kombinatorickou hru}
 \label{sec:TheoryReductionToGame}
 
-\paragraph{Konstrukce převodu}
+\subsubsection*{Konstrukce převodu}
 Pro zadaný monotónní obvod vytvoříme instanci hry takto \cite{sawa}:
 
 \begin{itemize}
@@ -101,7 +101,7 @@ Pro zadaný monotónní obvod vytvoříme instanci hry takto \cite{sawa}:
     \item Pozice odpovídající vstupním proměnným jsou koncové (bez odchozích hran).
 \end{itemize}
 
-\paragraph{Zdůvodnění korektnosti}
+\subsubsection*{Zdůvodnění korektnosti}
 Korektnost plyne přímo z významu jednotlivých typů pozic:
 
 \begin{itemize}
@@ -115,24 +115,24 @@ Proto platí ekvivalence: Hráč 1 má výherní strategii ze startovní pozice 
 \subsection{Převod z MCVP na bezkontextovou gramatiku}
 \label{sec:TheoryReductionToGrammar}
 
-\paragraph{Konstrukce převodu}
+\subsubsection*{Konstrukce převodu}
 Převod je proveden v několika jednoduchých krocích \cite{sawa}:
 
-\begin{enumerate}
-    \item Každému uzlu obvodu je přiřazen neterminál gramatiky.
+\begin{itemize}
+    \item Každému uzlu operace v obvodu je přiřazen neterminál gramatiky.
     \item Neterminál odpovídající výstupnímu uzlu obvodu je zvolen jako počáteční symbol $S$.
     \item Pokud neterminál $X$ reprezentuje hradlo AND s potomky reprezentovanými neterminály $A$ a $B$, je přidáno pravidlo $X \to AB$.
     \item Pokud neterminál $X$ reprezentuje hradlo OR s potomky reprezentovanými neterminály $A$ a $B$, jsou přidána pravidla $X \to A$ a $X \to B$.
-    \item Pokud neterminál $X$ reprezentuje proměnnou s hodnotou 1, je přidáno pravidlo $X \to t$, kde $t$ je terminál.
-    \item Pokud neterminál $X$ reprezentuje proměnnou s hodnotou 0, produkční pravidlo se nepřidává.
-\end{enumerate}
+    \item Pokud uzel reprezentuje proměnnou s hodnotou 1, je převeden na terminální symbol; je použito pravidlo $X \to a$, případně (s pravděpodobností 15\%) $X \to \varepsilon$.
+    \item Pokud uzel reprezentuje proměnnou s hodnotou 0, je reprezentován neterminální smyčkou $X \to X$.
+\end{itemize}
 
-\paragraph{Zdůvodnění korektnosti}
+\subsubsection*{Zdůvodnění korektnosti}
 Korektnost je založena na tvrzení, že neterminál je produktivní právě tehdy, když odpovídající uzel obvodu má hodnotu 1:
 
 \begin{itemize}
-    \item \textbf{Proměnná 1:} Z pravidla $X \to t$ plyne, že $X$ je produktivní.
-    \item \textbf{Proměnná 0:} Pro $X$ se nevytvoří žádné pravidlo, takže $X$ není produktivní.
+    \item \textbf{Proměnná 1:} Z pravidla $X \to a$, včetně případu $X \to \varepsilon$, plyne, že $X$ je produktivní.
+    \item \textbf{Proměnná 0:} Z pravidla $X \to X$ nelze odvodit terminální řetězec, takže $X$ není produktivní.
     \item \textbf{OR hradlo:} Neterminál $X$ je produktivní právě tehdy, když je produktivní alespoň jeden potomek (existuje pravidlo $X \to A$ nebo $X \to B$ vedoucí k terminálnímu řetězci).
     \item \textbf{AND hradlo:} Neterminál $X$ je produktivní právě tehdy, když jsou produktivní oba potomci, protože pravidlo $X \to AB$ vyžaduje odvodit terminální řetězec z $A$ i z $B$.
 \end{itemize}

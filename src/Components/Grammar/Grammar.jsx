@@ -188,10 +188,25 @@ export function Grammar({ initialData }) {
               {!analysisResult.isEmpty && analysisResult.derivationTree && (
                 <div className="card-body border-top">
                   <h5>Ukázkový derivační strom</h5>
+                  {analysisResult.witnessTruncated && (
+                    <p className="alert alert-warning py-2 mb-2 small">
+                      Pro plynulý běh aplikace byla zobrazena zjednodušená verze derivačního stromu.
+                      {analysisResult.witnessTruncationReason === 'max-depth' &&
+                        ' Gramatika obsahuje velmi dlouhé odvozování.'}
+                      {analysisResult.witnessTruncationReason === 'max-nodes' &&
+                        ' Strom by byl příliš velký pro bezpečné vykreslení.'}
+                      {analysisResult.witnessTruncationReason === 'cycle-avoidance' &&
+                        ' Gramatika obsahuje výraznou rekurzi.'}
+                      {' Výsledek analýzy tím není ovlivněn.'}
+                    </p>
+                  )}
                   {analysisResult.derivedWord !== undefined &&
                     analysisResult.derivedWord !== null && (
                       <p className="text-muted small">
                         Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
+                        {analysisResult.witnessNodeCount > 0 && (
+                          <span className="ms-2">({analysisResult.witnessNodeCount} uzlů)</span>
+                        )}
                       </p>
                     )}
                   {(analysisResult.derivedWord === undefined ||
