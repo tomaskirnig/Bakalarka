@@ -70,7 +70,7 @@
 \contentsline {subsection}{\numberline {4.4.2}Implementační detaily}{38}{subsection.4.4.2}%
 \contentsline {subsection}{\numberline {4.4.3}Převod na bezkontextovou gramatiku}{38}{subsection.4.4.3}%
 \contentsline {subsection}{\numberline {4.4.4}Generování symbolů gramatiky}{40}{subsection.4.4.4}%
-\contentsline {subsection}{\numberline {4.4.5}Tvorba produkčních pravidel}{40}{subsection.4.4.5}%
+\contentsline {subsection}{\numberline {4.4.5}Tvorba pravidel}{40}{subsection.4.4.5}%
 \contentsline {chapter}{\numberline {5}Závěr}{42}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{42}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Vzdělávací přínos}{43}{section.5.2}%
