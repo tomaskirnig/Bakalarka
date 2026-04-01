@@ -5,9 +5,9 @@ Teoretická informatika poskytuje způsob, jak zkoumat, porozumět a optimalizov
 
 V~tomto kontextu hraje klíčovou roli podmnožina \emph{P-úplných} problémů (\emph{P-complete} problems). P-úplné problémy představují výpočetně nejnáročnější úlohy v~rámci třídy \( P \). Jsou to problémy, na~které lze s~logaritmickou paměťovou složitostí převést jakýkoliv jiný problém z~třídy \( P \) \cite{papadimitriou, arora}. Hlavní problém u~této podmnožiny spočívá v~předpokladu, že P-úplné problémy pravděpodobně nelze efektivně paralelizovat. To znamená, že tyto úlohy nespadají do~třídy \( NC \), která obsahuje problémy řešitelné v~polylogaritmickém čase \( O(\log^k n) \) pomocí paralelního výpočtu s~polynomiálně mnoha procesory \cite{sawa}. Z~toho vyplývá, že na~rozdíl od~NC problémů řešení P-úplných problémů vyžaduje sekvenční zpracování. Studium P-úplnosti nám tak pomáhá vymezit hranici mezi paralelizovatelným a čistě sekvenčním výpočtem.
 
-Tento projekt představuje interaktivní ukázku konceptu P-úplnosti prostřednictvím webové aplikace. Cílem je vytvořit nástroj, který umožní uživatelům vizualizovat a pochopit výpočet a převod mezi zvolenými P-úplnými problémy.
+Tato bakalářská práce představuje interaktivní ukázku konceptu P-úplnosti prostřednictvím webové aplikace. Cílem je vytvořit nástroj, který umožní uživatelům vizualizovat a pochopit výpočet a převod mezi zvolenými P-úplnými problémy.
 
-Jako hlavní problém byl zvolen \emph{Monotone Circuit Value Problem} (MCVP), ve kterém se vyhodnocuje logický obvod tvořený pouze hradly typu AND a OR \cite{sawa}. Pro demonstraci univerzálnosti konceptu P-úplnosti aplikace implementuje také simulace dvou dalších problémů:
+Jako hlavní problém byl zvolen \emph{Monotone Circuit Value Problem} (MCVP), ve kterém se vyhodnocuje logický obvod tvořený pouze hradly typu AND a OR \cite{sawa}. Pro demonstraci univerzálnosti konceptu P-úplnosti aplikace implementuje také dva další problémy:
 \begin{itemize}
     \item \textbf{Kombinatorické hry na grafu:} Úloha analyzující existenci vítězné strategie v deterministické hře dvou hráčů \cite{sawa}.
     \item \textbf{Problém neprázdnosti jazyka bezkontextové gramatiky:} Rozhoduje, zda daná gramatika generuje neprázdný jazyk \cite{sawa}.
@@ -17,6 +17,6 @@ Hlavním přínosem vytvořené aplikace je možnost vizualizace nejen samotnéh
 
 Výsledkem práce je webová aplikace navržená jako flexibilní nástroj pro výuku. Umožňuje uživatelům pracovat s vlastními vstupy, generovat náhodné instance pro testování a využívat předpřipravené sady úloh.
 
-Text práce je členěn do několika částí. Po úvodu následuje kapitola věnovaná teoretickému základu, definicím klíčových pojmů a principům redukcí. Další část se zabývá analýzou a návrhem aplikace, volbou technologií a popisem datových struktur. Stěžejní částí práce je kapitola věnovaná detailnímu popisu implementace všech tří problémů a jejich vzájemných převodů. Závěr práce shrnuje dosažené výsledky a navrhuje možnosti dalšího rozšíření.
+Práce je členěna do několika částí. Po úvodu následuje kapitola věnovaná teoretickému základu, definicím klíčových pojmů a principům redukcí. Další část se zabývá analýzou a návrhem aplikace, volbou technologií a popisem datových struktur. Stěžejní částí práce je kapitola věnovaná detailnímu popisu implementace všech tří problémů a jejich vzájemných převodů. Závěr práce shrnuje dosažené výsledky a navrhuje možnosti dalšího rozšíření.
 
 \endinput

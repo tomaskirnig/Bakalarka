@@ -11,14 +11,17 @@ import { Grammar } from '../Utils/Grammar';
 export function parseGrammar(inputText) {
   let grammar = new Grammar();
   grammar.name = 'Parsed Grammar';
+  let hasAtLeastOneRule = false;
 
   if (inputText && inputText.length > 0) {
     for (let rule of inputText.split('\n')) {
-      // Blank lines are invalid: every line must contain one grammar rule.
-      if (!rule.trim())
-        throw new Error(
-          'Vstup obsahuje prázdný řádek. Každý řádek musí obsahovat pravidlo ve formátu: L → P'
-        );
+      // Ignore empty lines so users can format input with spacing.
+      rule = rule.trim();
+      if (!rule) {
+        continue;
+      }
+
+      hasAtLeastOneRule = true;
 
       // Support both ASCII '->' and Unicode '→'; split on first occurrence only.
       const arrowIndex = rule.search(/→|->/);
@@ -95,6 +98,11 @@ export function parseGrammar(inputText) {
           }
         }
       }
+    }
+
+    if (!hasAtLeastOneRule) {
+      console.warn('empty inputText.rules');
+      throw new Error('Pravidla gramatiky nejsou definována.');
     }
   } else {
     console.warn('empty inputText.rules');
