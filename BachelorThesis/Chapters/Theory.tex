@@ -116,14 +116,14 @@ Proto platí ekvivalence: Hráč 1 má výherní strategii ze startovní pozice 
 \label{sec:TheoryReductionToGrammar}
 
 \subsubsection*{Konstrukce převodu}
-Převod je proveden v několika jednoduchých krocích \cite{sawa}:
+Převod je proveden v několika krocích \cite{sawa}:
 
 \begin{itemize}
     \item Každému uzlu operace v obvodu je přiřazen neterminál gramatiky.
     \item Neterminál odpovídající výstupnímu uzlu obvodu je zvolen jako počáteční symbol $S$.
     \item Pokud neterminál $X$ reprezentuje hradlo AND s potomky reprezentovanými neterminály $A$ a $B$, je přidáno pravidlo $X \to AB$.
     \item Pokud neterminál $X$ reprezentuje hradlo OR s potomky reprezentovanými neterminály $A$ a $B$, jsou přidána pravidla $X \to A$ a $X \to B$.
-    \item Pokud uzel reprezentuje proměnnou s hodnotou 1, je převeden na terminální symbol; je použito pravidlo $X \to a$, případně (s pravděpodobností 15\%) $X \to \varepsilon$.
+    \item Pokud uzel reprezentuje proměnnou s hodnotou 1, je převeden na terminální symbol a je použito pravidlo $X \to a$, případně (s pravděpodobností 15\%) $X \to \varepsilon$.
     \item Pokud uzel reprezentuje proměnnou s hodnotou 0, je reprezentován neterminální smyčkou $X \to X$.
 \end{itemize}
 
