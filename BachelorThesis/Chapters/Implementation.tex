@@ -30,12 +30,10 @@ Aplikace nabízí čtyři způsoby zadávání monotónního obvodu (viz obráze
 \subsection{Manuální zadání a parsování výrazů}
 \label{sec:MCVPParsingImpl}
 
-Textový zápis ve formě logického výrazu je první metodou zadání vstupu. Tento zápis je následně převeden na strukturu obvodu (DAG).
+Textový zápis ve formě logického výrazu je první metodou zadání vstupu. Tento zápis je následně převeden na vnitřní strukturu obvodu.
 
 \subsection{Gramatika vstupního jazyka}
 \label{sec:MCVPGrammarImpl}
-
-Vstupní výrazy odpovídají jednoduché gramatice popsané v kapitole \ref{sec:TheoryMCVP}. Pro připomenutí:
 
 \begin{itemize}
     \item Operátory \texttt{O} (OR) a \texttt{A} (AND) reprezentují logický součet a součin.
@@ -48,7 +46,7 @@ Příklad platného výrazu: \texttt{((x1[1] A x2[0]) O (x3[1] A x4[1]))}
 \subsection{Lexikální a syntaktická analýza}
 \label{sec:MCVPLexerImpl}
 
-Převod textového výrazu na grafovou strukturu obvodu (DAG) probíhá ve dvou fázích, které jsou implementovány v modulu \texttt{Parser.js}:
+Převod textového výrazu na vnitřní grafovou strukturu obvodu probíhá ve dvou fázích, které jsou implementovány v modulu \texttt{Parser.js}:
 
 \begin{enumerate}
     \item \textbf{Tokenizace (lexikální analýza):} Funkce \texttt{tokenize()} rozdělí vstupní řetězec na posloupnost tokenů. Každý token je dvojice (typ, hodnota), například \texttt{['LPAREN', '(']} nebo \texttt{['VARIABLE', 'x1[1]']}. Tokenizér rozpoznává závorky, operátory (A, O) a proměnné pomocí regulárních výrazů.
@@ -56,9 +54,9 @@ Převod textového výrazu na grafovou strukturu obvodu (DAG) probíhá ve dvou 
     \item \textbf{Parsování (syntaktická analýza):} Třída \texttt{Parser} implementuje rekurzivní sestupný parser respektující prioritu operátorů. Výrazy s operátorem OR mají nejnižší prioritu, následují výrazy s operátorem AND a nejvyšší prioritu mají atomické výrazy v závorkách nebo proměnné. Parser vytváří uzly typu \texttt{Node} (viz třídní diagram v sekci \ref{sec:MCVPDesignStructure}, obrázek \ref{fig:mcvp-class}), které tvoří strukturu grafu reprezentující zadaný obvod.
 \end{enumerate}
 
-Parser současně kontroluje výskyty opakovaných proměnných. Pokud se stejná proměnná v jednom vstupním výrazu objeví vícekrát, používá se v interní reprezentaci již vytvořený uzel a je vyžadována stejná hodnota, jak byla přiřazena v prvním výskytu. Při konfliktu (například \texttt{x1[0]} a \texttt{x1[1]}) je vstup vyhodnocen jako neplatný a uživateli je vrácena chybová hláška.
+Parser současně kontroluje výskyty opakovaných proměnných. Pokud se stejná proměnná v jednom vstupním výrazu objeví vícekrát, používá se v interní reprezentaci již vytvořený uzel a je vyžadována stejná hodnota, jak byla přiřazena v prvním výskytu. Při konfliktu (například \texttt{x1[0]} a \texttt{x1[1]}) je vstup vyhodnocen jako neplatný a uživateli je vrácena chybová hláška. Implementace v této fázi obecně neslučuje shodné podvýrazy (podstromy), sdílení uzlů se týká pouze opakovaných proměnných.
 
-Výsledkem parsování je orientovaný graf, kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
+Výsledkem parsování je orientovaná struktura, kde vstupní uzly jsou proměnné s přiřazenými hodnotami a vnitřní uzly reprezentují logické operace.
 
 \subsection{Vyhodnocení obvodu}
 \label{sec:MCVPEvaluationImpl}
@@ -136,15 +134,15 @@ Generování probíhá v následujících krocích:
 \begin{enumerate}
     \item Algoritmus vytvoří zadaný počet proměnných s náhodnou hodnotou 0 nebo 1.
     
-    \item Algoritmus postupně přidává hradla. Pro každé nové hradlo vypočítá cílový počet vstupních uzlů (potomků) podle vzorce $\lceil n / k \rceil$, kde $n$ je počet dosud vytvořených uzlů v grafu a $k$ je počet zbývajících hradel, která je třeba vytvořit.
-    
-    \item K vypočítané hodnotě se přidá náhodná odchylka $\pm 20\%$ – tak je dosaženo vyváženosti mezi úplnou náhodností a vyrovnanou distribucí.
-    
-    \item Hradlo náhodně vybere určený počet uzlů jako potomky a náhodně zvolí operaci (AND nebo OR).
-    
-    \item Nově vytvořené hradlo se přidá do množiny použitelných uzlů pro následující hradla.
-    
-    \item Poslední hradlo využije jako potomky všechny uzly, které dosud nebyly vybrány jako potomci jiného hradla, a stane se kořenem obvodu.
+    \item Před samotným generováním je ověřeno omezení pro binární obvod: počet hradel musí být alespoň počet proměnných mínus jedna (\texttt{numGates >= numVariables - 1}).
+
+    \item Algoritmus postupně přidává hradla. V každém kroku pracuje s aktuální množinou kořenových uzlů (uzly bez rodiče) a spočítá minimální počet kořenových potomků, které musí nové hradlo převzít, aby bylo možné se zbývajícím počtem hradel dosáhnout jediného kořene.
+
+    \item Pokud to tato podmínka dovolí, algoritmus preferuje binární zapojení: s vysokou pravděpodobností zvolí dva různé kořenové potomky. Když je vybrán jen jeden potomek, druhý vstup se doplní opětovným použitím některého již existujícího nekořenového uzlu; pokud to není možné, vybere se další kořenový uzel. Není-li dostupný žádný další uzel, použije se stejný potomek na obou vstupech hradla.
+
+    \item Každé nové hradlo je typu AND nebo OR (náhodná volba), má přesně dva vstupy a po vytvoření se stane novým kořenem. Vybrané kořenové potomky tím ztrácejí status kořene.
+
+    \item Po dokončení generování je ověřeno, že zůstal právě jeden kořenový uzel. Tento uzel představuje výstup obvodu.
 \end{enumerate}
 
 Generátor upřednostňuje binární zapojení: při výběru potomků se pokud možno vytváří dvojice vstupů tak, aby hradla měla dva potomky a současně byl zachován DAG vlastnosti grafu. Generátor navíc může opětovně použít již vytvořených uzlů jako vstupů pro více hradel, takže výsledné instance nejsou omezeny pouze na stromové struktury, ale obsahují i sdílené podgrafy.

@@ -39,7 +39,7 @@
 \contentsline {subsection}{\numberline {4.1.8}Interaktivní editace obvodu}{23}{subsection.4.1.8}%
 \contentsline {subsection}{\numberline {4.1.9}Generování náhodných obvodů}{23}{subsection.4.1.9}%
 \contentsline {subsection}{\numberline {4.1.10}Připravené sady obvodů}{25}{subsection.4.1.10}%
-\contentsline {subsection}{\numberline {4.1.11}Vizualizace obvodu}{25}{subsection.4.1.11}%
+\contentsline {subsection}{\numberline {4.1.11}Vizualizace obvodu}{26}{subsection.4.1.11}%
 \contentsline {subsection}{\numberline {4.1.12}Hierarchické rozložení}{26}{subsection.4.1.12}%
 \contentsline {section}{\numberline {4.2}Kombinatorická hra}{26}{section.4.2}%
 \contentsline {subsection}{\numberline {4.2.1}Formát vstupu}{26}{subsection.4.2.1}%
@@ -47,29 +47,29 @@
 \contentsline {subsection}{\numberline {4.2.3}Generování náhodných her}{27}{subsection.4.2.3}%
 \contentsline {subsection}{\numberline {4.2.4}Předpřipravené sady}{28}{subsection.4.2.4}%
 \contentsline {subsection}{\numberline {4.2.5}Ukládání a načítání her}{28}{subsection.4.2.5}%
-\contentsline {subsection}{\numberline {4.2.6}Vizualizace grafu}{28}{subsection.4.2.6}%
+\contentsline {subsection}{\numberline {4.2.6}Vizualizace grafu}{29}{subsection.4.2.6}%
 \contentsline {subsection}{\numberline {4.2.7}Algoritmus analýzy}{29}{subsection.4.2.7}%
 \contentsline {subsection}{\numberline {4.2.8}Vyhodnocení výherních pozic}{29}{subsection.4.2.8}%
 \contentsline {subsection}{\numberline {4.2.9}Optimální tahy}{29}{subsection.4.2.9}%
-\contentsline {subsection}{\numberline {4.2.10}Krokové vyhodnocení}{29}{subsection.4.2.10}%
+\contentsline {subsection}{\numberline {4.2.10}Krokové vyhodnocení}{30}{subsection.4.2.10}%
 \contentsline {section}{\numberline {4.3}Bezkontextové gramatiky}{31}{section.4.3}%
 \contentsline {subsection}{\numberline {4.3.1}Formát vstupu}{31}{subsection.4.3.1}%
 \contentsline {subsection}{\numberline {4.3.2}Manuální zadání gramatiky}{31}{subsection.4.3.2}%
 \contentsline {subsection}{\numberline {4.3.3}Generování náhodných gramatik}{31}{subsection.4.3.3}%
-\contentsline {subsection}{\numberline {4.3.4}Základní parametry}{32}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.4}Základní parametry}{31}{subsection.4.3.4}%
 \contentsline {subsection}{\numberline {4.3.5}Pokročilé parametry}{32}{subsection.4.3.5}%
 \contentsline {subsection}{\numberline {4.3.6}Algoritmus generování}{32}{subsection.4.3.6}%
 \contentsline {subsection}{\numberline {4.3.7}Předpřipravené sady}{34}{subsection.4.3.7}%
-\contentsline {subsection}{\numberline {4.3.8}Algoritmus vyhodnocení}{34}{subsection.4.3.8}%
-\contentsline {subsection}{\numberline {4.3.9}Identifikace produktivních neterminálů}{34}{subsection.4.3.9}%
+\contentsline {subsection}{\numberline {4.3.8}Algoritmus vyhodnocení}{35}{subsection.4.3.8}%
+\contentsline {subsection}{\numberline {4.3.9}Identifikace produktivních neterminálů}{35}{subsection.4.3.9}%
 \contentsline {subsection}{\numberline {4.3.10}Rekonstrukce derivace}{35}{subsection.4.3.10}%
 \contentsline {subsection}{\numberline {4.3.11}Vizualizace derivačního stromu}{36}{subsection.4.3.11}%
 \contentsline {subsection}{\numberline {4.3.12}Krokové vyhodnocení}{36}{subsection.4.3.12}%
-\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{38}{section.4.4}%
+\contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{36}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{38}{subsection.4.4.1}%
 \contentsline {subsection}{\numberline {4.4.2}Implementační detaily}{38}{subsection.4.4.2}%
 \contentsline {subsection}{\numberline {4.4.3}Převod na bezkontextovou gramatiku}{38}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4.4}Generování symbolů gramatiky}{40}{subsection.4.4.4}%
+\contentsline {subsection}{\numberline {4.4.4}Generování symbolů gramatiky}{38}{subsection.4.4.4}%
 \contentsline {subsection}{\numberline {4.4.5}Tvorba pravidel}{40}{subsection.4.4.5}%
 \contentsline {chapter}{\numberline {5}Závěr}{42}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{42}{section.5.1}%
