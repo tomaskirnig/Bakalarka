@@ -340,7 +340,7 @@ Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivační
 
 Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v~modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (symboly začínající velkým písmenem, včetně českých znaků) a terminály (ostatní symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
 
-Parser akceptuje jak zápis šipky \texttt{->} z~klávesnice, tak i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky.
+Parser akceptuje jak zápis šipky \texttt{->} z~klávesnice, i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky.
 
 \subsection{Generování náhodných gramatik}
 \label{sec:GrammarsGenerationImpl}
