@@ -22,7 +22,7 @@
 \contentsline {figure}{\numberline {4.6}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{28}{figure.caption.15}%
 \contentsline {figure}{\numberline {4.7}{\ignorespaces Kroková analýza kombinatorické hry}}{30}{figure.caption.16}%
 \contentsline {figure}{\numberline {4.8}{\ignorespaces Rozhraní pro nastavení parametrů generování bezkontextových gramatik}}{33}{figure.caption.17}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{34}{figure.caption.18}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{35}{figure.caption.18}%
 \contentsline {figure}{\numberline {4.10}{\ignorespaces Vizualizace derivačního stromu pro neprázdnou gramatiku}}{36}{figure.caption.19}%
 \contentsline {figure}{\numberline {4.11}{\ignorespaces Kroková analýza bezkontextové gramatiky}}{37}{figure.caption.20}%
 \contentsline {figure}{\numberline {4.12}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{39}{figure.caption.21}%

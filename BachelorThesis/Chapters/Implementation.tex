@@ -132,9 +132,9 @@ Aplikace obsahuje generátor náhodných obvodů v modulu \texttt{Generator.js}.
 Generování probíhá v následujících krocích:
 
 \begin{enumerate}
-    \item Algoritmus vytvoří zadaný počet proměnných s náhodnou hodnotou 0 nebo 1.
-    
     \item Před samotným generováním je ověřeno omezení pro binární obvod: počet hradel musí být alespoň počet proměnných mínus jedna (\texttt{numGates >= numVariables - 1}).
+
+    \item Algoritmus vytvoří zadaný počet proměnných, každou s náhodnou hodnotou 0 nebo 1.
 
     \item Algoritmus postupně přidává hradla. V každém kroku pracuje s aktuální množinou kořenových uzlů (uzly bez rodiče) a spočítá minimální počet kořenových potomků, které musí nové hradlo převzít, aby bylo možné se zbývajícím počtem hradel dosáhnout jediného kořene.
 
@@ -144,8 +144,6 @@ Generování probíhá v následujících krocích:
 
     \item Po dokončení generování je ověřeno, že zůstal právě jeden kořenový uzel. Tento uzel představuje výstup obvodu.
 \end{enumerate}
-
-Generátor upřednostňuje binární zapojení: při výběru potomků se pokud možno vytváří dvojice vstupů tak, aby hradla měla dva potomky a současně byl zachován DAG vlastnosti grafu. Generátor navíc může opětovně použít již vytvořených uzlů jako vstupů pro více hradel, takže výsledné instance nejsou omezeny pouze na stromové struktury, ale obsahují i sdílené podgrafy.
 
 Výsledný graf je platný DAG.
 
@@ -286,12 +284,11 @@ Algoritmus určuje, zda je daná pozice výherní pro hráče, který je v ní n
     
     \item \textbf{Zpětné šíření:} Od koncových pozic se postupně propagují výsledky:
     \begin{itemize}
-        \item Pokud z aktuální pozice existuje tah do pozice, kde je na tahu soupeř a ta pozice je pro něj prohrávající, pak je aktuální pozice vyhrávající.
-        \item Pokud z aktuální pozice existuje tah do pozice, kde zůstává tentýž hráč na tahu a ta pozice je vyhrávající, pak je i aktuální pozice vyhrávající.
-        \item Pokud všechny tahy z aktuální pozice vedou do pozic, které jsou vyhrávající pro soupeře (nebo prohrávající pro aktuálního hráče při zachování tahu), je aktuální pozice prohrávající.
+        \item Je-li z aktuální pozice dostupný alespoň jeden tah do pozice, která je vyhrávající pro hráče, jenž je aktuálně na tahu, je i aktuální pozice vyhrávající.
+        \item Vedou-li všechny možné tahy do pozic vyhrávajících pro soupeře, je aktuální pozice prohrávající (tj. vyhrávající pro soupeře).
     \end{itemize}
     
-    \item \textbf{Neurčené pozice:} Pozice uvnitř cyklů grafu, jejichž status nelze jednoznačně určit retrográdní analýzou, zůstávají označeny jako remíza. To nastává, když pozice tvoří silně souvislou komponentu, kde se hráči mohou pohybovat nekonečně dlouho bez jednoznačného vítěze.
+    \item \textbf{Neurčené pozice:} Pozice, jejichž status nelze retrográdní analýzou označit jako výhru ani prohru, zůstávají označeny jako remíza. Typicky jde o pozice v cyklech (často uvnitř silně souvislé komponenty), ve kterých při optimální hře (oba hráči v každém tahu volí pro sebe nejlepší možný tah) nelze vynutit přechod do jednoznačně prohrávající pozice soupeře. Samotná existence silně souvislé komponenty ale remízu nezaručuje.
 \end{enumerate}
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
