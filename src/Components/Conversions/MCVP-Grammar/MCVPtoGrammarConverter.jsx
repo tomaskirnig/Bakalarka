@@ -118,6 +118,7 @@ class MCVPToGrammarConverter {
     this.processedNodes = new Set();
     this.productionNodes = new Set();
     this.variableVisualMap = new Map(); // variable node -> preferred visual label
+    this.trueVariableResolution = new Map(); // variable node -> { type: 'terminal'|'epsilon', terminal?: string }
     this.epsilonChanceForTrueVariable = 0.15;
   }
 
@@ -202,32 +203,44 @@ class MCVPToGrammarConverter {
   }
 
   processNodes() {
-    // Map root to start symbol
-    this.symbolGenerator.getSymbolForNode(this.mcvpTree, 'S');
-    this.processNodeRecursively(this.mcvpTree);
+    // Root maps to S only when it should be a non-terminal symbol.
+    this.processNodeRecursively(this.mcvpTree, 'S');
   }
 
-  processNodeRecursively(node) {
+  processNodeRecursively(node, forcedSymbol = null) {
     if (!node || this.processedNodes.has(node)) return;
     this.processedNodes.add(node);
 
-    const nodeSymbol = this.symbolGenerator.getSymbolForNode(node);
-    this.grammar.addNonTerminal(nodeSymbol);
+    const isOperationNode = node.type === 'operation';
+    const isFalseVariableNode = node.type === 'variable' && node.varValue === 0;
 
     const nodeTypeDisplay =
       node.type === 'operation' ? (node.value === 'A' ? 'AND' : 'OR') : `proměnná ${node.value}`;
 
-    if (node.type === 'operation') {
-      this.addStep(
-        `Vytvořit neterminál ${nodeSymbol}`,
-        node,
-        `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
-      );
+    if (isOperationNode || isFalseVariableNode) {
+      const nodeSymbol = this.symbolGenerator.getSymbolForNode(node, forcedSymbol);
+      this.grammar.addNonTerminal(nodeSymbol);
+
+      if (isOperationNode) {
+        this.addStep(
+          `Vytvořit neterminál ${nodeSymbol}`,
+          node,
+          `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
+        );
+      } else {
+        this.addStep(
+          `Připravit proměnnou ${nodeSymbol}`,
+          node,
+          `Proměnná ${node.value} s hodnotou 0 je reprezentována neterminálem ${nodeSymbol}, který dostane cyklické pravidlo ${nodeSymbol} → ${nodeSymbol}.`
+        );
+      }
     } else {
+      const trueVarSymbols = this.getProductionSymbolsForTrueVariable(node);
+      const rightSide = this.formatProductionSymbols(trueVarSymbols);
       this.addStep(
-        `Připravit proměnnou ${nodeSymbol}`,
+        `Převést proměnnou ${node.value}`,
         node,
-        `Proměnná ${node.value} bude převedena buď na terminál (případně ε), nebo na smyčku ${nodeSymbol} → ${nodeSymbol} podle své hodnoty.`
+        `Proměnná ${node.value} s hodnotou 1 je převedena na ${rightSide}.`
       );
     }
 
@@ -248,28 +261,21 @@ class MCVPToGrammarConverter {
     this.productionNodes.add(node);
 
     const nodeSymbol = this.symbolGenerator.getSymbol(node);
-    if (!nodeSymbol) return;
+    const isRootTrueVariable =
+      node === this.mcvpTree && node.type === 'variable' && node.varValue === 1;
+
+    if (!nodeSymbol && !isRootTrueVariable) return;
 
     // Handle variable nodes.
     if (node.type === 'variable') {
       if (node.varValue === 1) {
-        if (Math.random() < this.epsilonChanceForTrueVariable) {
-          this.variableVisualMap.set(node, 'ε');
-          this.grammar.setProductions(nodeSymbol, [[]]);
+        if (isRootTrueVariable) {
+          const rootProduction = this.getProductionSymbolsForTrueVariable(node);
+          this.grammar.setProductions(this.grammar.startSymbol, [rootProduction]);
           this.addStep(
-            `Pravidlo pro proměnnou: ${nodeSymbol} → ε`,
+            `Pravidlo startu: ${this.grammar.startSymbol} → ${this.formatProductionSymbols(rootProduction)}`,
             node,
-            'Proměnná s hodnotou 1 byla náhodně (15%) převedena na epsilon produkci.'
-          );
-        } else {
-          const terminal = this.terminalGenerator.getTerminalForVariable(node);
-          this.variableVisualMap.set(node, terminal);
-          this.grammar.addTerminal(terminal);
-          this.grammar.setProductions(nodeSymbol, [[terminal]]);
-          this.addStep(
-            `Pravidlo pro proměnnou: ${nodeSymbol} → ${terminal}`,
-            node,
-            `Proměnná s hodnotou 1 má pravidlo na terminál '${terminal}'.`
+            `Kořenová proměnná s hodnotou 1 je převedena přímo do startovního pravidla ${this.grammar.startSymbol}.`
           );
         }
       } else {
@@ -288,10 +294,10 @@ class MCVPToGrammarConverter {
       // AND node
       const childSymbols = node.children
         .filter((child) => child != null)
-        .map((child) => this.getProductionSymbolForChild(child));
+        .flatMap((child) => this.getProductionSymbolsForChild(child));
 
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
-      const rightSide = childSymbols.length > 0 ? childSymbols.join(' ') : 'ε';
+      const rightSide = this.formatProductionSymbols(childSymbols);
       this.addStep(
         `Přidat AND pravidlo: ${nodeSymbol} → ${rightSide}`,
         node,
@@ -299,14 +305,14 @@ class MCVPToGrammarConverter {
       );
     } else if (node.value === 'O') {
       // OR node
-      const childSymbols = node.children
+      const productions = node.children
         .filter((child) => child != null)
-        .map((child) => this.getProductionSymbolForChild(child));
-
-      const productions = childSymbols.map((symbol) => [symbol]);
+        .map((child) => this.getProductionSymbolsForChild(child));
       this.grammar.setProductions(nodeSymbol, productions);
 
-      const rules = childSymbols.map((s) => `${nodeSymbol} → ${s}`).join(', ');
+      const rules = productions
+        .map((production) => `${nodeSymbol} → ${this.formatProductionSymbols(production)}`)
+        .join(', ');
 
       this.addStep(
         `Přidat OR pravidla: ${rules}`,
@@ -323,15 +329,50 @@ class MCVPToGrammarConverter {
     });
   }
 
-  getProductionSymbolForChild(child) {
-    if (!child) {
-      throw new Error('getProductionSymbolForChild called with null/undefined child');
+  resolveTrueVariable(node) {
+    if (this.trueVariableResolution.has(node)) {
+      return this.trueVariableResolution.get(node);
     }
+
+    let resolution;
+    if (Math.random() < this.epsilonChanceForTrueVariable) {
+      this.variableVisualMap.set(node, 'ε');
+      resolution = { type: 'epsilon' };
+    } else {
+      const terminal = this.terminalGenerator.getTerminalForVariable(node);
+      this.grammar.addTerminal(terminal);
+      this.variableVisualMap.set(node, terminal);
+      resolution = { type: 'terminal', terminal };
+    }
+
+    this.trueVariableResolution.set(node, resolution);
+    return resolution;
+  }
+
+  getProductionSymbolsForTrueVariable(node) {
+    const resolution = this.resolveTrueVariable(node);
+    return resolution.type === 'epsilon' ? [] : [resolution.terminal];
+  }
+
+  getProductionSymbolsForChild(child) {
+    if (!child) {
+      throw new Error('getProductionSymbolsForChild called with null/undefined child');
+    }
+
+    if (child.type === 'variable' && child.varValue === 1) {
+      return this.getProductionSymbolsForTrueVariable(child);
+    }
+
     const symbol = this.symbolGenerator.getSymbol(child);
     if (!symbol) {
       throw new Error('Missing non-terminal symbol for child node during production creation');
     }
-    return symbol;
+
+    return [symbol];
+  }
+
+  formatProductionSymbols(symbols) {
+    return symbols.length > 0 ? symbols.join(' ') : 'ε';
   }
 }
 
