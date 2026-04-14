@@ -1,5 +1,8 @@
 import { Grammar } from './Grammar.js';
 
+const SINGLE_SIDE_RECURSION_PROBABILITY = 0.2;
+const CENTRAL_RECURSION_PROBABILITY = 0.2;
+
 /**
  * Grammar generator configuration object
  * @typedef {Object} GrammarConfig
@@ -252,8 +255,26 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   }
 
   // 1. Decide whether recursion is used.
-  let useLeft = config.allowLeftRecursion && Math.random() < 0.3;
-  let useRight = config.allowRightRecursion && Math.random() < 0.3;
+  let useLeft = false;
+  let useRight = false;
+
+  if (config.allowLeftRecursion && config.allowRightRecursion) {
+    // Keep central recursion explicit and bounded to about 20% when both toggles are enabled.
+    if (Math.random() < CENTRAL_RECURSION_PROBABILITY) {
+      useLeft = true;
+      useRight = true;
+    } else if (Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY) {
+      if (Math.random() < 0.5) {
+        useLeft = true;
+      } else {
+        useRight = true;
+      }
+    }
+  } else if (config.allowLeftRecursion) {
+    useLeft = Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY;
+  } else if (config.allowRightRecursion) {
+    useRight = Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY;
+  }
 
   // 2. Validate length budget for recursion.
   const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);

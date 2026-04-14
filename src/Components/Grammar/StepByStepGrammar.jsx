@@ -57,6 +57,10 @@ export function StepByStepGrammar({ grammar }) {
         rights.map((right) => ({ left, right }))
       );
 
+  const allNonTerminals = Array.isArray(grammar.nonTerminals)
+    ? grammar.nonTerminals
+    : [...new Set(rules.map((rule) => rule.left))];
+
   return (
     <div
       className="step-by-step-container d-flex flex-column"
@@ -110,10 +114,13 @@ export function StepByStepGrammar({ grammar }) {
                   <strong>Množina produktivních symbolů (P):</strong>
                 </p>
                 <div className="mb-3">
-                  {activeStep.productive.length > 0 ? (
+                  {allNonTerminals.length > 0 ? (
                     <div className="d-flex flex-wrap gap-2">
-                      {activeStep.productive.map((sym) => (
-                        <span key={sym} className="badge bg-success">
+                      {allNonTerminals.map((sym) => (
+                        <span
+                          key={sym}
+                          className={`badge rounded-1 ${productiveSet.has(sym) ? 'bg-success' : 'bg-light text-dark border'}`}
+                        >
                           {sym}
                         </span>
                       ))}

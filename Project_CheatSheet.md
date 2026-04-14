@@ -91,6 +91,7 @@ Primary files:
 Algorithm: expression parsing pipeline
 
 - What: tokenizes expression and builds DAG-like operation/variable node structure.
+- How: recursive-descent parser (`parseExpression -> parseTerm -> parseFactor`) applies precedence (`OR` after `AND`); variable nodes are reused by name and conflicting values fail validation.
 - Input: string like `((x1[1] A x2[0]) O x3[1])`.
 - Output: root `Node` with `children`/`parents` links.
 - Notes: operator precedence `OR` after `AND`; same variable name must keep same value.
@@ -105,6 +106,7 @@ Primary files:
 Algorithm: random circuit generation
 
 - What: creates random binary MCVP DAG and enforces one final root.
+- How: starts from variable nodes, then iteratively adds binary gates that attach existing nodes as children; root candidates are updated each step so generation ends with exactly one output root.
 - Input: gate count, variable count.
 - Output: generated root node.
 - Constraints: binary arity for operation nodes; feasibility checks avoid invalid root counts.
@@ -127,6 +129,7 @@ Algorithm: circuit evaluation with tracked steps
 
 - File: `src/Components/MCVP/Utils/EvaluateCircuit.js`
 - What: DFS-based evaluation with memoization and cycle detection.
+- How: recursive DFS evaluates children first; `memo` cache stores computed node values and returns them on repeat visits. `visiting` set tracks the active recursion path, and revisiting a node in this set means a cycle (error). After evaluation, node is removed from `visiting`, cached, and a step snapshot is appended.
 - Input: root node.
 - Output: `{ result, steps }`.
 - Complexity: O(n) over visited nodes (with memoization).
@@ -135,6 +138,7 @@ Algorithm: step-by-step playback
 
 - Files: `src/Components/MCVP/StepByStepTree.jsx`, `src/Components/MCVP/MCVP.jsx`
 - What: consumes precomputed `steps` and visualizes evaluation sequence.
+- How: analysis is computed once; UI only moves a current index over stored `steps` (next/prev), so no re-evaluation is needed during playback.
 - Related visualization: `src/Components/MCVP/TreeRenderCanvas.jsx`.
 
 ## 5. Combinatorial Game (CG)
@@ -167,6 +171,7 @@ Primary files:
 Algorithm: random game graph generation
 
 - What: builds connected graph from node 0, then adds random edges (can introduce cycles).
+- How: first creates a guaranteed-reachability backbone (each new node gets an incoming edge from an earlier node), then probabilistically adds extra directed edges for density and cycles.
 - Input: number of positions, edge probability.
 - Output: `GameGraph` with `positions` and `startingPosition`.
 
@@ -187,6 +192,7 @@ Algorithm: winner computation (retrograde analysis)
 
 - File: `src/Components/CombinatorialGame/Utils/ComputeWinner.js`
 - What: labels nodes `WIN/LOSE/DRAW` using queue propagation from terminal positions.
+- How: uses a FIFO queue (not stack). Terminal positions are seeded first, then predecessors are updated backward: a node becomes `WIN` if it has at least one move to an opponent-losing node; it becomes `LOSE` when all legal moves go to opponent-winning nodes. Unresolved nodes after queue exhaustion remain `DRAW`.
 - Input: graph with `positions` and `startingPosition`.
 - Output: strategy result, node statuses, explanation, and analysis `steps`.
 - Complexity: approximately O(V + E).
@@ -195,11 +201,13 @@ Algorithm: optimal moves extraction
 
 - File: `src/Components/CombinatorialGame/Utils/ComputeWinner.js`
 - What: extracts winning edges for Player 1 from computed statuses.
+- How: scans available edges and keeps only moves consistent with the winning-status relation computed by retrograde analysis.
 - Output: `Set` of edge keys (`source-target`).
 
 Algorithm: step-by-step analysis playback
 
 - Files: `src/Components/CombinatorialGame/StepByStepGame.jsx`, `src/Components/CombinatorialGame/CombinatorialGame.jsx`
+- How: replays stored analysis snapshots with index-based navigation, so user interaction only changes which recorded step is rendered.
 - Related visualization: `src/Components/CombinatorialGame/Utils/DisplayGraph.jsx`, `src/Components/CombinatorialGame/Utils/GameAnalysisDisplay.jsx`.
 
 ## 6. Grammar
@@ -219,6 +227,7 @@ Primary files:
 Algorithm: grammar parsing and validation
 
 - What: parses text rules, supports `->` and `→`, handles alternatives (`|`) and epsilon (`ε`/`epsilon`).
+- How: normalizes input symbols, splits productions and alternatives, classifies symbols into terminals/non-terminals, and builds one internal grammar object with validation errors on malformed rules.
 - Input: multiline rule text.
 - Output: internal `Grammar` object.
 
@@ -232,9 +241,17 @@ Primary files:
 Algorithm: random CFG generation
 
 - What: builds non-terminals, terminals, productions under config constraints.
+- How: generates symbol sets, samples production counts per non-terminal, constructs RHS with recursion/epsilon options, then runs post-processing to enforce reachability and optional guaranteed epsilon rule.
 - Input: generator config (counts, max length, recursion flags, epsilon mode, production bounds).
 - Output: `Grammar` instance.
 - Extras: includes reachability fix and epsilon guarantee mode.
+
+Algorithm: generation complexity estimate (UI guard)
+
+- File: `src/Components/Grammar/InputSelectionComponent/GenerateInput.jsx`
+- What: estimates generation cost before running and prevents overly heavy configurations.
+- How: computes `estimatedRules = numNonTerminals * maxProductions`, then `estimatedSymbolSlots = estimatedRules * maxRuleLength`, applies recursion multiplier (`1.25` for each enabled side recursion), and rounds to final `estimatedComplexity`.
+- Thresholds: warn at `>= 240`; block generation at `>= 420`.
 
 ### 6.3 Prepared sets input
 
@@ -254,6 +271,7 @@ Algorithm: empty language check and productive symbols
 - File: `src/Components/Grammar/Utils/GrammarEvaluator.js`
 - Function entry: `isEmptyLanguage(grammar)`.
 - What: queue-based fixed-point search for productive non-terminals.
+- How: initializes a work queue with rules that already derive terminals/epsilon, then repeatedly marks new productive non-terminals and rechecks dependent rules until no new symbol can be added (fixed point).
 - Output: `{ isEmpty, productive, nonproductive, explanation, ... }`.
 - Complexity: roughly O(|P| \* |N|).
 
@@ -261,11 +279,13 @@ Algorithm: derivation witness/tree construction
 
 - File: `src/Components/Grammar/Utils/GrammarEvaluator.js`
 - What: constructs compact finite witness derivation tree with safeguards.
+- How: computes minimal derivation cost per productive non-terminal (fixed-point relaxation), selects the cheapest production per symbol, then builds the witness tree iteratively with explicit stack and safety limits.
 - Guardrails: node/depth limits, cycle-avoidance heuristics, truncation metadata.
 
 Algorithm: step-by-step grammar analysis UI
 
 - Files: `src/Components/Grammar/StepByStepGrammar.jsx`, `src/Components/Grammar/Grammar.jsx`
+- How: displays precomputed analysis snapshots (productive set + rule states) step-by-step; UI navigation changes only the active snapshot index.
 - Related visualization: `src/Components/Grammar/DerivationTreeVisual.jsx`.
 
 ## 7. Conversions
@@ -284,6 +304,7 @@ Algorithm summary
 - Variable `1` -> Player 2 terminal position.
 - Variable `0` -> Player 1 terminal position.
 - Uses step generator (`MCVPToGameStepGenerator`) and visited-set to avoid duplication.
+- How: DFS over MCVP DAG creates each game node once (`visited`), maps node type to player ownership, adds edges to converted children, and stores conversion snapshots for playback.
 
 ### 7.2 MCVP -> Grammar
 
@@ -298,6 +319,7 @@ Algorithm summary
 - Maps variable `1` to terminal (or epsilon with probability).
 - Maps variable `0` to non-productive loop rule (`X -> X`).
 - Builds productions per gate type and records conversion steps for visualization.
+- How: two-phase conversion: first assign symbols to all circuit nodes, then emit productions by node semantics (`AND` concatenation, `OR` alternatives, leaves as terminal/epsilon/self-loop), while logging intermediate states.
 
 ## 8. Quick maintenance guide
 

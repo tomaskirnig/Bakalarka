@@ -7,6 +7,7 @@ import { useGraphSettings } from '../../../../Hooks/useGraphSettings';
 import { graphDataToNodeClass, getNodeDisplayName } from './InteractiveInput.helpers';
 import { createPaintLink, createPaintNode } from './InteractiveInput.renderers';
 import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeControls';
+import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -454,13 +455,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
           >
             Vycentrovat
           </button>
-          <button
-            className="graph-btn"
-            onClick={handleToggleGraphLock}
-            title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
-          >
-            {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
-          </button>
+          <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
         </div>
         <ForceGraph2D
           ref={fgRef}

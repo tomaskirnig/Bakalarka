@@ -12,6 +12,7 @@ import {
 } from './ManualInput.helpers';
 import { createGetLinkLabel, createPaintLink, createPaintRing } from './ManualInput.renderers';
 import { ManualInputPanels } from './ManualInputPanels';
+import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
 
 /**
  * Interactive graph editor for manual combinatorial game input.
@@ -444,13 +445,7 @@ export function ManualInput({
           >
             Vycentrovat
           </button>
-          <button
-            className="graph-btn"
-            onClick={handleToggleGraphLock}
-            title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
-          >
-            {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
-          </button>
+          <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
         </div>
         {addingEdge && (
           <div className="manual-input-instruction">

@@ -20,11 +20,11 @@
 \contentsline {figure}{\numberline {4.4}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{25}{figure.caption.13}%
 \contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka předpřipravených herních grafů ve formátu JSON}}{27}{figure.caption.14}%
 \contentsline {figure}{\numberline {4.6}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{27}{figure.caption.15}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Kroková analýza kombinatorické hry}}{29}{figure.caption.16}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Krokovatelná analýza kombinatorické hry}}{29}{figure.caption.16}%
 \contentsline {figure}{\numberline {4.8}{\ignorespaces Rozhraní pro nastavení parametrů generování bezkontextových gramatik}}{32}{figure.caption.17}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{33}{figure.caption.18}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{34}{figure.caption.18}%
 \contentsline {figure}{\numberline {4.10}{\ignorespaces Vizualizace derivačního stromu pro neprázdnou gramatiku}}{35}{figure.caption.19}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Kroková analýza bezkontextové gramatiky}}{36}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Krokovatelná analýza bezkontextové gramatiky}}{36}{figure.caption.20}%
 \contentsline {figure}{\numberline {4.12}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{38}{figure.caption.21}%
 \contentsline {figure}{\numberline {4.13}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{40}{figure.caption.22}%
 \addvspace {10\p@ }

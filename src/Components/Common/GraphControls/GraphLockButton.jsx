@@ -7,7 +7,16 @@ import PropTypes from 'prop-types';
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Lock control button.
  */
-export default function GraphLockButton({ isLocked, onToggle }) {
+export default function GraphLockButton({
+  isLocked,
+  onToggle,
+  lockedLabel,
+  unlockedLabel,
+  lockedTitle,
+  unlockedTitle,
+  lockedTooltip,
+  unlockedTooltip,
+}) {
   const [showTooltip, setShowTooltip] = useState(false);
 
   return (
@@ -24,9 +33,9 @@ export default function GraphLockButton({ isLocked, onToggle }) {
             ? { color: 'var(--color2)', borderColor: 'var(--color2)', fontWeight: 700 }
             : undefined
         }
-        title={isLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
+        title={isLocked ? lockedTitle : unlockedTitle}
       >
-        {isLocked ? '🔒 Zamčeno' : '🔓 Zamknout'}
+        {isLocked ? lockedLabel : unlockedLabel}
       </button>
       {showTooltip && (
         <div
@@ -46,7 +55,7 @@ export default function GraphLockButton({ isLocked, onToggle }) {
             zIndex: 10,
           }}
         >
-          {isLocked ? 'Odemknout pozice všech uzlů' : 'Zamknout pozice všech uzlů na místě'}
+          {isLocked ? lockedTooltip : unlockedTooltip}
         </div>
       )}
     </div>
@@ -56,4 +65,19 @@ export default function GraphLockButton({ isLocked, onToggle }) {
 GraphLockButton.propTypes = {
   isLocked: PropTypes.bool.isRequired,
   onToggle: PropTypes.func.isRequired,
+  lockedLabel: PropTypes.string,
+  unlockedLabel: PropTypes.string,
+  lockedTitle: PropTypes.string,
+  unlockedTitle: PropTypes.string,
+  lockedTooltip: PropTypes.string,
+  unlockedTooltip: PropTypes.string,
+};
+
+GraphLockButton.defaultProps = {
+  lockedLabel: '🔒 Odemknout graf',
+  unlockedLabel: '🔓 Zamknout graf',
+  lockedTitle: 'Odemknout pozice uzlů',
+  unlockedTitle: 'Zamknout pozice uzlů',
+  lockedTooltip: 'Odemknout pozice všech uzlů',
+  unlockedTooltip: 'Zamknout pozice všech uzlů na místě',
 };
