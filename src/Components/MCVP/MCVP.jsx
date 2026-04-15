@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponents/ManualInput';
@@ -32,6 +32,8 @@ export function MCVP({ onNavigate, initialData }) {
   const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
   const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
   const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
+  const [lockImportedLayout, setLockImportedLayout] = useState(false);
+  const positionSnapshotGetterRef = useRef(null);
 
   // Handle initial data if provided (e.g., from reverse conversion)
   useEffect(() => {
@@ -52,11 +54,26 @@ export function MCVP({ onNavigate, initialData }) {
   const handleOptionChange = (option) => {
     setChosenOpt(option);
     setTree(null);
+    setLockImportedLayout(false);
   };
+
+  const handleRegisterPositionSnapshotGetter = useCallback((getter) => {
+    positionSnapshotGetterRef.current = typeof getter === 'function' ? getter : null;
+  }, []);
 
   const handleExport = (includePositions = false) => {
     if (!tree) return null;
-    return treeToFlatGraph(tree, includePositions);
+
+    let positionSnapshot = null;
+    if (includePositions && typeof positionSnapshotGetterRef.current === 'function') {
+      try {
+        positionSnapshot = positionSnapshotGetterRef.current();
+      } catch (error) {
+        console.warn('Failed to take live position snapshot for export:', error);
+      }
+    }
+
+    return treeToFlatGraph(tree, includePositions, positionSnapshot);
   };
 
   const handleImport = (data) => {
@@ -79,6 +96,15 @@ export function MCVP({ onNavigate, initialData }) {
     if (newTree) {
       setTree(newTree);
       setChosenOpt('manual'); // Switch to view/manual mode
+
+      const hasExplicitPositions =
+        Boolean(graphData?.positions && Object.keys(graphData.positions).length > 0) ||
+        Boolean(
+          Array.isArray(graphData?.nodes) &&
+          graphData.nodes.some((node) => typeof node?.x === 'number' && typeof node?.y === 'number')
+        );
+
+      setLockImportedLayout(hasExplicitPositions);
     } else {
       throw new Error('Nepodařilo se vytvořit strom z importovaných dat.');
     }
@@ -190,6 +216,7 @@ export function MCVP({ onNavigate, initialData }) {
                   <InteractiveMCVPGraph
                     onTreeUpdate={setTree}
                     useTopDownLayout={useTopDownLayout}
+                    onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
                   />
                 );
               default:
@@ -200,7 +227,13 @@ export function MCVP({ onNavigate, initialData }) {
 
         {tree && chosenOpt !== 'interactive' && (
           <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-            <TreeRenderCanvas tree={tree} useTopDownLayout={useTopDownLayout} />
+            <TreeRenderCanvas
+              tree={tree}
+              useTopDownLayout={useTopDownLayout}
+              defaultLocked={lockImportedLayout}
+              lockOnFirstTick={lockImportedLayout}
+              onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
+            />
           </div>
         )}
 

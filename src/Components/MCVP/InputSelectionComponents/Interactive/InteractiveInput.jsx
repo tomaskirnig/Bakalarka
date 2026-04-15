@@ -16,7 +16,11 @@ import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
  *
  * @component
  */
-export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) {
+export function InteractiveMCVPGraph({
+  onTreeUpdate,
+  useTopDownLayout = true,
+  onRegisterPositionSnapshotGetter,
+}) {
   const [graphData, setGraphData] = useState(() => ({
     nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
     links: [],
@@ -31,6 +35,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
   const nextNodeIdRef = useRef(1); // '0' is the initial OR node
   const nextLinkIdRef = useRef(0);
   const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
+  const lastBroadcastedPositionsRef = useRef(new Map());
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const colors = useGraphColors();
@@ -372,6 +377,77 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     }));
   }, []);
 
+  const syncAllNodePositionsInGraphData = useCallback(() => {
+    if (!fgRef.current) return;
+
+    const engineNodes = fgRef.current.graphData()?.nodes;
+    if (!Array.isArray(engineNodes) || engineNodes.length === 0) return;
+
+    const nextPositions = new Map();
+    let hasChanges = false;
+
+    engineNodes.forEach((node) => {
+      if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+      const id = String(node.id);
+      const x = node.x;
+      const y = node.y;
+      nextPositions.set(id, { x, y });
+
+      const previous = lastBroadcastedPositionsRef.current.get(id);
+      if (!previous || previous.x !== x || previous.y !== y) {
+        hasChanges = true;
+      }
+    });
+
+    if (!hasChanges) return;
+
+    lastBroadcastedPositionsRef.current = nextPositions;
+    setGraphData((prevData) => ({
+      ...prevData,
+      nodes: prevData.nodes.map((node) => {
+        const position = nextPositions.get(String(node.id));
+        if (!position) return node;
+
+        if (isGraphLocked) {
+          return { ...node, x: position.x, y: position.y, fx: position.x, fy: position.y };
+        }
+
+        return { ...node, x: position.x, y: position.y };
+      }),
+    }));
+  }, [isGraphLocked]);
+
+  const getCurrentNodePositionsSnapshot = useCallback(() => {
+    if (!fgRef.current) return {};
+
+    const engineNodes = fgRef.current.graphData()?.nodes;
+    if (!Array.isArray(engineNodes) || engineNodes.length === 0) {
+      return {};
+    }
+
+    const snapshot = {};
+    engineNodes.forEach((node) => {
+      const x = typeof node.x === 'number' ? node.x : node.fx;
+      const y = typeof node.y === 'number' ? node.y : node.fy;
+
+      if (typeof x === 'number' && typeof y === 'number') {
+        snapshot[node.id] = { x, y };
+      }
+    });
+
+    return snapshot;
+  }, []);
+
+  useEffect(() => {
+    if (!onRegisterPositionSnapshotGetter) return;
+
+    onRegisterPositionSnapshotGetter(getCurrentNodePositionsSnapshot);
+    return () => {
+      onRegisterPositionSnapshotGetter(null);
+    };
+  }, [onRegisterPositionSnapshotGetter, getCurrentNodePositionsSnapshot]);
+
   // --- Canvas/Rendering Functions ---
   const paintNode = useMemo(
     () => createPaintNode({ selectedNode, hoverNode, edgeSource, colors, mcvp }),
@@ -491,6 +567,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
           onBackgroundClick={handleBackgroundClick}
           onNodeHover={handleNodeHover} // Update hover state
           onLinkHover={handleLinkHover}
+          onEngineStop={syncAllNodePositionsInGraphData}
           enablePanInteraction={true}
           enableZoomInteraction={true}
           enableNodeDrag={true} // Keep dragging enabled even when graph is locked
@@ -541,4 +618,5 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 InteractiveMCVPGraph.propTypes = {
   onTreeUpdate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
+  onRegisterPositionSnapshotGetter: PropTypes.func,
 };

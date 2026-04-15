@@ -10,12 +10,12 @@ import PropTypes from 'prop-types';
 export default function GraphLockButton({
   isLocked,
   onToggle,
-  lockedLabel,
-  unlockedLabel,
-  lockedTitle,
-  unlockedTitle,
-  lockedTooltip,
-  unlockedTooltip,
+  lockedLabel = '🔒 Odemknout graf',
+  unlockedLabel = '🔓 Zamknout graf',
+  lockedTitle = 'Odemknout pozice uzlů',
+  unlockedTitle = 'Zamknout pozice uzlů',
+  lockedTooltip = 'Odemknout pozice všech uzlů',
+  unlockedTooltip = 'Zamknout pozice všech uzlů na místě',
 }) {
   const [showTooltip, setShowTooltip] = useState(false);
 
@@ -71,13 +71,4 @@ GraphLockButton.propTypes = {
   unlockedTitle: PropTypes.string,
   lockedTooltip: PropTypes.string,
   unlockedTooltip: PropTypes.string,
-};
-
-GraphLockButton.defaultProps = {
-  lockedLabel: '🔒 Odemknout graf',
-  unlockedLabel: '🔓 Zamknout graf',
-  lockedTitle: 'Odemknout pozice uzlů',
-  unlockedTitle: 'Zamknout pozice uzlů',
-  lockedTooltip: 'Odemknout pozice všech uzlů',
-  unlockedTooltip: 'Zamknout pozice všech uzlů na místě',
 };

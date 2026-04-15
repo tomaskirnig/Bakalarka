@@ -34,7 +34,8 @@ export function DisplayGraph({
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
-  const [isGraphLocked, setIsGraphLocked] = useState(defaultLocked);
+  const [isGraphLocked, setIsGraphLocked] = useState(false);
+  const autoLockRef = useRef(defaultLocked);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -80,7 +81,8 @@ export function DisplayGraph({
   }, [graph]);
 
   useEffect(() => {
-    setIsGraphLocked(defaultLocked);
+    setIsGraphLocked(false);
+    autoLockRef.current = defaultLocked;
   }, [graph, defaultLocked]);
 
   // Memoize graph data for react-force-graph-2d.
@@ -337,22 +339,27 @@ export function DisplayGraph({
   // Persist coordinates after simulation settles.
   // Only pin nodes when lock mode is enabled.
   const handleEngineStop = useCallback(() => {
-    data.nodes.forEach((n) => {
-      if (typeof n.x === 'number') {
-        if (isGraphLocked) {
-          n.fx = n.x;
-          n.fy = n.y;
-        } else {
-          n.fx = undefined;
-          n.fy = undefined;
-        }
-        persistGraphPosition(n);
-      }
-    });
+    // Auto-lock after initial layout if requested
+    if (autoLockRef.current) {
+      setIsGraphLocked(true);
+      autoLockRef.current = false;
 
-    if (isGraphLocked) {
       data.nodes.forEach(pinNodePosition);
+    } else {
+      data.nodes.forEach((n) => {
+        if (typeof n.x === 'number') {
+          if (isGraphLocked) {
+            n.fx = n.x;
+            n.fy = n.y;
+          } else {
+            n.fx = undefined;
+            n.fy = undefined;
+          }
+        }
+      });
     }
+
+    data.nodes.forEach(persistGraphPosition);
   }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
 
   // Center camera on highlighted node when tracking is enabled

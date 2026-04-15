@@ -2,7 +2,6 @@
 - Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 
-- Expand (generated) - advanced options can be added (max/min num of children ) 
 
 ---- MCVP -> CG ----
 
@@ -19,6 +18,5 @@
 ---- Global ----
 - Add autoscroll after selecting set or genererating and displaying some data 
 
-- Bonus - implemnt dynamic size of display component, user can resize the coimponent manually (by pulling the edge or + / - buttons)
+- Bonus - implemnt dynamic size of display component, user can resize the component manually (by pulling the edge or + / - buttons)
 
--udelat novou vetev s omezenout fyzikou

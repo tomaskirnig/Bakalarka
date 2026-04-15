@@ -468,6 +468,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
                 fitTrigger={fitTrigger}
                 useTopDownLayout={useTopDownLayout}
                 defaultLocked={true}
+                lockOnFirstTick={true}
               />
             </div>
           </div>

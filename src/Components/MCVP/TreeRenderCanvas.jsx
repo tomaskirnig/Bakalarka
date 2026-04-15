@@ -33,6 +33,8 @@ export function TreeRenderCanvas({
   disableAutoCenter = false, // Disable auto-centering on active node
   useTopDownLayout = true,
   defaultLocked = false,
+  lockOnFirstTick = false,
+  onRegisterPositionSnapshotGetter,
   showLockControl = true,
 }) {
   const fgRef = useRef();
@@ -42,7 +44,8 @@ export function TreeRenderCanvas({
   // Dimensions State
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
-  const [isLocked, setIsLocked] = useState(defaultLocked);
+  const [isLocked, setIsLocked] = useState(false); // Start unlocked to allow initial layout
+  const autoLockRef = useRef(defaultLocked);
   const [unlockVersion, setUnlockVersion] = useState(0);
   const savedPositions = useRef(new Map());
   const sourceNodesByIdRef = useRef(new Map());
@@ -63,8 +66,10 @@ export function TreeRenderCanvas({
 
     const updateDimensions = () => {
       if (!containerRef.current) return;
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      setInternalDimensions({ width, height });
+      const { width: w, height: h } = containerRef.current.getBoundingClientRect();
+      if (w > 0 && h > 0) {
+        setInternalDimensions({ width: w, height: h });
+      }
     };
 
     // Initial call
@@ -84,10 +89,54 @@ export function TreeRenderCanvas({
   const canvasWidth = width || internalDimensions.width;
   const canvasHeight = height || internalDimensions.height;
 
+  const requestStableFit = useCallback((ms = 400) => {
+    if (!fgRef.current) return;
+
+    // Run fit on two consecutive frames to survive modal open animations
+    // and late canvas size stabilization.
+    requestAnimationFrame(() => {
+      fgRef.current?.zoomToFit(ms, 50);
+      requestAnimationFrame(() => {
+        fgRef.current?.zoomToFit(ms, 50);
+      });
+    });
+  }, []);
+
+  const getCurrentNodePositionsSnapshot = useCallback(() => {
+    if (!fgRef.current) return {};
+
+    const engineNodes = fgRef.current.graphData()?.nodes;
+    if (!Array.isArray(engineNodes) || engineNodes.length === 0) {
+      return {};
+    }
+
+    const snapshot = {};
+    engineNodes.forEach((node) => {
+      const x = typeof node.x === 'number' ? node.x : node.fx;
+      const y = typeof node.y === 'number' ? node.y : node.fy;
+
+      if (typeof x === 'number' && typeof y === 'number') {
+        snapshot[node.id] = { x, y };
+      }
+    });
+
+    return snapshot;
+  }, []);
+
+  useEffect(() => {
+    if (!onRegisterPositionSnapshotGetter) return;
+
+    onRegisterPositionSnapshotGetter(getCurrentNodePositionsSnapshot);
+    return () => {
+      onRegisterPositionSnapshotGetter(null);
+    };
+  }, [onRegisterPositionSnapshotGetter, getCurrentNodePositionsSnapshot]);
+
   // Flash border when tree changes
   useEffect(() => {
     setIsFlashing(true);
-    setIsLocked(defaultLocked);
+    setIsLocked(false);
+    autoLockRef.current = defaultLocked;
     savedPositions.current.clear();
     const timer = setTimeout(() => setIsFlashing(false), 600);
     return () => clearTimeout(timer);
@@ -127,11 +176,17 @@ export function TreeRenderCanvas({
       // Restore x/y from saved positions (set on unlock) so the simulation
       // starts from the current visual position, avoiding a jarring jump.
       const saved = savedPositions.current.get(current.id);
+      const initialX = saved?.x ?? current.x;
+      const initialY = saved?.y ?? current.y;
       nodes.push({
         ...current,
         rebuildVersion,
-        x: saved?.x,
-        y: saved?.y,
+        x: initialX,
+        y: initialY,
+        // Never carry over pinned coordinates from a previous mount/session.
+        // Locking is reapplied explicitly after layout settles.
+        fx: undefined,
+        fy: undefined,
         evaluationResult: undefined,
         neighbors: [],
         links: [],
@@ -358,6 +413,9 @@ export function TreeRenderCanvas({
             .iterations(collisionIterations)
         );
       }
+      if (window.d3 && window.d3.forceCenter) {
+        fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
+      }
       const linkDistance = useTopDownLayout ? Math.max(130, mcvp.linkDistance) : mcvp.linkDistance;
       const chargeStrength = useTopDownLayout
         ? Math.min(-220, mcvp.chargeStrength)
@@ -397,11 +455,11 @@ export function TreeRenderCanvas({
         fgRef.current.d3ReheatSimulation();
         // Fit immediately when explicitly requested.
         if (fitToScreen || fitTrigger > 0) {
-          fgRef.current.zoomToFit(400, 50);
+          requestStableFit(400);
         }
       }
     }
-  }, [canvasWidth, canvasHeight, fitToScreen, fitTrigger]);
+  }, [canvasWidth, canvasHeight, fitToScreen, fitTrigger, requestStableFit]);
 
   const handleToggleLock = useCallback(() => {
     setIsLocked((prev) => {
@@ -430,6 +488,22 @@ export function TreeRenderCanvas({
 
   // Keep lock active after coordinates are assigned.
   const handleEngineTick = useCallback(() => {
+    if (lockOnFirstTick && autoLockRef.current) {
+      const nodesWithCoords = graphData.nodes.filter(
+        (n) => typeof n.x === 'number' && typeof n.y === 'number'
+      );
+
+      if (nodesWithCoords.length > 0) {
+        setIsLocked(true);
+        autoLockRef.current = false;
+        nodesWithCoords.forEach((n) => {
+          n.fx = n.x;
+          n.fy = n.y;
+          persistNodePosition(n);
+        });
+      }
+    }
+
     if (!isLocked) return;
 
     graphData.nodes.forEach((n) => {
@@ -439,7 +513,7 @@ export function TreeRenderCanvas({
         persistNodePosition(n);
       }
     });
-  }, [graphData.nodes, isLocked, persistNodePosition]);
+  }, [graphData.nodes, isLocked, persistNodePosition, lockOnFirstTick]);
 
   // Immediate fit when explicitly requested.
   useEffect(() => {
@@ -449,18 +523,28 @@ export function TreeRenderCanvas({
     if (canvasWidth <= 0 || canvasHeight <= 0) return;
     if (!graphData.nodes || graphData.nodes.length === 0) return;
 
-    // Defer to next frame so modal/layout sizing settles before fitting.
-    requestAnimationFrame(() => {
-      fgRef.current?.zoomToFit(400, 50);
-    });
-  }, [fitToScreen, fitTrigger, canvasWidth, canvasHeight, graphData.nodes]);
+    requestStableFit(400);
+  }, [fitToScreen, fitTrigger, canvasWidth, canvasHeight, graphData.nodes, requestStableFit]);
 
   // Called by ForceGraph2D when the physics simulation stops.
   // Pins every node in place (keeps manually-dragged AND auto-settled positions).
   const handleEngineStop = useCallback(() => {
     graphData.nodes.forEach(persistNodePosition);
 
-    if (isLocked) {
+    // Auto-lock after initial layout if requested
+    if (autoLockRef.current) {
+      setIsLocked(true);
+      autoLockRef.current = false;
+
+      // Pin positions when auto-locking
+      graphData.nodes.forEach((n) => {
+        if (typeof n.x === 'number') {
+          n.fx = n.x;
+          n.fy = n.y;
+        }
+      });
+    } else if (isLocked) {
+      // Keep nodes pinned if already locked
       graphData.nodes.forEach((n) => {
         if (typeof n.x === 'number') {
           n.fx = n.x;
@@ -468,7 +552,12 @@ export function TreeRenderCanvas({
         }
       });
     }
-  }, [graphData.nodes, isLocked, persistNodePosition]);
+
+    // Ensure final settled layout is also centered/fitted when requested.
+    if (fitToScreen || fitTrigger > 0) {
+      requestStableFit(300);
+    }
+  }, [graphData.nodes, isLocked, persistNodePosition, fitToScreen, fitTrigger, requestStableFit]);
 
   return (
     <div
@@ -479,7 +568,7 @@ export function TreeRenderCanvas({
       <div className="graph-controls">
         <button
           className="graph-btn"
-          onClick={() => fgRef.current?.zoomToFit(400, 50)}
+          onClick={() => requestStableFit(400)}
           title="Fit Graph to Screen"
         >
           Vycentrovat
@@ -551,5 +640,7 @@ TreeRenderCanvas.propTypes = {
   disableAutoCenter: PropTypes.bool,
   useTopDownLayout: PropTypes.bool,
   defaultLocked: PropTypes.bool,
+  lockOnFirstTick: PropTypes.bool,
+  onRegisterPositionSnapshotGetter: PropTypes.func,
   showLockControl: PropTypes.bool,
 };

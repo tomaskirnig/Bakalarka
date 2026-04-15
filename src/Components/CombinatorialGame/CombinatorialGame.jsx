@@ -160,18 +160,24 @@ export function CombinatorialGame({ initialData }) {
 
     // Handle SadyCG format (Object with keys)
     // Check if data is a collection of sets rather than a single graph
-    if (!data.nodes && !data.edges && !data.positions) {
+    if (!data.nodes && !data.edges && !data.links && !data.positions) {
       const keys = Object.keys(data);
       if (keys.length > 0) {
         const firstSet = data[keys[0]];
-        if (firstSet && (firstSet.nodes || firstSet.edges || firstSet.positions)) {
+        if (
+          firstSet &&
+          (firstSet.nodes || firstSet.edges || firstSet.links || firstSet.positions)
+        ) {
           graphData = firstSet;
           toast.info(`Importována sada: ${keys[0]}`);
         }
       }
     }
 
-    if (graphData && (graphData.nodes || graphData.edges || graphData.positions)) {
+    if (
+      graphData &&
+      (graphData.nodes || graphData.edges || graphData.links || graphData.positions)
+    ) {
       setGraph(graphData);
       setChosenOpt('manual');
     } else {
