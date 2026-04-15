@@ -40,6 +40,7 @@ export function CombinatorialGame({ initialData }) {
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
+  const [graphFitTrigger, setGraphFitTrigger] = useState(0);
 
   // Handle initial data if provided
   useEffect(() => {
@@ -91,6 +92,12 @@ export function CombinatorialGame({ initialData }) {
     setChosenOpt(option);
     setGraph(null);
   };
+
+  // Refit once when a generated/prepared/imported graph is shown in view mode.
+  useEffect(() => {
+    if (!graph || chosenOpt === 'manual') return;
+    setGraphFitTrigger((prev) => prev + 1);
+  }, [graph, chosenOpt]);
 
   const handleExport = (includePositions = false) => {
     if (!graph) return null;
@@ -278,7 +285,12 @@ export function CombinatorialGame({ initialData }) {
             {chosenOpt !== 'manual' && (
               <>
                 <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                  <DisplayGraph graph={graph} optimalMoves={optimalMoves} showLockControl={true} />
+                  <DisplayGraph
+                    graph={graph}
+                    optimalMoves={optimalMoves}
+                    fitTrigger={graphFitTrigger}
+                    showLockControl={true}
+                  />
                 </div>
                 <GameAnalysisDisplay analysisResult={analysisResult} />
               </>

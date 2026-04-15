@@ -12,6 +12,7 @@ import { DisplayGraph } from './Utils/DisplayGraph';
  */
 export function StepByStepGame({ graph, analysisSteps }) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [fitTrigger, setFitTrigger] = useState(0);
 
   const steps = useMemo(() => {
     if (!graph || !analysisSteps) {
@@ -33,6 +34,7 @@ export function StepByStepGame({ graph, analysisSteps }) {
   useEffect(() => {
     if (steps.length > 0) {
       setCurrentStep(0);
+      setFitTrigger((prev) => prev + 1);
     }
   }, [steps]);
 
@@ -105,6 +107,13 @@ export function StepByStepGame({ graph, analysisSteps }) {
 
   const activeStep = steps[currentStep];
 
+  // Ensure final conclusion step shows the whole graph, not just the highlighted node.
+  useEffect(() => {
+    if (activeStep?.type === 'FINAL') {
+      setFitTrigger((prev) => prev + 1);
+    }
+  }, [activeStep]);
+
   return (
     <div
       className="step-by-step-container d-flex flex-column"
@@ -124,9 +133,11 @@ export function StepByStepGame({ graph, analysisSteps }) {
               optimalMoves={currentOptimalMoves}
               highlightedNode={activeStep?.id}
               winningPlayerMap={currentStatusMap}
-              trackHighlightedNode={true}
+              trackHighlightedNode={activeStep?.type !== 'FINAL'}
+              fitTrigger={fitTrigger}
               showLockControl={true}
               defaultLocked={true}
+              lockOnFirstTick={true}
             />
           </div>
 

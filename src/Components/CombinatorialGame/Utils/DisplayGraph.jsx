@@ -26,6 +26,7 @@ export function DisplayGraph({
   trackHighlightedNode = false,
   showLockControl = false,
   defaultLocked = false,
+  lockOnFirstTick = false,
   showNodeIdsAlways = false,
 }) {
   // State for highlighted nodes and links, and for the hovered node.
@@ -318,6 +319,21 @@ export function DisplayGraph({
 
   // Apply lock as soon as node coordinates are available from the engine.
   const handleEngineTick = useCallback(() => {
+    if (lockOnFirstTick && autoLockRef.current) {
+      const nodesWithCoords = data.nodes.filter(
+        (n) => typeof n.x === 'number' && typeof n.y === 'number'
+      );
+      if (nodesWithCoords.length > 0) {
+        setIsGraphLocked(true);
+        autoLockRef.current = false;
+        nodesWithCoords.forEach((n) => {
+          n.fx = n.x;
+          n.fy = n.y;
+          persistGraphPosition(n);
+        });
+      }
+    }
+
     if (!isGraphLocked) return;
 
     data.nodes.forEach((n) => {
@@ -327,7 +343,7 @@ export function DisplayGraph({
         persistGraphPosition(n);
       }
     });
-  }, [data.nodes, isGraphLocked, persistGraphPosition]);
+  }, [data.nodes, isGraphLocked, persistGraphPosition, lockOnFirstTick]);
 
   // Immediate fit when explicitly requested.
   useEffect(() => {
@@ -485,6 +501,7 @@ DisplayGraph.propTypes = {
   winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
   showLockControl: PropTypes.bool,
   defaultLocked: PropTypes.bool,
+  lockOnFirstTick: PropTypes.bool,
   showNodeIdsAlways: PropTypes.bool,
 };
 

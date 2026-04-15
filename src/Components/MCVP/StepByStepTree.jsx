@@ -15,6 +15,13 @@ export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
 
+  // Trigger initial zoom-to-fit when explanation modal opens or data changes.
+  useEffect(() => {
+    if (steps.length > 0) {
+      setFitTrigger((prev) => prev + 1);
+    }
+  }, [tree, steps.length]);
+
   // Trigger zoom-to-fit when reaching the final step
   useEffect(() => {
     if (steps[currentStep]?.type === 'FINAL') {
@@ -71,6 +78,7 @@ export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
               disableAutoCenter={steps[currentStep]?.type === 'FINAL'}
               useTopDownLayout={useTopDownLayout}
               defaultLocked={true}
+              lockOnFirstTick={true}
             />
           </div>
 

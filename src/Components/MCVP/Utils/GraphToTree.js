@@ -10,6 +10,7 @@ import { Node } from './NodeClass';
  * @param {boolean} [options.requireBinaryOperationNodes=false] - Requires exactly 2 children for every operation node.
  * @param {boolean} [options.normalizeUnaryOperationNodes=false] - Duplicates a single child for operation nodes so they behave as binary gates.
  * @param {boolean} [options.throwOnInvalid=false] - Throws on invalid input instead of returning null.
+ * @param {boolean} [options.suppressWarnings=false] - Suppresses console warnings when input is temporarily invalid.
  * @returns {Node|null}
  */
 export function graphToTree(
@@ -20,6 +21,7 @@ export function graphToTree(
     requireBinaryOperationNodes = false,
     normalizeUnaryOperationNodes = false,
     throwOnInvalid = false,
+    suppressWarnings = false,
   } = {}
 ) {
   if (!graphData || !Array.isArray(graphData.nodes) || graphData.nodes.length === 0) {
@@ -30,7 +32,9 @@ export function graphToTree(
     if (throwOnInvalid) {
       throw new Error(message);
     }
-    console.warn(message);
+    if (!suppressWarnings) {
+      console.warn(message);
+    }
     return null;
   };
 

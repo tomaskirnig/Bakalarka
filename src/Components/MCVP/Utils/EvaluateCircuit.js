@@ -45,7 +45,10 @@ export function evaluateCircuitWithSteps(node) {
     }
 
     if (currentNode.type === 'operation' && currentNode.children.length !== 2) {
-      throw new Error(`Uzel operace ${currentNode.id} musí mít přesně 2 potomky.`);
+      // In interactive mode the graph can be temporarily incomplete while editing.
+      // Treat such nodes as not-yet-evaluable instead of raising an error.
+      visiting.delete(currentNode.id);
+      return null;
     }
 
     const childValues = [];

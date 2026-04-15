@@ -466,6 +466,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
                 completedSteps={step.symbols || []}
                 fitToScreen={false}
                 fitTrigger={fitTrigger}
+                disableAutoCenter={currentStep === steps.length - 1}
                 useTopDownLayout={useTopDownLayout}
                 defaultLocked={true}
                 lockOnFirstTick={true}

@@ -33,6 +33,7 @@ export function MCVP({ onNavigate, initialData }) {
   const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
   const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
   const [lockImportedLayout, setLockImportedLayout] = useState(false);
+  const [mainFitTrigger, setMainFitTrigger] = useState(0);
   const positionSnapshotGetterRef = useRef(null);
 
   // Handle initial data if provided (e.g., from reverse conversion)
@@ -56,6 +57,12 @@ export function MCVP({ onNavigate, initialData }) {
     setTree(null);
     setLockImportedLayout(false);
   };
+
+  // Refit once when a non-interactive tree is (re)loaded/generated/imported.
+  useEffect(() => {
+    if (!tree || chosenOpt === 'interactive') return;
+    setMainFitTrigger((prev) => prev + 1);
+  }, [tree, chosenOpt]);
 
   const handleRegisterPositionSnapshotGetter = useCallback((getter) => {
     positionSnapshotGetterRef.current = typeof getter === 'function' ? getter : null;
@@ -230,6 +237,7 @@ export function MCVP({ onNavigate, initialData }) {
             <TreeRenderCanvas
               tree={tree}
               useTopDownLayout={useTopDownLayout}
+              fitTrigger={mainFitTrigger}
               defaultLocked={lockImportedLayout}
               lockOnFirstTick={lockImportedLayout}
               onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}

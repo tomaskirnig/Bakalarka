@@ -9,6 +9,9 @@ import { createPaintLink, createPaintNode } from './InteractiveInput.renderers';
 import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeControls';
 import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
 
+const getLinkEndpointId = (endpoint) =>
+  typeof endpoint === 'object' && endpoint !== null ? endpoint.id : endpoint;
+
 /**
  * Component for interactively building and evaluating an MCVP graph.
  * Uses a force-directed graph to allow users to add nodes, edges, and modify values.
@@ -166,7 +169,8 @@ export function InteractiveMCVPGraph({
     setGraphData((prevData) => ({
       nodes: prevData.nodes.filter((node) => node.id !== nodeId),
       links: prevData.links.filter(
-        (link) => link.source.id !== nodeId && link.target.id !== nodeId
+        (link) =>
+          getLinkEndpointId(link.source) !== nodeId && getLinkEndpointId(link.target) !== nodeId
       ),
     }));
 
@@ -180,7 +184,8 @@ export function InteractiveMCVPGraph({
   const edgeExists = useCallback(
     (sourceId, targetId) => {
       return graphData.links.some(
-        (link) => link.source.id === sourceId && link.target.id === targetId
+        (link) =>
+          getLinkEndpointId(link.source) === sourceId && getLinkEndpointId(link.target) === targetId
       );
     },
     [graphData.links]
@@ -188,7 +193,7 @@ export function InteractiveMCVPGraph({
 
   const getOutgoingEdgeCount = useCallback(
     (sourceId) => {
-      return graphData.links.filter((link) => link.source.id === sourceId).length;
+      return graphData.links.filter((link) => getLinkEndpointId(link.source) === sourceId).length;
     },
     [graphData.links]
   );
@@ -249,7 +254,11 @@ export function InteractiveMCVPGraph({
     setGraphData((prevData) => ({
       nodes: prevData.nodes,
       links: prevData.links.filter(
-        (link) => !(link.source.id === sourceId && link.target.id === targetId)
+        (link) =>
+          !(
+            getLinkEndpointId(link.source) === sourceId &&
+            getLinkEndpointId(link.target) === targetId
+          )
       ),
     }));
   };
@@ -285,21 +294,9 @@ export function InteractiveMCVPGraph({
         return node;
       });
 
-      // Update links to reference the new node objects
-      const nodeMap = updatedNodes.reduce((acc, node) => {
-        acc[node.id] = node;
-        return acc;
-      }, {});
-
-      const updatedLinks = prevData.links.map((link) => ({
-        id: link.id,
-        source: nodeMap[link.source.id],
-        target: nodeMap[link.target.id],
-      }));
-
       return {
         nodes: updatedNodes,
-        links: updatedLinks,
+        links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
       };
     });
 
@@ -351,7 +348,7 @@ export function InteractiveMCVPGraph({
   };
 
   const hasChildren = (nodeId) => {
-    return graphData.links.some((link) => link.source.id === nodeId);
+    return graphData.links.some((link) => getLinkEndpointId(link.source) === nodeId);
   };
 
   const canAddChild = (nodeId) => {
@@ -362,25 +359,42 @@ export function InteractiveMCVPGraph({
     setHoverNode(node);
   }, []);
 
-  const handleLinkHover = useCallback(() => {
-    // Link hover handler
+  const remapLinksToCurrentNodes = useCallback((links, nodes) => {
+    const nodeMap = nodes.reduce((acc, node) => {
+      acc[node.id] = node;
+      return acc;
+    }, {});
+
+    return links
+      .map((link) => ({
+        ...link,
+        source: nodeMap[getLinkEndpointId(link.source)],
+        target: nodeMap[getLinkEndpointId(link.target)],
+      }))
+      .filter((link) => link.source && link.target);
   }, []);
 
-  const persistNodePositionInGraphData = useCallback((node) => {
-    if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+  const persistNodePositionInGraphData = useCallback(
+    (node) => {
+      if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
 
-    setGraphData((prevData) => ({
-      ...prevData,
-      nodes: prevData.nodes.map((n) =>
-        n.id === node.id ? { ...n, x: node.x, y: node.y, fx: node.x, fy: node.y } : n
-      ),
-    }));
-  }, []);
+      setGraphData((prevData) => {
+        const updatedNodes = prevData.nodes.map((n) =>
+          n.id === node.id ? { ...n, x: node.x, y: node.y, fx: node.x, fy: node.y } : n
+        );
+
+        return {
+          ...prevData,
+          nodes: updatedNodes,
+          links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
+        };
+      });
+    },
+    [remapLinksToCurrentNodes]
+  );
 
   const syncAllNodePositionsInGraphData = useCallback(() => {
-    if (!fgRef.current) return;
-
-    const engineNodes = fgRef.current.graphData()?.nodes;
+    const engineNodes = graphData.nodes;
     if (!Array.isArray(engineNodes) || engineNodes.length === 0) return;
 
     const nextPositions = new Map();
@@ -403,9 +417,8 @@ export function InteractiveMCVPGraph({
     if (!hasChanges) return;
 
     lastBroadcastedPositionsRef.current = nextPositions;
-    setGraphData((prevData) => ({
-      ...prevData,
-      nodes: prevData.nodes.map((node) => {
+    setGraphData((prevData) => {
+      const updatedNodes = prevData.nodes.map((node) => {
         const position = nextPositions.get(String(node.id));
         if (!position) return node;
 
@@ -414,14 +427,18 @@ export function InteractiveMCVPGraph({
         }
 
         return { ...node, x: position.x, y: position.y };
-      }),
-    }));
-  }, [isGraphLocked]);
+      });
+
+      return {
+        ...prevData,
+        nodes: updatedNodes,
+        links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
+      };
+    });
+  }, [graphData.nodes, isGraphLocked, remapLinksToCurrentNodes]);
 
   const getCurrentNodePositionsSnapshot = useCallback(() => {
-    if (!fgRef.current) return {};
-
-    const engineNodes = fgRef.current.graphData()?.nodes;
+    const engineNodes = graphData.nodes;
     if (!Array.isArray(engineNodes) || engineNodes.length === 0) {
       return {};
     }
@@ -437,7 +454,7 @@ export function InteractiveMCVPGraph({
     });
 
     return snapshot;
-  }, []);
+  }, [graphData.nodes]);
 
   useEffect(() => {
     if (!onRegisterPositionSnapshotGetter) return;
@@ -566,7 +583,6 @@ export function InteractiveMCVPGraph({
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
           onNodeHover={handleNodeHover} // Update hover state
-          onLinkHover={handleLinkHover}
           onEngineStop={syncAllNodePositionsInGraphData}
           enablePanInteraction={true}
           enableZoomInteraction={true}
@@ -595,7 +611,6 @@ export function InteractiveMCVPGraph({
         <button className="btn add-btn mx-1" onClick={() => addNode('var')}>
           Přidat uzel s proměnou
         </button>
-        {/* Add buttons to center view */}
       </div>
 
       {/* Selected Node Controls */}

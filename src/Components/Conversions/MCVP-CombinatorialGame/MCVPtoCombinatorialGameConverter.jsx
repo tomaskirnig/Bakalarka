@@ -151,9 +151,11 @@ export default function MCVPtoCombinatorialGameConverter({
                 height={mcvpDimensions.height}
                 fitToScreen={false}
                 fitTrigger={fitTrigger}
+                disableAutoCenter={currentStep === steps.length - 1}
                 useTopDownLayout={useTopDownLayout}
                 defaultLocked={true}
-                showLockControl={false}
+                lockOnFirstTick={true}
+                showLockControl={true}
               />
             </div>
           </div>
@@ -176,8 +178,9 @@ export default function MCVPtoCombinatorialGameConverter({
                 fitToScreen={shouldFitCG}
                 fitTrigger={fitTrigger}
                 highlightedNode={highlightedCgNodeId}
-                trackHighlightedNode={true}
+                trackHighlightedNode={currentStep !== steps.length - 1}
                 defaultLocked={true}
+                lockOnFirstTick={true}
                 showNodeIdsAlways={true}
                 showLockControl={true}
               />
