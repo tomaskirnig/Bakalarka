@@ -8,6 +8,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from './Components/Common/ErrorBoundary';
 
+const DEFAULT_GRAPH_UI_SETTINGS = {
+  useTopDownLayout: true,
+  autoScrollToGraph: true,
+};
+
 /**
  * Root SPA component.
  * Handles top-level navigation state and renders the selected module page.
@@ -18,6 +23,7 @@ function App() {
   // Track selected page and data passed to it
   const [currentPage, setCurrentPage] = useState('Home');
   const [pageData, setPageData] = useState(null);
+  const [graphUiSettings, setGraphUiSettings] = useState(DEFAULT_GRAPH_UI_SETTINGS);
 
   const pageComponents = {
     Home: HomePage,
@@ -32,13 +38,32 @@ function App() {
     setPageData(data);
   };
 
+  const handleGraphSettingsChange = (nextSettingsPatch) => {
+    setGraphUiSettings((prev) => ({
+      ...prev,
+      ...nextSettingsPatch,
+    }));
+  };
+
   const SelectedPage = pageComponents[currentPage] || null;
 
   return (
     <>
-      <Navigation selectedOption={currentPage} onNavSelect={handleNavSelection} />
+      <Navigation
+        selectedOption={currentPage}
+        onNavSelect={handleNavSelection}
+        graphSettings={graphUiSettings}
+        onGraphSettingsChange={handleGraphSettingsChange}
+      />
       <ErrorBoundary key={currentPage}>
-        {SelectedPage && <SelectedPage onNavigate={handleNavSelection} initialData={pageData} />}
+        {SelectedPage && (
+          <SelectedPage
+            onNavigate={handleNavSelection}
+            initialData={pageData}
+            useTopDownLayout={graphUiSettings.useTopDownLayout}
+            autoScrollToGraph={graphUiSettings.autoScrollToGraph}
+          />
+        )}
       </ErrorBoundary>
 
       <ToastContainer

@@ -9,7 +9,7 @@ const CLOSE_ANIMATION_MS = 250;
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Modal wrapper with title and content.
  */
-export function Modal({ onClose, children, title }) {
+export function Modal({ onClose, children, title, contentClassName = '', bodyClassName = '' }) {
   const [isClosing, setIsClosing] = useState(false);
   const timerRef = useRef(null);
 
@@ -27,7 +27,7 @@ export function Modal({ onClose, children, title }) {
   return (
     <div className={`modal-overlay ${isClosing ? 'modal-closing' : ''}`} onClick={handleClose}>
       <div
-        className={`modal-content-modern ${isClosing ? 'modal-content-closing' : ''}`}
+        className={`modal-content-modern ${contentClassName} ${isClosing ? 'modal-content-closing' : ''}`.trim()}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header-modern">
@@ -41,7 +41,7 @@ export function Modal({ onClose, children, title }) {
             <i className="bi bi-x-lg"></i>
           </button>
         </div>
-        <div className="modal-body-modern">{children}</div>
+        <div className={`modal-body-modern ${bodyClassName}`.trim()}>{children}</div>
       </div>
     </div>
   );
@@ -51,4 +51,6 @@ Modal.propTypes = {
   onClose: PropTypes.func.isRequired,
   children: PropTypes.node.isRequired,
   title: PropTypes.string,
+  contentClassName: PropTypes.string,
+  bodyClassName: PropTypes.string,
 };

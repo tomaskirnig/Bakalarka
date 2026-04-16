@@ -38,16 +38,21 @@ const INVALID_TREE_EXPLAIN_MESSAGE =
  * @param {function} [props.onNavigate] - Callback to navigate to other modules (e.g., Combinatorial Game).
  * @param {Object} [props.initialData] - Initial tree data to load (e.g., when coming from another module).
  */
-export function MCVP({ onNavigate, initialData }) {
+export function MCVP({
+  onNavigate,
+  initialData,
+  useTopDownLayout = true,
+  autoScrollToGraph = true,
+}) {
   const [tree, setTree] = useState(null); // Current tree
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
   const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
-  const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
   const [lockImportedLayout, setLockImportedLayout] = useState(false);
   const [mainFitTrigger, setMainFitTrigger] = useState(0);
   const positionSnapshotGetterRef = useRef(null);
+  const mainGraphSectionRef = useRef(null);
 
   // Handle initial data if provided (e.g., from reverse conversion)
   useEffect(() => {
@@ -85,6 +90,16 @@ export function MCVP({ onNavigate, initialData }) {
     if (!tree || chosenOpt === 'interactive') return;
     setMainFitTrigger((prev) => prev + 1);
   }, [tree, chosenOpt]);
+
+  useEffect(() => {
+    if (!autoScrollToGraph || !tree || chosenOpt === 'interactive') return;
+
+    const frameId = requestAnimationFrame(() => {
+      mainGraphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [autoScrollToGraph, tree, chosenOpt]);
 
   const handleRegisterPositionSnapshotGetter = useCallback((getter) => {
     positionSnapshotGetterRef.current = typeof getter === 'function' ? getter : null;
@@ -181,29 +196,6 @@ export function MCVP({ onNavigate, initialData }) {
 
       <h1 className="display-4 mt-4 mb-lg-4">MCVP</h1>
 
-      <div className="d-flex justify-content-center mb-2">
-        <div
-          className="form-check form-switch"
-          title="Dev nástroj pro přepnutí rozložení MCVP grafu"
-        >
-          <input
-            className="form-check-input clickable"
-            type="checkbox"
-            role="switch"
-            id="mcvp-layout-mode-switch"
-            checked={useTopDownLayout}
-            onChange={(e) => setUseTopDownLayout(e.target.checked)}
-          />
-          <label
-            className="form-check-label clickable"
-            htmlFor="mcvp-layout-mode-switch"
-            style={{ color: 'black' }}
-          >
-            Režim rozložení (dev): {useTopDownLayout ? 'Top-down (TD)' : 'Volný graf'}
-          </label>
-        </div>
-      </div>
-
       <div className="page-content">
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
@@ -232,7 +224,10 @@ export function MCVP({ onNavigate, initialData }) {
         />
 
         {tree && chosenOpt !== 'interactive' && (
-          <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
+          <div
+            ref={mainGraphSectionRef}
+            style={{ height: '60vh', width: '100%', margin: '20px auto' }}
+          >
             <TreeRenderCanvas
               tree={tree}
               useTopDownLayout={useTopDownLayout}
@@ -359,4 +354,6 @@ export function MCVP({ onNavigate, initialData }) {
 MCVP.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  useTopDownLayout: PropTypes.bool,
+  autoScrollToGraph: PropTypes.bool,
 };

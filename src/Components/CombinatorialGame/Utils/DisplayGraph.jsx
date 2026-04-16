@@ -73,9 +73,20 @@ export function DisplayGraph({
   const graphWidth = width || internalDimensions.width;
   const graphHeight = height || internalDimensions.height;
 
-  const handleFitToScreen = useCallback(() => {
-    fgRef.current?.zoomToFit(400, 50);
+  const requestStableFit = useCallback((ms = 400) => {
+    if (!fgRef.current) return;
+
+    requestAnimationFrame(() => {
+      fgRef.current?.zoomToFit(ms, 50);
+      requestAnimationFrame(() => {
+        fgRef.current?.zoomToFit(ms, 50);
+      });
+    });
   }, []);
+
+  const handleFitToScreen = useCallback(() => {
+    requestStableFit(400);
+  }, [requestStableFit]);
 
   const nodesRef = useRef([]);
 
@@ -87,7 +98,7 @@ export function DisplayGraph({
   }, [graph]);
 
   useEffect(() => {
-    setIsGraphLocked(false);
+    setIsGraphLocked(defaultLocked);
     autoLockRef.current = defaultLocked;
   }, [graph, defaultLocked]);
 
@@ -105,8 +116,9 @@ export function DisplayGraph({
         y: prev ? prev.y : node.y,
         vx: prev ? prev.vx : undefined,
         vy: prev ? prev.vy : undefined,
-        fx: prev ? prev.fx : undefined,
-        fy: prev ? prev.fy : undefined,
+        // Do not carry fx/fy across graph rebuilds; stale pinning can freeze layout/camera.
+        fx: undefined,
+        fy: undefined,
         isStartingPosition: node.id === graph.startingPosition.id,
         neighbors: [...(node.parents || []), ...(node.children || [])],
       };
@@ -307,6 +319,11 @@ export function DisplayGraph({
     node.fy = undefined;
   }, []);
 
+  useEffect(() => {
+    if (isGraphLocked) return;
+    data.nodes.forEach(unpinNodePosition);
+  }, [isGraphLocked, data.nodes, unpinNodePosition]);
+
   const handleToggleGraphLock = useCallback(() => {
     setIsGraphLocked((prevLocked) => {
       const nextLocked = !prevLocked;
@@ -332,8 +349,7 @@ export function DisplayGraph({
         setIsGraphLocked(true);
         autoLockRef.current = false;
         nodesWithCoords.forEach((n) => {
-          n.fx = n.x;
-          n.fy = n.y;
+          pinNodePosition(n);
           persistGraphPosition(n);
         });
       }
@@ -343,19 +359,42 @@ export function DisplayGraph({
 
     data.nodes.forEach((n) => {
       if (typeof n.x === 'number' && typeof n.y === 'number') {
-        n.fx = n.x;
-        n.fy = n.y;
+        pinNodePosition(n);
         persistGraphPosition(n);
       }
     });
-  }, [data.nodes, isGraphLocked, persistGraphPosition, lockOnFirstTick]);
+  }, [data.nodes, isGraphLocked, persistGraphPosition, lockOnFirstTick, pinNodePosition]);
+
+  const dimensionsWereZeroRef = useRef(graphWidth === 0 || graphHeight === 0);
+
+  // Recover from initial 0x0 canvas mounts by recentering and reheating once dimensions are ready.
+  useEffect(() => {
+    if (!dimensionsWereZeroRef.current) return;
+    if (graphWidth <= 0 || graphHeight <= 0) return;
+
+    dimensionsWereZeroRef.current = false;
+
+    if (fgRef.current) {
+      fgRef.current.centerAt(0, 0, 0);
+      fgRef.current.zoom(1, 0);
+      fgRef.current.d3ReheatSimulation();
+
+      if (fitToScreen || fitTrigger > 0) {
+        requestStableFit(400);
+      }
+    }
+  }, [graphWidth, graphHeight, fitToScreen, fitTrigger, requestStableFit]);
 
   // Immediate fit when explicitly requested.
   useEffect(() => {
-    if (fitToScreen || fitTrigger > 0) {
-      fgRef.current?.zoomToFit(400, 50);
-    }
-  }, [fitToScreen, fitTrigger]);
+    const shouldFit = fitToScreen || fitTrigger > 0;
+    if (!shouldFit) return;
+    if (!fgRef.current) return;
+    if (graphWidth <= 0 || graphHeight <= 0) return;
+    if (!data.nodes || data.nodes.length === 0) return;
+
+    requestStableFit(400);
+  }, [fitToScreen, fitTrigger, graphWidth, graphHeight, data.nodes, requestStableFit]);
 
   // Persist coordinates after simulation settles.
   // Only pin nodes when lock mode is enabled.
@@ -381,7 +420,19 @@ export function DisplayGraph({
     }
 
     data.nodes.forEach(persistGraphPosition);
-  }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
+
+    if (fitToScreen || fitTrigger > 0) {
+      requestStableFit(300);
+    }
+  }, [
+    data.nodes,
+    isGraphLocked,
+    pinNodePosition,
+    persistGraphPosition,
+    fitToScreen,
+    fitTrigger,
+    requestStableFit,
+  ]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {

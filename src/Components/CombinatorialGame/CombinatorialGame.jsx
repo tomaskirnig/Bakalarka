@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
@@ -44,12 +44,13 @@ function countIsolatedNodes(graph) {
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Combinatorial game module UI.
  */
-export function CombinatorialGame({ initialData }) {
+export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
   const [graph, setGraph] = useState(null); // Current tree
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
   const [graphFitTrigger, setGraphFitTrigger] = useState(0);
+  const graphDisplaySectionRef = useRef(null);
 
   // Handle initial data if provided
   useEffect(() => {
@@ -107,6 +108,16 @@ export function CombinatorialGame({ initialData }) {
     if (!graph || chosenOpt === 'manual') return;
     setGraphFitTrigger((prev) => prev + 1);
   }, [graph, chosenOpt]);
+
+  useEffect(() => {
+    if (!autoScrollToGraph || !graph || chosenOpt === 'manual') return;
+
+    const frameId = requestAnimationFrame(() => {
+      graphDisplaySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [autoScrollToGraph, graph, chosenOpt]);
 
   const handleExport = (includePositions = false) => {
     if (!graph) return null;
@@ -288,7 +299,7 @@ export function CombinatorialGame({ initialData }) {
             )}
 
             {chosenOpt !== 'manual' && (
-              <>
+              <div ref={graphDisplaySectionRef}>
                 <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
                   <DisplayGraph
                     graph={graph}
@@ -298,7 +309,7 @@ export function CombinatorialGame({ initialData }) {
                   />
                 </div>
                 <GameAnalysisDisplay analysisResult={analysisResult} />
-              </>
+              </div>
             )}
 
             {chosenOpt !== 'manual' && (
@@ -324,6 +335,7 @@ export function CombinatorialGame({ initialData }) {
 CombinatorialGame.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  autoScrollToGraph: PropTypes.bool,
 };
 
 export default CombinatorialGame;
