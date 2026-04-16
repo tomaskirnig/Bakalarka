@@ -30,6 +30,10 @@ export function DerivationTreeVisual({ tree }) {
   const settings = useGraphSettings();
   const { grammar: grammarSettings } = settings;
 
+  const handleFitToScreen = useCallback(() => {
+    fgRef.current?.zoomToFit(400, 50);
+  }, []);
+
   // Flash border when tree changes
   useEffect(() => {
     setIsFlashing(true);
@@ -206,8 +210,9 @@ export function DerivationTreeVisual({ tree }) {
     >
       <div className="graph-controls">
         <button
+          type="button"
           className="graph-btn"
-          onClick={() => fgRef.current?.zoomToFit(400, 50)}
+          onClick={handleFitToScreen}
           title="Fit Graph to Screen"
         >
           Vycentrovat

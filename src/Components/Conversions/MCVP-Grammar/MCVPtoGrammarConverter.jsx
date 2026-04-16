@@ -59,7 +59,7 @@ class NonTerminalGenerator {
 
   getAllSymbols() {
     return Array.from(this.nodeMap.entries()).map(([node, symbol]) => ({
-      node: node,
+      node,
       result: symbol,
     }));
   }
@@ -506,6 +506,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
       <div className="mt-2" style={{ flexShrink: 0 }}>
         <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
           <button
+            type="button"
             onClick={skipToStart}
             disabled={currentStep === 0}
             className="btn btn-secondary btn-sm"
@@ -514,6 +515,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
             <i className="bi bi-skip-start-fill"></i>
           </button>
           <button
+            type="button"
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
             className="btn btn-secondary"
@@ -523,6 +525,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
           </button>
 
           <button
+            type="button"
             onClick={goToNextStep}
             disabled={steps.length === 0 || currentStep === steps.length - 1}
             className="btn btn-primary"
@@ -531,6 +534,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
             Další <i className="bi bi-chevron-right"></i>
           </button>
           <button
+            type="button"
             onClick={skipToEnd}
             disabled={steps.length === 0 || currentStep === steps.length - 1}
             className="btn btn-primary btn-sm"
@@ -542,7 +546,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
 
         {finalGrammar && (
           <div className="d-flex justify-content-center">
-            <button className="btn btn-success" onClick={handleRedirect}>
+            <button type="button" className="btn btn-success" onClick={handleRedirect}>
               Otevřít v Gramatice
             </button>
           </div>

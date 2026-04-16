@@ -92,18 +92,20 @@ function ensureReachability(productions, nonTerminals) {
   if (nonTerminals.length === 0) return;
 
   const startSymbol = nonTerminals[0];
+  const nonTerminalSet = new Set(nonTerminals);
 
   // 1. Compute Reachable Set (BFS) - only once!
   const reachable = new Set([startSymbol]);
   const queue = [startSymbol];
+  let queueIndex = 0;
 
-  while (queue.length > 0) {
-    const current = queue.shift();
+  while (queueIndex < queue.length) {
+    const current = queue[queueIndex++];
     const rules = productions[current] || [];
 
     for (const rule of rules) {
       for (const symbol of rule) {
-        if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
+        if (nonTerminalSet.has(symbol) && !reachable.has(symbol)) {
           reachable.add(symbol);
           queue.push(symbol);
         }
@@ -221,8 +223,8 @@ function generateProductions(nonTerminals, terminals, config) {
 
   nonTerminals.forEach((nonTerminal) => {
     // Use config values or default to 1-3
-    const min = config.minProductionsPerNonTerminal || 1;
-    const max = config.maxProductionsPerNonTerminal || 3;
+    const min = config.minProductionsPerNonTerminal ?? 1;
+    const max = config.maxProductionsPerNonTerminal ?? 3;
     const productionCount = getRandomInt(min, max);
 
     productions[nonTerminal] = [];
@@ -316,7 +318,7 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   // Determine which non-terminals can be used
   // Exclude current non-terminal from base rule symbols.
   // Direct recursion (Left/Right) is handled explicitly in createProductionRule based on config.
-  let availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
+  const availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
 
   for (let j = 0; j < length; j++) {
     // If no non-terminals are available, always use terminal

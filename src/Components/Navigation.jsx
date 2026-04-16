@@ -14,14 +14,13 @@ export function Navigation({ selectedOption, onNavSelect }) {
     return () => clearTimeout(mobileMenuTimerRef.current);
   }, []);
   const navItems = [
-    { key: 'Home', labelDesktop: 'Domů', labelMobile: 'Domů' },
-    { key: 'MCVP', labelDesktop: 'MCVP', labelMobile: 'MCVP' },
+    { key: 'Home', label: 'Domů' },
+    { key: 'MCVP', label: 'MCVP' },
     {
       key: 'CombinatorialGame',
-      labelDesktop: 'Kombinatorická hra',
-      labelMobile: 'Kombinatorická hra',
+      label: 'Kombinatorická hra',
     },
-    { key: 'Grammar', labelDesktop: 'Gramatika', labelMobile: 'Gramatika' },
+    { key: 'Grammar', label: 'Gramatika' },
   ];
 
   // Handle offcanvas functionality
@@ -93,6 +92,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
 
   const renderButton = ({ key, label, isMobile }) => (
     <button
+      type="button"
       key={key}
       className={`modern-nav-link ${selectedOption === key ? 'active' : ''}`}
       onClick={() => {
@@ -119,9 +119,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
         {/* Desktop menu */}
         <div className="desktop-nav-container">
           <div className="nav-items-container">
-            {navItems.map((item) =>
-              renderButton({ ...item, label: item.labelDesktop, isMobile: false })
-            )}
+            {navItems.map((item) => renderButton({ ...item, isMobile: false }))}
           </div>
         </div>
       </nav>
@@ -143,9 +141,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
         </div>
         <div className="offcanvas-body-modern">
           <div className="mobile-nav-items">
-            {navItems.map((item) =>
-              renderButton({ ...item, label: item.labelMobile, isMobile: true })
-            )}
+            {navItems.map((item) => renderButton({ ...item, isMobile: true }))}
           </div>
         </div>
       </div>

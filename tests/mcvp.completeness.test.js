@@ -83,7 +83,7 @@ describe('MCVP completeness checks', () => {
     expect(toast.error).toHaveBeenCalled();
   });
 
-  it('returns null result and reports error for invalid operation arity', () => {
+  it('returns null result for invalid operation arity in incomplete interactive states', () => {
     const malformedNode = {
       id: 'op1',
       type: 'operation',
@@ -93,7 +93,8 @@ describe('MCVP completeness checks', () => {
 
     const evaluation = evaluateCircuitWithSteps(malformedNode);
     expect(evaluation.result).toBeNull();
-    expect(toast.error).toHaveBeenCalled();
+    expect(evaluation.steps).toEqual([]);
+    expect(toast.error).not.toHaveBeenCalled();
   });
 
   it('enforces generator precondition for binary circuit feasibility', () => {

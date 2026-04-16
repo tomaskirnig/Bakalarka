@@ -13,6 +13,15 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
 
+const INPUT_OPTIONS = [
+  { value: 'manual', label: 'Manuálně' },
+  { value: 'generate', label: 'Generovat' },
+  { value: 'sets', label: 'Načíst ze sady' },
+];
+
+const isSelectedPlayerMismatch = (chosenOpt, selectedStartingPlayer, playerAtStartNode) =>
+  chosenOpt !== 'manual' && selectedStartingPlayer !== playerAtStartNode;
+
 /**
  * Counts positions with no incoming and no outgoing edges.
  *
@@ -70,7 +79,7 @@ export function CombinatorialGame({ initialData }) {
       finalAnalysisResult.hasWinningStrategy = false;
       finalAnalysisResult.message = 'Startovní pozice nemá definovaného hráče.';
       analysisValid = false;
-    } else if (chosenOpt !== 'manual' && selectedStartingPlayer !== playerAtStartNode) {
+    } else if (isSelectedPlayerMismatch(chosenOpt, selectedStartingPlayer, playerAtStartNode)) {
       finalAnalysisResult.hasWinningStrategy = false;
       finalAnalysisResult.message =
         'Nelze analyzovat: Zvolený začínající hráč se neshoduje s hráčem určeným pro startovní pozici.';
@@ -234,11 +243,7 @@ export function CombinatorialGame({ initialData }) {
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}
-          options={[
-            { value: 'manual', label: 'Manuálně' },
-            { value: 'generate', label: 'Generovat' },
-            { value: 'sets', label: 'Načíst ze sady' },
-          ]}
+          options={INPUT_OPTIONS}
           renderContent={(opt) => {
             switch (opt) {
               case 'manual':
@@ -298,7 +303,7 @@ export function CombinatorialGame({ initialData }) {
 
             {chosenOpt !== 'manual' && (
               <div className="mt-3">
-                <button className="btn btn-primary" onClick={() => setExplain(true)}>
+                <button type="button" className="btn btn-primary" onClick={() => setExplain(true)}>
                   Vysvětlit
                 </button>
               </div>

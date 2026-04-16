@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+const CLOSE_ANIMATION_MS = 250;
+
 /**
  * Reusable modal dialog with closing animation support.
  *
@@ -19,7 +21,7 @@ export function Modal({ onClose, children, title }) {
     setIsClosing(true);
     timerRef.current = setTimeout(() => {
       onClose();
-    }, 250);
+    }, CLOSE_ANIMATION_MS);
   };
 
   return (
@@ -30,7 +32,12 @@ export function Modal({ onClose, children, title }) {
       >
         <div className="modal-header-modern">
           {title && <h5 className="modal-title-modern">{title}</h5>}
-          <button onClick={handleClose} className="modal-close-btn-modern" aria-label="Close">
+          <button
+            type="button"
+            onClick={handleClose}
+            className="modal-close-btn-modern"
+            aria-label="Close"
+          >
             <i className="bi bi-x-lg"></i>
           </button>
         </div>

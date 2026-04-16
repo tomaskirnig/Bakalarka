@@ -3,7 +3,7 @@ import { Grammar } from '../Utils/Grammar';
 
 // Load all JSON files from the Sady/Grammar directory
 const modules = import.meta.glob('../../../../Sady/Grammar/*.json', { eager: true });
-const Data = Object.entries(modules)
+const PREPARED_GRAMMAR_SETS = Object.entries(modules)
   .map(([path, mod]) => {
     const data = mod.default || mod;
     // Validation
@@ -29,7 +29,7 @@ const Data = Object.entries(modules)
     }
     return data;
   })
-  .filter((item) => item !== null);
+  .filter(Boolean);
 
 /**
  * Selector for loading predefined grammar examples from JSON sets.
@@ -39,9 +39,9 @@ const Data = Object.entries(modules)
  */
 export function PreparedSetsInput({ onGrammar }) {
   const handleSelectChange = (event) => {
-    const index = parseInt(event.target.value, 10);
-    if (!isNaN(index) && index >= 0) {
-      const selectedGrammar = new Grammar(Data[index]);
+    const index = Number.parseInt(event.target.value, 10);
+    if (!Number.isNaN(index) && index >= 0) {
+      const selectedGrammar = new Grammar(PREPARED_GRAMMAR_SETS[index]);
 
       onGrammar(selectedGrammar);
     }
@@ -52,8 +52,8 @@ export function PreparedSetsInput({ onGrammar }) {
       <label>Vybrat gramatiku:</label>
       <select className="form-select" onChange={handleSelectChange}>
         <option value="">Vybrat sadu</option>
-        {Data.map((grammar, index) => (
-          <option key={index} value={index}>
+        {PREPARED_GRAMMAR_SETS.map((grammar, index) => (
+          <option key={grammar.name || index} value={index}>
             {grammar.name}
           </option>
         ))}

@@ -9,8 +9,12 @@ import { createPaintLink, createPaintNode } from './InteractiveInput.renderers';
 import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeControls';
 import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
 
+const MAX_INTERACTIVE_NODES = 750;
+
 const getLinkEndpointId = (endpoint) =>
   typeof endpoint === 'object' && endpoint !== null ? endpoint.id : endpoint;
+
+const CANVAS_MODE_AFTER = () => 'after';
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -126,8 +130,8 @@ export function InteractiveMCVPGraph({
 
   const addNode = useCallback(
     (type, value = null, varValue = null) => {
-      if (graphData.nodes.length >= 750) {
-        toast.error('Dosažen limit 750 uzlů.');
+      if (graphData.nodes.length >= MAX_INTERACTIVE_NODES) {
+        toast.error(`Dosažen limit ${MAX_INTERACTIVE_NODES} uzlů.`);
         return null;
       }
 
@@ -542,6 +546,7 @@ export function InteractiveMCVPGraph({
       <div className="GraphDiv" ref={containerRef} style={{ height: '60vh', minHeight: '500px' }}>
         <div className="graph-controls">
           <button
+            type="button"
             className="graph-btn"
             onClick={() => fgRef.current?.zoomToFit(400, 50)}
             title="Fit Graph to Screen"
@@ -566,7 +571,7 @@ export function InteractiveMCVPGraph({
           nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
           nodeId="id"
           nodeCanvasObject={paintNode}
-          nodeCanvasObjectMode={() => 'after'} // Draw text after circle
+          nodeCanvasObjectMode={CANVAS_MODE_AFTER} // Draw text after circle
           nodePointerAreaPaint={(node, color, ctx) => {
             // Make the whole rendered circle clickable/hoverable.
             ctx.fillStyle = color;
@@ -576,7 +581,7 @@ export function InteractiveMCVPGraph({
           }}
           // Links
           linkCanvasObject={paintLink} // Custom link renderer
-          linkCanvasObjectMode={() => 'after'} // Draw custom object after link line
+          linkCanvasObjectMode={CANVAS_MODE_AFTER} // Draw custom object after link line
           linkDirectionalArrowLength={0}
           onDagError={useTopDownLayout ? handleDagError : undefined}
           // Interaction
@@ -602,13 +607,13 @@ export function InteractiveMCVPGraph({
 
       {/* Control Buttons */}
       <div className="py-3">
-        <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>
           Přidat AND uzel
         </button>
-        <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>
           Přidat OR uzel
         </button>
-        <button className="btn add-btn mx-1" onClick={() => addNode('var')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('var')}>
           Přidat uzel s proměnou
         </button>
       </div>

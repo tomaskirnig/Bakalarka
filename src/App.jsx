@@ -19,26 +19,26 @@ function App() {
   const [currentPage, setCurrentPage] = useState('Home');
   const [pageData, setPageData] = useState(null);
 
+  const pageComponents = {
+    Home: HomePage,
+    MCVP,
+    CombinatorialGame,
+    Grammar,
+  };
+
   // Callback function to update the selected page
   const handleNavSelection = (option, data = null) => {
     setCurrentPage(option);
     setPageData(data);
   };
 
+  const SelectedPage = pageComponents[currentPage] || null;
+
   return (
     <>
       <Navigation selectedOption={currentPage} onNavSelect={handleNavSelection} />
       <ErrorBoundary key={currentPage}>
-        {currentPage === 'Home' && (
-          <HomePage onNavigate={handleNavSelection} initialData={pageData} />
-        )}
-        {currentPage === 'MCVP' && <MCVP onNavigate={handleNavSelection} initialData={pageData} />}
-        {currentPage === 'CombinatorialGame' && (
-          <CombinatorialGame onNavigate={handleNavSelection} initialData={pageData} />
-        )}
-        {currentPage === 'Grammar' && (
-          <Grammar onNavigate={handleNavSelection} initialData={pageData} />
-        )}
+        {SelectedPage && <SelectedPage onNavigate={handleNavSelection} initialData={pageData} />}
       </ErrorBoundary>
 
       <ToastContainer

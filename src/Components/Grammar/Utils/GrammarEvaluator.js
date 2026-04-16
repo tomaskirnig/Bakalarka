@@ -278,6 +278,7 @@ export function isEmptyLanguage(grammar) {
   const productive = new Set();
   const allWitnesses = new Map(); // Stores ALL productive rules: NonTerminal -> [Symbol[][]]
   const { nonTerminals, terminals, productions } = grammar;
+  const terminalSet = new Set(terminals); // Stored in set for quick lookup O(1)
 
   // Determine the start symbol (first non-terminal if not explicitly defined)
   const start = nonTerminals.length > 0 ? nonTerminals[0] : null;
@@ -308,7 +309,7 @@ export function isEmptyLanguage(grammar) {
     return (
       right.length === 0 ||
       (right.length === 1 && right[0] === 'ε') ||
-      right.every((sym) => terminals.includes(sym) || productive.has(sym))
+      right.every((sym) => terminalSet.has(sym) || productive.has(sym))
     );
   }
 
@@ -327,8 +328,9 @@ export function isEmptyLanguage(grammar) {
 
   // 2) Process the work-list: whenever a new NT becomes productive,
   //    re-examine any rules whose right include that NT.
-  while (queue.length > 0) {
-    const newlyProd = queue.shift();
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const newlyProd = queue[queueIndex++];
 
     for (const { left, right } of rules) {
       if (!productive.has(left) && right.includes(newlyProd) && rightIsProductive(right)) {

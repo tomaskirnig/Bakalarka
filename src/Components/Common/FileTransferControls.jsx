@@ -26,18 +26,6 @@ export function FileTransferControls({
   const fileInputRef = useRef(null);
   const colors = useGraphColors();
 
-  const handleExportClick = () => {
-    setShowExportModal(true);
-  };
-
-  const handleCloseImportModal = () => {
-    setShowImportModal(false);
-  };
-
-  const handleCloseExportModal = () => {
-    setShowExportModal(false);
-  };
-
   const performExport = () => {
     try {
       const data = onExport(includePositions);
@@ -107,8 +95,9 @@ export function FileTransferControls({
   };
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      processFile(e.target.files[0]);
+    const file = e.target.files?.[0];
+    if (file) {
+      processFile(file);
     }
   };
 
@@ -137,7 +126,7 @@ export function FileTransferControls({
         </button>
         <button
           className="btn btn-sm btn-outline-secondary"
-          onClick={handleExportClick}
+          onClick={() => setShowExportModal(true)}
           title="Exportovat do souboru"
           style={getBtnStyle(hoverExport)}
           onMouseEnter={() => setHoverExport(true)}
@@ -148,7 +137,7 @@ export function FileTransferControls({
       </div>
 
       {showImportModal && (
-        <Modal onClose={handleCloseImportModal} title="Importovat data">
+        <Modal onClose={() => setShowImportModal(false)} title="Importovat data">
           <div className="text-center">
             <p className="modal-description">
               {instructionText || 'Nahrajte soubor JSON s daty pro aktualizaci grafu.'}
@@ -189,7 +178,7 @@ export function FileTransferControls({
       )}
 
       {showExportModal && (
-        <Modal onClose={handleCloseExportModal} title="Exportovat data">
+        <Modal onClose={() => setShowExportModal(false)} title="Exportovat data">
           <div>
             <p className="modal-description text-center">
               Vyberte možnosti exportu a stáhněte soubor JSON.
@@ -219,7 +208,7 @@ export function FileTransferControls({
             )}
 
             <div className="modal-actions">
-              <button className="btn-modal-secondary" onClick={handleCloseExportModal}>
+              <button className="btn-modal-secondary" onClick={() => setShowExportModal(false)}>
                 Zrušit
               </button>
               <button className="btn-modal-primary" onClick={performExport}>

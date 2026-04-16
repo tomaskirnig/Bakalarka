@@ -1,4 +1,5 @@
 import { drawReversedArrowhead } from '../../Utils/drawReversedArrowhead';
+import { getNodeDisplayName } from './InteractiveInput.helpers';
 
 /**
  * Creates a custom node painter for the interactive MCVP editor canvas.
@@ -26,12 +27,7 @@ export function createPaintNode({ selectedNode, hoverNode, edgeSource, colors, m
       ctx.stroke();
     }
 
-    let displayText = '';
-    if (node.type === 'variable') {
-      displayText = `${node.value}[${node.varValue}]`;
-    } else {
-      displayText = node.value === 'A' ? 'AND' : node.value === 'O' ? 'OR' : node.value;
-    }
+    const displayText = getNodeDisplayName(node);
 
     ctx.font = mcvp.labelFont;
     ctx.textAlign = 'center';

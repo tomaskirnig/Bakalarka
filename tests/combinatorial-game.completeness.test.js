@@ -6,22 +6,25 @@ import {
 } from '../src/Components/CombinatorialGame/Utils/ComputeWinner.js';
 import { generateGraph } from '../src/Components/CombinatorialGame/Utils/Generator.js';
 
+const START_POSITION_ID = '0';
+const OTHER_POSITION_ID = '1';
+
 function buildTwoNodeGraph(player0, player1, edge01, edge10) {
   const positions = {
-    0: { id: '0', player: player0, children: [], parents: [] },
-    1: { id: '1', player: player1, children: [], parents: [] },
+    [START_POSITION_ID]: { id: START_POSITION_ID, player: player0, children: [], parents: [] },
+    [OTHER_POSITION_ID]: { id: OTHER_POSITION_ID, player: player1, children: [], parents: [] },
   };
 
   if (edge01) {
-    positions['0'].children.push('1');
-    positions['1'].parents.push('0');
+    positions[START_POSITION_ID].children.push(OTHER_POSITION_ID);
+    positions[OTHER_POSITION_ID].parents.push(START_POSITION_ID);
   }
   if (edge10) {
-    positions['1'].children.push('0');
-    positions['0'].parents.push('1');
+    positions[OTHER_POSITION_ID].children.push(START_POSITION_ID);
+    positions[START_POSITION_ID].parents.push(OTHER_POSITION_ID);
   }
 
-  return { positions, startingPosition: { id: '0' } };
+  return { positions, startingPosition: { id: START_POSITION_ID } };
 }
 
 describe('Combinatorial Game completeness checks', () => {
@@ -70,8 +73,8 @@ describe('Combinatorial Game completeness checks', () => {
             expect(result.error).toBeUndefined();
             expect(typeof result.hasWinningStrategy).toBe('boolean');
             expect(Object.keys(result.winningPositions)).toHaveLength(2);
-            expect([0, 1, 2]).toContain(result.winningPositions['0']);
-            expect([0, 1, 2]).toContain(result.winningPositions['1']);
+            expect([0, 1, 2]).toContain(result.winningPositions[START_POSITION_ID]);
+            expect([0, 1, 2]).toContain(result.winningPositions[OTHER_POSITION_ID]);
 
             const optimal = getOptimalMoves(graph, result);
             expect(optimal instanceof Set).toBe(true);
@@ -84,18 +87,19 @@ describe('Combinatorial Game completeness checks', () => {
   it('generates connected graph from start without self-loops', () => {
     const graph = generateGraph(12, 40);
 
-    expect(graph.startingPosition.id).toBe('0');
+    expect(graph.startingPosition.id).toBe(START_POSITION_ID);
     expect(Object.keys(graph.positions)).toHaveLength(12);
 
     for (const pos of Object.values(graph.positions)) {
       expect(pos.children.includes(pos.id)).toBe(false);
     }
 
-    const visited = new Set(['0']);
-    const queue = ['0'];
+    const visited = new Set([START_POSITION_ID]);
+    const queue = [START_POSITION_ID];
+    let queueIndex = 0;
 
-    while (queue.length > 0) {
-      const current = queue.shift();
+    while (queueIndex < queue.length) {
+      const current = queue[queueIndex++];
       for (const child of graph.positions[current].children) {
         if (!visited.has(child)) {
           visited.add(child);

@@ -4,6 +4,8 @@ import { parseExpressionToTree } from '../Utils/Parser';
 
 import { toast } from 'react-toastify';
 
+const MAX_MANUAL_NODES = 750;
+
 /**
  * Component for manually entering an MCVP expression string.
  * Parses the string into a tree structure.
@@ -30,9 +32,9 @@ export function ManualInput({ onTreeUpdate }) {
     const tree = parseExpressionToTree(expression);
     if (tree) {
       const nodeCount = countNodes(tree);
-      if (nodeCount > 750) {
+      if (nodeCount > MAX_MANUAL_NODES) {
         // Limit for manual input (total nodes)
-        toast.error(`Překročen limit uzlů! (Detekováno: ${nodeCount}, Limit: 750)`);
+        toast.error(`Překročen limit uzlů! (Detekováno: ${nodeCount}, Limit: ${MAX_MANUAL_NODES})`);
         return;
       }
       onTreeUpdate(tree);
@@ -51,7 +53,7 @@ export function ManualInput({ onTreeUpdate }) {
           onChange={(e) => setExpression(e.target.value)}
         />
       </div>
-      <button className="btn btn-primary mt-3" onClick={handleParse}>
+      <button type="button" className="btn btn-primary mt-3" onClick={handleParse}>
         Zpracovat
       </button>
     </div>

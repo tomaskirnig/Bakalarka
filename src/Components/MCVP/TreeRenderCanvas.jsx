@@ -567,6 +567,7 @@ export function TreeRenderCanvas({
     >
       <div className="graph-controls">
         <button
+          type="button"
           className="graph-btn"
           onClick={() => requestStableFit(400)}
           title="Fit Graph to Screen"

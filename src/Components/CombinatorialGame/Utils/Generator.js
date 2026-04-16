@@ -4,6 +4,22 @@
 
 import { GamePosition, GameGraph } from './NodeClasses';
 
+function addEdge(positions, sourceId, targetId) {
+  if (sourceId === targetId) return false;
+
+  const sourcePosition = positions[sourceId];
+  const targetPosition = positions[targetId];
+  if (!sourcePosition || !targetPosition) return false;
+
+  if (sourcePosition.children.includes(targetId)) {
+    return false;
+  }
+
+  sourcePosition.children.push(targetId);
+  targetPosition.parents.push(sourceId);
+  return true;
+}
+
 /**
  * Generates a random combinatorial game graph with potential cycles.
  * The graph is guaranteed to be connected with node 0 as the starting position.
@@ -28,8 +44,7 @@ export function generateGraph(numGameFields, edgeProbability) {
     const parentIndex = Math.floor(Math.random() * i);
     const parentId = parentIndex.toString();
 
-    positions[parentId].children.push(currentId);
-    positions[currentId].parents.push(parentId);
+    addEdge(positions, parentId, currentId);
   }
 
   // Add extra edges based on probability (may create cycles)
@@ -42,14 +57,10 @@ export function generateGraph(numGameFields, edgeProbability) {
         const currentId = i.toString();
         const targetId = j.toString();
 
-        // Check if edge already exists
-        if (!positions[currentId].children.includes(targetId)) {
-          positions[currentId].children.push(targetId);
-          positions[targetId].parents.push(currentId);
-        }
+        addEdge(positions, currentId, targetId);
       }
     }
   }
 
-  return new GameGraph(positions, positions[0]);
+  return new GameGraph(positions, positions['0']);
 }

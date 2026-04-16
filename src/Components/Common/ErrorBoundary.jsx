@@ -21,15 +21,15 @@ class ErrorBoundary extends Component {
   }
 
   render() {
-    if (this.state.hasError) {
+    const { hasError, error } = this.state;
+    const { children } = this.props;
+
+    if (hasError) {
       return (
-        <ErrorPage
-          error={this.state.error}
-          onReset={() => this.setState({ hasError: false, error: null })}
-        />
+        <ErrorPage error={error} onReset={() => this.setState({ hasError: false, error: null })} />
       );
     }
-    return this.props.children;
+    return children;
   }
 }
 

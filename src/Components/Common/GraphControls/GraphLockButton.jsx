@@ -26,6 +26,7 @@ export default function GraphLockButton({
       onMouseLeave={() => setShowTooltip(false)}
     >
       <button
+        type="button"
         className="graph-btn"
         onClick={onToggle}
         style={

@@ -48,9 +48,10 @@ export function treeToFlatGraph(rootNode, includePositions = false, positionSnap
   const links = [];
   const positions = {};
   const queue = [rootNode];
+  let queueIndex = 0;
 
-  while (queue.length > 0) {
-    const currentNode = queue.shift();
+  while (queueIndex < queue.length) {
+    const currentNode = queue[queueIndex++];
 
     if (!nodes.has(currentNode.id)) {
       nodes.set(currentNode.id, {
@@ -98,7 +99,7 @@ export function treeToFlatGraph(rootNode, includePositions = false, positionSnap
 
   const result = {
     nodes: Array.from(nodes.values()),
-    links: links, // Using 'links' to be consistent with InteractiveInput
+    links, // Using 'links' to be consistent with InteractiveInput
   };
 
   // Include positions only when requested and available.

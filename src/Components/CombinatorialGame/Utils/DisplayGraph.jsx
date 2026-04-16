@@ -6,6 +6,7 @@ import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
 
 const EMPTY_SET = new Set();
+const MODE_AFTER = () => 'after';
 
 /**
  * Force-graph visualization for combinatorial game positions and moves.
@@ -71,6 +72,10 @@ export function DisplayGraph({
 
   const graphWidth = width || internalDimensions.width;
   const graphHeight = height || internalDimensions.height;
+
+  const handleFitToScreen = useCallback(() => {
+    fgRef.current?.zoomToFit(400, 50);
+  }, []);
 
   const nodesRef = useRef([]);
 
@@ -429,8 +434,9 @@ export function DisplayGraph({
       >
         <div className="graph-controls">
           <button
+            type="button"
             className="graph-btn"
-            onClick={() => fgRef.current?.zoomToFit(400, 50)}
+            onClick={handleFitToScreen}
             title="Fit Graph to Screen"
           >
             Vycentrovat
@@ -456,7 +462,7 @@ export function DisplayGraph({
           linkDirectionalArrowLength={game.linkDirectionalArrowLength}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
-          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObjectMode={MODE_AFTER}
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
@@ -492,7 +498,7 @@ DisplayGraph.propTypes = {
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     }),
   }),
-  optimalMoves: PropTypes.object,
+  optimalMoves: PropTypes.instanceOf(Set),
   width: PropTypes.number,
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,

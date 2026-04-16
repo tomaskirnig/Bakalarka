@@ -3,6 +3,9 @@
  */
 import { toast } from 'react-toastify';
 
+const AND_OPERATORS = new Set(['A', 'AND', '∧']);
+const OR_OPERATORS = new Set(['O', 'OR', '∨']);
+
 /**
  * Evaluates an MCVP circuit (DAG) and returns the evaluation steps.
  *
@@ -63,13 +66,9 @@ export function evaluateCircuitWithSteps(node) {
     }
 
     let result;
-    if (currentNode.value === 'A' || currentNode.value === 'AND' || currentNode.value === '∧') {
+    if (AND_OPERATORS.has(currentNode.value)) {
       result = childValues.every((v) => v === 1) ? 1 : 0;
-    } else if (
-      currentNode.value === 'O' ||
-      currentNode.value === 'OR' ||
-      currentNode.value === '∨'
-    ) {
+    } else if (OR_OPERATORS.has(currentNode.value)) {
       result = childValues.some((v) => v === 1) ? 1 : 0;
     } else {
       visiting.delete(currentNode.id);

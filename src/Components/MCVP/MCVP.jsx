@@ -16,6 +16,19 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 import { treeToFlatGraph, flatGraphToTree } from './Utils/Serialization';
 import { toast } from 'react-toastify';
 
+const INPUT_OPTIONS = [
+  { value: 'manual', label: 'Manuálně' },
+  { value: 'generate', label: 'Generovat' },
+  { value: 'sets', label: 'Načíst ze sady' },
+  { value: 'interactive', label: 'Interaktivně' },
+];
+
+const INVALID_TREE_CONVERSION_MESSAGE =
+  'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.';
+
+const INVALID_TREE_EXPLAIN_MESSAGE =
+  'Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.';
+
 /**
  * Main component for the Monotone Circuit Value Problem (MCVP) module.
  * Coordinates input selection, graph visualization, evaluation, and problem conversions.
@@ -51,6 +64,15 @@ export function MCVP({ onNavigate, initialData }) {
   }, [tree]);
   const hasTree = Boolean(tree);
   const isTreeValid = hasTree && evaluation.result !== null;
+
+  const runWhenTreeIsValid = (action, invalidMessage) => {
+    if (!isTreeValid) {
+      toast.error(invalidMessage);
+      return;
+    }
+
+    action();
+  };
 
   const handleOptionChange = (option) => {
     setChosenOpt(option);
@@ -118,33 +140,15 @@ export function MCVP({ onNavigate, initialData }) {
   };
 
   const handleOpenGameConversion = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setGameConversion(true);
+    runWhenTreeIsValid(() => setGameConversion(true), INVALID_TREE_CONVERSION_MESSAGE);
   };
 
   const handleOpenGrammarConversion = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setGrammarConversion(true);
+    runWhenTreeIsValid(() => setGrammarConversion(true), INVALID_TREE_CONVERSION_MESSAGE);
   };
 
   const handleOpenExplain = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setExplain(true);
+    runWhenTreeIsValid(() => setExplain(true), INVALID_TREE_EXPLAIN_MESSAGE);
   };
 
   return (
@@ -204,12 +208,7 @@ export function MCVP({ onNavigate, initialData }) {
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}
-          options={[
-            { value: 'manual', label: 'Manuálně' },
-            { value: 'generate', label: 'Generovat' },
-            { value: 'sets', label: 'Načíst ze sady' },
-            { value: 'interactive', label: 'Interaktivně' },
-          ]}
+          options={INPUT_OPTIONS}
           renderContent={(opt) => {
             switch (opt) {
               case 'manual':

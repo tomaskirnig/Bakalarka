@@ -4,6 +4,8 @@ import { MCVPToGameStepGenerator } from './ConversionCombinatorialGame';
 import { DisplayGraph } from '../../CombinatorialGame/Utils/DisplayGraph';
 import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 
+const FIT_RESET_DELAY_MS = 150;
+
 /**
  * Step-by-step visual converter from MCVP graphs to combinatorial game graphs.
  *
@@ -23,6 +25,11 @@ export default function MCVPtoCombinatorialGameConverter({
   const cgContainerRef = useRef(null);
   const mcvpContainerRef = useRef(null);
   const fitTimerRef = useRef(null);
+
+  const scheduleCgFitReset = () => {
+    clearTimeout(fitTimerRef.current);
+    fitTimerRef.current = setTimeout(() => setShouldFitCG(false), FIT_RESET_DELAY_MS);
+  };
 
   useEffect(() => {
     return () => clearTimeout(fitTimerRef.current);
@@ -44,9 +51,7 @@ export default function MCVPtoCombinatorialGameConverter({
     if (currentStep === steps.length - 1 && steps.length > 0) {
       setShouldFitCG(true);
       setFitTrigger((prev) => prev + 1);
-      // Reset after the fit completes
-      const timer = setTimeout(() => setShouldFitCG(false), 150);
-      return () => clearTimeout(timer);
+      scheduleCgFitReset();
     }
   }, [currentStep, steps.length]);
 
@@ -102,16 +107,14 @@ export default function MCVPtoCombinatorialGameConverter({
     setCurrentStep(0);
     setShouldFitCG(true);
     setFitTrigger((prev) => prev + 1);
-    clearTimeout(fitTimerRef.current);
-    fitTimerRef.current = setTimeout(() => setShouldFitCG(false), 150);
+    scheduleCgFitReset();
   };
 
   const skipToEnd = () => {
     setCurrentStep(steps.length - 1);
     setShouldFitCG(true);
     setFitTrigger((prev) => prev + 1);
-    clearTimeout(fitTimerRef.current);
-    fitTimerRef.current = setTimeout(() => setShouldFitCG(false), 150);
+    scheduleCgFitReset();
   };
 
   const renderCurrentStep = () => {
@@ -225,6 +228,7 @@ export default function MCVPtoCombinatorialGameConverter({
       <div className="mt-2" style={{ flexShrink: 0 }}>
         <div className="step-button-group d-flex justify-content-center gap-2 mb-2">
           <button
+            type="button"
             className="btn btn-secondary btn-sm"
             onClick={skipToStart}
             disabled={currentStep === 0}
@@ -233,6 +237,7 @@ export default function MCVPtoCombinatorialGameConverter({
             <i className="bi bi-skip-start-fill"></i>
           </button>
           <button
+            type="button"
             className="btn btn-secondary"
             onClick={goToPreviousStep}
             disabled={currentStep === 0}
@@ -241,6 +246,7 @@ export default function MCVPtoCombinatorialGameConverter({
             <i className="bi bi-chevron-left"></i> Předchozí
           </button>
           <button
+            type="button"
             className="btn btn-primary"
             onClick={goToNextStep}
             disabled={steps.length === 0 || currentStep === steps.length - 1}
@@ -249,6 +255,7 @@ export default function MCVPtoCombinatorialGameConverter({
             Další <i className="bi bi-chevron-right"></i>
           </button>
           <button
+            type="button"
             className="btn btn-primary btn-sm"
             onClick={skipToEnd}
             disabled={steps.length === 0 || currentStep === steps.length - 1}
@@ -260,7 +267,7 @@ export default function MCVPtoCombinatorialGameConverter({
 
         {finalGraph && (
           <div className="d-flex justify-content-center">
-            <button className="btn btn-success" onClick={handleRedirect}>
+            <button type="button" className="btn btn-success" onClick={handleRedirect}>
               Otevřít v Kombinatorické hře
             </button>
           </div>

@@ -2,6 +2,17 @@ import { useState } from 'react';
 import PropTypes from 'prop-types';
 import { generateTree } from '../Utils/Generator';
 
+const MAX_NODE_COUNT = 750;
+
+const parseClampedPositiveInt = (rawValue) => {
+  const parsed = Number.parseInt(rawValue, 10);
+  if (Number.isNaN(parsed)) {
+    return null;
+  }
+
+  return Math.min(MAX_NODE_COUNT, Math.max(1, parsed));
+};
+
 /**
  * Component for generating a random MCVP tree based on user input.
  * Allows the user to specify the number of gates and variables.
@@ -27,13 +38,14 @@ export function GenerateInput({ onTreeUpdate }) {
         className="form-control"
         type="number"
         min="1"
-        max="750"
+        max={MAX_NODE_COUNT}
         placeholder="Počet hradel"
         value={numGates}
         onChange={(e) => {
-          const val = parseInt(e.target.value, 10);
-          if (isNaN(val)) return;
-          setNumGates(Math.min(750, Math.max(1, val)));
+          const parsed = parseClampedPositiveInt(e.target.value);
+          if (parsed !== null) {
+            setNumGates(parsed);
+          }
         }}
       />
 
@@ -42,17 +54,18 @@ export function GenerateInput({ onTreeUpdate }) {
         className="form-control"
         type="number"
         min="1"
-        max="750"
+        max={MAX_NODE_COUNT}
         placeholder="Počet proměnných"
         value={numVariables}
         onChange={(e) => {
-          const val = parseInt(e.target.value, 10);
-          if (isNaN(val)) return;
-          setNumVariables(Math.min(750, Math.max(1, val)));
+          const parsed = parseClampedPositiveInt(e.target.value);
+          if (parsed !== null) {
+            setNumVariables(parsed);
+          }
         }}
       />
 
-      <button className="btn btn-primary mt-3" onClick={handleGenerateTree}>
+      <button type="button" className="btn btn-primary mt-3" onClick={handleGenerateTree}>
         Generovat
       </button>
     </div>

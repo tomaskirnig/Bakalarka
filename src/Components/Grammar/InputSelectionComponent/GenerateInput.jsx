@@ -49,8 +49,8 @@ export function GenerateInput({ onGrammar }) {
       return;
     }
 
-    const num = parseInt(val, 10);
-    if (isNaN(num)) return;
+    const num = Number.parseInt(val, 10);
+    if (Number.isNaN(num)) return;
 
     // Strict clamping
     if (num > max) {
@@ -110,9 +110,9 @@ export function GenerateInput({ onGrammar }) {
       maxRuleLength: Number(maxRuleLength) || 1,
       minProductionsPerNonTerminal: Number(minProductions) || 1,
       maxProductionsPerNonTerminal: Number(maxProductions) || 1,
-      allowLeftRecursion: allowLeftRecursion,
-      allowRightRecursion: allowRightRecursion,
-      epsilonMode: epsilonMode,
+      allowLeftRecursion,
+      allowRightRecursion,
+      epsilonMode,
     };
 
     try {
@@ -179,7 +179,11 @@ export function GenerateInput({ onGrammar }) {
 
       {/* Toggle for advanced options */}
       <div className="mt-3">
-        <button className="btn btn-outline-light" onClick={() => setShowAdvanced(!showAdvanced)}>
+        <button
+          type="button"
+          className="btn btn-outline-light"
+          onClick={() => setShowAdvanced((prev) => !prev)}
+        >
           {showAdvanced ? 'Skrýt pokročilé možnosti' : 'Zobrazit pokročilé možnosti'}
         </button>
       </div>
@@ -314,7 +318,7 @@ export function GenerateInput({ onGrammar }) {
         </div>
       )}
 
-      <button className="btn btn-primary mt-3" onClick={handleGenerateGrammar}>
+      <button type="button" className="btn btn-primary mt-3" onClick={handleGenerateGrammar}>
         Generovat gramatiku
       </button>
     </div>

@@ -12,6 +12,12 @@ import { StepByStepGrammar } from './StepByStepGrammar';
 import { DerivationTreeVisual } from './DerivationTreeVisual';
 import { ConversionModal } from '../Common/ConversionModal';
 
+const INPUT_OPTIONS = [
+  { value: 'manual', label: 'Manuálně' },
+  { value: 'generate', label: 'Generovat' },
+  { value: 'sets', label: 'Načíst ze sady' },
+];
+
 /**
  * Main page component for context-free grammar input, analysis, and visualization.
  *
@@ -131,11 +137,7 @@ export function Grammar({ initialData }) {
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}
-          options={[
-            { value: 'manual', label: 'Manuálně' },
-            { value: 'generate', label: 'Generovat' },
-            { value: 'sets', label: 'Načíst ze sady' },
-          ]}
+          options={INPUT_OPTIONS}
           renderContent={(opt) => {
             switch (opt) {
               case 'manual':
@@ -201,16 +203,14 @@ export function Grammar({ initialData }) {
                     </p>
                   )}
                   {analysisResult.derivedWord !== undefined &&
-                    analysisResult.derivedWord !== null && (
-                      <p className="text-muted small">
-                        Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
-                        {analysisResult.witnessNodeCount > 0 && (
-                          <span className="ms-2">({analysisResult.witnessNodeCount} uzlů)</span>
-                        )}
-                      </p>
-                    )}
-                  {(analysisResult.derivedWord === undefined ||
-                    analysisResult.derivedWord === null) && (
+                  analysisResult.derivedWord !== null ? (
+                    <p className="text-muted small">
+                      Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
+                      {analysisResult.witnessNodeCount > 0 && (
+                        <span className="ms-2">({analysisResult.witnessNodeCount} uzlů)</span>
+                      )}
+                    </p>
+                  ) : (
                     <p className="text-muted small">
                       Tento strom ukazuje jedno z možných vyvození terminálního řetězce.
                     </p>
@@ -221,7 +221,7 @@ export function Grammar({ initialData }) {
             </div>
 
             <div className="mt-3">
-              <button className="btn btn-primary" onClick={() => setShowSteps(true)}>
+              <button type="button" className="btn btn-primary" onClick={() => setShowSteps(true)}>
                 Vysvětlit
               </button>
             </div>

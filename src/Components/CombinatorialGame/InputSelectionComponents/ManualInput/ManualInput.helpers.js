@@ -35,6 +35,23 @@ export function toFormattedGraph(graph, startingNodeId) {
   const startNode = graph.nodes.find((node) => node.id === startingNodeId);
   if (!startNode) return null;
 
+  const linksBySource = new Map();
+  const linksByTarget = new Map();
+  graph.links.forEach((link) => {
+    const sourceId = resolveNodeId(link.source);
+    const targetId = resolveNodeId(link.target);
+
+    if (!linksBySource.has(sourceId)) {
+      linksBySource.set(sourceId, []);
+    }
+    linksBySource.get(sourceId).push(targetId);
+
+    if (!linksByTarget.has(targetId)) {
+      linksByTarget.set(targetId, []);
+    }
+    linksByTarget.get(targetId).push(sourceId);
+  });
+
   return {
     positions: graph.nodes.reduce((acc, node) => {
       acc[node.id] = {
@@ -42,12 +59,8 @@ export function toFormattedGraph(graph, startingNodeId) {
         player: node.player,
         x: node.x,
         y: node.y,
-        children: graph.links
-          .filter((link) => resolveNodeId(link.source) === node.id)
-          .map((link) => resolveNodeId(link.target)),
-        parents: graph.links
-          .filter((link) => resolveNodeId(link.target) === node.id)
-          .map((link) => resolveNodeId(link.source)),
+        children: linksBySource.get(node.id) || [],
+        parents: linksByTarget.get(node.id) || [],
       };
       return acc;
     }, {}),
@@ -127,11 +140,18 @@ export function mapInitialGraphToState(initialGraph) {
       target: String(resolveNodeId(l.target)),
     }));
 
+    const startingPosition = initialGraph.startingPosition;
+    let startingNodeId = null;
+    if (startingPosition !== undefined && startingPosition !== null) {
+      startingNodeId =
+        typeof startingPosition === 'object' && startingPosition.id !== undefined
+          ? String(startingPosition.id)
+          : String(startingPosition);
+    }
+
     return {
       graph: { nodes: newNodes, links: newLinks },
-      startingNodeId: initialGraph.startingPosition
-        ? String(initialGraph.startingPosition.id || initialGraph.startingPosition)
-        : null,
+      startingNodeId,
     };
   }
 
