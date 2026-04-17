@@ -2,6 +2,9 @@
  * @fileoverview Logic for converting MCVP tree to Combinatorial Game graph.
  */
 
+const OR_NODE_VALUES = new Set(['O', 'OR', '∨']);
+const AND_NODE_VALUES = new Set(['A', 'AND', '∧']);
+
 /**
  * Converts an MCVP expression tree into a Combinatorial Game graph structure.
  *
@@ -33,7 +36,6 @@ export class MCVPToGameStepGenerator {
     this.steps = [];
     this.positions = {}; // Accumulate positions here
     this.visited = new Set();
-    this.idCounter = 0;
     this.labelMap = new Map(); // node -> label string
     this.labelCounter = 0;
   }
@@ -128,11 +130,11 @@ export class MCVPToGameStepGenerator {
         description = `Uzel "${node.value}" má hodnotu 0. Vytvoříme pozici pro Hráče 1 bez možných tahů (Hráč 1 prohrává).`;
       }
     } else {
-      if (node.value === 'O' || node.value === 'OR' || node.value === '∨') {
+      if (OR_NODE_VALUES.has(node.value)) {
         player = 1;
         typeDesc = 'OR Gate';
         description = `Uzel "${node.value}" je OR. Vytvoříme pozici pro Hráče 1 (volí tah).`;
-      } else if (node.value === 'A' || node.value === 'AND' || node.value === '∧') {
+      } else if (AND_NODE_VALUES.has(node.value)) {
         player = 2;
         typeDesc = 'AND Gate';
         description = `Uzel "${node.value}" je AND. Vytvoříme pozici pro Hráče 2 (volí tah).`;
@@ -158,8 +160,6 @@ export class MCVPToGameStepGenerator {
 
     // Process children
     if (node.children && node.children.length > 0) {
-      const childIds = [];
-
       for (const child of node.children) {
         // Skip null/undefined children
         if (!child) {
@@ -169,7 +169,6 @@ export class MCVPToGameStepGenerator {
 
         this.traverse(child); // Recursively build children first
         const childId = this.getUniqueId(child);
-        childIds.push(childId);
 
         // Update parent and child adjacency.
         if (this.positions[nodeId]) {

@@ -12,6 +12,9 @@ import {
 } from './ManualInput.helpers';
 import { createGetLinkLabel, createPaintLink, createPaintRing } from './ManualInput.renderers';
 import { ManualInputPanels } from './ManualInputPanels';
+import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
+
+const MODE_AFTER = () => 'after';
 
 /**
  * Interactive graph editor for manual combinatorial game input.
@@ -42,6 +45,10 @@ export function ManualInput({
   const colors = useGraphColors();
   const settings = useGraphSettings();
   const { game } = settings;
+
+  const handleFitToScreen = useCallback(() => {
+    fgRef.current?.zoomToFit(400, 50);
+  }, []);
 
   // Map to store node references
   const nodeMap = useMemo(() => {
@@ -171,15 +178,14 @@ export function ManualInput({
 
   // Function to add a node
   const addNode = () => {
-    // console.log("Adding node...");
     if (graph.nodes.length >= 750) {
       toast.error('Dosažen limit 750 uzlů.');
       return;
     }
 
     const maxId = graph.nodes.reduce((max, node) => {
-      const idNum = parseInt(node.id, 10);
-      return isNaN(idNum) ? max : Math.max(max, idNum);
+      const idNum = Number.parseInt(node.id, 10);
+      return Number.isNaN(idNum) ? max : Math.max(max, idNum);
     }, -1);
     const newId = (maxId + 1).toString();
 
@@ -438,19 +444,14 @@ export function ManualInput({
       >
         <div className="graph-controls">
           <button
+            type="button"
             className="graph-btn"
-            onClick={() => fgRef.current?.zoomToFit(400, 50)}
+            onClick={handleFitToScreen}
             title="Fit Graph to Screen"
           >
             Vycentrovat
           </button>
-          <button
-            className="graph-btn"
-            onClick={handleToggleGraphLock}
-            title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
-          >
-            {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
-          </button>
+          <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
         </div>
         {addingEdge && (
           <div className="manual-input-instruction">
@@ -474,9 +475,9 @@ export function ManualInput({
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
           linkLabel={getLinkLabel}
-          linkCanvasObjectMode={() => 'after'}
+          linkCanvasObjectMode={MODE_AFTER}
           linkCanvasObject={paintLink}
-          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObjectMode={MODE_AFTER}
           nodeCanvasObject={paintRing}
           nodePointerAreaPaint={(node, color, ctx) => {
             // Make the full node circle an interaction hitbox.
@@ -510,7 +511,7 @@ export function ManualInput({
       </div>
 
       <div className="d-flex justify-content-center my-3">
-        <button className="btn-control" onClick={addNode}>
+        <button type="button" className="btn-control" onClick={addNode}>
           Přidat uzel
         </button>
       </div>
@@ -530,7 +531,7 @@ export function ManualInput({
 
       {analysisResult && onExplain && (
         <div className="mt-3">
-          <button className="btn btn-primary" onClick={onExplain}>
+          <button type="button" className="btn btn-primary" onClick={onExplain}>
             Vysvětlit
           </button>
         </div>

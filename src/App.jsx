@@ -8,6 +8,11 @@ import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import ErrorBoundary from './Components/Common/ErrorBoundary';
 
+const DEFAULT_GRAPH_UI_SETTINGS = {
+  useTopDownLayout: true,
+  autoScrollToGraph: true,
+};
+
 /**
  * Root SPA component.
  * Handles top-level navigation state and renders the selected module page.
@@ -18,6 +23,14 @@ function App() {
   // Track selected page and data passed to it
   const [currentPage, setCurrentPage] = useState('Home');
   const [pageData, setPageData] = useState(null);
+  const [graphUiSettings, setGraphUiSettings] = useState(DEFAULT_GRAPH_UI_SETTINGS);
+
+  const pageComponents = {
+    Home: HomePage,
+    MCVP,
+    CombinatorialGame,
+    Grammar,
+  };
 
   // Callback function to update the selected page
   const handleNavSelection = (option, data = null) => {
@@ -25,19 +38,31 @@ function App() {
     setPageData(data);
   };
 
+  const handleGraphSettingsChange = (nextSettingsPatch) => {
+    setGraphUiSettings((prev) => ({
+      ...prev,
+      ...nextSettingsPatch,
+    }));
+  };
+
+  const SelectedPage = pageComponents[currentPage] || null;
+
   return (
     <>
-      <Navigation selectedOption={currentPage} onNavSelect={handleNavSelection} />
+      <Navigation
+        selectedOption={currentPage}
+        onNavSelect={handleNavSelection}
+        graphSettings={graphUiSettings}
+        onGraphSettingsChange={handleGraphSettingsChange}
+      />
       <ErrorBoundary key={currentPage}>
-        {currentPage === 'Home' && (
-          <HomePage onNavigate={handleNavSelection} initialData={pageData} />
-        )}
-        {currentPage === 'MCVP' && <MCVP onNavigate={handleNavSelection} initialData={pageData} />}
-        {currentPage === 'CombinatorialGame' && (
-          <CombinatorialGame onNavigate={handleNavSelection} initialData={pageData} />
-        )}
-        {currentPage === 'Grammar' && (
-          <Grammar onNavigate={handleNavSelection} initialData={pageData} />
+        {SelectedPage && (
+          <SelectedPage
+            onNavigate={handleNavSelection}
+            initialData={pageData}
+            useTopDownLayout={graphUiSettings.useTopDownLayout}
+            autoScrollToGraph={graphUiSettings.autoScrollToGraph}
+          />
         )}
       </ErrorBoundary>
 

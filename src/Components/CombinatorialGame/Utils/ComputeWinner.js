@@ -62,8 +62,9 @@ export function computeWinner(graph) {
   });
 
   // 2. Iterative processing (Retrograde Analysis)
-  while (queue.length > 0) {
-    const u = queue.shift();
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const u = queue[queueIndex++];
     const statusU = nodeStatus[u];
 
     const parents = graph.positions[u].parents || [];
@@ -148,7 +149,8 @@ export function computeWinner(graph) {
   // 3. Determine result for Player 1 at starting position
   const startId = graph.startingPosition.id;
   const startStatus = nodeStatus[startId];
-  const startPlayer = graph.positions[startId].player;
+  const startPosition = graph.positions[startId];
+  const startPlayer = startPosition?.player;
 
   let hasWinningStrategy = false;
   let message = '';

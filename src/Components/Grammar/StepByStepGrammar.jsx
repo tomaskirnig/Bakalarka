@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { generateGrammarSteps } from './Utils/GrammarStepEvaluator';
 
@@ -12,6 +12,7 @@ export function StepByStepGrammar({ grammar }) {
   const [steps, setSteps] = useState([]);
   const [currentStep, setCurrentStep] = useState(0);
   const currentRuleRef = useRef(null);
+  const activeStep = steps[currentStep];
 
   useEffect(() => {
     if (grammar) {
@@ -27,35 +28,61 @@ export function StepByStepGrammar({ grammar }) {
     }
   }, [currentStep, steps]);
 
+  // Keep step index valid when steps change.
+  useEffect(() => {
+    if (steps.length === 0) {
+      if (currentStep !== 0) {
+        setCurrentStep(0);
+      }
+      return;
+    }
+
+    if (currentStep > steps.length - 1) {
+      setCurrentStep(steps.length - 1);
+    }
+  }, [steps.length, currentStep]);
+
   // Navigation functions
-  const goToNextStep = () => {
-    if (currentStep < steps.length - 1) {
-      setCurrentStep(currentStep + 1);
+  const goToNextStep = useCallback(() => {
+    setCurrentStep((prev) => Math.min(prev + 1, Math.max(steps.length - 1, 0)));
+  }, [steps.length]);
+
+  const goToPreviousStep = useCallback(() => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0));
+  }, []);
+
+  const goToFirstStep = useCallback(() => setCurrentStep(0), []);
+
+  const goToLastStep = useCallback(() => {
+    if (steps.length > 0) {
+      setCurrentStep(steps.length - 1);
     }
-  };
+  }, [steps.length]);
 
-  const goToPreviousStep = () => {
-    if (currentStep > 0) {
-      setCurrentStep(currentStep - 1);
-    }
-  };
+  // Prepare rules for display.
+  const rules = useMemo(() => {
+    if (!grammar) return [];
 
-  const goToFirstStep = () => setCurrentStep(0);
-  const goToLastStep = () => setCurrentStep(steps.length - 1);
+    return Array.isArray(grammar.productions)
+      ? grammar.productions
+      : Object.entries(grammar.productions || {}).flatMap(([left, rights]) =>
+          rights.map((right) => ({ left, right }))
+        );
+  }, [grammar]);
 
-  if (!grammar || steps.length === 0) {
+  const allNonTerminals = useMemo(() => {
+    if (!grammar) return [];
+
+    return Array.isArray(grammar.nonTerminals)
+      ? grammar.nonTerminals
+      : [...new Set(rules.map((rule) => rule.left))];
+  }, [grammar, rules]);
+
+  if (!grammar || steps.length === 0 || !activeStep) {
     return <div className="alert alert-info text-center">Žádné kroky analýzy pro zobrazení.</div>;
   }
 
-  const activeStep = steps[currentStep];
   const productiveSet = new Set(activeStep.productive);
-
-  // Prepare rules for display
-  const rules = Array.isArray(grammar.productions)
-    ? grammar.productions
-    : Object.entries(grammar.productions).flatMap(([left, rights]) =>
-        rights.map((right) => ({ left, right }))
-      );
 
   return (
     <div
@@ -110,10 +137,13 @@ export function StepByStepGrammar({ grammar }) {
                   <strong>Množina produktivních symbolů (P):</strong>
                 </p>
                 <div className="mb-3">
-                  {activeStep.productive.length > 0 ? (
+                  {allNonTerminals.length > 0 ? (
                     <div className="d-flex flex-wrap gap-2">
-                      {activeStep.productive.map((sym) => (
-                        <span key={sym} className="badge bg-success">
+                      {allNonTerminals.map((sym) => (
+                        <span
+                          key={sym}
+                          className={`badge rounded-1 ${productiveSet.has(sym) ? 'bg-success' : 'bg-light text-dark border'}`}
+                        >
                           {sym}
                         </span>
                       ))}
@@ -133,6 +163,7 @@ export function StepByStepGrammar({ grammar }) {
               </p>
               <div className="step-button-group d-flex gap-2">
                 <button
+                  type="button"
                   className="btn btn-secondary btn-sm"
                   onClick={goToFirstStep}
                   disabled={currentStep === 0}
@@ -140,6 +171,7 @@ export function StepByStepGrammar({ grammar }) {
                   <i className="bi bi-skip-start-fill"></i>
                 </button>
                 <button
+                  type="button"
                   className="btn btn-secondary"
                   onClick={goToPreviousStep}
                   disabled={currentStep === 0}
@@ -147,6 +179,7 @@ export function StepByStepGrammar({ grammar }) {
                   <i className="bi bi-chevron-left"></i> Předchozí
                 </button>
                 <button
+                  type="button"
                   className="btn btn-primary"
                   onClick={goToNextStep}
                   disabled={currentStep === steps.length - 1}
@@ -154,6 +187,7 @@ export function StepByStepGrammar({ grammar }) {
                   Další <i className="bi bi-chevron-right"></i>
                 </button>
                 <button
+                  type="button"
                   className="btn btn-primary btn-sm"
                   onClick={goToLastStep}
                   disabled={currentStep === steps.length - 1}

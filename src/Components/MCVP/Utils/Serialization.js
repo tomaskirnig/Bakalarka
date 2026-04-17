@@ -21,18 +21,37 @@ export function flatGraphToTree(graphData) {
  *
  * @param {Node} rootNode - The root node of the DAG
  * @param {boolean} includePositions - Whether to include x, y positions in the export
+ * @param {Object<string|number, {x:number, y:number}>} [positionSnapshot] - Optional live snapshot by node id taken at export time.
  * @returns {Object} The graph data object { nodes: [], links: [], positions?: {} }
  */
-export function treeToFlatGraph(rootNode, includePositions = false) {
+export function treeToFlatGraph(rootNode, includePositions = false, positionSnapshot = null) {
   if (!rootNode) return { nodes: [], links: [] };
+
+  const getSnapshotPosition = (nodeId) => {
+    if (!positionSnapshot || typeof positionSnapshot !== 'object') {
+      return null;
+    }
+
+    if (Object.prototype.hasOwnProperty.call(positionSnapshot, nodeId)) {
+      return positionSnapshot[nodeId];
+    }
+
+    const stringId = String(nodeId);
+    if (Object.prototype.hasOwnProperty.call(positionSnapshot, stringId)) {
+      return positionSnapshot[stringId];
+    }
+
+    return null;
+  };
 
   const nodes = new Map();
   const links = [];
   const positions = {};
   const queue = [rootNode];
+  let queueIndex = 0;
 
-  while (queue.length > 0) {
-    const currentNode = queue.shift();
+  while (queueIndex < queue.length) {
+    const currentNode = queue[queueIndex++];
 
     if (!nodes.has(currentNode.id)) {
       nodes.set(currentNode.id, {
@@ -42,15 +61,27 @@ export function treeToFlatGraph(rootNode, includePositions = false) {
         type: currentNode.type,
       });
 
-      // Capture positions if requested and available
-      if (
-        includePositions &&
-        typeof currentNode.x === 'number' &&
-        typeof currentNode.y === 'number'
-      ) {
+      // Capture positions if requested and available.
+      // Prefer export-time live snapshot from the active graph engine,
+      // then fallback to model coordinates.
+      const snapshotPosition = getSnapshotPosition(currentNode.id);
+      const positionX =
+        typeof snapshotPosition?.x === 'number'
+          ? snapshotPosition.x
+          : typeof currentNode.x === 'number'
+            ? currentNode.x
+            : currentNode.fx;
+      const positionY =
+        typeof snapshotPosition?.y === 'number'
+          ? snapshotPosition.y
+          : typeof currentNode.y === 'number'
+            ? currentNode.y
+            : currentNode.fy;
+
+      if (includePositions && typeof positionX === 'number' && typeof positionY === 'number') {
         positions[currentNode.id] = {
-          x: currentNode.x,
-          y: currentNode.y,
+          x: positionX,
+          y: positionY,
         };
       }
 
@@ -68,7 +99,7 @@ export function treeToFlatGraph(rootNode, includePositions = false) {
 
   const result = {
     nodes: Array.from(nodes.values()),
-    links: links, // Using 'links' to be consistent with InteractiveInput
+    links, // Using 'links' to be consistent with InteractiveInput
   };
 
   // Include positions only when requested and available.

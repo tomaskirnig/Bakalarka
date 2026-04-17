@@ -19,7 +19,6 @@ export function ManualInput({ onGrammar }) {
     } catch (error) {
       console.error('Chyba při zpracování gramatiky:', error);
       toast.error(`Chyba při zpracování gramatiky: ${error.message}`);
-      return;
     }
   };
 
@@ -37,7 +36,7 @@ export function ManualInput({ onGrammar }) {
           placeholder="Zadejte pravidla gramatiky (každé pravidlo na nový řádek)"
         />
       </div>
-      <button className="btn btn-primary mt-3" onClick={handleParseGrammar}>
+      <button type="button" className="btn btn-primary mt-3" onClick={handleParseGrammar}>
         Zpracovat
       </button>
     </div>

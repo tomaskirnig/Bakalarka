@@ -6,6 +6,7 @@ import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
 
 const EMPTY_SET = new Set();
+const MODE_AFTER = () => 'after';
 
 /**
  * Force-graph visualization for combinatorial game positions and moves.
@@ -26,6 +27,7 @@ export function DisplayGraph({
   trackHighlightedNode = false,
   showLockControl = false,
   defaultLocked = false,
+  lockOnFirstTick = false,
   showNodeIdsAlways = false,
 }) {
   // State for highlighted nodes and links, and for the hovered node.
@@ -34,7 +36,8 @@ export function DisplayGraph({
   const hoverNode = useRef(null);
   const [internalDimensions, setInternalDimensions] = useState({ width: 0, height: 0 });
   const [isFlashing, setIsFlashing] = useState(false);
-  const [isGraphLocked, setIsGraphLocked] = useState(defaultLocked);
+  const [isGraphLocked, setIsGraphLocked] = useState(false);
+  const autoLockRef = useRef(defaultLocked);
   const fgRef = useRef();
   const containerRef = useRef();
 
@@ -70,6 +73,21 @@ export function DisplayGraph({
   const graphWidth = width || internalDimensions.width;
   const graphHeight = height || internalDimensions.height;
 
+  const requestStableFit = useCallback((ms = 400) => {
+    if (!fgRef.current) return;
+
+    requestAnimationFrame(() => {
+      fgRef.current?.zoomToFit(ms, 50);
+      requestAnimationFrame(() => {
+        fgRef.current?.zoomToFit(ms, 50);
+      });
+    });
+  }, []);
+
+  const handleFitToScreen = useCallback(() => {
+    requestStableFit(400);
+  }, [requestStableFit]);
+
   const nodesRef = useRef([]);
 
   // Flash border when graph changes
@@ -81,6 +99,7 @@ export function DisplayGraph({
 
   useEffect(() => {
     setIsGraphLocked(defaultLocked);
+    autoLockRef.current = defaultLocked;
   }, [graph, defaultLocked]);
 
   // Memoize graph data for react-force-graph-2d.
@@ -97,8 +116,9 @@ export function DisplayGraph({
         y: prev ? prev.y : node.y,
         vx: prev ? prev.vx : undefined,
         vy: prev ? prev.vy : undefined,
-        fx: prev ? prev.fx : undefined,
-        fy: prev ? prev.fy : undefined,
+        // Do not carry fx/fy across graph rebuilds; stale pinning can freeze layout/camera.
+        fx: undefined,
+        fy: undefined,
         isStartingPosition: node.id === graph.startingPosition.id,
         neighbors: [...(node.parents || []), ...(node.children || [])],
       };
@@ -299,6 +319,11 @@ export function DisplayGraph({
     node.fy = undefined;
   }, []);
 
+  useEffect(() => {
+    if (isGraphLocked) return;
+    data.nodes.forEach(unpinNodePosition);
+  }, [isGraphLocked, data.nodes, unpinNodePosition]);
+
   const handleToggleGraphLock = useCallback(() => {
     setIsGraphLocked((prevLocked) => {
       const nextLocked = !prevLocked;
@@ -316,44 +341,98 @@ export function DisplayGraph({
 
   // Apply lock as soon as node coordinates are available from the engine.
   const handleEngineTick = useCallback(() => {
+    if (lockOnFirstTick && autoLockRef.current) {
+      const nodesWithCoords = data.nodes.filter(
+        (n) => typeof n.x === 'number' && typeof n.y === 'number'
+      );
+      if (nodesWithCoords.length > 0) {
+        setIsGraphLocked(true);
+        autoLockRef.current = false;
+        nodesWithCoords.forEach((n) => {
+          pinNodePosition(n);
+          persistGraphPosition(n);
+        });
+      }
+    }
+
     if (!isGraphLocked) return;
 
     data.nodes.forEach((n) => {
       if (typeof n.x === 'number' && typeof n.y === 'number') {
-        n.fx = n.x;
-        n.fy = n.y;
+        pinNodePosition(n);
         persistGraphPosition(n);
       }
     });
-  }, [data.nodes, isGraphLocked, persistGraphPosition]);
+  }, [data.nodes, isGraphLocked, persistGraphPosition, lockOnFirstTick, pinNodePosition]);
+
+  const dimensionsWereZeroRef = useRef(graphWidth === 0 || graphHeight === 0);
+
+  // Recover from initial 0x0 canvas mounts by recentering and reheating once dimensions are ready.
+  useEffect(() => {
+    if (!dimensionsWereZeroRef.current) return;
+    if (graphWidth <= 0 || graphHeight <= 0) return;
+
+    dimensionsWereZeroRef.current = false;
+
+    if (fgRef.current) {
+      fgRef.current.centerAt(0, 0, 0);
+      fgRef.current.zoom(1, 0);
+      fgRef.current.d3ReheatSimulation();
+
+      if (fitToScreen || fitTrigger > 0) {
+        requestStableFit(400);
+      }
+    }
+  }, [graphWidth, graphHeight, fitToScreen, fitTrigger, requestStableFit]);
 
   // Immediate fit when explicitly requested.
   useEffect(() => {
-    if (fitToScreen || fitTrigger > 0) {
-      fgRef.current?.zoomToFit(400, 50);
-    }
-  }, [fitToScreen, fitTrigger]);
+    const shouldFit = fitToScreen || fitTrigger > 0;
+    if (!shouldFit) return;
+    if (!fgRef.current) return;
+    if (graphWidth <= 0 || graphHeight <= 0) return;
+    if (!data.nodes || data.nodes.length === 0) return;
+
+    requestStableFit(400);
+  }, [fitToScreen, fitTrigger, graphWidth, graphHeight, data.nodes, requestStableFit]);
 
   // Persist coordinates after simulation settles.
   // Only pin nodes when lock mode is enabled.
   const handleEngineStop = useCallback(() => {
-    data.nodes.forEach((n) => {
-      if (typeof n.x === 'number') {
-        if (isGraphLocked) {
-          n.fx = n.x;
-          n.fy = n.y;
-        } else {
-          n.fx = undefined;
-          n.fy = undefined;
-        }
-        persistGraphPosition(n);
-      }
-    });
+    // Auto-lock after initial layout if requested
+    if (autoLockRef.current) {
+      setIsGraphLocked(true);
+      autoLockRef.current = false;
 
-    if (isGraphLocked) {
       data.nodes.forEach(pinNodePosition);
+    } else {
+      data.nodes.forEach((n) => {
+        if (typeof n.x === 'number') {
+          if (isGraphLocked) {
+            n.fx = n.x;
+            n.fy = n.y;
+          } else {
+            n.fx = undefined;
+            n.fy = undefined;
+          }
+        }
+      });
     }
-  }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
+
+    data.nodes.forEach(persistGraphPosition);
+
+    if (fitToScreen || fitTrigger > 0) {
+      requestStableFit(300);
+    }
+  }, [
+    data.nodes,
+    isGraphLocked,
+    pinNodePosition,
+    persistGraphPosition,
+    fitToScreen,
+    fitTrigger,
+    requestStableFit,
+  ]);
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
@@ -406,8 +485,9 @@ export function DisplayGraph({
       >
         <div className="graph-controls">
           <button
+            type="button"
             className="graph-btn"
-            onClick={() => fgRef.current?.zoomToFit(400, 50)}
+            onClick={handleFitToScreen}
             title="Fit Graph to Screen"
           >
             Vycentrovat
@@ -433,7 +513,7 @@ export function DisplayGraph({
           linkDirectionalArrowLength={game.linkDirectionalArrowLength}
           linkDirectionalArrowRelPos={1}
           linkDirectionalArrowColor={() => 'rgba(0,0,0,0.6)'}
-          nodeCanvasObjectMode={() => 'after'}
+          nodeCanvasObjectMode={MODE_AFTER}
           nodeCanvasObject={paintRing}
           onNodeHover={handleNodeHover}
           onLinkHover={handleLinkHover}
@@ -469,7 +549,7 @@ DisplayGraph.propTypes = {
       id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     }),
   }),
-  optimalMoves: PropTypes.object,
+  optimalMoves: PropTypes.instanceOf(Set),
   width: PropTypes.number,
   height: PropTypes.number,
   fitToScreen: PropTypes.bool,
@@ -478,6 +558,7 @@ DisplayGraph.propTypes = {
   winningPlayerMap: PropTypes.objectOf(PropTypes.oneOf([1, 2])),
   showLockControl: PropTypes.bool,
   defaultLocked: PropTypes.bool,
+  lockOnFirstTick: PropTypes.bool,
   showNodeIdsAlways: PropTypes.bool,
 };
 

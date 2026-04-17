@@ -1,3 +1,4 @@
+import { useId } from 'react';
 import PropTypes from 'prop-types';
 
 /**
@@ -12,25 +13,31 @@ export function GenericInputMethodSelector({
   options,
   renderContent,
 }) {
+  const groupId = useId();
+
   return (
     <>
       <div className="tabs mb-3">
-        {options.map((opt) => (
-          <div key={opt.value} className="d-inline-block">
-            <input
-              type="radio"
-              className="btn-check"
-              name="input-method-selector"
-              id={`btnradio-${opt.value}`}
-              autoComplete="off"
-              checked={selectedOption === opt.value}
-              onChange={() => onOptionSelect(opt.value)}
-            />
-            <label className="btn btn-outline-primary" htmlFor={`btnradio-${opt.value}`}>
-              {opt.label}
-            </label>
-          </div>
-        ))}
+        {options.map((opt) => {
+          const optionId = `btnradio-${groupId}-${opt.value}`;
+
+          return (
+            <div key={opt.value} className="d-inline-block">
+              <input
+                type="radio"
+                className="btn-check"
+                name={`input-method-selector-${groupId}`}
+                id={optionId}
+                autoComplete="off"
+                checked={selectedOption === opt.value}
+                onChange={() => onOptionSelect(opt.value)}
+              />
+              <label className="btn btn-outline-primary" htmlFor={optionId}>
+                {opt.label}
+              </label>
+            </div>
+          );
+        })}
       </div>
 
       <div className="input-block">{renderContent(selectedOption)}</div>

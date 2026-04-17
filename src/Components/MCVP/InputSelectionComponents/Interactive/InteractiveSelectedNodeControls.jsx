@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types';
 import { getNodeDisplayName } from './InteractiveInput.helpers';
 
+const getLinkEndpointId = (endpoint) =>
+  typeof endpoint === 'object' && endpoint !== null ? endpoint.id : endpoint;
+
 /**
  * Renders action controls for the currently selected node
  * in the interactive MCVP editor.
@@ -22,8 +25,8 @@ export function InteractiveSelectedNodeControls({
 
   const connectedLinks = graphLinks.filter(
     (link) =>
-      String(link.source.id) === String(selectedNode.id) ||
-      String(link.target.id) === String(selectedNode.id)
+      String(getLinkEndpointId(link.source)) === String(selectedNode.id) ||
+      String(getLinkEndpointId(link.target)) === String(selectedNode.id)
   );
 
   return (
@@ -33,12 +36,14 @@ export function InteractiveSelectedNodeControls({
         {selectedNode.type === 'operation' && (
           <>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { value: 'A' })}
             >
               Nastavit na AND
             </button>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { value: 'O' })}
             >
@@ -46,6 +51,7 @@ export function InteractiveSelectedNodeControls({
             </button>
             {!hasChildren(selectedNode.id) && (
               <button
+                type="button"
                 className="btn add-btn mx-1"
                 onClick={() => onUpdateNodeValue(selectedNode.id, { type: 'variable' })}
               >
@@ -53,6 +59,7 @@ export function InteractiveSelectedNodeControls({
               </button>
             )}
             <button
+              type="button"
               className="btn btn-success mx-1"
               onClick={onStartAddEdge}
               disabled={!canAddChild(selectedNode.id)}
@@ -65,24 +72,28 @@ export function InteractiveSelectedNodeControls({
         {selectedNode.type === 'variable' && (
           <>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { varValue: 0 })}
             >
               Nastavit hodnotu na [0]
             </button>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { varValue: 1 })}
             >
               Nastavit hodnotu na [1]
             </button>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { type: 'operation', value: 'A' })}
             >
               Změnit na AND
             </button>
             <button
+              type="button"
               className="btn add-btn mx-1"
               onClick={() => onUpdateNodeValue(selectedNode.id, { type: 'operation', value: 'O' })}
             >
@@ -91,7 +102,11 @@ export function InteractiveSelectedNodeControls({
           </>
         )}
 
-        <button className="btn btn-danger mx-1" onClick={() => onDeleteNode(selectedNode.id)}>
+        <button
+          type="button"
+          className="btn btn-danger mx-1"
+          onClick={() => onDeleteNode(selectedNode.id)}
+        >
           Smazat uzel
         </button>
       </div>
@@ -102,8 +117,11 @@ export function InteractiveSelectedNodeControls({
           {connectedLinks.map((link) => (
             <div key={link.id} className="m-1">
               <button
+                type="button"
                 className="btn btn-outline-danger btn-sm"
-                onClick={() => onDeleteEdge(link.source.id, link.target.id)}
+                onClick={() =>
+                  onDeleteEdge(getLinkEndpointId(link.source), getLinkEndpointId(link.target))
+                }
               >
                 Odstranit hranu {link.id} &times;
               </button>

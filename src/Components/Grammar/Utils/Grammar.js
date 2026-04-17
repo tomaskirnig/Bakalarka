@@ -20,13 +20,15 @@ export class Grammar {
   }
 
   toText() {
-    let text = '';
+    const lines = [];
+
     for (const [nonTerminal, productions] of Object.entries(this.productions)) {
       const rightSides = productions.map((production) =>
         production.length > 0 ? production.join(' ') : 'ε'
       );
-      text += `${nonTerminal} → ${rightSides.join(' | ')}\n`;
+      lines.push(`${nonTerminal} → ${rightSides.join(' | ')}`);
     }
-    return text.trim();
+
+    return lines.join('\n');
   }
 }

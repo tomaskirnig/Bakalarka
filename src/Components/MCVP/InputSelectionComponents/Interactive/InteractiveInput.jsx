@@ -7,6 +7,14 @@ import { useGraphSettings } from '../../../../Hooks/useGraphSettings';
 import { graphDataToNodeClass, getNodeDisplayName } from './InteractiveInput.helpers';
 import { createPaintLink, createPaintNode } from './InteractiveInput.renderers';
 import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeControls';
+import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
+
+const MAX_INTERACTIVE_NODES = 750;
+
+const getLinkEndpointId = (endpoint) =>
+  typeof endpoint === 'object' && endpoint !== null ? endpoint.id : endpoint;
+
+const CANVAS_MODE_AFTER = () => 'after';
 
 /**
  * Component for interactively building and evaluating an MCVP graph.
@@ -15,7 +23,11 @@ import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeContro
  *
  * @component
  */
-export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) {
+export function InteractiveMCVPGraph({
+  onTreeUpdate,
+  useTopDownLayout = true,
+  onRegisterPositionSnapshotGetter,
+}) {
   const [graphData, setGraphData] = useState(() => ({
     nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
     links: [],
@@ -30,6 +42,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
   const nextNodeIdRef = useRef(1); // '0' is the initial OR node
   const nextLinkIdRef = useRef(0);
   const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
+  const lastBroadcastedPositionsRef = useRef(new Map());
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const colors = useGraphColors();
@@ -117,8 +130,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 
   const addNode = useCallback(
     (type, value = null, varValue = null) => {
-      if (graphData.nodes.length >= 750) {
-        toast.error('Dosažen limit 750 uzlů.');
+      if (graphData.nodes.length >= MAX_INTERACTIVE_NODES) {
+        toast.error(`Dosažen limit ${MAX_INTERACTIVE_NODES} uzlů.`);
         return null;
       }
 
@@ -160,7 +173,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     setGraphData((prevData) => ({
       nodes: prevData.nodes.filter((node) => node.id !== nodeId),
       links: prevData.links.filter(
-        (link) => link.source.id !== nodeId && link.target.id !== nodeId
+        (link) =>
+          getLinkEndpointId(link.source) !== nodeId && getLinkEndpointId(link.target) !== nodeId
       ),
     }));
 
@@ -174,7 +188,8 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
   const edgeExists = useCallback(
     (sourceId, targetId) => {
       return graphData.links.some(
-        (link) => link.source.id === sourceId && link.target.id === targetId
+        (link) =>
+          getLinkEndpointId(link.source) === sourceId && getLinkEndpointId(link.target) === targetId
       );
     },
     [graphData.links]
@@ -182,7 +197,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 
   const getOutgoingEdgeCount = useCallback(
     (sourceId) => {
-      return graphData.links.filter((link) => link.source.id === sourceId).length;
+      return graphData.links.filter((link) => getLinkEndpointId(link.source) === sourceId).length;
     },
     [graphData.links]
   );
@@ -243,7 +258,11 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     setGraphData((prevData) => ({
       nodes: prevData.nodes,
       links: prevData.links.filter(
-        (link) => !(link.source.id === sourceId && link.target.id === targetId)
+        (link) =>
+          !(
+            getLinkEndpointId(link.source) === sourceId &&
+            getLinkEndpointId(link.target) === targetId
+          )
       ),
     }));
   };
@@ -279,21 +298,9 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
         return node;
       });
 
-      // Update links to reference the new node objects
-      const nodeMap = updatedNodes.reduce((acc, node) => {
-        acc[node.id] = node;
-        return acc;
-      }, {});
-
-      const updatedLinks = prevData.links.map((link) => ({
-        id: link.id,
-        source: nodeMap[link.source.id],
-        target: nodeMap[link.target.id],
-      }));
-
       return {
         nodes: updatedNodes,
-        links: updatedLinks,
+        links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
       };
     });
 
@@ -345,7 +352,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
   };
 
   const hasChildren = (nodeId) => {
-    return graphData.links.some((link) => link.source.id === nodeId);
+    return graphData.links.some((link) => getLinkEndpointId(link.source) === nodeId);
   };
 
   const canAddChild = (nodeId) => {
@@ -356,20 +363,111 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
     setHoverNode(node);
   }, []);
 
-  const handleLinkHover = useCallback(() => {
-    // Link hover handler
+  const remapLinksToCurrentNodes = useCallback((links, nodes) => {
+    const nodeMap = nodes.reduce((acc, node) => {
+      acc[node.id] = node;
+      return acc;
+    }, {});
+
+    return links
+      .map((link) => ({
+        ...link,
+        source: nodeMap[getLinkEndpointId(link.source)],
+        target: nodeMap[getLinkEndpointId(link.target)],
+      }))
+      .filter((link) => link.source && link.target);
   }, []);
 
-  const persistNodePositionInGraphData = useCallback((node) => {
-    if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
+  const persistNodePositionInGraphData = useCallback(
+    (node) => {
+      if (!node || typeof node.x !== 'number' || typeof node.y !== 'number') return;
 
-    setGraphData((prevData) => ({
-      ...prevData,
-      nodes: prevData.nodes.map((n) =>
-        n.id === node.id ? { ...n, x: node.x, y: node.y, fx: node.x, fy: node.y } : n
-      ),
-    }));
-  }, []);
+      setGraphData((prevData) => {
+        const updatedNodes = prevData.nodes.map((n) =>
+          n.id === node.id ? { ...n, x: node.x, y: node.y, fx: node.x, fy: node.y } : n
+        );
+
+        return {
+          ...prevData,
+          nodes: updatedNodes,
+          links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
+        };
+      });
+    },
+    [remapLinksToCurrentNodes]
+  );
+
+  const syncAllNodePositionsInGraphData = useCallback(() => {
+    const engineNodes = graphData.nodes;
+    if (!Array.isArray(engineNodes) || engineNodes.length === 0) return;
+
+    const nextPositions = new Map();
+    let hasChanges = false;
+
+    engineNodes.forEach((node) => {
+      if (typeof node.x !== 'number' || typeof node.y !== 'number') return;
+
+      const id = String(node.id);
+      const x = node.x;
+      const y = node.y;
+      nextPositions.set(id, { x, y });
+
+      const previous = lastBroadcastedPositionsRef.current.get(id);
+      if (!previous || previous.x !== x || previous.y !== y) {
+        hasChanges = true;
+      }
+    });
+
+    if (!hasChanges) return;
+
+    lastBroadcastedPositionsRef.current = nextPositions;
+    setGraphData((prevData) => {
+      const updatedNodes = prevData.nodes.map((node) => {
+        const position = nextPositions.get(String(node.id));
+        if (!position) return node;
+
+        if (isGraphLocked) {
+          return { ...node, x: position.x, y: position.y, fx: position.x, fy: position.y };
+        }
+
+        return { ...node, x: position.x, y: position.y };
+      });
+
+      return {
+        ...prevData,
+        nodes: updatedNodes,
+        links: remapLinksToCurrentNodes(prevData.links, updatedNodes),
+      };
+    });
+  }, [graphData.nodes, isGraphLocked, remapLinksToCurrentNodes]);
+
+  const getCurrentNodePositionsSnapshot = useCallback(() => {
+    const engineNodes = graphData.nodes;
+    if (!Array.isArray(engineNodes) || engineNodes.length === 0) {
+      return {};
+    }
+
+    const snapshot = {};
+    engineNodes.forEach((node) => {
+      const x = typeof node.x === 'number' ? node.x : node.fx;
+      const y = typeof node.y === 'number' ? node.y : node.fy;
+
+      if (typeof x === 'number' && typeof y === 'number') {
+        snapshot[node.id] = { x, y };
+      }
+    });
+
+    return snapshot;
+  }, [graphData.nodes]);
+
+  useEffect(() => {
+    if (!onRegisterPositionSnapshotGetter) return;
+
+    onRegisterPositionSnapshotGetter(getCurrentNodePositionsSnapshot);
+    return () => {
+      onRegisterPositionSnapshotGetter(null);
+    };
+  }, [onRegisterPositionSnapshotGetter, getCurrentNodePositionsSnapshot]);
 
   // --- Canvas/Rendering Functions ---
   const paintNode = useMemo(
@@ -448,19 +546,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
       <div className="GraphDiv" ref={containerRef} style={{ height: '60vh', minHeight: '500px' }}>
         <div className="graph-controls">
           <button
+            type="button"
             className="graph-btn"
             onClick={() => fgRef.current?.zoomToFit(400, 50)}
             title="Fit Graph to Screen"
           >
             Vycentrovat
           </button>
-          <button
-            className="graph-btn"
-            onClick={handleToggleGraphLock}
-            title={isGraphLocked ? 'Odemknout pozice uzlů' : 'Zamknout pozice uzlů'}
-          >
-            {isGraphLocked ? 'Odemknout graf' : 'Zamknout graf'}
-          </button>
+          <GraphLockButton isLocked={isGraphLocked} onToggle={handleToggleGraphLock} />
         </div>
         <ForceGraph2D
           ref={fgRef}
@@ -478,7 +571,7 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
           nodeRelSize={mcvp.nodeRadius} // Use fixed radius for consistency
           nodeId="id"
           nodeCanvasObject={paintNode}
-          nodeCanvasObjectMode={() => 'after'} // Draw text after circle
+          nodeCanvasObjectMode={CANVAS_MODE_AFTER} // Draw text after circle
           nodePointerAreaPaint={(node, color, ctx) => {
             // Make the whole rendered circle clickable/hoverable.
             ctx.fillStyle = color;
@@ -488,14 +581,14 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
           }}
           // Links
           linkCanvasObject={paintLink} // Custom link renderer
-          linkCanvasObjectMode={() => 'after'} // Draw custom object after link line
+          linkCanvasObjectMode={CANVAS_MODE_AFTER} // Draw custom object after link line
           linkDirectionalArrowLength={0}
           onDagError={useTopDownLayout ? handleDagError : undefined}
           // Interaction
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
           onNodeHover={handleNodeHover} // Update hover state
-          onLinkHover={handleLinkHover}
+          onEngineStop={syncAllNodePositionsInGraphData}
           enablePanInteraction={true}
           enableZoomInteraction={true}
           enableNodeDrag={true} // Keep dragging enabled even when graph is locked
@@ -514,16 +607,15 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 
       {/* Control Buttons */}
       <div className="py-3">
-        <button className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('op', 'A')}>
           Přidat AND uzel
         </button>
-        <button className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('op', 'O')}>
           Přidat OR uzel
         </button>
-        <button className="btn add-btn mx-1" onClick={() => addNode('var')}>
+        <button type="button" className="btn add-btn mx-1" onClick={() => addNode('var')}>
           Přidat uzel s proměnou
         </button>
-        {/* Add buttons to center view */}
       </div>
 
       {/* Selected Node Controls */}
@@ -546,4 +638,5 @@ export function InteractiveMCVPGraph({ onTreeUpdate, useTopDownLayout = true }) 
 InteractiveMCVPGraph.propTypes = {
   onTreeUpdate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
+  onRegisterPositionSnapshotGetter: PropTypes.func,
 };

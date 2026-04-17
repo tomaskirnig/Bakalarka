@@ -5,6 +5,11 @@
 import { toast } from 'react-toastify';
 import { Node } from './NodeClass';
 
+const failGeneration = (toastMessage, errorMessage = toastMessage) => {
+  toast.error(toastMessage);
+  throw new Error(errorMessage);
+};
+
 /**
  * Creates a random variable node with a specified index.
  *
@@ -62,8 +67,10 @@ export function generateTree(numGates, numVariables) {
 
   // Binary arity requires at least N-1 gates to connect all variables.
   if (numVariables > numGates + 1) {
-    toast.error('Pro binární obvod musí platit: počet hradel >= počet proměnných - 1.');
-    throw new Error('Nedostatek hradel pro binární strukturu obvodu.');
+    failGeneration(
+      'Pro binární obvod musí platit: počet hradel >= počet proměnných - 1.',
+      'Nedostatek hradel pro binární strukturu obvodu.'
+    );
   }
 
   // Create variable nodes
@@ -90,8 +97,7 @@ export function generateTree(numGates, numVariables) {
   // Create gates and allow reuse while enforcing exactly 2 children per operation node.
   for (let i = 0; i < numGates; i++) {
     if (rootNodeIds.size < 1) {
-      toast.error('Nedostatek uzlů!');
-      throw new Error('Nedostatek uzlů!');
+      failGeneration('Nedostatek uzlů!');
     }
 
     const remainingGates = numGates - i;
@@ -104,10 +110,10 @@ export function generateTree(numGates, numVariables) {
     // so remaining gates can still reduce to one root.
     const minRequiredRootChildren = rootNodes.length - remainingGates + 1;
     if (minRequiredRootChildren > 2) {
-      toast.error(
-        'Nelze dokončit binární strukturu: příliš mnoho kořenů vzhledem ke zbývajícím hradlům.'
+      failGeneration(
+        'Nelze dokončit binární strukturu: příliš mnoho kořenů vzhledem ke zbývajícím hradlům.',
+        'Generování neuspělo: nelze dosáhnout jediného kořene s aritou <= 2.'
       );
-      throw new Error('Generování neuspělo: nelze dosáhnout jediného kořene s aritou <= 2.');
     }
 
     const forcedRootChildren = Math.max(1, minRequiredRootChildren);
@@ -142,8 +148,7 @@ export function generateTree(numGates, numVariables) {
     }
 
     if (selectedChildren.length !== 2) {
-      toast.error('Generování DAG selhalo: hradlo musí mít přesně 2 vstupy.');
-      throw new Error('Generování DAG selhalo: hradlo musí mít přesně 2 vstupy.');
+      failGeneration('Generování DAG selhalo: hradlo musí mít přesně 2 vstupy.');
     }
 
     const gateNode = createGateNode(selectedChildren);
@@ -158,8 +163,7 @@ export function generateTree(numGates, numVariables) {
   }
 
   if (rootNodeIds.size !== 1) {
-    toast.error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
-    throw new Error('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
+    failGeneration('Generování neuspělo, zbyl špatný počet kořenových uzlů.');
   }
 
   const [rootId] = Array.from(rootNodeIds);

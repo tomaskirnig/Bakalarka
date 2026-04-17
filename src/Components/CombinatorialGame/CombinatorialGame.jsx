@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { toast } from 'react-toastify';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
@@ -12,6 +12,15 @@ import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepGame } from './StepByStepGame';
+
+const INPUT_OPTIONS = [
+  { value: 'manual', label: 'Manuálně' },
+  { value: 'generate', label: 'Generovat' },
+  { value: 'sets', label: 'Načíst ze sady' },
+];
+
+const isSelectedPlayerMismatch = (chosenOpt, selectedStartingPlayer, playerAtStartNode) =>
+  chosenOpt !== 'manual' && selectedStartingPlayer !== playerAtStartNode;
 
 /**
  * Counts positions with no incoming and no outgoing edges.
@@ -35,11 +44,13 @@ function countIsolatedNodes(graph) {
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Combinatorial game module UI.
  */
-export function CombinatorialGame({ initialData }) {
+export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
   const [graph, setGraph] = useState(null); // Current tree
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
+  const [graphFitTrigger, setGraphFitTrigger] = useState(0);
+  const graphDisplaySectionRef = useRef(null);
 
   // Handle initial data if provided
   useEffect(() => {
@@ -69,7 +80,7 @@ export function CombinatorialGame({ initialData }) {
       finalAnalysisResult.hasWinningStrategy = false;
       finalAnalysisResult.message = 'Startovní pozice nemá definovaného hráče.';
       analysisValid = false;
-    } else if (chosenOpt !== 'manual' && selectedStartingPlayer !== playerAtStartNode) {
+    } else if (isSelectedPlayerMismatch(chosenOpt, selectedStartingPlayer, playerAtStartNode)) {
       finalAnalysisResult.hasWinningStrategy = false;
       finalAnalysisResult.message =
         'Nelze analyzovat: Zvolený začínající hráč se neshoduje s hráčem určeným pro startovní pozici.';
@@ -91,6 +102,22 @@ export function CombinatorialGame({ initialData }) {
     setChosenOpt(option);
     setGraph(null);
   };
+
+  // Refit once when a generated/prepared/imported graph is shown in view mode.
+  useEffect(() => {
+    if (!graph || chosenOpt === 'manual') return;
+    setGraphFitTrigger((prev) => prev + 1);
+  }, [graph, chosenOpt]);
+
+  useEffect(() => {
+    if (!autoScrollToGraph || !graph || chosenOpt === 'manual') return;
+
+    const frameId = requestAnimationFrame(() => {
+      graphDisplaySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [autoScrollToGraph, graph, chosenOpt]);
 
   const handleExport = (includePositions = false) => {
     if (!graph) return null;
@@ -160,18 +187,24 @@ export function CombinatorialGame({ initialData }) {
 
     // Handle SadyCG format (Object with keys)
     // Check if data is a collection of sets rather than a single graph
-    if (!data.nodes && !data.edges && !data.positions) {
+    if (!data.nodes && !data.edges && !data.links && !data.positions) {
       const keys = Object.keys(data);
       if (keys.length > 0) {
         const firstSet = data[keys[0]];
-        if (firstSet && (firstSet.nodes || firstSet.edges || firstSet.positions)) {
+        if (
+          firstSet &&
+          (firstSet.nodes || firstSet.edges || firstSet.links || firstSet.positions)
+        ) {
           graphData = firstSet;
           toast.info(`Importována sada: ${keys[0]}`);
         }
       }
     }
 
-    if (graphData && (graphData.nodes || graphData.edges || graphData.positions)) {
+    if (
+      graphData &&
+      (graphData.nodes || graphData.edges || graphData.links || graphData.positions)
+    ) {
       setGraph(graphData);
       setChosenOpt('manual');
     } else {
@@ -221,11 +254,7 @@ export function CombinatorialGame({ initialData }) {
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}
-          options={[
-            { value: 'manual', label: 'Manuálně' },
-            { value: 'generate', label: 'Generovat' },
-            { value: 'sets', label: 'Načíst ze sady' },
-          ]}
+          options={INPUT_OPTIONS}
           renderContent={(opt) => {
             switch (opt) {
               case 'manual':
@@ -270,17 +299,22 @@ export function CombinatorialGame({ initialData }) {
             )}
 
             {chosenOpt !== 'manual' && (
-              <>
+              <div ref={graphDisplaySectionRef}>
                 <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-                  <DisplayGraph graph={graph} optimalMoves={optimalMoves} showLockControl={true} />
+                  <DisplayGraph
+                    graph={graph}
+                    optimalMoves={optimalMoves}
+                    fitTrigger={graphFitTrigger}
+                    showLockControl={true}
+                  />
                 </div>
                 <GameAnalysisDisplay analysisResult={analysisResult} />
-              </>
+              </div>
             )}
 
             {chosenOpt !== 'manual' && (
               <div className="mt-3">
-                <button className="btn btn-primary" onClick={() => setExplain(true)}>
+                <button type="button" className="btn btn-primary" onClick={() => setExplain(true)}>
                   Vysvětlit
                 </button>
               </div>
@@ -301,6 +335,7 @@ export function CombinatorialGame({ initialData }) {
 CombinatorialGame.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  autoScrollToGraph: PropTypes.bool,
 };
 
 export default CombinatorialGame;

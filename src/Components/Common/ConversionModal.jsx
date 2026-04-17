@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 
+const CLOSE_ANIMATION_MS = 250;
+
 /**
  * Modal component specifically designed for conversion views
  * Takes up most of the screen for better visibility of conversion steps
@@ -17,7 +19,7 @@ export function ConversionModal({ onClose, children }) {
     setIsClosing(true);
     timerRef.current = setTimeout(() => {
       onClose();
-    }, 250);
+    }, CLOSE_ANIMATION_MS);
   };
 
   return (
@@ -26,7 +28,12 @@ export function ConversionModal({ onClose, children }) {
         className={`conversion-modal-content ${isClosing ? 'modal-content-closing' : ''}`}
         onClick={(e) => e.stopPropagation()}
       >
-        <button onClick={handleClose} className="conversion-modal-close-btn" aria-label="Close">
+        <button
+          type="button"
+          onClick={handleClose}
+          className="conversion-modal-close-btn"
+          aria-label="Close"
+        >
           <i className="bi bi-x-lg"></i>
         </button>
         <div className="conversion-modal-body">{children}</div>

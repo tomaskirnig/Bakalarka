@@ -5,6 +5,13 @@
 import { toast } from 'react-toastify';
 import { Node } from './NodeClass';
 
+const TOKEN_SPECIFICATION = [
+  ['LPAREN', /\(/],
+  ['RPAREN', /\)/],
+  ['OPERATOR', /A|O/],
+  ['VARIABLE', /x\d+\[(?:0|1)\]/], // Matches xN[0|1]
+];
+
 /**
  * Converts an input string into tokens for parsing.
  *
@@ -15,20 +22,12 @@ import { Node } from './NodeClass';
 function tokenize(s) {
   s = s.replace(/\s+/g, ''); // Remove whitespace characters
 
-  // Define token patterns
-  const tokenSpecification = [
-    ['LPAREN', /\(/],
-    ['RPAREN', /\)/],
-    ['OPERATOR', /A|O/],
-    ['VARIABLE', /x\d+\[(?:0|1)\]/], // Matches xN[0|1]
-  ];
-
   const tokens = [];
   let pos = 0;
 
   while (pos < s.length) {
     let match = null;
-    for (let [kind, regex] of tokenSpecification) {
+    for (const [kind, regex] of TOKEN_SPECIFICATION) {
       const matched = s.slice(pos).match(regex);
       if (matched && matched.index === 0) {
         match = { kind, value: matched[0] };
@@ -104,32 +103,7 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'O')) {
       this.consume('OPERATOR', 'O');
       const right = this.parseAndExpr();
-
-      // Create new node with children array
-      const newNode = new Node(
-        'O', // value
-        null, // varValue
-        'operation', // type
-        [node, right], // children
-        null // parents
-      );
-
-      // Update parent references
-      if (node) {
-        node.parents = node.parents || [];
-        if (!node.parents.includes(newNode)) {
-          node.parents.push(newNode);
-        }
-      }
-
-      if (right) {
-        right.parents = right.parents || [];
-        if (!right.parents.includes(newNode)) {
-          right.parents.push(newNode);
-        }
-      }
-
-      node = newNode;
+      node = this.createOperationNode('O', node, right);
     }
     return node;
   }
@@ -144,34 +118,41 @@ class Parser {
     while (this.currentTokenIs('OPERATOR', 'A')) {
       this.consume('OPERATOR', 'A');
       const right = this.parseFactor();
-
-      // Create new node with children array
-      const newNode = new Node(
-        'A', // value
-        null, // varValue
-        'operation', // type
-        [node, right], // children
-        null // parents
-      );
-
-      // Update parent references
-      if (node) {
-        node.parents = node.parents || [];
-        if (!node.parents.includes(newNode)) {
-          node.parents.push(newNode);
-        }
-      }
-
-      if (right) {
-        right.parents = right.parents || [];
-        if (!right.parents.includes(newNode)) {
-          right.parents.push(newNode);
-        }
-      }
-
-      node = newNode;
+      node = this.createOperationNode('A', node, right);
     }
     return node;
+  }
+
+  /**
+   * Adds a parent reference to a child node if not already present.
+   *
+   * @param {Node|null} child - Child node reference
+   * @param {Node} parent - Parent node reference
+   */
+  addParentReference(child, parent) {
+    if (!child) return;
+
+    child.parents = child.parents || [];
+    if (!child.parents.includes(parent)) {
+      child.parents.push(parent);
+    }
+  }
+
+  /**
+   * Creates an operation node and links parent references from both children.
+   *
+   * @param {'A'|'O'} operator - Operation label.
+   * @param {Node} left - Left child node.
+   * @param {Node} right - Right child node.
+   * @returns {Node} New operation node.
+   */
+  createOperationNode(operator, left, right) {
+    const operationNode = new Node(operator, null, 'operation', [left, right], null);
+
+    this.addParentReference(left, operationNode);
+    this.addParentReference(right, operationNode);
+
+    return operationNode;
   }
 
   /**
@@ -339,7 +320,6 @@ export function parseExpressionToTree(exprStr) {
     const tokens = tokenize(exprStr);
     const parser = new Parser(tokens);
     const tree = parser.parse();
-    // console.log("Parsed tree:");
     return tree;
   } catch (error) {
     if (error instanceof SyntaxError) {

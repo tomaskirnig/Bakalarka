@@ -9,9 +9,13 @@ export function graphDataToNodeClass(graphData) {
   return graphToTree(graphData, {
     acceptEdgesOrLinks: true,
     preservePositions: true,
-    requireBinaryOperationNodes: true,
+    // Interactive editor works with incomplete graphs while the user is building.
+    requireBinaryOperationNodes: false,
     normalizeUnaryOperationNodes: false,
     throwOnInvalid: false,
+    // Interactive editing frequently has multiple roots/disconnected parts temporarily.
+    // Suppress console spam; validation feedback is shown in UI.
+    suppressWarnings: true,
   });
 }
 

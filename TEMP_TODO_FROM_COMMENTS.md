@@ -21,11 +21,11 @@
 - [x] Grammar analysis (example tree): replace deep recursive search with a robust constructive algorithm that finds a small finite derivation when language is non-empty, prefer shortest/simplest derivation to avoid huge example trees.
 - [x] Manual combinatorial game editor: fix unwanted graph scaling/spacing drift after pressing “Change player”.
 - [x] MCVP node structure: enforce binary arity for conjunction/disjunction so each such node has exactly 2 children.
+- [x] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called.
 
 # To do
 
 - [ ] Step-by-step winning strategy analysis: improve wording of per-step status message (e.g., “In this node, Player 1 has a winning strategy.”).
-- [ ] MCVP -> Combinatorial Game conversion: the graph of MCVP is stuck in the left upper corner and dragging (moving nodes or the whole graph) doesnt work, after like 10 seconds the graph centers, the zoom to fit function is porbably called.
 - [ ] Grammar input: Go over all error messages and make sure they are easy to understand and explain the error correctly
 - [ ] MCVP all display components: prevent node overlaps.
 - [ ] Combinatory Game display component: Check if we can add viewport as a boundary for nodes, so they dont ecape - only for not connected ones.

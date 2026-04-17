@@ -1,5 +1,8 @@
 import { Grammar } from './Grammar.js';
 
+const SINGLE_SIDE_RECURSION_PROBABILITY = 0.2;
+const CENTRAL_RECURSION_PROBABILITY = 0.2;
+
 /**
  * Grammar generator configuration object
  * @typedef {Object} GrammarConfig
@@ -89,18 +92,20 @@ function ensureReachability(productions, nonTerminals) {
   if (nonTerminals.length === 0) return;
 
   const startSymbol = nonTerminals[0];
+  const nonTerminalSet = new Set(nonTerminals);
 
   // 1. Compute Reachable Set (BFS) - only once!
   const reachable = new Set([startSymbol]);
   const queue = [startSymbol];
+  let queueIndex = 0;
 
-  while (queue.length > 0) {
-    const current = queue.shift();
+  while (queueIndex < queue.length) {
+    const current = queue[queueIndex++];
     const rules = productions[current] || [];
 
     for (const rule of rules) {
       for (const symbol of rule) {
-        if (nonTerminals.includes(symbol) && !reachable.has(symbol)) {
+        if (nonTerminalSet.has(symbol) && !reachable.has(symbol)) {
           reachable.add(symbol);
           queue.push(symbol);
         }
@@ -218,8 +223,8 @@ function generateProductions(nonTerminals, terminals, config) {
 
   nonTerminals.forEach((nonTerminal) => {
     // Use config values or default to 1-3
-    const min = config.minProductionsPerNonTerminal || 1;
-    const max = config.maxProductionsPerNonTerminal || 3;
+    const min = config.minProductionsPerNonTerminal ?? 1;
+    const max = config.maxProductionsPerNonTerminal ?? 3;
     const productionCount = getRandomInt(min, max);
 
     productions[nonTerminal] = [];
@@ -252,8 +257,26 @@ function createProductionRule(nonTerminal, nonTerminals, terminals, config) {
   }
 
   // 1. Decide whether recursion is used.
-  let useLeft = config.allowLeftRecursion && Math.random() < 0.3;
-  let useRight = config.allowRightRecursion && Math.random() < 0.3;
+  let useLeft = false;
+  let useRight = false;
+
+  if (config.allowLeftRecursion && config.allowRightRecursion) {
+    // Keep central recursion explicit and bounded to about 20% when both toggles are enabled.
+    if (Math.random() < CENTRAL_RECURSION_PROBABILITY) {
+      useLeft = true;
+      useRight = true;
+    } else if (Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY) {
+      if (Math.random() < 0.5) {
+        useLeft = true;
+      } else {
+        useRight = true;
+      }
+    }
+  } else if (config.allowLeftRecursion) {
+    useLeft = Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY;
+  } else if (config.allowRightRecursion) {
+    useRight = Math.random() < SINGLE_SIDE_RECURSION_PROBABILITY;
+  }
 
   // 2. Validate length budget for recursion.
   const recursionCost = (useLeft ? 1 : 0) + (useRight ? 1 : 0);
@@ -295,7 +318,7 @@ function generateRuleSymbols(length, currentNonTerminal, nonTerminals, terminals
   // Determine which non-terminals can be used
   // Exclude current non-terminal from base rule symbols.
   // Direct recursion (Left/Right) is handled explicitly in createProductionRule based on config.
-  let availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
+  const availableNonTerminals = nonTerminals.filter((nt) => nt !== currentNonTerminal);
 
   for (let j = 0; j < length; j++) {
     // If no non-terminals are available, always use terminal

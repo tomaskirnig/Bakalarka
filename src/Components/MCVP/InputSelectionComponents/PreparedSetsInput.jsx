@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 
 // Load all JSON files from the Sady/MCVP directory
 const modules = import.meta.glob('../../../../Sady/MCVP/*.json', { eager: true });
-const Data = Object.entries(modules)
+const PREPARED_MCVP_SETS = Object.entries(modules)
   .map(([path, mod]) => {
     const data = mod.default || mod;
     // Validation
@@ -22,7 +22,7 @@ const Data = Object.entries(modules)
     }
     return data;
   })
-  .filter((item) => item !== null);
+  .filter(Boolean);
 
 /**
  * Component for selecting a pre-defined MCVP problem set.
@@ -35,9 +35,9 @@ const Data = Object.entries(modules)
 export function PreparedSetsInput({ onTreeUpdate }) {
   // Handle set selection
   const handleSelectChange = (event) => {
-    const index = parseInt(event.target.value);
-    if (!isNaN(index) && index >= 0) {
-      const graphData = Data[index];
+    const index = Number.parseInt(event.target.value, 10);
+    if (!Number.isNaN(index) && index >= 0) {
+      const graphData = PREPARED_MCVP_SETS[index];
       try {
         const tree = graphToTree(graphData, {
           acceptEdgesOrLinks: true,
@@ -60,8 +60,8 @@ export function PreparedSetsInput({ onTreeUpdate }) {
       <label>Vybrat sadu:</label>
       <select className="form-select" onChange={handleSelectChange}>
         <option value="">Vybrat sadu</option>
-        {Data.map((set, index) => (
-          <option key={index} value={index}>
+        {PREPARED_MCVP_SETS.map((set, index) => (
+          <option key={set.name || index} value={index}>
             {set.name}
           </option>
         ))}

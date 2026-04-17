@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponents/ManualInput';
@@ -16,6 +16,19 @@ import { FileTransferControls } from '../Common/FileTransferControls';
 import { treeToFlatGraph, flatGraphToTree } from './Utils/Serialization';
 import { toast } from 'react-toastify';
 
+const INPUT_OPTIONS = [
+  { value: 'manual', label: 'Manuálně' },
+  { value: 'generate', label: 'Generovat' },
+  { value: 'sets', label: 'Načíst ze sady' },
+  { value: 'interactive', label: 'Interaktivně' },
+];
+
+const INVALID_TREE_CONVERSION_MESSAGE =
+  'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.';
+
+const INVALID_TREE_EXPLAIN_MESSAGE =
+  'Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.';
+
 /**
  * Main component for the Monotone Circuit Value Problem (MCVP) module.
  * Coordinates input selection, graph visualization, evaluation, and problem conversions.
@@ -25,13 +38,21 @@ import { toast } from 'react-toastify';
  * @param {function} [props.onNavigate] - Callback to navigate to other modules (e.g., Combinatorial Game).
  * @param {Object} [props.initialData] - Initial tree data to load (e.g., when coming from another module).
  */
-export function MCVP({ onNavigate, initialData }) {
+export function MCVP({
+  onNavigate,
+  initialData,
+  useTopDownLayout = true,
+  autoScrollToGraph = true,
+}) {
   const [tree, setTree] = useState(null); // Current tree
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammarConversion, setGrammarConversion] = useState(false); // Grammar Conversion result
   const [gameConversion, setGameConversion] = useState(false); // Game Conversion result
-  const [useTopDownLayout, setUseTopDownLayout] = useState(true); // Dev-only MCVP layout toggle
+  const [lockImportedLayout, setLockImportedLayout] = useState(false);
+  const [mainFitTrigger, setMainFitTrigger] = useState(0);
+  const positionSnapshotGetterRef = useRef(null);
+  const mainGraphSectionRef = useRef(null);
 
   // Handle initial data if provided (e.g., from reverse conversion)
   useEffect(() => {
@@ -49,14 +70,54 @@ export function MCVP({ onNavigate, initialData }) {
   const hasTree = Boolean(tree);
   const isTreeValid = hasTree && evaluation.result !== null;
 
+  const runWhenTreeIsValid = (action, invalidMessage) => {
+    if (!isTreeValid) {
+      toast.error(invalidMessage);
+      return;
+    }
+
+    action();
+  };
+
   const handleOptionChange = (option) => {
     setChosenOpt(option);
     setTree(null);
+    setLockImportedLayout(false);
   };
+
+  // Refit once when a non-interactive tree is (re)loaded/generated/imported.
+  useEffect(() => {
+    if (!tree || chosenOpt === 'interactive') return;
+    setMainFitTrigger((prev) => prev + 1);
+  }, [tree, chosenOpt]);
+
+  useEffect(() => {
+    if (!autoScrollToGraph || !tree || chosenOpt === 'interactive') return;
+
+    const frameId = requestAnimationFrame(() => {
+      mainGraphSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [autoScrollToGraph, tree, chosenOpt]);
+
+  const handleRegisterPositionSnapshotGetter = useCallback((getter) => {
+    positionSnapshotGetterRef.current = typeof getter === 'function' ? getter : null;
+  }, []);
 
   const handleExport = (includePositions = false) => {
     if (!tree) return null;
-    return treeToFlatGraph(tree, includePositions);
+
+    let positionSnapshot = null;
+    if (includePositions && typeof positionSnapshotGetterRef.current === 'function') {
+      try {
+        positionSnapshot = positionSnapshotGetterRef.current();
+      } catch (error) {
+        console.warn('Failed to take live position snapshot for export:', error);
+      }
+    }
+
+    return treeToFlatGraph(tree, includePositions, positionSnapshot);
   };
 
   const handleImport = (data) => {
@@ -79,39 +140,30 @@ export function MCVP({ onNavigate, initialData }) {
     if (newTree) {
       setTree(newTree);
       setChosenOpt('manual'); // Switch to view/manual mode
+
+      const hasExplicitPositions =
+        Boolean(graphData?.positions && Object.keys(graphData.positions).length > 0) ||
+        Boolean(
+          Array.isArray(graphData?.nodes) &&
+          graphData.nodes.some((node) => typeof node?.x === 'number' && typeof node?.y === 'number')
+        );
+
+      setLockImportedLayout(hasExplicitPositions);
     } else {
       throw new Error('Nepodařilo se vytvořit strom z importovaných dat.');
     }
   };
 
   const handleOpenGameConversion = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setGameConversion(true);
+    runWhenTreeIsValid(() => setGameConversion(true), INVALID_TREE_CONVERSION_MESSAGE);
   };
 
   const handleOpenGrammarConversion = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Převod je dostupný pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setGrammarConversion(true);
+    runWhenTreeIsValid(() => setGrammarConversion(true), INVALID_TREE_CONVERSION_MESSAGE);
   };
 
   const handleOpenExplain = () => {
-    if (!isTreeValid) {
-      toast.error(
-        'Vysvětlení je dostupné pouze pro kompletní obvod s jediným kořenem a bez volných uzlů.'
-      );
-      return;
-    }
-    setExplain(true);
+    runWhenTreeIsValid(() => setExplain(true), INVALID_TREE_EXPLAIN_MESSAGE);
   };
 
   return (
@@ -144,39 +196,11 @@ export function MCVP({ onNavigate, initialData }) {
 
       <h1 className="display-4 mt-4 mb-lg-4">MCVP</h1>
 
-      <div className="d-flex justify-content-center mb-2">
-        <div
-          className="form-check form-switch"
-          title="Dev nástroj pro přepnutí rozložení MCVP grafu"
-        >
-          <input
-            className="form-check-input clickable"
-            type="checkbox"
-            role="switch"
-            id="mcvp-layout-mode-switch"
-            checked={useTopDownLayout}
-            onChange={(e) => setUseTopDownLayout(e.target.checked)}
-          />
-          <label
-            className="form-check-label clickable"
-            htmlFor="mcvp-layout-mode-switch"
-            style={{ color: 'black' }}
-          >
-            Režim rozložení (dev): {useTopDownLayout ? 'Top-down (TD)' : 'Volný graf'}
-          </label>
-        </div>
-      </div>
-
       <div className="page-content">
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}
-          options={[
-            { value: 'manual', label: 'Manuálně' },
-            { value: 'generate', label: 'Generovat' },
-            { value: 'sets', label: 'Načíst ze sady' },
-            { value: 'interactive', label: 'Interaktivně' },
-          ]}
+          options={INPUT_OPTIONS}
           renderContent={(opt) => {
             switch (opt) {
               case 'manual':
@@ -190,6 +214,7 @@ export function MCVP({ onNavigate, initialData }) {
                   <InteractiveMCVPGraph
                     onTreeUpdate={setTree}
                     useTopDownLayout={useTopDownLayout}
+                    onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
                   />
                 );
               default:
@@ -199,8 +224,18 @@ export function MCVP({ onNavigate, initialData }) {
         />
 
         {tree && chosenOpt !== 'interactive' && (
-          <div style={{ height: '60vh', width: '100%', margin: '20px auto' }}>
-            <TreeRenderCanvas tree={tree} useTopDownLayout={useTopDownLayout} />
+          <div
+            ref={mainGraphSectionRef}
+            style={{ height: '60vh', width: '100%', margin: '20px auto' }}
+          >
+            <TreeRenderCanvas
+              tree={tree}
+              useTopDownLayout={useTopDownLayout}
+              fitTrigger={mainFitTrigger}
+              defaultLocked={lockImportedLayout}
+              lockOnFirstTick={lockImportedLayout}
+              onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
+            />
           </div>
         )}
 
@@ -319,4 +354,6 @@ export function MCVP({ onNavigate, initialData }) {
 MCVP.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  useTopDownLayout: PropTypes.bool,
+  autoScrollToGraph: PropTypes.bool,
 };

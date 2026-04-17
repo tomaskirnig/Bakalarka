@@ -7,6 +7,9 @@ export function generateGrammarSteps(grammar) {
   const steps = [];
   const productive = new Set();
   const { nonTerminals, terminals, productions } = grammar;
+  const terminalSet = new Set(terminals);
+
+  const formatRule = (left, right) => `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
 
   const start = nonTerminals.length > 0 ? nonTerminals[0] : null;
 
@@ -48,13 +51,13 @@ export function generateGrammarSteps(grammar) {
 
   for (const rule of rules) {
     const { left, right } = rule;
-    const ruleStr = `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
+    const ruleStr = formatRule(left, right);
 
     // Check if right side consists purely of terminals (or is epsilon)
     const isTerminalOnly =
       right.length === 0 ||
       (right.length === 1 && right[0] === 'ε') ||
-      right.every((sym) => terminals.includes(sym));
+      right.every((sym) => terminalSet.has(sym));
 
     if (isTerminalOnly) {
       if (!productive.has(left)) {
@@ -116,8 +119,9 @@ export function generateGrammarSteps(grammar) {
     });
   }
 
-  while (queue.length > 0) {
-    const newlyProd = queue.shift();
+  let queueIndex = 0;
+  while (queueIndex < queue.length) {
+    const newlyProd = queue[queueIndex++];
 
     steps.push({
       type: 'QUEUE_POP',
@@ -131,13 +135,13 @@ export function generateGrammarSteps(grammar) {
       const { left, right } = rule;
       // Skip unrelated rules.
       if (right.includes(newlyProd)) {
-        const ruleStr = `${left} → ${right.length === 0 ? 'ε' : right.join(' ')}`;
+        const ruleStr = formatRule(left, right);
 
         // Check if this rule is NOW fully productive
         const isProductive =
           right.length === 0 ||
           (right.length === 1 && right[0] === 'ε') ||
-          right.every((sym) => terminals.includes(sym) || productive.has(sym));
+          right.every((sym) => terminalSet.has(sym) || productive.has(sym));
 
         if (isProductive) {
           if (!productive.has(left)) {
@@ -161,7 +165,7 @@ export function generateGrammarSteps(grammar) {
           }
         } else {
           // Find what's missing
-          const missing = right.filter((sym) => !terminals.includes(sym) && !productive.has(sym));
+          const missing = right.filter((sym) => !terminalSet.has(sym) && !productive.has(sym));
           steps.push({
             type: 'CHECK_RULE_WAIT',
             description: `Pravidlo "${ruleStr}" obsahuje "${newlyProd}", ale stále čeká na: { ${missing.join(', ')} }.`,

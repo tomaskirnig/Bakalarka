@@ -1,5 +1,29 @@
 import { Node } from './NodeClass';
 
+const getLinkEndpointId = (endpoint) => (typeof endpoint === 'object' ? endpoint?.id : endpoint);
+
+const getNodePosition = (graphNode, positionsById) => {
+  if (typeof graphNode.x === 'number' && typeof graphNode.y === 'number') {
+    return { x: graphNode.x, y: graphNode.y };
+  }
+
+  if (!positionsById || typeof positionsById !== 'object') {
+    return null;
+  }
+
+  const id = graphNode.id;
+  if (Object.prototype.hasOwnProperty.call(positionsById, id)) {
+    return positionsById[id];
+  }
+
+  const stringId = String(id);
+  if (Object.prototype.hasOwnProperty.call(positionsById, stringId)) {
+    return positionsById[stringId];
+  }
+
+  return null;
+};
+
 /**
  * Converts flat graph data into internal Node DAG structure.
  *
@@ -10,6 +34,7 @@ import { Node } from './NodeClass';
  * @param {boolean} [options.requireBinaryOperationNodes=false] - Requires exactly 2 children for every operation node.
  * @param {boolean} [options.normalizeUnaryOperationNodes=false] - Duplicates a single child for operation nodes so they behave as binary gates.
  * @param {boolean} [options.throwOnInvalid=false] - Throws on invalid input instead of returning null.
+ * @param {boolean} [options.suppressWarnings=false] - Suppresses console warnings when input is temporarily invalid.
  * @returns {Node|null}
  */
 export function graphToTree(
@@ -20,17 +45,22 @@ export function graphToTree(
     requireBinaryOperationNodes = false,
     normalizeUnaryOperationNodes = false,
     throwOnInvalid = false,
+    suppressWarnings = false,
   } = {}
 ) {
   if (!graphData || !Array.isArray(graphData.nodes) || graphData.nodes.length === 0) {
     return null;
   }
 
+  const positionsById = graphData?.positions;
+
   const fail = (message) => {
     if (throwOnInvalid) {
       throw new Error(message);
     }
-    console.warn(message);
+    if (!suppressWarnings) {
+      console.warn(message);
+    }
     return null;
   };
 
@@ -47,13 +77,8 @@ export function graphToTree(
     );
 
     if (preservePositions) {
-      if (typeof graphNode.x === 'number' && typeof graphNode.y === 'number') {
-        node.x = graphNode.x;
-        node.y = graphNode.y;
-        node.fx = graphNode.x;
-        node.fy = graphNode.y;
-      } else if (graphData.positions && graphData.positions[graphNode.id]) {
-        const pos = graphData.positions[graphNode.id];
+      const pos = getNodePosition(graphNode, positionsById);
+      if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') {
         node.x = pos.x;
         node.y = pos.y;
         node.fx = pos.x;
@@ -69,8 +94,8 @@ export function graphToTree(
     : graphData.edges || [];
 
   for (const link of links) {
-    const sourceId = typeof link.source === 'object' ? link.source?.id : link.source;
-    const targetId = typeof link.target === 'object' ? link.target?.id : link.target;
+    const sourceId = getLinkEndpointId(link.source);
+    const targetId = getLinkEndpointId(link.target);
 
     const sourceNode = nodeMap.get(sourceId);
     const targetNode = nodeMap.get(targetId);

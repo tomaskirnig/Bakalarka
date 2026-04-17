@@ -1,10 +1,10 @@
 {
   "name": "Jednoduchá aritmetika",
   "nonTerminals": ["E", "T", "F"],
-  "terminals": ["+", "-", "*", "/", "(", ")", "number"],
+  "terminals": ["+", "-", "*", "/", "(", ")", "číslo"],
   "productions": {
     "E": [["E", "+", "T"], ["E", "-", "T"], ["T"]],
     "T": [["T", "*", "F"], ["T", "/", "F"], ["F"]],
-    "F": [["(", "E", ")"], ["number"]]
+    "F": [["(", "E", ")"], ["číslo"]]
   }
 }

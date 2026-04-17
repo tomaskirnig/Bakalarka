@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import PropTypes from 'prop-types';
+import { Modal } from './Common/Modal';
 
 /**
  * Main navigation component with desktop and mobile/off-canvas variants.
@@ -7,22 +8,24 @@ import PropTypes from 'prop-types';
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Navigation UI.
  */
-export function Navigation({ selectedOption, onNavSelect }) {
+export function Navigation({ selectedOption, onNavSelect, graphSettings, onGraphSettingsChange }) {
   const mobileMenuTimerRef = useRef(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   useEffect(() => {
     return () => clearTimeout(mobileMenuTimerRef.current);
   }, []);
   const navItems = [
-    { key: 'Home', labelDesktop: 'Domů', labelMobile: 'Domů' },
-    { key: 'MCVP', labelDesktop: 'MCVP', labelMobile: 'MCVP' },
+    { key: 'Home', label: 'Domů' },
+    { key: 'MCVP', label: 'MCVP' },
     {
       key: 'CombinatorialGame',
-      labelDesktop: 'Kombinatorická hra',
-      labelMobile: 'Kombinatorická hra',
+      label: 'Kombinatorická hra',
     },
-    { key: 'Grammar', labelDesktop: 'Gramatika', labelMobile: 'Gramatika' },
+    { key: 'Grammar', label: 'Gramatika' },
   ];
+
+  const isMcvpPage = selectedOption === 'MCVP';
 
   // Handle offcanvas functionality
   useEffect(() => {
@@ -93,6 +96,7 @@ export function Navigation({ selectedOption, onNavSelect }) {
 
   const renderButton = ({ key, label, isMobile }) => (
     <button
+      type="button"
       key={key}
       className={`modern-nav-link ${selectedOption === key ? 'active' : ''}`}
       onClick={() => {
@@ -104,6 +108,14 @@ export function Navigation({ selectedOption, onNavSelect }) {
     </button>
   );
 
+  const handleToggleMcvpLayout = (isEnabled) => {
+    onGraphSettingsChange({ useTopDownLayout: isEnabled });
+  };
+
+  const handleToggleAutoScroll = (isEnabled) => {
+    onGraphSettingsChange({ autoScrollToGraph: isEnabled });
+  };
+
   return (
     <>
       <nav className="navbar">
@@ -114,15 +126,31 @@ export function Navigation({ selectedOption, onNavSelect }) {
             <span className="hamburger-line"></span>
             <span className="hamburger-line"></span>
           </button>
+          <button
+            type="button"
+            className="navbar-settings-btn navbar-settings-btn-mobile"
+            aria-label="Otevřít nastavení"
+            title="Nastavení"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            <i className="bi bi-gear-fill"></i>
+          </button>
         </div>
 
         {/* Desktop menu */}
         <div className="desktop-nav-container">
           <div className="nav-items-container">
-            {navItems.map((item) =>
-              renderButton({ ...item, label: item.labelDesktop, isMobile: false })
-            )}
+            {navItems.map((item) => renderButton({ ...item, isMobile: false }))}
           </div>
+          <button
+            type="button"
+            className="navbar-settings-btn navbar-settings-btn-desktop"
+            aria-label="Otevřít nastavení"
+            title="Nastavení"
+            onClick={() => setIsSettingsOpen(true)}
+          >
+            <i className="bi bi-gear-fill"></i>
+          </button>
         </div>
       </nav>
 
@@ -143,12 +171,65 @@ export function Navigation({ selectedOption, onNavSelect }) {
         </div>
         <div className="offcanvas-body-modern">
           <div className="mobile-nav-items">
-            {navItems.map((item) =>
-              renderButton({ ...item, label: item.labelMobile, isMobile: true })
-            )}
+            {navItems.map((item) => renderButton({ ...item, isMobile: true }))}
           </div>
         </div>
       </div>
+
+      {isSettingsOpen && (
+        <Modal
+          onClose={() => setIsSettingsOpen(false)}
+          title="Nastavení grafů"
+          contentClassName="settings-modal-content"
+          bodyClassName="settings-modal-body"
+        >
+          <div className="navigation-settings-panel">
+            <div className="form-check form-switch navigation-settings-row">
+              <input
+                className="form-check-input clickable"
+                type="checkbox"
+                role="switch"
+                id="nav-mcvp-layout-switch"
+                checked={graphSettings.useTopDownLayout}
+                disabled={!isMcvpPage}
+                onChange={(e) => handleToggleMcvpLayout(e.target.checked)}
+              />
+              <label
+                className="form-check-label clickable"
+                htmlFor="nav-mcvp-layout-switch"
+                style={{ color: 'black' }}
+              >
+                Režim rozložení MCVP:{' '}
+                {graphSettings.useTopDownLayout ? 'Top-down (TD)' : 'Volný graf'}
+              </label>
+            </div>
+
+            {!isMcvpPage && (
+              <p className="navigation-settings-hint mb-3">
+                Toto nastavení lze měnit pouze v sekci MCVP.
+              </p>
+            )}
+
+            <div className="form-check form-switch navigation-settings-row">
+              <input
+                className="form-check-input clickable"
+                type="checkbox"
+                role="switch"
+                id="nav-auto-scroll-switch"
+                checked={graphSettings.autoScrollToGraph}
+                onChange={(e) => handleToggleAutoScroll(e.target.checked)}
+              />
+              <label
+                className="form-check-label clickable"
+                htmlFor="nav-auto-scroll-switch"
+                style={{ color: 'black' }}
+              >
+                Automaticky přesunout pohled na graf po načtení/generování
+              </label>
+            </div>
+          </div>
+        </Modal>
+      )}
     </>
   );
 }
@@ -156,4 +237,9 @@ export function Navigation({ selectedOption, onNavSelect }) {
 Navigation.propTypes = {
   selectedOption: PropTypes.string.isRequired,
   onNavSelect: PropTypes.func.isRequired,
+  graphSettings: PropTypes.shape({
+    useTopDownLayout: PropTypes.bool.isRequired,
+    autoScrollToGraph: PropTypes.bool.isRequired,
+  }).isRequired,
+  onGraphSettingsChange: PropTypes.func.isRequired,
 };

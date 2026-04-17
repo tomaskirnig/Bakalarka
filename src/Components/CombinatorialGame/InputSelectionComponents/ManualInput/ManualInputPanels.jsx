@@ -69,19 +69,24 @@ export function ManualInputPanels({
               <>
                 <h5 className="card-title mb-3">Vybraný uzel: {selectedNode.id}</h5>
                 <div className="d-flex flex-wrap justify-content-center gap-2 mb-4">
-                  <button className="btn btn-primary btn-sm" onClick={onChangePlayer}>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={onChangePlayer}>
                     Změnit hráče
                   </button>
-                  <button className="btn btn-info btn-sm" onClick={onSetAsStartingNode}>
+                  <button
+                    type="button"
+                    className="btn btn-info btn-sm"
+                    onClick={onSetAsStartingNode}
+                  >
                     Nastavit jako startovní
                   </button>
                   <button
+                    type="button"
                     className="btn btn-danger btn-sm"
                     onClick={() => onDeleteNode(selectedNode.id)}
                   >
                     Smazat uzel
                   </button>
-                  <button className="btn btn-success btn-sm" onClick={onStartAddEdge}>
+                  <button type="button" className="btn btn-success btn-sm" onClick={onStartAddEdge}>
                     Přidat hranu
                   </button>
                 </div>
@@ -89,14 +94,15 @@ export function ManualInputPanels({
                 <div>
                   <h6 className="mb-2">Propojené uzly:</h6>
                   <div className="d-flex flex-wrap gap-2 justify-content-center">
-                    {connectedLinks.map((link, index) => {
+                    {connectedLinks.map((link) => {
                       const sourceId = resolveNodeId(link.source);
                       const targetId = resolveNodeId(link.target);
                       const connectedNodeId = sourceId === selectedNode.id ? targetId : sourceId;
 
                       return (
                         <button
-                          key={index}
+                          key={`${sourceId}-${targetId}`}
+                          type="button"
                           className="btn btn-outline-danger btn-sm"
                           onClick={() => onDeleteEdge(sourceId, targetId)}
                         >

@@ -1,9 +1,11 @@
 import PropTypes from 'prop-types';
 import { useState } from 'react';
 
+const toIdString = (value) => String(value);
+
 // Load all JSON files from the Sady/CombinatorialGame directory
 const modules = import.meta.glob('../../../../Sady/CombinatorialGame/*.json', { eager: true });
-const Data = Object.entries(modules)
+const PREPARED_GAME_SETS = Object.entries(modules)
   .map(([path, mod]) => {
     const data = mod.default || mod;
     // Validation
@@ -25,7 +27,7 @@ const Data = Object.entries(modules)
     }
     return data;
   })
-  .filter((item) => item !== null);
+  .filter(Boolean);
 
 /**
  * Selector for loading predefined combinatorial game instances from JSON sets.
@@ -41,7 +43,7 @@ export function PreparedSetsInput({
   const [selectedSetIndex, setSelectedSetIndex] = useState(null);
 
   const loadGraph = (index, playerOverride) => {
-    const graphData = Data[index];
+    const graphData = PREPARED_GAME_SETS[index];
     const positions = {};
 
     // 1. Initialize positions from nodes
@@ -60,8 +62,8 @@ export function PreparedSetsInput({
     // 2. Build edges
     if (graphData.edges) {
       graphData.edges.forEach((edge) => {
-        const source = String(edge.source);
-        const target = String(edge.target);
+        const source = toIdString(edge.source);
+        const target = toIdString(edge.target);
 
         if (positions[source] && positions[target]) {
           positions[source].children.push(target);
@@ -70,7 +72,7 @@ export function PreparedSetsInput({
       });
     }
 
-    const startingPositionId = String(graphData.startingPosition);
+    const startingPositionId = toIdString(graphData.startingPosition);
 
     // Override starting position player if requested
     if (playerOverride !== undefined && positions[startingPositionId]) {
@@ -94,14 +96,14 @@ export function PreparedSetsInput({
       return;
     }
 
-    const index = parseInt(val);
-    if (!isNaN(index) && index >= 0) {
+    const index = Number.parseInt(val, 10);
+    if (!Number.isNaN(index) && index >= 0) {
       setSelectedSetIndex(index);
 
       // Determine the natural starting player from the set
-      const graphData = Data[index];
-      const startId = String(graphData.startingPosition);
-      const startNode = graphData.nodes.find((n) => String(n.id) === startId);
+      const graphData = PREPARED_GAME_SETS[index];
+      const startId = toIdString(graphData.startingPosition);
+      const startNode = graphData.nodes.find((n) => toIdString(n.id) === startId);
       const naturalPlayer = startNode ? startNode.player : 1;
 
       // Update the selector to match the set
@@ -156,8 +158,8 @@ export function PreparedSetsInput({
         value={selectedSetIndex === null ? '' : selectedSetIndex}
       >
         <option value="">Vybrat sadu</option>
-        {Data.map((set, index) => (
-          <option key={index} value={index}>
+        {PREPARED_GAME_SETS.map((set, index) => (
+          <option key={set.name || index} value={index}>
             {set.name}
           </option>
         ))}
