@@ -1,7 +1,7 @@
 # Project Overview
 
 Last verified: 2026-04-20  
-Commit: 8f75d2f
+Commit baseline: 8f75d2f (working tree changes applied)
 
 This document is the implementation-level map of the app.  
 It focuses on what actually exists in `src`, which symbols are used, how data moves, and where guardrails are implemented.
@@ -82,6 +82,11 @@ Notes:
 - Page-level safety: `ErrorBoundary` wraps selected page and uses `key={currentPage}` reset behavior
 - Fallback UI: `Common/ErrorPage.jsx`
 
+## 2.4 Dev Server Defaults
+
+- `vite.config.js` sets `server.port` to `5174`
+- default local dev URL: `http://localhost:5174/`
+
 ---
 
 ## 3. Shared Building Blocks
@@ -133,6 +138,7 @@ Concrete behavior:
 - MCVP tree rendering persists `x/y` into source nodes
 - MCVP export can capture live engine positions via snapshot getter
 - Combinatorial game renderers/editors persist `x/y` into internal graph data
+- MCVP interactive editor syncs engine-stop positions only when layout changes are pending, using a small coordinate tolerance to avoid periodic twitch loops
 
 ### Pattern C: Locking Strategy
 
@@ -247,6 +253,8 @@ Editor behavior:
 - add/delete edges (operation nodes max 2 outgoing)
 - update node type/value
 - graph continuously converted to internal Node graph via `graphDataToNodeClass`
+- background click clears current selection (or cancels edge-adding mode)
+- includes geometric fallback picking for background events to mitigate browser canvas color-picking quirks
 
 Interactive mode intentionally allows temporarily incomplete structures while user edits.
 
@@ -674,6 +682,7 @@ When adding/changing functionality:
 
 Recommended commands:
 
+- `npm run dev` (local default: `http://localhost:5174/`)
 - `npm run test`
 - `npm run lint`
 - `npm run build`

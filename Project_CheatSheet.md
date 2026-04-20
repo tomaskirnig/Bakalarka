@@ -1,7 +1,7 @@
 # Project Cheat Sheet
 
 Last verified: 2026-04-20  
-Commit: 8f75d2f
+Commit baseline: 8f75d2f (working tree changes applied)
 
 Purpose: quick implementation reference for algorithms, data flow, guardrails, and file locations.
 
@@ -23,6 +23,10 @@ Navigation and global graph UI settings:
 
 - `src/Components/Navigation.jsx`
 - global settings in `App.jsx`: `useTopDownLayout`, `autoScrollToGraph`, `lockNodeAfterDrag`
+
+Development server:
+
+- `vite.config.js` sets Vite `server.port` to `5174`
 
 ## 2. Shared Infrastructure
 
@@ -168,6 +172,13 @@ Module root:
 - Export from `MCVP.jsx` can include live positions captured from active graph engine snapshot.
 - Import accepts legacy object-with-sets shape (uses first valid set).
 - Imported graphs with positions are auto-locked on first render for stable layout.
+
+### 4.7 Interactive behavior notes
+
+- Background click clears active node selection.
+- In edge-adding mode, background click cancels the mode unless fallback hit-testing detects a node target.
+- Canvas-picking fallback uses pointer-to-graph geometric hit-testing to mitigate browser color-picking quirks.
+- Engine-stop position sync is gated by pending-layout state and a small coordinate tolerance to reduce periodic twitch/resync loops.
 
 ## 5. Combinatorial Game
 
@@ -378,6 +389,10 @@ Useful search commands:
 
 - `rg "export function|export class|class |useMemo|compute|generate|parse" src`
 - `rg "evaluateCircuitWithSteps|computeWinner|isEmptyLanguage|generateGrammarSteps" src`
+
+Useful run command:
+
+- `npm run dev` (local default: `http://localhost:5174/`)
 
 ## 11. Naming Note
 
