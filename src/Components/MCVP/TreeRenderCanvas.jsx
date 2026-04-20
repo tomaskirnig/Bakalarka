@@ -1,6 +1,7 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceCollide, forceCenter } from 'd3';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../Hooks/useGraphSettings';
 import { drawReversedArrowhead } from './Utils/drawReversedArrowhead';
@@ -36,6 +37,7 @@ export function TreeRenderCanvas({
   lockOnFirstTick = false,
   onRegisterPositionSnapshotGetter,
   showLockControl = true,
+  lockNodeAfterDrag = true,
 }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
@@ -404,17 +406,18 @@ export function TreeRenderCanvas({
         : mcvp.collisionStrength;
 
       // Add collision force to prevent overlap
-      if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force(
-          'collision',
-          window.d3
-            .forceCollide(collisionRadius)
-            .strength(collisionStrength)
-            .iterations(collisionIterations)
-        );
-      }
-      if (window.d3 && window.d3.forceCenter) {
-        fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
+      fgRef.current.d3Force(
+        'collision',
+        forceCollide(collisionRadius)
+          .strength(collisionStrength)
+          .iterations(collisionIterations)
+      );
+
+      // Disable center force when DAG mode is active as it conflicts with hierarchical layout
+      if (useTopDownLayout) {
+        fgRef.current.d3Force('center', null);
+      } else {
+        fgRef.current.d3Force('center', forceCenter(0, 0));
       }
       const linkDistance = useTopDownLayout ? Math.max(130, mcvp.linkDistance) : mcvp.linkDistance;
       const chargeStrength = useTopDownLayout
@@ -516,14 +519,23 @@ export function TreeRenderCanvas({
   }, [graphData.nodes, isLocked, persistNodePosition, lockOnFirstTick]);
 
   // Immediate fit when explicitly requested.
+  const lastEffectFitTrigger = useRef(-1);
+  const lastEngineFitTrigger = useRef(-1);
+
   useEffect(() => {
-    const shouldFit = fitToScreen || fitTrigger > 0;
+    const fitRequested = fitTrigger > lastEffectFitTrigger.current;
+    const shouldFit = fitToScreen || fitRequested;
+
     if (!shouldFit) return;
     if (!fgRef.current) return;
     if (canvasWidth <= 0 || canvasHeight <= 0) return;
     if (!graphData.nodes || graphData.nodes.length === 0) return;
 
     requestStableFit(400);
+
+    if (fitRequested) {
+      lastEffectFitTrigger.current = fitTrigger;
+    }
   }, [fitToScreen, fitTrigger, canvasWidth, canvasHeight, graphData.nodes, requestStableFit]);
 
   // Called by ForceGraph2D when the physics simulation stops.
@@ -554,10 +566,21 @@ export function TreeRenderCanvas({
     }
 
     // Ensure final settled layout is also centered/fitted when requested.
-    if (fitToScreen || fitTrigger > 0) {
+    const fitRequested = fitTrigger > lastEngineFitTrigger.current;
+    if (fitToScreen || fitRequested) {
       requestStableFit(300);
+      if (fitRequested) {
+        lastEngineFitTrigger.current = fitTrigger;
+      }
     }
-  }, [graphData.nodes, isLocked, persistNodePosition, fitToScreen, fitTrigger, requestStableFit]);
+  }, [
+    graphData.nodes,
+    isLocked,
+    persistNodePosition,
+    fitToScreen,
+    fitTrigger,
+    requestStableFit,
+  ]);
 
   return (
     <div
@@ -606,13 +629,21 @@ export function TreeRenderCanvas({
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
         onNodeDrag={(node) => {
-          node.fx = node.x;
-          node.fy = node.y;
+          if (lockNodeAfterDrag || isLocked) {
+            node.fx = node.x;
+            node.fy = node.y;
+          }
           persistNodePosition(node);
         }}
         onNodeDragEnd={(node) => {
-          node.fx = node.x;
-          node.fy = node.y;
+          if (lockNodeAfterDrag || isLocked) {
+            node.fx = node.x;
+            node.fy = node.y;
+          } else {
+            node.fx = undefined;
+            node.fy = undefined;
+            fgRef.current?.d3ReheatSimulation();
+          }
           persistNodePosition(node);
         }}
         onBackgroundClick={() => {
@@ -644,4 +675,5 @@ TreeRenderCanvas.propTypes = {
   lockOnFirstTick: PropTypes.bool,
   onRegisterPositionSnapshotGetter: PropTypes.func,
   showLockControl: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };

@@ -15,6 +15,7 @@ export function Navigation({ selectedOption, onNavSelect, graphSettings, onGraph
   useEffect(() => {
     return () => clearTimeout(mobileMenuTimerRef.current);
   }, []);
+
   const navItems = [
     { key: 'Home', label: 'Domů' },
     { key: 'MCVP', label: 'MCVP' },
@@ -114,6 +115,10 @@ export function Navigation({ selectedOption, onNavSelect, graphSettings, onGraph
 
   const handleToggleAutoScroll = (isEnabled) => {
     onGraphSettingsChange({ autoScrollToGraph: isEnabled });
+  };
+
+  const handleToggleLockAfterDrag = (isEnabled) => {
+    onGraphSettingsChange({ lockNodeAfterDrag: isEnabled });
   };
 
   return (
@@ -227,6 +232,24 @@ export function Navigation({ selectedOption, onNavSelect, graphSettings, onGraph
                 Automaticky přesunout pohled na graf po načtení/generování
               </label>
             </div>
+
+            <div className="form-check form-switch navigation-settings-row">
+              <input
+                className="form-check-input clickable"
+                type="checkbox"
+                role="switch"
+                id="nav-lock-after-drag-switch"
+                checked={graphSettings.lockNodeAfterDrag}
+                onChange={(e) => handleToggleLockAfterDrag(e.target.checked)}
+              />
+              <label
+                className="form-check-label clickable"
+                htmlFor="nav-lock-after-drag-switch"
+                style={{ color: 'black' }}
+              >
+                Ukotvit pozici uzlu po jeho přesunutí
+              </label>
+            </div>
           </div>
         </Modal>
       )}
@@ -240,6 +263,7 @@ Navigation.propTypes = {
   graphSettings: PropTypes.shape({
     useTopDownLayout: PropTypes.bool.isRequired,
     autoScrollToGraph: PropTypes.bool.isRequired,
+    lockNodeAfterDrag: PropTypes.bool.isRequired,
   }).isRequired,
   onGraphSettingsChange: PropTypes.func.isRequired,
 };

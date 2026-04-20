@@ -16,6 +16,7 @@ export default function MCVPtoCombinatorialGameConverter({
   mcvpTree,
   onNavigate,
   useTopDownLayout = true,
+  lockNodeAfterDrag = true,
 }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
@@ -159,6 +160,7 @@ export default function MCVPtoCombinatorialGameConverter({
                 defaultLocked={true}
                 lockOnFirstTick={true}
                 showLockControl={true}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             </div>
           </div>
@@ -186,6 +188,7 @@ export default function MCVPtoCombinatorialGameConverter({
                 lockOnFirstTick={true}
                 showNodeIdsAlways={true}
                 showLockControl={true}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             </div>
           </div>
@@ -281,4 +284,5 @@ MCVPtoCombinatorialGameConverter.propTypes = {
   mcvpTree: PropTypes.object.isRequired,
   onNavigate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };

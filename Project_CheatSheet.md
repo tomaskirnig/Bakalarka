@@ -1,14 +1,15 @@
 # Project Cheat Sheet
 
-Last verified: 2026-04-10
-Commit: 974f086
+Last verified: 2026-04-20  
+Commit: 8f75d2f
 
-Purpose: quick implementation reference for algorithms, data flow, and file locations.
+Purpose: quick implementation reference for algorithms, data flow, guardrails, and file locations.
 
-## 1. Project map
+## 1. Fast Project Map
 
 Main app entry:
 
+- `src/main.jsx`
 - `src/App.jsx`
 
 Main pages:
@@ -18,38 +19,58 @@ Main pages:
 - Combinatorial Game: `src/Components/CombinatorialGame/CombinatorialGame.jsx`
 - Grammar: `src/Components/Grammar/Grammar.jsx`
 
-Navigation:
+Navigation and global graph UI settings:
 
 - `src/Components/Navigation.jsx`
+- global settings in `App.jsx`: `useTopDownLayout`, `autoScrollToGraph`, `lockNodeAfterDrag`
 
-## 2. Shared components and infrastructure
+## 2. Shared Infrastructure
 
-Shared UI/components:
+Shared components:
 
-- Generic input selector: `src/Components/Common/InputSystem/GenericInputMethodSelector.jsx`
+- Input mode switcher: `src/Components/Common/InputSystem/GenericInputMethodSelector.jsx`
+- Modal: `src/Components/Common/Modal.jsx`
 - Conversion modal: `src/Components/Common/ConversionModal.jsx`
-- File import/export controls: `src/Components/Common/FileTransferControls.jsx`
-- Info modal/button: `src/Components/Common/InfoButton.jsx`
-- Error boundary: `src/Components/Common/ErrorBoundary.jsx`
+- Info popover: `src/Components/Common/InfoButton.jsx`
+- Import/export controls: `src/Components/Common/FileTransferControls.jsx`
+- Error boundary and fallback: `src/Components/Common/ErrorBoundary.jsx`, `src/Components/Common/ErrorPage.jsx`
+- Graph lock toggle: `src/Components/Common/GraphControls/GraphLockButton.jsx`
 
-Visualization helpers/hooks:
+Shared hooks:
 
-- Graph lock control: `src/Components/Common/GraphControls/GraphLockButton.jsx`
-- Graph settings/colors hooks: `src/Hooks/useGraphSettings.js`, `src/Hooks/useGraphColors.js`
+- Graph rendering constants: `src/Hooks/useGraphSettings.js`
+- Graph colors from CSS variables: `src/Hooks/useGraphColors.js`
 
-## 3. Data formats (JSON)
+Cross-cutting UI pattern:
 
-MCVP set format (from `Sady/MCVP`):
+- Every domain computes analysis once and replays it by step index in a modal.
+
+## 3. Data Formats (JSON)
+
+### 3.1 MCVP (`Sady/MCVP/*.json`)
+
+Minimal prepared-set format:
 
 ```json
 {
   "name": "...",
-  "nodes": [{ "id": 1, "type": "variable|operation", "value": "x1|A|O", "varValue": 0 }],
-  "edges": [{ "source": 6, "target": 4 }]
+  "nodes": [
+    { "id": 1, "type": "variable", "value": "x1", "varValue": 0 },
+    { "id": 2, "type": "operation", "value": "A" }
+  ],
+  "edges": [{ "source": 2, "target": 1 }]
 }
 ```
 
-Combinatorial Game set format (from `Sady/CombinatorialGame`):
+Import also accepts:
+
+- `links` instead of `edges`
+- optional `positions` object (`{ "nodeId": { "x": number, "y": number } }`)
+- optional per-node `x`/`y`
+
+### 3.2 Combinatorial Game (`Sady/CombinatorialGame/*.json`)
+
+Flat format:
 
 ```json
 {
@@ -60,7 +81,22 @@ Combinatorial Game set format (from `Sady/CombinatorialGame`):
 }
 ```
 
-Grammar set format (from `Sady/Grammar`):
+Runtime internal format (manual editor / analysis):
+
+```json
+{
+  "positions": {
+    "1": { "id": "1", "player": 1, "children": ["2"], "parents": [] }
+  },
+  "startingPosition": { "id": "1" }
+}
+```
+
+Optional export layout field in flat format:
+
+- `nodePositions` (`{ "id": { "x": number, "y": number } }`)
+
+### 3.3 Grammar (`Sady/Grammar/*.json`)
 
 ```json
 {
@@ -74,141 +110,124 @@ Grammar set format (from `Sady/Grammar`):
 }
 ```
 
-## 4. MCVP
+Import also accepts an array of grammars and loads the first one.
+
+## 4. MCVP (Monotone Circuit Value Problem)
 
 Module root:
 
 - `src/Components/MCVP/MCVP.jsx`
 
-### 4.1 Manual input
+### 4.1 Input modes
 
-Primary files:
+- Manual text parser: `InputSelectionComponents/ManualInput.jsx`
+- Random generator: `InputSelectionComponents/GenerateInput.jsx`
+- Prepared sets loader: `InputSelectionComponents/PreparedSetsInput.jsx`
+- Interactive graph editor:
+  - `InputSelectionComponents/Interactive/InteractiveInput.jsx`
+  - `InteractiveInput.helpers.js`
+  - `InteractiveInput.renderers.js`
+  - `InteractiveSelectedNodeControls.jsx`
 
-- UI input: `src/Components/MCVP/InputSelectionComponents/ManualInput.jsx`
-- Parser: `src/Components/MCVP/Utils/Parser.js`
-- Node model: `src/Components/MCVP/Utils/NodeClass.js`
+### 4.2 Core models and transformations
 
-Algorithm: expression parsing pipeline
+- Node class: `Utils/NodeClass.js`
+- Parser: `Utils/Parser.js` (`parseExpressionToTree`)
+- Generator: `Utils/Generator.js` (`generateTree`)
+- Graph normalization/validation: `Utils/GraphToTree.js` (`graphToTree`)
+- Import/export conversion: `Utils/Serialization.js` (`flatGraphToTree`, `treeToFlatGraph`)
 
-- What: tokenizes expression and builds DAG-like operation/variable node structure.
-- How: recursive-descent parser (`parseExpression -> parseTerm -> parseFactor`) applies precedence (`OR` after `AND`); variable nodes are reused by name and conflicting values fail validation.
-- Input: string like `((x1[1] A x2[0]) O x3[1])`.
-- Output: root `Node` with `children`/`parents` links.
-- Notes: operator precedence `OR` after `AND`; same variable name must keep same value.
+### 4.3 Evaluation algorithm
 
-### 4.2 Generated input
+- File: `Utils/EvaluateCircuit.js`
+- Entry: `evaluateCircuitWithSteps(root)`
+- Behavior:
+  - DFS evaluation with memoization (`memo` map)
+  - cycle detection using active recursion path (`visiting` set)
+  - collects per-node evaluation steps
+  - appends final summary step with `type: 'FINAL'`
+- Return: `{ result, steps }`
+- Complexity: approximately `O(V + E)` on the reachable DAG
 
-Primary files:
+### 4.4 Important constraints
 
-- UI input: `src/Components/MCVP/InputSelectionComponents/GenerateInput.jsx`
-- Generator: `src/Components/MCVP/Utils/Generator.js`
+- Parser variable consistency: same variable cannot appear with conflicting value (`x1[1]` and `x1[0]` is invalid).
+- Generator feasibility: for binary structure, `numGates >= numVariables - 1`.
+- Interactive operation nodes can have at most 2 outgoing edges.
+- Manual and generated input clamp to 750 nodes-like limits in UI.
 
-Algorithm: random circuit generation
+### 4.5 Visualization specifics
 
-- What: creates random binary MCVP DAG and enforces one final root.
-- How: starts from variable nodes, then iteratively adds binary gates that attach existing nodes as children; root candidates are updated each step so generation ends with exactly one output root.
-- Input: gate count, variable count.
-- Output: generated root node.
-- Constraints: binary arity for operation nodes; feasibility checks avoid invalid root counts.
+- Main graph renderer: `TreeRenderCanvas.jsx`
+- Uses `react-force-graph-2d` and optional DAG top-down mode (`dagMode='td'`).
+- Keeps model and canvas aligned by persisting `x/y` back to source nodes.
+- Shows reversed visual arrowheads via `Utils/drawReversedArrowhead.js` while keeping logical edge relation parent -> child.
 
-### 4.3 Prepared sets input
+### 4.6 Import/export behavior
 
-Primary files:
+- Export from `MCVP.jsx` can include live positions captured from active graph engine snapshot.
+- Import accepts legacy object-with-sets shape (uses first valid set).
+- Imported graphs with positions are auto-locked on first render for stable layout.
 
-- UI input: `src/Components/MCVP/InputSelectionComponents/PreparedSetsInput.jsx`
-- Dataset folder: `Sady/MCVP`
-- Serialization: `src/Components/MCVP/Utils/Serialization.js`
-
-Data handling
-
-- Loads predefined sets and converts between flat graph JSON and internal tree/DAG structure.
-
-### 4.4 Core algorithms
-
-Algorithm: circuit evaluation with tracked steps
-
-- File: `src/Components/MCVP/Utils/EvaluateCircuit.js`
-- What: DFS-based evaluation with memoization and cycle detection.
-- How: recursive DFS evaluates children first; `memo` cache stores computed node values and returns them on repeat visits. `visiting` set tracks the active recursion path, and revisiting a node in this set means a cycle (error). After evaluation, node is removed from `visiting`, cached, and a step snapshot is appended.
-- Input: root node.
-- Output: `{ result, steps }`.
-- Complexity: O(n) over visited nodes (with memoization).
-
-Algorithm: step-by-step playback
-
-- Files: `src/Components/MCVP/StepByStepTree.jsx`, `src/Components/MCVP/MCVP.jsx`
-- What: consumes precomputed `steps` and visualizes evaluation sequence.
-- How: analysis is computed once; UI only moves a current index over stored `steps` (next/prev), so no re-evaluation is needed during playback.
-- Related visualization: `src/Components/MCVP/TreeRenderCanvas.jsx`.
-
-## 5. Combinatorial Game (CG)
+## 5. Combinatorial Game
 
 Module root:
 
 - `src/Components/CombinatorialGame/CombinatorialGame.jsx`
 
-### 5.1 Manual input
+### 5.1 Input modes
 
-Primary files:
+- Manual visual editor:
+  - `InputSelectionComponents/ManualInput/ManualInput.jsx`
+  - `ManualInput.helpers.js`
+  - `ManualInput.renderers.js`
+  - `ManualInputPanels.jsx`
+- Random generator: `InputSelectionComponents/GenerateInput.jsx`
+- Prepared sets: `InputSelectionComponents/PreparedSetsInput.jsx`
 
-- UI editor: `src/Components/CombinatorialGame/InputSelectionComponents/ManualInput/ManualInput.jsx`
-- Helpers/panels/renderers:
-  - `src/Components/CombinatorialGame/InputSelectionComponents/ManualInput/ManualInput.helpers.js`
-  - `src/Components/CombinatorialGame/InputSelectionComponents/ManualInput/ManualInput.renderers.js`
-  - `src/Components/CombinatorialGame/InputSelectionComponents/ManualInput/ManualInputPanels.jsx`
+### 5.2 Core algorithms
 
-Flow summary
+- File: `Utils/ComputeWinner.js`
+- Entries:
+  - `computeWinner(graph)`
+  - `getOptimalMoves(graph, precomputedResult)`
 
-- Interactive node/edge editing with start node assignment and player assignment per node.
+Winner computation details:
 
-### 5.2 Generated input
+- queue-based retrograde propagation (iterative, not recursive DFS)
+- initial terminal nodes marked `LOSE` relative to player-to-move at that node
+- parent updates consider whether move changes active player (uses `samePlayer` branch logic)
+- unresolved positions remain `DRAW`
+- final result converted to Player 1 perspective from start position
+- step list includes terminal, update, and final summary entries
 
-Primary files:
+Complexity:
 
-- UI input: `src/Components/CombinatorialGame/InputSelectionComponents/GenerateInput.jsx`
-- Generator: `src/Components/CombinatorialGame/Utils/Generator.js`
+- approximately `O(V + E)`
 
-Algorithm: random game graph generation
+### 5.3 Generator and graph model
 
-- What: builds connected graph from node 0, then adds random edges (can introduce cycles).
-- How: first creates a guaranteed-reachability backbone (each new node gets an incoming edge from an earlier node), then probabilistically adds extra directed edges for density and cycles.
-- Input: number of positions, edge probability.
-- Output: `GameGraph` with `positions` and `startingPosition`.
+- Generator: `Utils/Generator.js` (`generateGraph`)
+  - creates positions `0..n-1`
+  - builds guaranteed reachability backbone from node `0`
+  - adds random extra edges (cycles possible)
+- Models: `Utils/NodeClasses.js` (`GamePosition`, `GameGraph`)
 
-### 5.3 Prepared sets input
+### 5.4 Rendering and replay
 
-Primary files:
+- Graph renderer: `Utils/DisplayGraph.jsx`
+  - highlights start node
+  - highlights optimal Player 1 edges in gold
+  - can track highlighted step node
+  - persists dragged coordinates back to `graph.positions`
+- Result card: `Utils/GameAnalysisDisplay.jsx`
+- Step replay modal: `StepByStepGame.jsx`
 
-- UI input: `src/Components/CombinatorialGame/InputSelectionComponents/PreparedSetsInput.jsx`
-- Dataset folder: `Sady/CombinatorialGame`
+### 5.5 Export/import behavior
 
-Data handling
-
-- Imports/exports flat graph JSON (`nodes`, `edges`, `startingPosition`) and optional stored positions.
-
-### 5.4 Core algorithms
-
-Algorithm: winner computation (retrograde analysis)
-
-- File: `src/Components/CombinatorialGame/Utils/ComputeWinner.js`
-- What: labels nodes `WIN/LOSE/DRAW` using queue propagation from terminal positions.
-- How: uses a FIFO queue (not stack). Terminal positions are seeded first, then predecessors are updated backward: a node becomes `WIN` if it has at least one move to an opponent-losing node; it becomes `LOSE` when all legal moves go to opponent-winning nodes. Unresolved nodes after queue exhaustion remain `DRAW`.
-- Input: graph with `positions` and `startingPosition`.
-- Output: strategy result, node statuses, explanation, and analysis `steps`.
-- Complexity: approximately O(V + E).
-
-Algorithm: optimal moves extraction
-
-- File: `src/Components/CombinatorialGame/Utils/ComputeWinner.js`
-- What: extracts winning edges for Player 1 from computed statuses.
-- How: scans available edges and keeps only moves consistent with the winning-status relation computed by retrograde analysis.
-- Output: `Set` of edge keys (`source-target`).
-
-Algorithm: step-by-step analysis playback
-
-- Files: `src/Components/CombinatorialGame/StepByStepGame.jsx`, `src/Components/CombinatorialGame/CombinatorialGame.jsx`
-- How: replays stored analysis snapshots with index-based navigation, so user interaction only changes which recorded step is rendered.
-- Related visualization: `src/Components/CombinatorialGame/Utils/DisplayGraph.jsx`, `src/Components/CombinatorialGame/Utils/GameAnalysisDisplay.jsx`.
+- Export supports both internal (`positions`) and flat (`nodes/edges`) state.
+- Flat export may include `nodePositions` (if coordinates exist).
+- Import accepts flat or internal graph and also legacy collection objects (first valid set used).
 
 ## 6. Grammar
 
@@ -216,126 +235,150 @@ Module root:
 
 - `src/Components/Grammar/Grammar.jsx`
 
-### 6.1 Manual input
+### 6.1 Input modes
 
-Primary files:
+- Manual text parser: `InputSelectionComponent/ManualInput.jsx`
+- Generator: `InputSelectionComponent/GenerateInput.jsx`
+- Prepared sets: `InputSelectionComponent/PreparedSetsInput.jsx`
 
-- UI input: `src/Components/Grammar/InputSelectionComponent/ManualInput.jsx`
-- Parser: `src/Components/Grammar/Utils/GrammarParser.js`
-- Model: `src/Components/Grammar/Utils/Grammar.js`
+### 6.2 Core model and parser
 
-Algorithm: grammar parsing and validation
+- Model: `Utils/Grammar.js` (`Grammar` class)
+- Parser: `Utils/GrammarParser.js` (`parseGrammar(text)`)
 
-- What: parses text rules, supports `->` and `→`, handles alternatives (`|`) and epsilon (`ε`/`epsilon`).
-- How: normalizes input symbols, splits productions and alternatives, classifies symbols into terminals/non-terminals, and builds one internal grammar object with validation errors on malformed rules.
-- Input: multiline rule text.
-- Output: internal `Grammar` object.
+Parser supports:
 
-### 6.2 Generated input
+- both `->` and `→`
+- alternatives with `|`
+- epsilon as `ε` or `epsilon`
+- non-terminals starting with uppercase letter (including Czech uppercase letters)
 
-Primary files:
+### 6.3 Generator
 
-- UI input: `src/Components/Grammar/InputSelectionComponent/GenerateInput.jsx`
-- Generator: `src/Components/Grammar/Utils/GrammarGenerator.js`
+- File: `Utils/GrammarGenerator.js`
+- Entry: `generateGrammar(config)`
+- Key behavior:
+  - generates non-terminals (`S`, then A..)
+  - generates terminals (`a..`)
+  - probabilistic recursion insertion (left/right/central)
+  - optional epsilon creation (`never`, `random`, `always`)
+  - post-process reachability so all non-terminals are reachable from start
 
-Algorithm: random CFG generation
+UI complexity guard (`InputSelectionComponent/GenerateInput.jsx`):
 
-- What: builds non-terminals, terminals, productions under config constraints.
-- How: generates symbol sets, samples production counts per non-terminal, constructs RHS with recursion/epsilon options, then runs post-processing to enforce reachability and optional guaranteed epsilon rule.
-- Input: generator config (counts, max length, recursion flags, epsilon mode, production bounds).
-- Output: `Grammar` instance.
-- Extras: includes reachability fix and epsilon guarantee mode.
+- estimate uses rule count, rule length, recursion multiplier
+- warning at `>= 240`
+- hard block at `>= 420`
 
-Algorithm: generation complexity estimate (UI guard)
+### 6.4 Emptiness evaluation and witness
 
-- File: `src/Components/Grammar/InputSelectionComponent/GenerateInput.jsx`
-- What: estimates generation cost before running and prevents overly heavy configurations.
-- How: computes `estimatedRules = numNonTerminals * maxProductions`, then `estimatedSymbolSlots = estimatedRules * maxRuleLength`, applies recursion multiplier (`1.25` for each enabled side recursion), and rounds to final `estimatedComplexity`.
-- Thresholds: warn at `>= 240`; block generation at `>= 420`.
+- File: `Utils/GrammarEvaluator.js`
+- Entry: `isEmptyLanguage(grammar)`
+- Returns:
+  - emptiness boolean
+  - productive and nonproductive sets
+  - explanation
+  - optional derivation witness tree and derived word
 
-### 6.3 Prepared sets input
+Witness builder guardrails:
 
-Primary files:
+- iterative construction (no deep recursion)
+- max nodes: 1200
+- max depth: 80
+- max symbol repeats per path: 4
+- truncation metadata surfaced to UI (`witnessTruncated`, `witnessTruncationReason`)
 
-- UI input: `src/Components/Grammar/InputSelectionComponent/PreparedSetsInput.jsx`
-- Dataset folder: `Sady/Grammar`
+### 6.5 Step-by-step analysis UI
 
-Data handling
-
-- Supports import of grammar object or array format, with required fields validation.
-
-### 6.4 Core algorithms
-
-Algorithm: empty language check and productive symbols
-
-- File: `src/Components/Grammar/Utils/GrammarEvaluator.js`
-- Function entry: `isEmptyLanguage(grammar)`.
-- What: queue-based fixed-point search for productive non-terminals.
-- How: initializes a work queue with rules that already derive terminals/epsilon, then repeatedly marks new productive non-terminals and rechecks dependent rules until no new symbol can be added (fixed point).
-- Output: `{ isEmpty, productive, nonproductive, explanation, ... }`.
-- Complexity: roughly O(|P| \* |N|).
-
-Algorithm: derivation witness/tree construction
-
-- File: `src/Components/Grammar/Utils/GrammarEvaluator.js`
-- What: constructs compact finite witness derivation tree with safeguards.
-- How: computes minimal derivation cost per productive non-terminal (fixed-point relaxation), selects the cheapest production per symbol, then builds the witness tree iteratively with explicit stack and safety limits.
-- Guardrails: node/depth limits, cycle-avoidance heuristics, truncation metadata.
-
-Algorithm: step-by-step grammar analysis UI
-
-- Files: `src/Components/Grammar/StepByStepGrammar.jsx`, `src/Components/Grammar/Grammar.jsx`
-- How: displays precomputed analysis snapshots (productive set + rule states) step-by-step; UI navigation changes only the active snapshot index.
-- Related visualization: `src/Components/Grammar/DerivationTreeVisual.jsx`.
+- Step generator: `Utils/GrammarStepEvaluator.js` (`generateGrammarSteps`)
+- Replay component: `StepByStepGrammar.jsx`
+- Tree visualization: `DerivationTreeVisual.jsx`
 
 ## 7. Conversions
 
 ### 7.1 MCVP -> Combinatorial Game
 
-Primary files:
+Files:
 
-- Core conversion logic: `src/Components/Conversions/MCVP-CombinatorialGame/ConversionCombinatorialGame.js`
-- Converter UI: `src/Components/Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter.jsx`
+- logic: `src/Components/Conversions/MCVP-CombinatorialGame/ConversionCombinatorialGame.js`
+- UI: `src/Components/Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter.jsx`
 
-Algorithm summary
+Mapping rules:
 
-- OR node -> Player 1 position.
-- AND node -> Player 2 position.
-- Variable `1` -> Player 2 terminal position.
-- Variable `0` -> Player 1 terminal position.
-- Uses step generator (`MCVPToGameStepGenerator`) and visited-set to avoid duplication.
-- How: DFS over MCVP DAG creates each game node once (`visited`), maps node type to player ownership, adds edges to converted children, and stores conversion snapshots for playback.
+- OR -> Player 1 position
+- AND -> Player 2 position
+- variable value `1` -> Player 2 terminal position
+- variable value `0` -> Player 1 terminal position
+
+Implementation notes:
+
+- step generator class `MCVPToGameStepGenerator`
+- per-node labels `V0`, `V1`, ...
+- visited set prevents duplicate conversion of shared DAG nodes
+- preserves source node `x/y` when available
 
 ### 7.2 MCVP -> Grammar
 
-Primary files:
+Files:
 
-- Core conversion and UI: `src/Components/Conversions/MCVP-Grammar/MCVPtoGrammarConverter.jsx`
-- Grammar helper class: `src/Components/Conversions/MCVP-Grammar/ConversionGrammar.js`
+- helper grammar class: `src/Components/Conversions/MCVP-Grammar/ConversionGrammar.js`
+- conversion logic + UI: `src/Components/Conversions/MCVP-Grammar/MCVPtoGrammarConverter.jsx`
 
-Algorithm summary
+Mapping rules:
 
-- Assigns non-terminals to operation nodes (`S` for root).
-- Maps variable `1` to terminal (or epsilon with probability).
-- Maps variable `0` to non-productive loop rule (`X -> X`).
-- Builds productions per gate type and records conversion steps for visualization.
-- How: two-phase conversion: first assign symbols to all circuit nodes, then emit productions by node semantics (`AND` concatenation, `OR` alternatives, leaves as terminal/epsilon/self-loop), while logging intermediate states.
+- operation nodes receive non-terminals (`S` reserved for root)
+- AND -> one concatenation production
+- OR -> multiple alternative productions
+- variable value `1` -> terminal, or epsilon with probability (`0.15`)
+- variable value `0` -> self-loop `X -> X` (non-productive)
 
-## 8. Quick maintenance guide
+Implementation notes:
 
-When adding/changing algorithms:
+- symbol allocators:
+  - `NonTerminalGenerator` (A..Z, then AA..)
+  - `TerminalGenerator` (a..z, then symbols, then `t1`, ...)
+- conversion runs in two phases: symbol assignment then production creation
 
-1. Update this file in the relevant module section.
-2. Keep each algorithm entry short: what, input/output, complexity, location.
-3. Add/adjust related UI entry points if flow changed.
-4. Verify listed file paths exist.
-5. Update "Last verified" date and commit hash.
+## 8. Important Cross-Cutting Guardrails
 
-Recommended checks:
+- Graph layout persistence is deliberate:
+  - MCVP and CG renderers write final/dragged positions back to model objects.
+- Locking strategy:
+  - lock/unlock works by setting/clearing `fx/fy` and can auto-lock after first settled layout.
+- Step-replay architecture:
+  - compute analysis once, then only change index in step UI components.
+- Error reporting:
+  - parser/evaluator/generator failures are surfaced with `react-toastify` toasts.
 
-- `rg "export function|class|useMemo|compute|generate|parse" src/Components`
-- `rg "MCVP|CombinatorialGame|Grammar|Conversion" src/Components`
+## 9. Tests (What Is Verified)
 
-## 9. Known naming note
+Test files:
 
-MCVP generator function is named `generateTree` but it produces DAG-style structures with shared subgraphs when reused nodes are selected.
+- MCVP: `tests/mcvp.test.js`, `tests/mcvp.completeness.test.js`
+- Combinatorial Game: `tests/combinatorial-game.test.js`, `tests/combinatorial-game.completeness.test.js`
+- Grammar: `tests/grammar.test.js`, `tests/grammar.completeness.test.js`
+
+What tests primarily cover:
+
+- parser validity and malformed-input handling
+- core algorithm correctness (truth tables, retrograde statuses, emptiness)
+- generator constraints
+- selected edge/cycle behavior
+
+## 10. Quick Maintenance Checklist
+
+When changing algorithms or flow:
+
+1. Update this cheat sheet section(s) and `ProjectOverview.md`.
+2. Verify all referenced files/symbols still exist.
+3. Run tests: `npm run test`.
+4. Update the verification date and commit hash in this file.
+
+Useful search commands:
+
+- `rg "export function|export class|class |useMemo|compute|generate|parse" src`
+- `rg "evaluateCircuitWithSteps|computeWinner|isEmptyLanguage|generateGrammarSteps" src`
+
+## 11. Naming Note
+
+`generateTree` in MCVP produces DAG-like structures (shared subgraphs), even though some UI texts still say "tree".

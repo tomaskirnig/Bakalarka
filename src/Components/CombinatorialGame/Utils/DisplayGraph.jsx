@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useRef, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceCenter } from 'd3';
 import { useGraphColors } from '../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../Hooks/useGraphSettings';
 import GraphLockButton from '../../Common/GraphControls/GraphLockButton';
@@ -29,6 +30,7 @@ export function DisplayGraph({
   defaultLocked = false,
   lockOnFirstTick = false,
   showNodeIdsAlways = false,
+  lockNodeAfterDrag = true,
 }) {
   // State for highlighted nodes and links, and for the hovered node.
   const highlightNodes = useRef(new Set());
@@ -286,6 +288,7 @@ export function DisplayGraph({
       );
 
       fgRef.current.d3Force('link').distance(dynamicDistance);
+      fgRef.current.d3Force('center', forceCenter(0, 0));
 
       // Re-heat simulation to apply changes smoothly
       fgRef.current.d3ReheatSimulation();
@@ -386,14 +389,23 @@ export function DisplayGraph({
   }, [graphWidth, graphHeight, fitToScreen, fitTrigger, requestStableFit]);
 
   // Immediate fit when explicitly requested.
+  const lastEffectFitTrigger = useRef(-1);
+  const lastEngineFitTrigger = useRef(-1);
+
   useEffect(() => {
-    const shouldFit = fitToScreen || fitTrigger > 0;
+    const fitRequested = fitTrigger > lastEffectFitTrigger.current;
+    const shouldFit = fitToScreen || fitRequested;
+
     if (!shouldFit) return;
     if (!fgRef.current) return;
     if (graphWidth <= 0 || graphHeight <= 0) return;
     if (!data.nodes || data.nodes.length === 0) return;
 
     requestStableFit(400);
+
+    if (fitRequested) {
+      lastEffectFitTrigger.current = fitTrigger;
+    }
   }, [fitToScreen, fitTrigger, graphWidth, graphHeight, data.nodes, requestStableFit]);
 
   // Persist coordinates after simulation settles.
@@ -412,6 +424,7 @@ export function DisplayGraph({
             n.fx = n.x;
             n.fy = n.y;
           } else {
+            // Explicitly unpin if not locked to prevent drift/float issues
             n.fx = undefined;
             n.fy = undefined;
           }
@@ -421,8 +434,13 @@ export function DisplayGraph({
 
     data.nodes.forEach(persistGraphPosition);
 
-    if (fitToScreen || fitTrigger > 0) {
+    // Ensure final settled layout is also centered/fitted when requested.
+    const fitRequested = fitTrigger > lastEngineFitTrigger.current;
+    if (fitToScreen || fitRequested) {
       requestStableFit(300);
+      if (fitRequested) {
+        lastEngineFitTrigger.current = fitTrigger;
+      }
     }
   }, [
     data.nodes,
@@ -520,12 +538,14 @@ export function DisplayGraph({
           onEngineTick={handleEngineTick}
           onEngineStop={handleEngineStop}
           onNodeDrag={(node) => {
-            node.fx = node.x;
-            node.fy = node.y;
+            if (lockNodeAfterDrag || isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            }
             persistGraphPosition(node);
           }}
           onNodeDragEnd={(node) => {
-            if (isGraphLocked) {
+            if (lockNodeAfterDrag || isGraphLocked) {
               node.fx = node.x;
               node.fy = node.y;
             } else {
@@ -560,6 +580,7 @@ DisplayGraph.propTypes = {
   defaultLocked: PropTypes.bool,
   lockOnFirstTick: PropTypes.bool,
   showNodeIdsAlways: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };
 
 export default DisplayGraph;

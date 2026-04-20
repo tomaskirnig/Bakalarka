@@ -11,6 +11,7 @@ import ErrorBoundary from './Components/Common/ErrorBoundary';
 const DEFAULT_GRAPH_UI_SETTINGS = {
   useTopDownLayout: true,
   autoScrollToGraph: true,
+  lockNodeAfterDrag: true,
 };
 
 /**
@@ -62,6 +63,7 @@ function App() {
             initialData={pageData}
             useTopDownLayout={graphUiSettings.useTopDownLayout}
             autoScrollToGraph={graphUiSettings.autoScrollToGraph}
+            lockNodeAfterDrag={graphUiSettings.lockNodeAfterDrag}
           />
         )}
       </ErrorBoundary>

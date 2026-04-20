@@ -380,7 +380,12 @@ class MCVPToGrammarConverter {
  * Component that converts an MCVP problem to a Context-Free Grammar
  * and visualizes each step of the conversion process.
  */
-export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDownLayout = true }) {
+export default function MCVPtoGrammarConverter({
+  mcvpTree,
+  onNavigate,
+  useTopDownLayout = true,
+  lockNodeAfterDrag = true,
+}) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
 
@@ -470,6 +475,7 @@ export default function MCVPtoGrammarConverter({ mcvpTree, onNavigate, useTopDow
                 useTopDownLayout={useTopDownLayout}
                 defaultLocked={true}
                 lockOnFirstTick={true}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             </div>
           </div>
@@ -566,6 +572,7 @@ MCVPtoGrammarConverter.propTypes = {
   }),
   onNavigate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };
 
 /**

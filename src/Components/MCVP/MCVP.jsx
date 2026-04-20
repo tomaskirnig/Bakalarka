@@ -43,6 +43,7 @@ export function MCVP({
   initialData,
   useTopDownLayout = true,
   autoScrollToGraph = true,
+  lockNodeAfterDrag = true,
 }) {
   const [tree, setTree] = useState(null); // Current tree
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
@@ -214,6 +215,7 @@ export function MCVP({
                   <InteractiveMCVPGraph
                     onTreeUpdate={setTree}
                     useTopDownLayout={useTopDownLayout}
+                    lockNodeAfterDrag={lockNodeAfterDrag}
                     onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
                   />
                 );
@@ -234,6 +236,7 @@ export function MCVP({
               fitTrigger={mainFitTrigger}
               defaultLocked={lockImportedLayout}
               lockOnFirstTick={lockImportedLayout}
+              lockNodeAfterDrag={lockNodeAfterDrag}
               onRegisterPositionSnapshotGetter={handleRegisterPositionSnapshotGetter}
             />
           </div>
@@ -318,6 +321,7 @@ export function MCVP({
                 mcvpTree={tree}
                 onNavigate={onNavigate}
                 useTopDownLayout={useTopDownLayout}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             )}
           </ConversionModal>
@@ -330,6 +334,7 @@ export function MCVP({
                 mcvpTree={tree}
                 onNavigate={onNavigate}
                 useTopDownLayout={useTopDownLayout}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             )}
           </ConversionModal>
@@ -342,6 +347,7 @@ export function MCVP({
                 tree={tree}
                 steps={evaluation.steps}
                 useTopDownLayout={useTopDownLayout}
+                lockNodeAfterDrag={lockNodeAfterDrag}
               />
             )}
           </ConversionModal>
@@ -356,4 +362,5 @@ MCVP.propTypes = {
   initialData: PropTypes.object,
   useTopDownLayout: PropTypes.bool,
   autoScrollToGraph: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };
