@@ -1,6 +1,7 @@
 import { useRef, useEffect, useMemo, useCallback, useState } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceCollide } from 'd3';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../Hooks/useGraphSettings';
 
@@ -15,7 +16,7 @@ const MODE_AFTER = () => 'after';
  * @param {Object} props - The component props
  * @param {Object} props.tree - The derivation tree structure
  */
-export function DerivationTreeVisual({ tree }) {
+export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
 
@@ -189,14 +190,14 @@ export function DerivationTreeVisual({ tree }) {
   // Initial Forces Setup
   useEffect(() => {
     if (fgRef.current) {
-      if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force(
-          'collision',
-          window.d3
-            .forceCollide(grammarSettings.nodeRadius * grammarSettings.collisionRadiusMultiplier)
-            .iterations(grammarSettings.collisionIterations)
-        );
-      }
+      fgRef.current.d3Force(
+        'collision',
+        forceCollide(
+          grammarSettings.nodeRadius * grammarSettings.collisionRadiusMultiplier
+        ).iterations(grammarSettings.collisionIterations)
+      );
+      // Disable center force in DAG mode to avoid conflicts
+      fgRef.current.d3Force('center', null);
       fgRef.current.d3Force('link').distance(grammarSettings.linkDistance);
       fgRef.current.d3Force('charge').strength(grammarSettings.chargeStrength);
     }
@@ -247,12 +248,20 @@ export function DerivationTreeVisual({ tree }) {
         // Events
         onNodeHover={handleNodeHover}
         onNodeDrag={(node) => {
-          node.fx = node.x;
-          node.fy = node.y;
+          if (lockNodeAfterDrag) {
+            node.fx = node.x;
+            node.fy = node.y;
+          }
         }}
         onNodeDragEnd={(node) => {
-          node.fx = node.x;
-          node.fy = node.y;
+          if (lockNodeAfterDrag) {
+            node.fx = node.x;
+            node.fy = node.y;
+          } else {
+            node.fx = undefined;
+            node.fy = undefined;
+            fgRef.current?.d3ReheatSimulation();
+          }
         }}
       />
     </div>
@@ -261,4 +270,5 @@ export function DerivationTreeVisual({ tree }) {
 
 DerivationTreeVisual.propTypes = {
   tree: PropTypes.object,
+  lockNodeAfterDrag: PropTypes.bool,
 };

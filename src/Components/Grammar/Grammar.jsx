@@ -24,7 +24,7 @@ const INPUT_OPTIONS = [
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Grammar module UI.
  */
-export function Grammar({ initialData }) {
+export function Grammar({ initialData, lockNodeAfterDrag = true }) {
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammar, setGrammar] = useState(null); // Current grammar
   const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
@@ -215,7 +215,10 @@ export function Grammar({ initialData }) {
                       Tento strom ukazuje jedno z možných vyvození terminálního řetězce.
                     </p>
                   )}
-                  <DerivationTreeVisual tree={analysisResult.derivationTree} />
+                  <DerivationTreeVisual
+                    tree={analysisResult.derivationTree}
+                    lockNodeAfterDrag={lockNodeAfterDrag}
+                  />
                 </div>
               )}
             </div>
@@ -235,4 +238,5 @@ export function Grammar({ initialData }) {
 Grammar.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  lockNodeAfterDrag: PropTypes.bool,
 };

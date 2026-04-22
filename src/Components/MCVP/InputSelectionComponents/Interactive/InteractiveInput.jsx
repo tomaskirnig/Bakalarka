@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceCollide, forceCenter } from 'd3';
 import { toast } from 'react-toastify';
 import { useGraphColors } from '../../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../../Hooks/useGraphSettings';
@@ -10,6 +11,7 @@ import { InteractiveSelectedNodeControls } from './InteractiveSelectedNodeContro
 import GraphLockButton from '../../../Common/GraphControls/GraphLockButton';
 
 const MAX_INTERACTIVE_NODES = 750;
+const POSITION_SYNC_TOLERANCE = 0.5;
 
 const getLinkEndpointId = (endpoint) =>
   typeof endpoint === 'object' && endpoint !== null ? endpoint.id : endpoint;
@@ -27,6 +29,7 @@ export function InteractiveMCVPGraph({
   onTreeUpdate,
   useTopDownLayout = true,
   onRegisterPositionSnapshotGetter,
+  lockNodeAfterDrag = true,
 }) {
   const [graphData, setGraphData] = useState(() => ({
     nodes: [{ id: '0', type: 'operation', value: 'O', varValue: null }],
@@ -43,6 +46,7 @@ export function InteractiveMCVPGraph({
   const nextLinkIdRef = useRef(0);
   const nextVarIdRef = useRef(1); // Separate counter for variable names, starting from 1
   const lastBroadcastedPositionsRef = useRef(new Map());
+  const layoutSyncPendingRef = useRef(true);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
 
   const colors = useGraphColors();
@@ -105,6 +109,10 @@ export function InteractiveMCVPGraph({
     node.fy = undefined;
   }, []);
 
+  const markLayoutSyncPending = useCallback(() => {
+    layoutSyncPendingRef.current = true;
+  }, []);
+
   const handleToggleGraphLock = useCallback(() => {
     setIsGraphLocked((prevLocked) => {
       const nextLocked = !prevLocked;
@@ -113,12 +121,13 @@ export function InteractiveMCVPGraph({
         graphData.nodes.forEach(pinNodePosition);
       } else {
         graphData.nodes.forEach(unpinNodePosition);
+        markLayoutSyncPending();
         fgRef.current?.d3ReheatSimulation();
       }
 
       return nextLocked;
     });
-  }, [graphData.nodes, pinNodePosition, unpinNodePosition]);
+  }, [graphData.nodes, pinNodePosition, unpinNodePosition, markLayoutSyncPending]);
 
   // Keep newly added nodes fixed while lock is enabled.
   useEffect(() => {
@@ -160,9 +169,10 @@ export function InteractiveMCVPGraph({
         nodes: [...prevData.nodes, newNode],
         links: prevData.links,
       }));
+      markLayoutSyncPending();
       return newNode;
     },
-    [generateNodeId, graphData.nodes.length]
+    [generateNodeId, graphData.nodes.length, markLayoutSyncPending]
   );
 
   /**
@@ -177,6 +187,7 @@ export function InteractiveMCVPGraph({
           getLinkEndpointId(link.source) !== nodeId && getLinkEndpointId(link.target) !== nodeId
       ),
     }));
+    markLayoutSyncPending();
 
     if (selectedNode && selectedNode.id === nodeId) {
       setSelectedNode(null);
@@ -244,9 +255,10 @@ export function InteractiveMCVPGraph({
         nodes: prevData.nodes,
         links: [...prevData.links, newLink],
       }));
+      markLayoutSyncPending();
       return true;
     },
-    [graphData.nodes, edgeExists, generateLinkId, getOutgoingEdgeCount]
+    [graphData.nodes, edgeExists, generateLinkId, getOutgoingEdgeCount, markLayoutSyncPending]
   );
 
   /**
@@ -265,6 +277,7 @@ export function InteractiveMCVPGraph({
           )
       ),
     }));
+    markLayoutSyncPending();
   };
 
   const handleDagError = (error) => {
@@ -274,6 +287,7 @@ export function InteractiveMCVPGraph({
       nodes: prevData.nodes,
       links: prevData.links.slice(0, -1),
     }));
+    markLayoutSyncPending();
   };
 
   /**
@@ -327,13 +341,89 @@ export function InteractiveMCVPGraph({
     [addingEdge, edgeSource, addEdge]
   );
 
-  const handleBackgroundClick = useCallback(() => {
-    if (addingEdge) {
-      setAddingEdge(false);
-      setEdgeSource(null);
-    }
-    setSelectedNode(null);
-  }, [addingEdge]);
+  const findNodeAtPointer = useCallback(
+    (event) => {
+      if (!event || !fgRef.current?.screen2GraphCoords) return null;
+
+      let canvasPoint = null;
+
+      if (typeof event.offsetX === 'number' && typeof event.offsetY === 'number') {
+        canvasPoint = { x: event.offsetX, y: event.offsetY };
+      } else if (typeof event.clientX === 'number' && typeof event.clientY === 'number') {
+        const canvasEl = fgRef.current?.canvas?.() || event.target;
+        const rect = canvasEl?.getBoundingClientRect?.();
+        if (rect) {
+          canvasPoint = {
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top,
+          };
+        }
+      }
+
+      if (!canvasPoint) return null;
+
+      const graphPoint = fgRef.current.screen2GraphCoords(canvasPoint.x, canvasPoint.y);
+      if (!graphPoint) return null;
+
+      const engineNodes = fgRef.current.graphData()?.nodes || graphData.nodes;
+      const hitRadius = mcvp.nodeRadius + 4;
+      const hitRadiusSquared = hitRadius * hitRadius;
+
+      let closestNode = null;
+      let closestDistanceSquared = Number.POSITIVE_INFINITY;
+
+      for (const node of engineNodes) {
+        if (typeof node?.x !== 'number' || typeof node?.y !== 'number') continue;
+
+        const dx = node.x - graphPoint.x;
+        const dy = node.y - graphPoint.y;
+        const distanceSquared = dx * dx + dy * dy;
+
+        if (distanceSquared <= hitRadiusSquared && distanceSquared < closestDistanceSquared) {
+          closestNode = node;
+          closestDistanceSquared = distanceSquared;
+        }
+      }
+
+      return closestNode;
+    },
+    [graphData.nodes, mcvp.nodeRadius]
+  );
+
+  const handleBackgroundClick = useCallback(
+    (event) => {
+      if (addingEdge) {
+        // In edge-adding mode, keep fallback so Brave can still target a clicked node.
+        const fallbackNode = findNodeAtPointer(event);
+        if (fallbackNode) {
+          handleNodeClick(fallbackNode);
+          return;
+        }
+
+        setAddingEdge(false);
+        setEdgeSource(null);
+        setSelectedNode(null);
+        return;
+      }
+
+      // Preserve expected UX: background click always deselects active target.
+      if (selectedNode) {
+        setSelectedNode(null);
+        return;
+      }
+
+      // Brave fingerprint protections can perturb color-based canvas picking.
+      // Use fallback only when no node is currently selected.
+      const fallbackNode = findNodeAtPointer(event);
+      if (fallbackNode) {
+        handleNodeClick(fallbackNode);
+        return;
+      }
+
+      setSelectedNode(null);
+    },
+    [addingEdge, selectedNode, findNodeAtPointer, handleNodeClick]
+  );
 
   const startAddEdge = () => {
     if (selectedNode) {
@@ -398,7 +488,9 @@ export function InteractiveMCVPGraph({
   );
 
   const syncAllNodePositionsInGraphData = useCallback(() => {
-    const engineNodes = graphData.nodes;
+    if (!layoutSyncPendingRef.current) return;
+
+    const engineNodes = fgRef.current?.graphData?.().nodes || graphData.nodes;
     if (!Array.isArray(engineNodes) || engineNodes.length === 0) return;
 
     const nextPositions = new Map();
@@ -413,14 +505,22 @@ export function InteractiveMCVPGraph({
       nextPositions.set(id, { x, y });
 
       const previous = lastBroadcastedPositionsRef.current.get(id);
-      if (!previous || previous.x !== x || previous.y !== y) {
+      if (
+        !previous ||
+        Math.abs(previous.x - x) > POSITION_SYNC_TOLERANCE ||
+        Math.abs(previous.y - y) > POSITION_SYNC_TOLERANCE
+      ) {
         hasChanges = true;
       }
     });
 
-    if (!hasChanges) return;
+    if (!hasChanges) {
+      layoutSyncPendingRef.current = false;
+      return;
+    }
 
     lastBroadcastedPositionsRef.current = nextPositions;
+    layoutSyncPendingRef.current = false;
     setGraphData((prevData) => {
       const updatedNodes = prevData.nodes.map((node) => {
         const position = nextPositions.get(String(node.id));
@@ -489,18 +589,15 @@ export function InteractiveMCVPGraph({
   useEffect(() => {
     if (fgRef.current) {
       // Add collision force to prevent overlap
-      if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force(
-          'collision',
-          window.d3
-            .forceCollide()
-            .radius(() =>
-              Math.max(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier, mcvp.nodeRadius + 6)
-            )
-            .strength(Math.max(0.95, mcvp.collisionStrength))
-            .iterations(Math.max(6, mcvp.collisionIterations))
-        );
-      }
+      fgRef.current.d3Force(
+        'collision',
+        forceCollide()
+          .radius(() =>
+            Math.max(mcvp.nodeRadius * mcvp.collisionRadiusMultiplier, mcvp.nodeRadius + 6)
+          )
+          .strength(Math.max(0.95, mcvp.collisionStrength))
+          .iterations(Math.max(6, mcvp.collisionIterations))
+      );
 
       // Disable repulsive force to avoid disconnected components drifting apart.
       const chargeForce = fgRef.current.d3Force('charge');
@@ -509,9 +606,7 @@ export function InteractiveMCVPGraph({
       }
 
       // Keep the whole graph centered in the viewport simulation space.
-      if (window.d3 && window.d3.forceCenter) {
-        fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
-      }
+      fgRef.current.d3Force('center', forceCenter(0, 0));
 
       // Link force to keep connected nodes at appropriate distance
       const linkForce = fgRef.current.d3Force('link');
@@ -593,13 +688,21 @@ export function InteractiveMCVPGraph({
           enableZoomInteraction={true}
           enableNodeDrag={true} // Keep dragging enabled even when graph is locked
           onNodeDrag={(node) => {
-            node.fx = node.x;
-            node.fy = node.y;
+            if (lockNodeAfterDrag || isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            }
           }}
           onNodeDragEnd={(node) => {
-            // Fix node position after dragging
-            node.fx = node.x;
-            node.fy = node.y;
+            if (lockNodeAfterDrag || isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            } else {
+              node.fx = undefined;
+              node.fy = undefined;
+              markLayoutSyncPending();
+              fgRef.current?.d3ReheatSimulation();
+            }
             persistNodePositionInGraphData(node);
           }}
         />
@@ -639,4 +742,5 @@ InteractiveMCVPGraph.propTypes = {
   onTreeUpdate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
   onRegisterPositionSnapshotGetter: PropTypes.func,
+  lockNodeAfterDrag: PropTypes.bool,
 };

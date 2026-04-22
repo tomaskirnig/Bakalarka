@@ -11,7 +11,12 @@ import { TreeRenderCanvas } from './TreeRenderCanvas';
  * @param {Object} props.tree - The MCVP tree to evaluate
  * @param {Array} props.steps - Pre-calculated evaluation steps
  */
-export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
+export function StepByStepTree({
+  tree,
+  steps = [],
+  useTopDownLayout = true,
+  lockNodeAfterDrag = true,
+}) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
   const currentStepData = steps[currentStep];
@@ -94,6 +99,7 @@ export function StepByStepTree({ tree, steps = [], useTopDownLayout = true }) {
               useTopDownLayout={useTopDownLayout}
               defaultLocked={true}
               lockOnFirstTick={true}
+              lockNodeAfterDrag={lockNodeAfterDrag}
             />
           </div>
 
@@ -203,4 +209,5 @@ StepByStepTree.propTypes = {
     })
   ),
   useTopDownLayout: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };

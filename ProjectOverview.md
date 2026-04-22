@@ -1,403 +1,699 @@
 # Project Overview
 
-This document provides a detailed overview of the JavaScript (`.js`) and React Component (`.jsx`) files within the `src` directory of the project. It describes the purpose, algorithms, and key functions of each file to facilitate easier navigation and understanding of the codebase.
+Last verified: 2026-04-20  
+Commit baseline: 8f75d2f (working tree changes applied)
 
-## Root Files
+This document is the implementation-level map of the app.  
+It focuses on what actually exists in `src`, which symbols are used, how data moves, and where guardrails are implemented.
 
-### 📄 App.jsx (src)
+---
 
-**Description:** The main application component that acts as the root of the React component tree. It manages the global state for the current page navigation and page data.
-**Key Functions:**
+## 1. What This Project Is
 
-- `App()`: Renders the `Navigation` and the active page component (`HomePage`, `MCVP`, `CombinatorialGame`, `Grammar`) based on `currentPage`. It also includes the `ToastContainer` for notifications.
-- `handleNavSelection(option, data)`: Updates the `currentPage` and `pageData` state when navigation occurs.
+This is a React + Vite SPA for three theoretical-informatics domains:
 
-### 📄 main.jsx (src)
+1. MCVP (Monotone Circuit Value Problem)
+2. Combinatorial Game analysis on directed graphs
+3. Context-free grammar emptiness analysis
 
-**Description:** The entry point of the React application.
-**Key Functions:**
+It also provides two conversion pipelines from MCVP:
 
-- Renders the `App` component into the DOM root element.
-- Imports global styles and Bootstrap JS.
+1. MCVP -> Combinatorial Game
+2. MCVP -> Grammar
 
-## Hooks
+Core stack:
 
-### 📄 useGraphColors.js (src/Hooks)
+- React 18
+- Vite
+- `react-force-graph-2d` + D3 forces
+- Bootstrap 5
+- `react-toastify`
+- Vitest
 
-**Description:** A custom hook that provides a centralized object of colors used in graph visualizations.
-**Key Functions:**
+---
 
-- `useGraphColors()`: Fetches color values from CSS variables (e.g., `--color1`, `--color-accent-red`) and returns a reactive object containing specific color definitions for nodes, links, and UI elements.
+## 2. Runtime Shell and Navigation
 
-### 📄 useGraphSettings.js (src/Hooks)
+## 2.1 App Entry and Page Routing
 
-**Description:** A custom hook that centralizes configuration settings for graph visualizations.
-**Key Functions:**
+Main entry:
 
-- `useGraphSettings()`: Returns a memoized object containing configuration parameters for MCVP and Game graphs (e.g., `nodeRadius`, `linkDistance`, `chargeStrength`).
+- `src/main.jsx`
+- `src/App.jsx`
 
-## Components
+`App.jsx` keeps top-level state:
 
-### General Components
+- `currentPage`
+- `pageData` (cross-page payload, mainly used by conversion redirects)
+- `graphUiSettings`
 
-#### 📄 HomePage.jsx (src/Components)
+Pages rendered by `App`:
 
-**Description:** The landing page component.
-**Key Functions:**
+- `HomePage`
+- `MCVP`
+- `CombinatorialGame`
+- `Grammar`
 
-- `HomePage()`: Renders the `NetworkVisual` background and a welcome message.
+`handleNavSelection(option, data)` updates page and optional payload.
 
-#### 📄 Navigation.jsx (src/Components)
+## 2.2 Global Graph UI Settings
 
-**Description:** The main navigation bar component.
-**Key Functions:**
+`App.jsx` defines:
 
-- `Navigation({ selectedOption, onNavSelect })`: Renders a responsive navbar with desktop and mobile (offcanvas) views. Handles navigation selection and mobile menu toggling.
+```js
+const DEFAULT_GRAPH_UI_SETTINGS = {
+  useTopDownLayout: true,
+  autoScrollToGraph: true,
+  lockNodeAfterDrag: true,
+};
+```
 
-### HPVisual
+These are managed in `Navigation.jsx` settings modal and passed down to page components.
 
-#### 📄 NodeVisual.jsx (src/Components/HPVisual)
+Notes:
 
-**Description:** A component that renders an animated background visualization of moving nodes connected by edges.
-**Algorithms:**
+- `useTopDownLayout` is primarily relevant to MCVP visualizations/conversions.
+- `autoScrollToGraph` is used in MCVP and Combinatorial Game pages.
+- `lockNodeAfterDrag` is used by all graph renderers/editors.
 
-- **Particle System:** Simulates moving particles (nodes) that bounce off canvas boundaries.
-- **Proximity connection:** Calculates Euclidean distance between all pairs of nodes in every frame (`O(N^2)`) and draws a line if they are within a certain `connectDistance`.
-  **Key Functions:**
-- `NetworkVisual()`: Main component that sets up the canvas and animation loop.
-- `Node` class: Represents a single particle with position, velocity, and drawing logic.
-- `animate()`: The animation loop function that clears the canvas, updates node positions, and redraws elements.
+## 2.3 Error and Notification Infrastructure
 
-### Common
+- Global toasts: `ToastContainer` in `App.jsx`
+- Page-level safety: `ErrorBoundary` wraps selected page and uses `key={currentPage}` reset behavior
+- Fallback UI: `Common/ErrorPage.jsx`
 
-#### 📄 Modal.jsx (src/Components/Common)
+## 2.4 Dev Server Defaults
 
-**Description:** A reusable modal dialog component.
-**Key Functions:**
+- `vite.config.js` sets `server.port` to `5174`
+- default local dev URL: `http://localhost:5174/`
 
-- `Modal({ onClose, children })`: Renders a modal overlay with a close button and the provided child content.
+---
 
-#### 📄 InfoButton.jsx (src/Components/Common)
+## 3. Shared Building Blocks
 
-**Description:** A simple informational component that displays a hoverable 'i' icon with a tooltip containing detailed explanations or help text.
-**Key Functions:**
+## 3.1 UI Components
 
-- `InfoButton({ title, children })`: Renders the icon and manages the visibility of the popover content on hover.
+- `Common/InputSystem/GenericInputMethodSelector.jsx`
+  - standard Manual / Generate / Sets (and MCVP Interactive) selector
+- `Common/Modal.jsx`
+  - reusable modal with close animation
+- `Common/ConversionModal.jsx`
+  - large conversion walkthrough modal
+- `Common/FileTransferControls.jsx`
+  - JSON import/export with drag-drop + optional position-export toggle
+- `Common/InfoButton.jsx`
+  - hover help popover
+- `Common/GraphControls/GraphLockButton.jsx`
+  - lock/unlock graph node pinning UI
 
-#### 📄 FileTransferControls.jsx (src/Components/Common)
+## 3.2 Hooks
 
-**Description:** A reusable UI component providing "Import" and "Export" functionality. It handles JSON file generation/download and file reading with drag-and-drop support.
-**Key Functions:**
+- `Hooks/useGraphSettings.js`
+  - central graph rendering constants per domain (`mcvp`, `game`, `grammar`)
+- `Hooks/useGraphColors.js`
+  - resolves CSS variables into a stable graph color palette
 
-- `FileTransferControls({ onExport, onImport })`: Renders buttons and a modal for file upload. Manages drag-and-drop events and file parsing.
+## 3.3 Cross-Cutting Patterns
 
-#### 📄 GenericInputMethodSelector.jsx (src/Components/Common/InputSystem)
+### Pattern A: Compute Once, Replay by Index
 
-**Description:** A generic component for switching between different input methods (e.g., Manual, Generate, Sets).
-**Key Functions:**
+All three domains use the same architecture for explanations:
 
-- `GenericInputMethodSelector()`: Renders a set of radio buttons for options and a container for the selected input method's content.
+1. compute analysis once -> `steps[]`
+2. open modal -> step component tracks `currentStep`
+3. UI only changes index, never reruns algorithm on next/prev
 
-### MCVP (Monotone Circuit Value Problem)
+Concrete files:
 
-#### Core
+- MCVP: `evaluateCircuitWithSteps` + `StepByStepTree.jsx`
+- Game: `computeWinner` + `StepByStepGame.jsx`
+- Grammar: `generateGrammarSteps` + `StepByStepGrammar.jsx`
 
-##### 📄 MCVP.jsx (src/Components/MCVP)
+### Pattern B: Graph Position Persistence
 
-**Description:** The main container component for the MCVP module. It orchestrates input selection, graph visualization (`TreeRenderCanvas`), evaluation result display, and conversion options.
-**Key Functions:**
+Force-graph coordinates are persisted back into model data to preserve layout consistency across rerenders/import/export.
 
-- `MCVP({ onNavigate, initialData })`: Manages state for the current tree, evaluation results, and modal visibility. Integrates input components and the `TreeRenderCanvas`.
+Concrete behavior:
 
-##### 📄 TreeRenderCanvas.jsx (src/Components/MCVP)
+- MCVP tree rendering persists `x/y` into source nodes
+- MCVP export can capture live engine positions via snapshot getter
+- Combinatorial game renderers/editors persist `x/y` into internal graph data
+- MCVP interactive editor syncs engine-stop positions only when layout changes are pending, using a small coordinate tolerance to avoid periodic twitch loops
 
-**Description:** Visualizes the MCVP expression tree as a directed graph using `react-force-graph-2d`.
-**Algorithms:**
+### Pattern C: Locking Strategy
 
-- **Force-Directed Layout:** Uses D3 forces (link, charge, collision) to layout the graph.
-- **DAG Layout:** Configured with `dagMode="td"` (top-down) for hierarchical tree visualization.
-  **Key Functions:**
-- `TreeRenderCanvas({ tree, highlightedNode, activeNode, completedSteps })`: Converts the tree structure into graph data (nodes/links), handles resizing, and defines custom painting functions (`paintNode`, `paintLink`) to draw nodes and edges with specific styles based on their state (evaluated, highlighted, etc.).
+Graph lock state is represented with `fx/fy` pinning semantics.
 
-##### 📄 StepByStepTree.jsx (src/Components/MCVP)
+- Lock: set `fx/fy` to current `x/y`
+- Unlock: clear `fx/fy` and optionally reheat simulation
 
-**Description:** A component for visualizing the evaluation of an MCVP tree step-by-step.
-**Key Functions:**
+---
 
-- `StepByStepTree({ tree })`: Uses `evaluateTreeWithSteps` to generate an evaluation sequence and provides controls ("Previous", "Next") to traverse these steps, updating the visualization via `TreeRenderCanvas`.
+## 4. Module Deep Dive: Home
 
-#### Utils
+Files:
 
-##### 📄 EvaluateTree.js (src/Components/MCVP/Utils)
+- `Components/HomePage.jsx`
+- `Components/HPVisual/NodeVisual.jsx`
 
-**Description:** Contains logic for evaluating MCVP expression trees.
-**Algorithms:**
+`HomePage` renders intro content and background animation component `NetworkVisual`.
 
-- **Recursive Evaluation (DFS):** Traverses the tree depth-first. Variable nodes return their value. Operation nodes (AND/OR) recursively evaluate children and apply logic.
-  **Key Functions:**
-- `evaluateTree(node)`: Returns the final result (0 or 1) of the expression tree.
-- `evaluateTreeWithSteps(node)`: Performs evaluation but records each step (node, children values, result) into an array for step-by-step visualization.
+`NodeVisual.jsx` implements a canvas particle system:
 
-##### 📄 Generator.js (src/Components/MCVP/Utils)
+- node position update + boundary bounce
+- pairwise distance checks and line drawing when under threshold
+- per-frame complexity approximately `O(N^2)` for link checks
 
-**Description:** Generates random MCVP trees.
-**Algorithms:**
+---
 
-- **Random Tree Generation:** Creates a pool of variable nodes, then iteratively combines them using random operator nodes (AND/OR) until one root remains.
-  **Key Functions:**
-- `generateTree(numGates, numVariables)`: Generates a random tree with the specified number of gates and variables.
+## 5. Module Deep Dive: MCVP
 
-##### 📄 Parser.js (src/Components/MCVP/Utils)
+Primary container:
 
-**Description:** Parses string representations of MCVP expressions into tree structures.
-**Algorithms:**
+- `Components/MCVP/MCVP.jsx`
 
-- **Recursive Descent Parser:** Tokenizes input and uses a standard recursive descent strategy to parse expressions with precedence (though MCVP is often simple parenthesized logic).
-  **Key Functions:**
-- `tokenize(s)`: Lexical analysis, converts string to tokens (LPAREN, OPERATOR, VARIABLE, etc.).
-- `Parser` class: Implements parsing logic (`parseExpression`, `parseOrExpr`, `parseAndExpr`, `parseFactor`).
-- `parseExpressionToTree(exprStr)`: Main entry point that returns a `Node` tree.
+Primary concern: represent and evaluate monotone circuits as DAG-like node graphs.
 
-##### 📄 NodeClass.js (src/Components/MCVP/Utils)
+## 5.1 Data Model and Invariants
 
-**Description:** Defines the data structure for tree nodes.
-**Key Functions:**
+File:
 
-- `Node` class: Represents a node with properties like `value`, `type` (variable/operation), `children`, `parents`, and `id`.
+- `Components/MCVP/Utils/NodeClass.js`
 
-#### InputSelectionComponents
+Node shape:
 
-##### 📄 GenerateInput.jsx (src/Components/MCVP/InputSelectionComponents)
+- `id` (string)
+- `type` (`operation` or `variable`)
+- `value` (`A/O` or variable name like `x1`)
+- `varValue` for variable nodes (`0/1`)
+- `children`, `parents`
 
-**Description:** Input form for generating random MCVP trees.
-**Key Functions:**
+Terminology note:
 
-- `GenerateInput()`: Captures user input for number of gates/variables and calls `generateTree`.
+- Many UI labels say "tree", but structure is often a DAG because repeated variables are shared by reference.
 
-##### 📄 ManualInput.jsx (src/Components/MCVP/InputSelectionComponents)
+## 5.2 Input Flows
 
-**Description:** Input form for manually typing an MCVP expression string.
-**Key Functions:**
+### Manual text
 
-- `ManualInput()`: Captures string input and calls `parseExpressionToTree`.
+Files:
 
-##### 📄 PreparedSetsInput.jsx (src/Components/MCVP/InputSelectionComponents)
+- `InputSelectionComponents/ManualInput.jsx`
+- `Utils/Parser.js`
 
-**Description:** Dropdown selector for loading pre-defined MCVP examples from a JSON file.
-**Key Functions:**
+Parser details:
 
-- `PreparedSetsInput()`: Loads data from `SadyMCVP.json` and parses the selected expression.
+- tokenizer supports `(`, `)`, `A`, `O`, and `xN[0|1]`
+- recursive-descent precedence:
+  - `parseOrExpr` over `parseAndExpr`
+  - `AND` binds tighter than `OR`
+- variable identity map enforces consistency:
+  - same variable name must not appear with different values
+- variable nodes are reused, enabling DAG sharing
 
-##### 📄 InteractiveInput.jsx (src/Components/MCVP/InputSelectionComponents)
+### Generated
 
-**Description:** A complex interactive graph editor for building MCVP circuits visually.
-**Key Functions:**
+Files:
 
-- `InteractiveMCVPGraph()`: Provides a force-graph canvas where users can add nodes, draw edges, change node types/values, and delete elements. It maintains the graph structure state and converts it to a tree format for evaluation.
+- `InputSelectionComponents/GenerateInput.jsx`
+- `Utils/Generator.js`
 
-### Combinatorial Game
+Generator behavior:
 
-#### Core
+- creates variable nodes
+- iteratively adds operation nodes with exactly 2 children
+- maintains root candidate set and ensures exactly one final root
+- feasibility check: `numVariables <= numGates + 1`
+- throws + toast on invalid config
 
-##### 📄 CombinatorialGame.jsx (src/Components/CombinatorialGame)
+### Prepared sets
 
-**Description:** The main container for the Combinatorial Game module. It manages the game graph state and allows switching between input methods.
-**Key Functions:**
+File:
 
-- `CombinatorialGame({ onNavigate, initialData })`: Main component logic.
+- `InputSelectionComponents/PreparedSetsInput.jsx`
 
-##### 📄 StepByStepGame.jsx (src/Components/CombinatorialGame)
+Loads `Sady/MCVP/*.json` via `import.meta.glob` and converts with:
 
-**Description:** Visualizes the step-by-step winning strategy analysis for a combinatorial game.
-**Algorithms:**
+- `Utils/GraphToTree.js` -> `graphToTree(graphData, options)`
 
-- **Bottom-Up Analysis:** Replays the analysis steps generated by `computeWinner`, showing how the winning/losing status propagates from terminal nodes up to the start node.
-  **Key Functions:**
-- `computeWinningStrategySteps(graph)`: Generates an array of analysis steps.
-- `StepByStepGame({ graph })`: Renders the graph and navigation controls to step through the analysis.
+Used options require binary operation nodes and throw on invalid set shape.
 
-#### Utils
+### Interactive editor
 
-##### 📄 DisplayGraph.jsx (src/Components/CombinatorialGame/Utils)
+Files:
 
-**Description:** Visualizes the game graph and analysis results using `react-force-graph-2d`.
-**Key Functions:**
+- `InputSelectionComponents/Interactive/InteractiveInput.jsx`
+- `InteractiveInput.helpers.js`
+- `InteractiveInput.renderers.js`
+- `InteractiveSelectedNodeControls.jsx`
 
-- `DisplayGraph({ graph })`: Computes winning strategies using `computeWinner` and `getOptimalMoves`. Renders the graph, highlighting the starting position, players, and optimal moves (gold edges).
+Editor behavior:
 
-##### 📄 GameAnalysisDisplay.jsx (src/Components/CombinatorialGame/Utils)
+- add AND/OR/variable nodes
+- add/delete edges (operation nodes max 2 outgoing)
+- update node type/value
+- graph continuously converted to internal Node graph via `graphDataToNodeClass`
+- background click clears current selection (or cancels edge-adding mode)
+- includes geometric fallback picking for background events to mitigate browser canvas color-picking quirks
 
-**Description:** A simple presentation component for displaying the final result of the game analysis.
-**Key Functions:**
+Interactive mode intentionally allows temporarily incomplete structures while user edits.
 
-- `GameAnalysisDisplay({ analysisResult })`: Renders a success/warning alert based on whether Player 1 has a winning strategy.
+## 5.3 Evaluation Algorithm
 
-##### 📄 ComputeWinner.js (src/Components/CombinatorialGame/Utils)
+File:
 
-**Description:** Analyzes the game graph to determine winning strategies (Game Theory).
-**Algorithms:**
+- `Utils/EvaluateCircuit.js`
 
-- **Minimax / Retrograde Analysis:** Determines if a position is winning or losing. A position is losing if there are no moves or all moves lead to winning positions for the opponent. A position is winning if there exists at least one move to a losing position for the opponent.
-  **Key Functions:**
-- `computeWinner(graph)`: Determines if Player I has a winning strategy from the starting position using memoized DFS/recursion.
-- `getOptimalMoves(graph)`: Returns a map of optimal moves for Player I.
+Entry:
 
-##### 📄 Generator.js (src/Components/CombinatorialGame/Utils)
+- `evaluateCircuitWithSteps(root)`
 
-**Description:** Generates random game graphs.
-**Key Functions:**
+Mechanics:
 
-- `generateGraph(numGameFields, edgeProbability)`: Creates nodes with random player assignments and connects them ensuring a base path to guarantee connectivity, plus random extra edges.
+1. DFS evaluate children first
+2. cache completed node values in `memo`
+3. detect cycles by tracking active recursion path in `visiting`
+4. append step objects `{ node, childValues, result }`
+5. append final summary step `{ type: 'FINAL', ... }`
 
-##### 📄 Parser.js (src/Components/CombinatorialGame/Utils)
+Guardrails:
 
-**Description:** Parses text representation of game graphs.
-**Key Functions:**
+- null/incomplete operation nodes return `null` instead of hard crash
+- cycle throws an error, caught by wrapper, toast shown, returns `{ result: null, steps: [] }`
 
-- `parseExpressionToTree(expression, startingPosition)`: Parses a custom format string ("nodes: ...; edges: ...") into a graph object.
+## 5.4 Visualization
 
-##### 📄 NodeClasses.js (src/Components/CombinatorialGame/Utils)
+File:
 
-**Description:** Data structures for the game.
-**Key Functions:**
+- `TreeRenderCanvas.jsx`
 
-- `GamePosition`: Represents a node in the game graph.
-- `GameGraph`: Represents the entire game graph.
+Key details:
 
-#### InputSelectionComponents
+- `react-force-graph-2d` with optional DAG mode (`td`)
+- custom node and link canvas painters
+- supports highlighted/active nodes and completed-step result labels
+- includes graph controls: fit + lock
+- persists coordinates back to source nodes
 
-##### 📄 GenerateInput.jsx (src/Components/CombinatorialGame/InputSelectionComponents)
+Arrow nuance:
 
-**Description:** Input form for generating random game graphs.
-**Key Functions:**
+- visual arrowheads are intentionally reversed using `Utils/drawReversedArrowhead.js`
+- logical data direction remains parent -> child
 
-- `GenerateInput()`: Inputs for number of fields and edge probability.
+## 5.5 Import/Export and Validity Gating
 
-##### 📄 ManualInput.jsx (src/Components/CombinatorialGame/InputSelectionComponents)
+Files:
 
-**Description:** Interactive editor for manually creating game graphs.
-**Key Functions:**
+- `Utils/Serialization.js`
+- `Utils/GraphToTree.js`
 
-- `ManualInput()`: Similar to MCVP's interactive input, allows adding/removing nodes and edges, changing players, and visualizing analysis in real-time.
+`treeToFlatGraph` supports optional live position snapshot so exported layout matches visible layout.
 
-##### 📄 PreparedSetsInput.jsx (src/Components/CombinatorialGame/InputSelectionComponents)
+`MCVP.jsx` enables Explain/Conversion buttons only when tree is evaluable (`evaluation.result !== null`).
 
-**Description:** Selector for pre-defined game scenarios.
-**Key Functions:**
+---
 
-- `PreparedSetsInput()`: Loads data from `SadyCG.json`.
+## 6. Module Deep Dive: Combinatorial Game
 
-### Grammar
+Primary container:
 
-#### Core
+- `Components/CombinatorialGame/CombinatorialGame.jsx`
 
-##### 📄 Grammar.jsx (src/Components/Grammar)
+Internal game representation:
 
-**Description:** The main container for the Grammar module. It orchestrates grammar input, analysis (emptiness check), and visualization of the derivation tree.
-**Key Functions:**
+- `positions` map, each with `id`, `player`, `children`, `parents`, optional coordinates
+- `startingPosition` object with `id`
 
-- `Grammar({ onNavigate, initialData })`: Manages the state of the current grammar object. It performs the empty language analysis and renders the results, including the `DerivationTreeVisual` if applicable.
+## 6.1 Input Flows
 
-##### 📄 DerivationTreeVisual.jsx (src/Components/Grammar)
+### Manual editor
 
-**Description:** Visualizes a derivation tree for a Context-Free Grammar using `react-force-graph-2d`.
-**Key Functions:**
+Files:
 
-- `DerivationTreeVisual({ tree })`: Renders the tree structure where nodes represent grammar symbols (terminals, non-terminals, epsilon). Handles custom node painting and interactive features like zooming and panning.
+- `InputSelectionComponents/ManualInput/ManualInput.jsx`
+- `ManualInput.helpers.js`
+- `ManualInput.renderers.js`
+- `ManualInputPanels.jsx`
 
-#### Utils
+Manual editor maintains graph as `{ nodes, links }`, then converts to analysis format with `toFormattedGraph(graph, startingNodeId)`.
 
-##### 📄 Grammar.js (src/Components/Grammar/Utils)
+### Generated
 
-**Description:** Class definition for a Context-Free Grammar.
-**Key Functions:**
+Files:
 
-- `Grammar` class: Stores non-terminals, terminals, and productions. Includes helper methods like `toText()`.
+- `InputSelectionComponents/GenerateInput.jsx`
+- `Utils/Generator.js`
 
-##### 📄 GrammarEvaluator.js (src/Components/Grammar/Utils)
+`generateGraph(numFields, edgeProbability)`:
 
-**Description:** Analyzes properties of the grammar.
-**Algorithms:**
+1. create nodes with random player ownership
+2. build spanning backbone from node `0` (reachability guarantee)
+3. add random extra edges (cycles possible)
 
-- **Empty Language Test:** Iteratively computes the set of "productive" non-terminals (those that can derive a string of terminals). If the start symbol is not in this set, the language is empty.
-  **Key Functions:**
-- `isEmptyLanguage(grammar)`: Returns whether the language generated by the grammar is empty and provides an explanation.
+### Prepared sets
 
-##### 📄 GrammarGenerator.js (src/Components/Grammar/Utils)
+File:
 
-**Description:** Generates random context-free grammars.
-**Algorithms:**
+- `InputSelectionComponents/PreparedSetsInput.jsx`
 
-- **Random Grammar Generation:** Generates symbols and production rules based on constraints (left/right recursion, max length, epsilon rules).
-  **Key Functions:**
-- `generateGrammar(config)`: Returns a new random `Grammar` instance.
+Loads `Sady/CombinatorialGame/*.json`, creates internal `positions` graph, and can override starting-node player via radio controls.
 
-##### 📄 GrammarParser.js (src/Components/Grammar/Utils)
+## 6.2 Winner Algorithm (Retrograde Analysis)
 
-**Description:** Parses text representation of grammar rules.
-**Key Functions:**
+File:
 
-- `parseGrammar(inputText)`: Parses strings like "S -> aS | b" into a `Grammar` object. Handles epsilon ('ε').
+- `Utils/ComputeWinner.js`
 
-#### InputSelectionComponents
+Entry:
 
-##### 📄 GenerateInput.jsx (src/Components/Grammar/InputSelectionComponent)
+- `computeWinner(graph)`
 
-**Description:** Form for configuring and generating random grammars.
-**Key Functions:**
+Outputs:
 
-- `GenerateInput()`: UI for setting counts of symbols, recursion options, etc.
+- `hasWinningStrategy`
+- `winningPositions` (winner id per node: `0`, `1`, `2`)
+- `nodeStatusRaw` (`WIN/LOSE/DRAW` relative to player-to-move at that node)
+- `message`
+- `steps`
 
-##### 📄 ManualInput.jsx (src/Components/Grammar/InputSelectionComponent)
+Algorithm outline:
 
-**Description:** Text area for manual grammar entry.
-**Key Functions:**
+1. initialize all nodes as `DRAW`, track unresolved outgoing degree
+2. seed queue with terminal nodes (`LOSE`)
+3. process queue and propagate to parents with player-aware branch logic
+4. unresolved nodes after propagation stay `DRAW`
+5. convert start node status to Player 1 perspective
 
-- `ManualInput()`: Accepts raw text rules and uses `parseGrammar`.
+Complexity:
 
-##### 📄 PreparedSetsInput.jsx (src/Components/Grammar/InputSelectionComponent)
+- approximately `O(V + E)`
 
-**Description:** Selector for pre-defined grammars.
-**Key Functions:**
+Optimal-move extraction:
 
-- `PreparedSetsInput()`: Loads data from `SadyG.json`.
+- `getOptimalMoves(graph, result)` returns edge keys `source-target`
+- selects edges from Player 1 winning nodes to Player 1 winning child states
 
-### Conversions
+## 6.3 Visualization and Replay
 
-#### MCVP to Combinatorial Game
+Files:
 
-##### 📄 ConversionCombinatorialGame.js (src/Components/Conversions/MCVP-CombinatorialGame)
+- `Utils/DisplayGraph.jsx`
+- `StepByStepGame.jsx`
+- `Utils/GameAnalysisDisplay.jsx`
 
-**Description:** Logic for converting MCVP to a Combinatorial Game.
-**Algorithms:**
+`DisplayGraph` supports:
 
-- **Tree Traversal:** Maps MCVP nodes to Game positions: OR -> Player 1, AND -> Player 2, Variables -> Terminal positions (Winning/Losing based on value).
-  **Key Functions:**
-- `convertMCVPtoGame(mcvpTree)`: Returns the final game graph.
-- `MCVPToGameStepGenerator`: Generates a sequence of steps describing the conversion process for visualization.
+- node highlighting and hover context
+- dynamic link distance by graph density
+- optimal edge highlighting (gold)
+- winner labels above nodes (when provided)
+- optional lock control and lock-on-first-tick behavior
+- position persistence back into graph model
 
-##### 📄 MCVPtoCombinatorialGameConverter.jsx (src/Components/Conversions/MCVP-CombinatorialGame)
+`StepByStepGame` reconstructs partial status map by replaying steps up to current index.
 
-**Description:** UI component for visualizing the MCVP -> Game conversion.
-**Key Functions:**
+## 6.4 Export/Import Details
 
-- `MCVPtoCombinatorialGameConverter()`: Displays side-by-side MCVP tree and Game graph, allowing step-by-step navigation through the conversion process.
+`CombinatorialGame.jsx` export supports:
 
-#### MCVP to Grammar
+- flat format (`nodes`, `edges`, `startingPosition`)
+- internal format conversion from `positions`
+- optional `nodePositions` for layout
 
-##### 📄 ConversionGrammar.js (src/Components/Conversions/MCVP-Grammar)
+Import accepts flat, internal, and legacy collection-like payloads.
 
-**Description:** A subclass of `Grammar` tailored for conversion, adding methods to incrementally build the grammar.
-**Key Functions:**
+---
 
-- `ConversionGrammar`: Extends `Grammar` with methods like `addProduction`.
+## 7. Module Deep Dive: Grammar
 
-##### 📄 MCVPtoGrammarConverter.jsx (src/Components/Conversions/MCVP-Grammar)
+Primary container:
 
-**Description:** Logic and UI for converting MCVP to Context-Free Grammar.
-**Algorithms:**
+- `Components/Grammar/Grammar.jsx`
 
-- **Recursive Mapping:** Traverses the MCVP tree. Assigns Non-Terminals to operation nodes. Creates productions: AND nodes -> Concatenation of child symbols; OR nodes -> Alternative productions for each child.
-  **Key Functions:**
-- `MCVPToGrammarConverter` class: Handles the logic, mapping nodes to symbols and generating steps.
-- `MCVPtoGrammarConverter()`: React component for step-by-step visualization of the conversion.
+Core workflow:
+
+1. load grammar (manual/generate/sets/import)
+2. run `isEmptyLanguage(grammar)`
+3. show result + optional witness derivation tree
+4. open step-by-step explanation modal when requested
+
+## 7.1 Model and Parser
+
+Model file:
+
+- `Utils/Grammar.js`
+
+Parser file:
+
+- `Utils/GrammarParser.js`
+
+Parser behavior:
+
+- supports `->` and `→`
+- supports alternatives (`|`)
+- supports epsilon (`ε` or `epsilon`)
+- enforces non-terminal naming by uppercase-leading symbol (including Czech uppercase)
+- classifies all other tokens as terminals
+
+## 7.2 Generator
+
+File:
+
+- `Utils/GrammarGenerator.js`
+
+Entry:
+
+- `generateGrammar(config)`
+
+Highlights:
+
+- generates non-terminals with `S` first
+- generates terminals from lowercase symbols
+- configurable recursion and epsilon modes
+- validates configuration ranges
+- ensures reachability of all non-terminals from start symbol
+- in `epsilonMode='always'` ensures at least one epsilon production exists
+
+UI complexity estimation is in:
+
+- `InputSelectionComponent/GenerateInput.jsx`
+
+Thresholds:
+
+- warn at `>= 240`
+- block at `>= 420`
+
+## 7.3 Emptiness Evaluator and Witness Tree
+
+File:
+
+- `Utils/GrammarEvaluator.js`
+
+Entry:
+
+- `isEmptyLanguage(grammar)`
+
+Phase 1: productive-set fixed point
+
+- seed productive non-terminals from terminal-only/epsilon derivations
+- queue-based propagation until no new productive non-terminals
+
+Phase 2: witness (only if non-empty)
+
+- builds compact derivation tree iteratively
+- uses shortest-derivation heuristic to reduce recursion risk
+- returns derived terminal word from leaves
+
+Safety guardrails:
+
+- max nodes: `1200`
+- max depth: `80`
+- max non-terminal repeats per path: `4`
+- truncation reason surfaced to UI
+
+## 7.4 Step-by-Step Grammar Explanation
+
+Files:
+
+- `Utils/GrammarStepEvaluator.js`
+- `StepByStepGrammar.jsx`
+
+`generateGrammarSteps` produces a pedagogical timeline of productive-set growth, not the witness-tree construction itself.
+
+## 7.5 Derivation Tree Rendering
+
+File:
+
+- `DerivationTreeVisual.jsx`
+
+Features:
+
+- DAG top-down layout
+- custom node coloring by symbol type (`non-terminal`, `terminal`, `epsilon`)
+- drag support with optional lock-after-drag behavior
+
+---
+
+## 8. Conversion Pipelines
+
+## 8.1 MCVP -> Combinatorial Game
+
+Files:
+
+- `Conversions/MCVP-CombinatorialGame/ConversionCombinatorialGame.js`
+- `Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter.jsx`
+
+Rule mapping:
+
+- OR -> Player 1 node
+- AND -> Player 2 node
+- variable `1` -> Player 2 terminal node
+- variable `0` -> Player 1 terminal node
+
+Mechanics:
+
+- `MCVPToGameStepGenerator` traverses DAG once with visited set
+- assigns stable labels `V0`, `V1`, ...
+- records step snapshots including partial graph and visual labels
+
+UI converter:
+
+- side-by-side MCVP + Game visualizations
+- step navigation
+- final redirect button uses `onNavigate('CombinatorialGame', finalGraph)`
+
+## 8.2 MCVP -> Grammar
+
+Files:
+
+- `Conversions/MCVP-Grammar/ConversionGrammar.js`
+- `Conversions/MCVP-Grammar/MCVPtoGrammarConverter.jsx`
+
+Core conversion object:
+
+- internal class `MCVPToGrammarConverter` (inside file)
+
+Symbol strategies:
+
+- non-terminals generated by `NonTerminalGenerator` (`S` reserved for root)
+- terminals generated by `TerminalGenerator`
+
+Production mapping:
+
+- AND node -> one concatenation production
+- OR node -> multiple alternatives
+- variable `1` -> terminal or epsilon (15% chance)
+- variable `0` -> non-productive loop `X -> X`
+
+Process is split into:
+
+1. node symbol assignment
+2. production construction
+
+UI converter:
+
+- side-by-side MCVP + grammar text view
+- step navigation and final redirect to Grammar page
+
+---
+
+## 9. Data Contract Summary (Practical)
+
+## 9.1 MCVP Import
+
+Accepted keys:
+
+- required: `nodes` + (`edges` or `links`)
+- optional: `positions` map or per-node `x/y`
+
+Normalization entry points:
+
+- `graphToTree(...)`
+- `flatGraphToTree(...)`
+
+## 9.2 Combinatorial Game Import
+
+Accepted:
+
+1. flat format (`nodes`, `edges/links`, `startingPosition`)
+2. internal format (`positions`, `startingPosition`)
+
+Optional layout field in flat format:
+
+- `nodePositions`
+
+## 9.3 Grammar Import
+
+Accepted:
+
+- single grammar object
+- array of grammar objects (first one used)
+
+Validation checks ensure `nonTerminals`, `terminals`, and `productions` exist.
+
+---
+
+## 10. Tests and What They Cover
+
+Test files:
+
+- `tests/mcvp.test.js`
+- `tests/mcvp.completeness.test.js`
+- `tests/combinatorial-game.test.js`
+- `tests/combinatorial-game.completeness.test.js`
+- `tests/grammar.test.js`
+- `tests/grammar.completeness.test.js`
+
+Coverage highlights:
+
+- MCVP:
+  - parser correctness
+  - variable reuse + conflict detection
+  - evaluator truth-table behavior and cycle handling
+  - generator feasibility guard
+- Combinatorial Game:
+  - winner analysis and draw detection
+  - optimal move extraction
+  - exhaustive 2-node behavior matrix
+  - generator connectivity and self-loop avoidance
+- Grammar:
+  - parser syntax/validation
+  - emptiness detection behavior
+  - generator config validation
+  - epsilon and rule length constraints
+
+Current gap class (high level):
+
+- UI component behavior is mostly not unit-tested; tests target algorithms/utilities.
+
+---
+
+## 11. Practical Extension Guide
+
+When adding/changing functionality:
+
+1. Update utility algorithm first (and tests).
+2. Update page container orchestration.
+3. Update step replay component if explanation flow changes.
+4. Update import/export shape if data contract changed.
+5. Update both docs:
+   - `Project_CheatSheet.md` (quick facts)
+   - `ProjectOverview.md` (deep details)
+
+Recommended commands:
+
+- `npm run dev` (local default: `http://localhost:5174/`)
+- `npm run test`
+- `npm run lint`
+- `npm run build`
+
+Useful searches:
+
+- `rg "evaluateCircuitWithSteps|computeWinner|isEmptyLanguage|generateGrammarSteps" src`
+- `rg "onGraphUpdate|onTreeUpdate|onGrammar|onNavigate" src/Components`
+
+---
+
+## 12. Known Naming Mismatch
+
+The codebase sometimes says "tree" for MCVP structures, but implementation intentionally allows DAG behavior via shared nodes.

@@ -44,7 +44,11 @@ function countIsolatedNodes(graph) {
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Combinatorial game module UI.
  */
-export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
+export function CombinatorialGame({
+  initialData,
+  autoScrollToGraph = true,
+  lockNodeAfterDrag = true,
+}) {
   const [graph, setGraph] = useState(null); // Current tree
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [selectedStartingPlayer, setSelectedStartingPlayer] = useState(1); // User's choice for starting player
@@ -265,6 +269,7 @@ export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
                     analysisResult={analysisResult}
                     optimalMoves={optimalMoves}
                     onExplain={() => setExplain(true)}
+                    lockNodeAfterDrag={lockNodeAfterDrag}
                   />
                 );
               case 'generate':
@@ -306,6 +311,7 @@ export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
                     optimalMoves={optimalMoves}
                     fitTrigger={graphFitTrigger}
                     showLockControl={true}
+                    lockNodeAfterDrag={lockNodeAfterDrag}
                   />
                 </div>
                 <GameAnalysisDisplay analysisResult={analysisResult} />
@@ -324,7 +330,13 @@ export function CombinatorialGame({ initialData, autoScrollToGraph = true }) {
 
         {explain && (
           <ConversionModal onClose={() => setExplain(false)}>
-            {graph && <StepByStepGame graph={graph} analysisSteps={analysisSteps} />}
+            {graph && (
+              <StepByStepGame
+                graph={graph}
+                analysisSteps={analysisSteps}
+                lockNodeAfterDrag={lockNodeAfterDrag}
+              />
+            )}
           </ConversionModal>
         )}
       </div>
@@ -336,6 +348,7 @@ CombinatorialGame.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
   autoScrollToGraph: PropTypes.bool,
+  lockNodeAfterDrag: PropTypes.bool,
 };
 
 export default CombinatorialGame;

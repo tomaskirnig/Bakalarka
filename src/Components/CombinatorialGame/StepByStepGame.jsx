@@ -25,7 +25,7 @@ const resolvePlayerOneWinningAtStep = (step, graph) => {
  * @param {Object} props - The component props
  * @param {Object} props.graph - The game graph to analyze
  */
-export function StepByStepGame({ graph, analysisSteps }) {
+export function StepByStepGame({ graph, analysisSteps, lockNodeAfterDrag = true }) {
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
 
@@ -169,6 +169,7 @@ export function StepByStepGame({ graph, analysisSteps }) {
               showLockControl={true}
               defaultLocked={true}
               lockOnFirstTick={true}
+              lockNodeAfterDrag={lockNodeAfterDrag}
             />
           </div>
 
@@ -298,4 +299,5 @@ StepByStepGame.propTypes = {
     startingPosition: PropTypes.object.isRequired,
   }).isRequired,
   analysisSteps: PropTypes.array.isRequired,
+  lockNodeAfterDrag: PropTypes.bool,
 };

@@ -1,6 +1,7 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import PropTypes from 'prop-types';
 import ForceGraph2D from 'react-force-graph-2d';
+import { forceCollide, forceCenter } from 'd3';
 import { useGraphColors } from '../../../../Hooks/useGraphColors';
 import { useGraphSettings } from '../../../../Hooks/useGraphSettings';
 import { toast } from 'react-toastify';
@@ -28,6 +29,7 @@ export function ManualInput({
   analysisResult,
   optimalMoves,
   onExplain,
+  lockNodeAfterDrag = true,
 }) {
   const [graph, setGraph] = useState({ nodes: [], links: [] });
   const [isGraphLocked, setIsGraphLocked] = useState(false);
@@ -398,16 +400,13 @@ export function ManualInput({
   useEffect(() => {
     if (fgRef.current) {
       // Add collision force to prevent overlap
-      if (window.d3 && window.d3.forceCollide) {
-        fgRef.current.d3Force(
-          'collision',
-          window.d3
-            .forceCollide()
-            .radius(() => game.nodeRadius * game.manualInputCollisionRadiusMultiplier)
-            .strength(game.manualInputCollisionStrength)
-            .iterations(game.manualInputCollisionIterations)
-        );
-      }
+      fgRef.current.d3Force(
+        'collision',
+        forceCollide()
+          .radius(() => game.nodeRadius * game.manualInputCollisionRadiusMultiplier)
+          .strength(game.manualInputCollisionStrength)
+          .iterations(game.manualInputCollisionIterations)
+      );
 
       // Disable repulsive force so disconnected components do not keep drifting apart.
       const chargeForce = fgRef.current.d3Force('charge');
@@ -416,9 +415,7 @@ export function ManualInput({
       }
 
       // Keep the graph centered in simulation space.
-      if (window.d3 && window.d3.forceCenter) {
-        fgRef.current.d3Force('center', window.d3.forceCenter(0, 0));
-      }
+      fgRef.current.d3Force('center', forceCenter(0, 0));
 
       // Keep connected nodes closer
       const linkForce = fgRef.current.d3Force('link');
@@ -491,13 +488,15 @@ export function ManualInput({
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
           onNodeDrag={(node) => {
-            node.fx = node.x;
-            node.fy = node.y;
+            if (lockNodeAfterDrag || isGraphLocked) {
+              node.fx = node.x;
+              node.fy = node.y;
+            }
           }}
           onNodeDragEnd={(node) => {
             persistNodePositionInState(node);
 
-            if (isGraphLocked) {
+            if (lockNodeAfterDrag || isGraphLocked) {
               node.fx = node.x;
               node.fy = node.y;
             } else {
@@ -546,4 +545,5 @@ ManualInput.propTypes = {
   analysisResult: PropTypes.object,
   optimalMoves: PropTypes.instanceOf(Set),
   onExplain: PropTypes.func,
+  lockNodeAfterDrag: PropTypes.bool,
 };
