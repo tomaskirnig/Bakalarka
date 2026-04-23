@@ -103,7 +103,9 @@ Pro zadaný monotónní obvod vytvoříme instanci hry takto \cite{sawa}:
 \end{itemize}
 
 \subsubsection*{Zdůvodnění korektnosti}
-Korektnost plyne přímo z~významu jednotlivých typů pozic:
+Než přejdeme k~detailům, je vhodné zdůraznit princip celé konstrukce. Vyhodnocení MCVP obvodu probíhá od vstupů směrem k~výstupu, zatímco kombinatorická hra se hraje opačně: ze startovní pozice odpovídající výstupu se postupuje po hranách k~listům. Převod je navržen tak, aby Hráč~1 měl výherní strategii právě tehdy, když se MCVP obvod vyhodnotí na~1. Rozhodování v~herních pozicích proto odpovídá podmínkám, za nichž jednotlivá hradla získají hodnotu~1.
+
+S~tímto pohledem korektnost plyne z~významu jednotlivých typů pozic:
 
 \begin{itemize}
     \item \textbf{OR pozice (Hráč~1):} Hráč~1 volí pokračování. K výhře mu stačí možnost jedné výherní volby, což odpovídá tomu, že hradlo OR má hodnotu~1, když má alespoň jeden vstup hodnotu~1.
@@ -112,6 +114,9 @@ Korektnost plyne přímo z~významu jednotlivých typů pozic:
 \end{itemize}
 
 Proto platí ekvivalence: Hráč~1 má výherní strategii ze startovní pozice právě tehdy, když výstup obvodu má hodnotu~1.
+
+\paragraph{Paměťová složitost převodu.}
+Převod lze provést v~logaritmickém prostoru. Vstupní obvod ani zapisovaný výstupní graf hry se do pracovní paměti nepočítají; v~paměti se drží pouze několik čítačů a pomocných proměnných pro iteraci přes uzly a hrany. Hodnoty těchto čítačů jsou nejvýše velikosti počtu uzlů a hran obvodu, takže jejich reprezentace vyžaduje $O(\log |V| + \log |E|)=O(\log n)$ bitů, kde $n$ je velikost vstupního obvodu.
 
 \subsection{Převod z~MCVP na bezkontextovou gramatiku}
 \label{sec:TheoryReductionToGrammar}
@@ -139,3 +144,6 @@ Korektnost je založena na tvrzení, že neterminál je produktivní právě teh
 \end{itemize}
 
 Z toho přímo plyne, že počáteční symbol je produktivní právě tehdy, když má výstupní uzel obvodu hodnotu~1. Jazyk výsledné gramatiky je tedy neprázdný právě tehdy, když se obvod vyhodnotí na~1.
+
+\paragraph{Paměťová složitost převodu.}
+Také tento převod je realizovatelný v~logaritmickém prostoru. Vstupní obvod a zapisovaná výstupní pravidla gramatiky se nepočítají do pracovní paměti; algoritmus potřebuje jen čítače pro procházení uzlů a hran a krátkodobé uložení právě zpracovávané lokální informace. Proto opět stačí $O(\log |V| + \log |E|)=O(\log n)$ bitů pracovní paměti.

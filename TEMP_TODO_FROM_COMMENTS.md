@@ -30,3 +30,14 @@
 - [ ] MCVP all display components: prevent node overlaps.
 - [ ] Combinatory Game display component: Check if we can add viewport as a boundary for nodes, so they dont ecape - only for not connected ones.
 - [ ] Check the whole project for dead or redundant code
+
+# TODO from latest comments (thesis reductions)
+
+- [x] Re-read current state of BachelorThesis/Chapters/Theory.tex and confirm exact insertion points for both reductions.
+- [x] For MCVP -> Combinatorial Game, add a short paragraph explaining why the conversion is computable in logarithmic space.
+- [x] For MCVP -> Grammar, add an analogous short paragraph explaining logarithmic-space memory usage.
+- [x] Keep both arguments consistent: input and output are not counted as working memory, only iterating counters are counted, so memory is O(log |V| + log |E|) = O(log n).
+- [x] Find application completion texts (at least the "Konverze dokoncena" variant) for both conversions.
+- [x] Update completion texts with a short, safe note about logarithmic memory, without changing program logic.
+- [x] Verify that UI texts render correctly and that nothing breaks (quick run/build check).
+- [x] Prepare final diff + exact inserted wording for approval.

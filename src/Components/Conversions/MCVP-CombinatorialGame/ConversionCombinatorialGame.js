@@ -71,7 +71,12 @@ export class MCVPToGameStepGenerator {
 
     // Final step
     const startId = this.getUniqueId(this.tree);
-    this.addStep('Konverze dokončena', null, 'Výsledný graf hry', { id: startId });
+    this.addStep(
+      'Konverze dokončena',
+      null,
+      'Výsledný graf hry. Teoreticky lze tento převod provést v logaritmické pracovní paměti. Tato vizualizace ale pro přehlednost ukládá mezikroky konverze, aby je bylo možné procházet krok za krokem.',
+      { id: startId }
+    );
 
     return this.steps;
   }

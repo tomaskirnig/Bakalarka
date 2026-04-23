@@ -170,9 +170,6 @@ Vizualizace monotónního obvodu je implementována v~komponentě \texttt{TreeRe
     \label{fig:tree-render-canvas-impl}
 \end{figure}
 
-\subsection{Hierarchické rozložení}
-\label{sec:MCVPLayoutImpl}
-
 Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s~fyzikálními silami pro optimální vizuální uspořádání grafu.
 
 \section{Kombinatorická hra}
@@ -268,13 +265,11 @@ Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}. Graf zob
     \item \textbf{Hrany:} Možné tahy jsou zobrazeny jako směrované hrany. Hrany patřící do výherní strategie jsou zvýrazněny žlutou barvou.
 \end{itemize}
 
-\subsection{Algoritmus analýzy}
+\subsection{Algoritmus analýzy a vyhodnocení výherních pozic}
 \label{sec:GamesAlgorithmImpl}
+\label{sec:GamesRetrogradeImpl}
 
 Řešení problému kombinatorických her je implementováno v~modulu \texttt{ComputeWinner.js}. Algoritmus využívá retrográdní analýzu založenou na principech uvedených v~sekci \ref{sec:TheoryGames}.
-
-\subsection{Vyhodnocení výherních pozic}
-\label{sec:GamesRetrogradeImpl}
 
 Algoritmus určuje, zda je daná pozice pro hráče na tahu výherní, prohrávající, nebo remízová. Vyhodnocení probíhá následovně:
 
@@ -292,13 +287,11 @@ Algoritmus určuje, zda je daná pozice pro hráče na tahu výherní, prohráva
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
 
-\subsection{Optimální tahy}
-\label{sec:GamesOptimalMovesImpl}
-
-Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie \cite{sawa}. Hrana z~pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče~1. Tyto hrany jsou žlutě zvýrazněny ve vizualizaci.
-
 \subsection{Krokové vyhodnocení}
 \label{sec:GamesStepByStepImpl}
+\label{sec:GamesOptimalMovesImpl}
+
+Součástí analýzy je i funkce \texttt{getOptimalMoves()}, která identifikuje hrany patřící do výherní strategie \cite{sawa}. Hrana z~pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče~1; takové hrany jsou ve vizualizaci zvýrazněny žlutě.
 
 Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovou analýzu (viz obrázek \ref{fig:step-by-step-game}). Retrográdní analýza je provedena pouze jednou a během tohoto běhu se průběžně ukládají i mezivýpočty (změny stavů uzlů při propagaci výsledků). Uživatel pak může těmito uloženými kroky procházet pomocí navigačních tlačítek. Pro každý krok analýzy je zobrazeno:
 
@@ -337,9 +330,9 @@ Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivační
 \subsection{Manuální zadání gramatiky}
 \label{sec:GrammarsManualImpl}
 
-Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v~modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (symboly začínající velkým písmenem, včetně českých znaků) a terminály (ostatní symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
+Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v~modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (řetězce začínající velkým písmenem, včetně českých znaků) a terminály (ostatní řetězce). Pravá strana pravidla se po normalizaci bílých znaků rozdělí podle mezer na jednotlivé tokeny (symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
 
-Parser akceptuje jak zápis šipky \texttt{->} z~klávesnice, i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky.
+Parser akceptuje jak zápis šipky \texttt{->} složené ze dvou znaků jednoduše zadatelných z klávesnice, i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky.
 
 \subsection{Generování náhodných gramatik}
 \label{sec:GrammarsGenerationImpl}
@@ -416,15 +409,11 @@ Ve složce \texttt{Sady/Grammar} jsou uloženy předpřipravené příklady gram
     \label{fig:grammar-json-format}
 \end{figure}
 
-\subsection{Algoritmus vyhodnocení}
-\label{sec:GrammarsAlgorithmImpl}
-
-Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}.
-
 \subsection{Identifikace produktivních neterminálů}
+\label{sec:GrammarsAlgorithmImpl}
 \label{sec:GrammarsProductiveImpl}
 
-Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s~frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}. Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s~frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
 
 \begin{enumerate}
     \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů a frontu pro zpracování. Všechna pravidla jsou zpočátku neoznačená.

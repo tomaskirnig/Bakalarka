@@ -1,3 +1,24 @@
+==== Thesis Submission TODO (from LastUpdate) ====
+
+- [ ] Zapracovat zbyvajici textove pripominky vedouciho (cca 15).
+- [ ] Projit celou praci a uzavrit vsechny otevrene komentare.
+- [ ] Provest strukturialni upravy: spojit sekce a smazat nadbytecne nadpisy.
+- [ ] Udelat drobne jazykove a stylisticke upravy textu.
+
+- [ ] Vybrat vsechny zdrojove kody a soubory potrebne k nasazeni do elektronickych priloh.
+- [ ] Pripravit cistou testovaci slozku a vlozit do ni pouze soubory urcene do ZIPu.
+- [ ] Otestovat "na ciste vode", ze aplikaci lze z teto slozky znovu zprovoznit.
+- [ ] Vytvorit finalni ZIP archiv elektronickych priloh.
+- [ ] Nahrat finalni ZIP do systemu Edison.
+
+- [ ] Vytvorit Prilohu A se seznamem elektronickych priloh.
+- [ ] U kazde polozky v Priloze A doplnit kratky popisek (cca 1 veta).
+- [ ] Dopsat sekci o nasazeni aplikace (inspirace sekci 5.8 u Kopidola).
+- [ ] Popsat postup spusteni aplikace z dodanych zdrojovych kodu.
+- [ ] Uvest pozadavky na server a informace o knihovnach (pribalene vs. automaticky stahovane).
+- [ ] Dopsat odkaz na demo aplikace: https://bakalarka-eight.vercel.app/ (sekce nasazeni, uvod nebo zaver).
+
+
 ---- MCVP ----
 - Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas

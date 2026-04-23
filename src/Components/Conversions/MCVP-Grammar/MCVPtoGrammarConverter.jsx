@@ -167,7 +167,7 @@ class MCVPToGrammarConverter {
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
       visualNote:
-        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Uzly operací mají neterminály, proměnné s hodnotou 1 dávají terminál (včetně ε) a proměnné s hodnotou 0 dávají smyčku X -> X, která negeneruje žádné slovo.',
+        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Uzly operací mají neterminály, proměnné s hodnotou 1 dávají terminál (včetně ε) a proměnné s hodnotou 0 dávají smyčku X -> X, která negeneruje žádné slovo. Teoreticky lze tento převod provést v logaritmické pracovní paměti. Tato vizualizace ale pro přehlednost ukládá mezikroky konverze, aby je bylo možné procházet krok za krokem.',
       symbols: this.getVisualSymbols(),
     });
   }
