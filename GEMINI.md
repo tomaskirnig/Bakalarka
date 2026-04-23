@@ -80,4 +80,20 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 ## 🛠️ LaTeX Specifics
 
 - **Encoding:** UTF-8 (`\usepackage[utf8]{inputenc}`).
-- **Compiling:** Standard `pdflatex` -> `biber` -> `pdflatex`.
+
+---
+
+# 🛠️ Technical Solutions & Troubleshooting
+
+## 🧩 Stuck Graph (0x0 Initial Dimensions)
+**Problem:** `react-force-graph-2d` sometimes initializes in a "stuck" state (top-left corner, unmovable) if it mounts inside a container that has `0x0` dimensions initially (e.g., in a closing/opening modal or a hidden tab).
+
+**Solution:**
+1. Use a `useRef(true)` (e.g., `dimensionsWereZeroRef`) to track the initial state.
+2. Monitor container dimensions via `useState` and `ResizeObserver`.
+3. When dimensions become valid (`width > 0 && height > 0`) AND `dimensionsWereZeroRef.current` is true:
+   - Set `dimensionsWereZeroRef.current = false`.
+   - Call `fgRef.current.centerAt(0, 0, 0)`.
+   - Call `fgRef.current.zoom(1, 0)`.
+   - Call `fgRef.current.d3ReheatSimulation()`.
+   - Optionally trigger `zoomToFit()`.

@@ -79,9 +79,9 @@ export function DisplayGraph({
     if (!fgRef.current) return;
 
     requestAnimationFrame(() => {
-      fgRef.current?.zoomToFit(ms, 50);
+      fgRef.current?.zoomToFit(ms, 100);
       requestAnimationFrame(() => {
-        fgRef.current?.zoomToFit(ms, 50);
+        fgRef.current?.zoomToFit(ms, 100);
       });
     });
   }, []);

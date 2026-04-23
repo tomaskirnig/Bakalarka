@@ -16,12 +16,13 @@ const MODE_AFTER = () => 'after';
  * @param {Object} props - The component props
  * @param {Object} props.tree - The derivation tree structure
  */
-export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
+export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag = true }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
 
   // Dimensions State
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const dimensionsWereZeroRef = useRef(true);
   const [isFlashing, setIsFlashing] = useState(false);
 
   // Interaction State
@@ -30,41 +31,6 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
   const colors = useGraphColors();
   const settings = useGraphSettings();
   const { grammar: grammarSettings } = settings;
-
-  const handleFitToScreen = useCallback(() => {
-    fgRef.current?.zoomToFit(400, 50);
-  }, []);
-
-  // Flash border when tree changes
-  useEffect(() => {
-    setIsFlashing(true);
-    const timer = setTimeout(() => setIsFlashing(false), 600);
-    return () => clearTimeout(timer);
-  }, [tree]); // Use grammar settings
-
-  // ResizeObserver to handle responsive sizing
-  useEffect(() => {
-    if (!containerRef.current) return;
-
-    const updateDimensions = () => {
-      if (!containerRef.current) return;
-      const { width, height } = containerRef.current.getBoundingClientRect();
-      setDimensions({ width, height });
-    };
-
-    // Initial call
-    updateDimensions();
-
-    const resizeObserver = new ResizeObserver(() => {
-      updateDimensions();
-    });
-
-    resizeObserver.observe(containerRef.current);
-
-    return () => {
-      resizeObserver.disconnect();
-    };
-  }, []);
 
   // 1. Prepare Graph Data
   const graphData = useMemo(() => {
@@ -100,6 +66,74 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
 
     return { nodes, links };
   }, [tree]);
+
+  const handleFitToScreen = useCallback(() => {
+    fgRef.current?.zoomToFit(400, 50);
+  }, []);
+
+  // Fit to screen when fitTrigger changes
+  const lastFitTrigger = useRef(-1);
+  useEffect(() => {
+    if (fitTrigger > lastFitTrigger.current && fgRef.current && dimensions.width > 0) {
+      // Small delay to allow engine to settle before fitting
+      requestAnimationFrame(() => {
+        fgRef.current?.zoomToFit(400, 50);
+      });
+      lastFitTrigger.current = fitTrigger;
+    }
+  }, [fitTrigger, dimensions.width]);
+
+  // Recover from initial 0x0 canvas mounts by recentering and reheating once dimensions are ready.
+  useEffect(() => {
+    if (!dimensionsWereZeroRef.current) return;
+    if (dimensions.width <= 0 || dimensions.height <= 0) return;
+
+    dimensionsWereZeroRef.current = false;
+
+    if (fgRef.current) {
+      fgRef.current.centerAt(0, 0, 0);
+      fgRef.current.zoom(1, 0);
+      fgRef.current.d3ReheatSimulation();
+      
+      // Auto-fit on first valid dimensions if tree exists
+      if (graphData.nodes.length > 0) {
+        requestAnimationFrame(() => {
+          fgRef.current?.zoomToFit(400, 50);
+        });
+      }
+    }
+  }, [dimensions.width, dimensions.height, graphData.nodes.length]);
+
+  // Flash border when tree changes
+  useEffect(() => {
+    setIsFlashing(true);
+    const timer = setTimeout(() => setIsFlashing(false), 600);
+    return () => clearTimeout(timer);
+  }, [tree]); // Use grammar settings
+
+  // ResizeObserver to handle responsive sizing
+  useEffect(() => {
+    if (!containerRef.current) return;
+
+    const updateDimensions = () => {
+      if (!containerRef.current) return;
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      setDimensions({ width, height });
+    };
+
+    // Initial call
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver(() => {
+      updateDimensions();
+    });
+
+    resizeObserver.observe(containerRef.current);
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
@@ -270,5 +304,6 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
 
 DerivationTreeVisual.propTypes = {
   tree: PropTypes.object,
+  fitTrigger: PropTypes.number,
   lockNodeAfterDrag: PropTypes.bool,
 };

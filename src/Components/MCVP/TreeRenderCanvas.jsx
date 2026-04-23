@@ -290,6 +290,7 @@ export function TreeRenderCanvas({
       const isNeighbor = highlightNodes.current.has(node) && !isHovered;
       const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
       const isActive = activeNode && node.id === activeNode.id;
+      const isRoot = !node.parents || node.parents.length === 0;
 
       const Highlighted = isHovered || isNeighbor || isExternalHighlight || isActive;
 
@@ -303,9 +304,11 @@ export function TreeRenderCanvas({
       } else if (isHovered) {
         ctx.fillStyle = colors.accentYellow;
       } else if (isExternalHighlight) {
-        ctx.fillStyle = colors.highlightNode;
+        ctx.fillStyle = isRoot ? colors.accentRed : colors.highlightNode;
       } else if (isNeighbor) {
         ctx.fillStyle = colors.highlightNode;
+      } else if (isRoot) {
+        ctx.fillStyle = colors.accentRed;
       } else {
         ctx.fillStyle = colors.defaultNode;
       }
