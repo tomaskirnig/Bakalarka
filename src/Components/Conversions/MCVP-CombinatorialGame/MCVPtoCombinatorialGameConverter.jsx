@@ -14,7 +14,6 @@ const FIT_RESET_DELAY_MS = 150;
  */
 export default function MCVPtoCombinatorialGameConverter({
   mcvpTree,
-  conversionSteps = null,
   onNavigate,
   useTopDownLayout = true,
   lockNodeAfterDrag = true,
@@ -38,11 +37,10 @@ export default function MCVPtoCombinatorialGameConverter({
   }, []);
 
   const steps = useMemo(() => {
-    if (conversionSteps) return conversionSteps;
     if (!mcvpTree) return [];
     const generator = new MCVPToGameStepGenerator(mcvpTree);
     return generator.generate();
-  }, [mcvpTree, conversionSteps]);
+  }, [mcvpTree]);
 
   useEffect(() => {
     setCurrentStep(0);
@@ -284,7 +282,6 @@ export default function MCVPtoCombinatorialGameConverter({
 
 MCVPtoCombinatorialGameConverter.propTypes = {
   mcvpTree: PropTypes.object.isRequired,
-  conversionSteps: PropTypes.array,
   onNavigate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
   lockNodeAfterDrag: PropTypes.bool,

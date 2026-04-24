@@ -2,12 +2,113 @@ import { useState, useEffect, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { TreeRenderCanvas } from '../../MCVP/TreeRenderCanvas';
 import ConversionGrammar from './ConversionGrammar';
-import { NonTerminalGenerator, TerminalGenerator } from './MCVPtoGrammarCore';
 
 /**
- * Handles the conversion logic from MCVP to Grammar (Step Builder)
+ * Generates non-terminal symbols using A-Z, AA-ZZ naming convention
  */
-export class MCVPToGrammarStepBuilder {
+class NonTerminalGenerator {
+  constructor() {
+    this.currentCode = 65; // ASCII for 'A'
+    this.nodeMap = new Map();
+    this.generatedSymbols = new Set(['S']); // S is reserved for start
+  }
+
+  /**
+   * Generates the next unique non-terminal symbol
+   */
+  generateNextSymbol() {
+    let symbol;
+    do {
+      if (this.currentCode <= 90) {
+        // A-Z
+        symbol = String.fromCharCode(this.currentCode);
+      } else {
+        // Generate AA, AB, etc.
+        const index = this.currentCode - 91;
+        const firstChar = Math.floor(index / 26);
+        const secondChar = index % 26;
+        symbol = String.fromCharCode(65 + firstChar) + String.fromCharCode(65 + secondChar);
+      }
+      this.currentCode++;
+    } while (this.generatedSymbols.has(symbol) || symbol === 'S'); // Skip if already exists or is S
+
+    this.generatedSymbols.add(symbol);
+    return symbol;
+  }
+
+  getSymbolForNode(node, startSymbol = null) {
+    if (this.nodeMap.has(node)) {
+      return this.nodeMap.get(node);
+    }
+
+    let symbol;
+    if (startSymbol) {
+      symbol = startSymbol;
+      this.generatedSymbols.add(symbol);
+    } else {
+      symbol = this.generateNextSymbol();
+    }
+
+    this.nodeMap.set(node, symbol);
+    return symbol;
+  }
+
+  getSymbol(node) {
+    return this.nodeMap.get(node);
+  }
+
+  getAllSymbols() {
+    return Array.from(this.nodeMap.entries()).map(([node, symbol]) => ({
+      node,
+      result: symbol,
+    }));
+  }
+}
+
+/**
+ * Generates terminal symbols using a-z, then special characters
+ */
+class TerminalGenerator {
+  constructor() {
+    this.terminals = 'abcdefghijklmnopqrstuvwxyz+-=*#@$%&!?<>[]{}()'.split('');
+    this.currentIndex = 0;
+    this.variableMap = new Map();
+  }
+
+  /**
+   * Gets or generates a terminal for a variable node
+   */
+  getTerminalForVariable(variable) {
+    if (this.variableMap.has(variable)) {
+      return this.variableMap.get(variable);
+    }
+
+    if (this.currentIndex >= this.terminals.length) {
+      // Fallback to numbered terminals when symbol pool is exhausted.
+      const terminal = `t${this.currentIndex - this.terminals.length + 1}`;
+      this.variableMap.set(variable, terminal);
+      this.currentIndex++;
+      return terminal;
+    }
+
+    const terminal = this.terminals[this.currentIndex];
+    this.variableMap.set(variable, terminal);
+    this.currentIndex++;
+    return terminal;
+  }
+
+  getAllSymbols() {
+    return Array.from(this.variableMap.entries()).map(([node, symbol]) => ({
+      node,
+      result: symbol,
+    }));
+  }
+}
+
+/**
+ * Handles the conversion logic from MCVP to Grammar
+ */
+class MCVPToGrammarConverter {
   constructor(mcvpTree) {
     this.mcvpTree = mcvpTree;
     this.grammar = new ConversionGrammar();
@@ -48,8 +149,6 @@ export class MCVPToGrammarStepBuilder {
       ];
     }
   }
-
-  // ... (rest of methods)
 
   addInitializationStep() {
     this.steps.push({
@@ -236,19 +335,7 @@ export class MCVPToGrammarStepBuilder {
     }
 
     let resolution;
-    const hashString = (str) => {
-      let hash = 0;
-      for (let i = 0; i < str.length; i++) {
-        hash = (hash << 5) - hash + str.charCodeAt(i);
-        hash |= 0;
-      }
-      return Math.abs(hash);
-    };
-    const shouldBeEpsilon =
-      this.epsilonChanceForTrueVariable > 0 &&
-      (node.id ? hashString(node.id) % 100 < this.epsilonChanceForTrueVariable * 100 : false);
-
-    if (shouldBeEpsilon) {
+    if (Math.random() < this.epsilonChanceForTrueVariable) {
       this.variableVisualMap.set(node, 'ε');
       resolution = { type: 'epsilon' };
     } else {
@@ -261,7 +348,6 @@ export class MCVPToGrammarStepBuilder {
     this.trueVariableResolution.set(node, resolution);
     return resolution;
   }
-
 
   getProductionSymbolsForTrueVariable(node) {
     const resolution = this.resolveTrueVariable(node);
@@ -296,7 +382,6 @@ export class MCVPToGrammarStepBuilder {
  */
 export default function MCVPtoGrammarConverter({
   mcvpTree,
-  conversionSteps = null,
   onNavigate,
   useTopDownLayout = true,
   lockNodeAfterDrag = true,
@@ -306,11 +391,10 @@ export default function MCVPtoGrammarConverter({
 
   // Generate conversion steps using useMemo for performance
   const steps = useMemo(() => {
-    if (conversionSteps) return conversionSteps;
     if (!mcvpTree) return [];
-    const builder = new MCVPToGrammarStepBuilder(mcvpTree);
-    return builder.convert();
-  }, [mcvpTree, conversionSteps]);
+    const converter = new MCVPToGrammarConverter(mcvpTree);
+    return converter.convert();
+  }, [mcvpTree]);
 
   // Reset step when tree changes
   useEffect(() => {
@@ -480,13 +564,12 @@ export default function MCVPtoGrammarConverter({
 
 MCVPtoGrammarConverter.propTypes = {
   mcvpTree: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    id: PropTypes.string,
     type: PropTypes.string,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
     varValue: PropTypes.number,
     children: PropTypes.array,
   }),
-  conversionSteps: PropTypes.array,
   onNavigate: PropTypes.func,
   useTopDownLayout: PropTypes.bool,
   lockNodeAfterDrag: PropTypes.bool,

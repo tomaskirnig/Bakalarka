@@ -80,6 +80,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 ## 🛠️ LaTeX Specifics
 
 - **Encoding:** UTF-8 (`\usepackage[utf8]{inputenc}`).
+- **Compiling:** Standard `pdflatex` -> `biber` -> `pdflatex`.
 
 ---
 
@@ -91,7 +92,7 @@ This document serves as the primary context for the AI agent ("Gemini") working 
 **Solution:**
 1. Use a `useRef(true)` (e.g., `dimensionsWereZeroRef`) to track the initial state.
 2. Monitor container dimensions via `useState` and `ResizeObserver`.
-3. When dimensions become valid (`width > 0 && height > 0`) AND `dimensionsWereZeroRef.current` is true:
+3. When dimensions become valid (`width > 0 && height > 0`) AND `dimensionsWereZeroRef.current` is true:      
    - Set `dimensionsWereZeroRef.current = false`.
    - Call `fgRef.current.centerAt(0, 0, 0)`.
    - Call `fgRef.current.zoom(1, 0)`.

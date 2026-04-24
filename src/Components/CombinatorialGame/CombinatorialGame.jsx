@@ -118,7 +118,6 @@ export function CombinatorialGame({
     if (!autoScrollToGraph || !graph) return;
 
     const frameId = requestAnimationFrame(() => {
-      // In manual mode, we scroll to the editor (to show analysis), otherwise to the result graph
       const target =
         chosenOpt === 'manual' ? manualInputSectionRef.current : graphDisplaySectionRef.current;
       if (target) {

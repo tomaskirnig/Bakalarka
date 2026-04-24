@@ -2,20 +2,29 @@
  * @fileoverview Logic for converting MCVP tree to Combinatorial Game graph.
  */
 
-import { convertMCVPToGameCore } from './MCVPtoGameCore';
-
 const OR_NODE_VALUES = new Set(['O', 'OR', '∨']);
 const AND_NODE_VALUES = new Set(['A', 'AND', '∧']);
 
 /**
  * Converts an MCVP expression tree into a Combinatorial Game graph structure.
- * This is the "fast" core conversion.
+ *
+ * Rules:
+ * - OR nodes -> Player 1 positions (Player 1 chooses move)
+ * - AND nodes -> Player 2 positions (Player 2 chooses move)
+ * - Variable [1] -> Player 2 position with no moves (Player 2 loses => Player 1 wins)
+ * - Variable [0] -> Player 1 position with no moves (Player 1 loses)
  *
  * @param {Object} mcvpTree - The root node of the MCVP tree
  * @returns {Object} The game graph structure { positions, startingPosition }
  */
 export function convertMCVPtoGame(mcvpTree) {
-  return convertMCVPToGameCore(mcvpTree);
+  if (!mcvpTree) return null;
+
+  const generator = new MCVPToGameStepGenerator(mcvpTree);
+  const steps = generator.generate();
+  if (steps.length === 0) return null;
+  // Return the graph from the last step
+  return steps[steps.length - 1].graph;
 }
 
 /**
@@ -33,9 +42,7 @@ export class MCVPToGameStepGenerator {
 
   getUniqueId(node) {
     if (!this.labelMap.has(node)) {
-      // Match core logic for deterministic IDs if possible
-      const id = node.id || `V${this.labelCounter++}`;
-      this.labelMap.set(node, id);
+      this.labelMap.set(node, `V${this.labelCounter++}`);
     }
     return this.labelMap.get(node);
   }

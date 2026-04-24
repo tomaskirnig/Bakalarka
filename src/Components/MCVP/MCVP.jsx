@@ -9,11 +9,8 @@ import { TreeRenderCanvas } from './TreeRenderCanvas';
 import { evaluateCircuitWithSteps } from './Utils/EvaluateCircuit';
 import { ConversionModal } from '../Common/ConversionModal';
 import { StepByStepTree } from './StepByStepTree';
-import MCVPtoGrammarConverter, {
-  MCVPToGrammarStepBuilder,
-} from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
+import MCVPtoGrammarConverter from '../Conversions/MCVP-Grammar/MCVPtoGrammarConverter';
 import MCVPtoCombinatorialGameConverter from '../Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter';
-import { MCVPToGameStepGenerator } from '../Conversions/MCVP-CombinatorialGame/ConversionCombinatorialGame';
 import { InfoButton } from '../Common/InfoButton';
 import { FileTransferControls } from '../Common/FileTransferControls';
 import { treeToFlatGraph, flatGraphToTree } from './Utils/Serialization';
@@ -71,19 +68,6 @@ export function MCVP({
   const evaluation = useMemo(() => {
     return tree ? evaluateCircuitWithSteps(tree) : { result: null, steps: [] };
   }, [tree]);
-
-  const gameConversionSteps = useMemo(() => {
-    if (!tree) return [];
-    const generator = new MCVPToGameStepGenerator(tree);
-    return generator.generate();
-  }, [tree]);
-
-  const grammarConversionSteps = useMemo(() => {
-    if (!tree) return [];
-    const builder = new MCVPToGrammarStepBuilder(tree);
-    return builder.convert();
-  }, [tree]);
-
   const hasTree = Boolean(tree);
   const isTreeValid = hasTree && evaluation.result !== null;
 
@@ -336,7 +320,6 @@ export function MCVP({
             {tree && (
               <MCVPtoGrammarConverter
                 mcvpTree={tree}
-                conversionSteps={grammarConversionSteps}
                 onNavigate={onNavigate}
                 useTopDownLayout={useTopDownLayout}
                 lockNodeAfterDrag={lockNodeAfterDrag}
@@ -350,7 +333,6 @@ export function MCVP({
             {tree && (
               <MCVPtoCombinatorialGameConverter
                 mcvpTree={tree}
-                conversionSteps={gameConversionSteps}
                 onNavigate={onNavigate}
                 useTopDownLayout={useTopDownLayout}
                 lockNodeAfterDrag={lockNodeAfterDrag}
