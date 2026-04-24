@@ -234,8 +234,33 @@ export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag =
       fgRef.current.d3Force('center', null);
       fgRef.current.d3Force('link').distance(grammarSettings.linkDistance);
       fgRef.current.d3Force('charge').strength(grammarSettings.chargeStrength);
+      fgRef.current.d3ReheatSimulation();
     }
-  }, [tree, grammarSettings]);
+  }, [tree, grammarSettings, lockNodeAfterDrag]);
+
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+    },
+    [lockNodeAfterDrag]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+    },
+    [lockNodeAfterDrag]
+  );
 
   return (
     <div
@@ -281,22 +306,8 @@ export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag =
         nodeCanvasObject={paintNode}
         // Events
         onNodeHover={handleNodeHover}
-        onNodeDrag={(node) => {
-          if (lockNodeAfterDrag) {
-            node.fx = node.x;
-            node.fy = node.y;
-          }
-        }}
-        onNodeDragEnd={(node) => {
-          if (lockNodeAfterDrag) {
-            node.fx = node.x;
-            node.fy = node.y;
-          } else {
-            node.fx = undefined;
-            node.fy = undefined;
-            fgRef.current?.d3ReheatSimulation();
-          }
-        }}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={handleNodeDragEnd}
       />
     </div>
   );

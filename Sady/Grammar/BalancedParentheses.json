@@ -1,0 +1,8 @@
+{
+  "name": "Vyvážené závorky",
+  "nonTerminals": ["S"],
+  "terminals": ["(", ")"],
+  "productions": {
+    "S": [["(", "S", ")"], ["S", "S"], []]
+  }
+}

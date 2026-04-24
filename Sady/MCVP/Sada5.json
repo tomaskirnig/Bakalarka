@@ -1,16 +1,15 @@
 {
-  "name": "Sada 2 (Složitý DAG se sdílenými uzly)",
+  "name": "Sada 5 (Větší hierarchický obvod)",
   "nodes": [
     { "id": 1, "type": "variable", "value": "x1", "varValue": 1 },
     { "id": 2, "type": "variable", "value": "x2", "varValue": 0 },
     { "id": 3, "type": "variable", "value": "x3", "varValue": 1 },
     { "id": 4, "type": "variable", "value": "x4", "varValue": 1 },
-    { "id": 5, "type": "operation", "value": "O" },
-    { "id": 6, "type": "operation", "value": "A" },
+    { "id": 5, "type": "operation", "value": "A" },
+    { "id": 6, "type": "operation", "value": "O" },
     { "id": 7, "type": "operation", "value": "O" },
     { "id": 8, "type": "operation", "value": "A" },
-    { "id": 9, "type": "operation", "value": "O" },
-    { "id": 10, "type": "operation", "value": "A" }
+    { "id": 9, "type": "operation", "value": "A" }
   ],
   "edges": [
     { "source": 5, "target": 1 },
@@ -21,9 +20,7 @@
     { "source": 7, "target": 4 },
     { "source": 8, "target": 5 },
     { "source": 8, "target": 6 },
-    { "source": 9, "target": 6 },
-    { "source": 9, "target": 7 },
-    { "source": 10, "target": 8 },
-    { "source": 10, "target": 9 }
+    { "source": 9, "target": 8 },
+    { "source": 9, "target": 7 }
   ]
 }

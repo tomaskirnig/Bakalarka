@@ -452,6 +452,32 @@ export function DisplayGraph({
     requestStableFit,
   ]);
 
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isGraphLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+      persistGraphPosition(node);
+    },
+    [lockNodeAfterDrag, isGraphLocked, persistGraphPosition]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isGraphLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+      persistGraphPosition(node);
+    },
+    [lockNodeAfterDrag, isGraphLocked, persistGraphPosition]
+  );
+
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
     if (trackHighlightedNode && highlightedNode && fgRef.current && data.nodes) {
@@ -537,24 +563,8 @@ export function DisplayGraph({
           onLinkHover={handleLinkHover}
           onEngineTick={handleEngineTick}
           onEngineStop={handleEngineStop}
-          onNodeDrag={(node) => {
-            if (lockNodeAfterDrag || isGraphLocked) {
-              node.fx = node.x;
-              node.fy = node.y;
-            }
-            persistGraphPosition(node);
-          }}
-          onNodeDragEnd={(node) => {
-            if (lockNodeAfterDrag || isGraphLocked) {
-              node.fx = node.x;
-              node.fy = node.y;
-            } else {
-              node.fx = undefined;
-              node.fy = undefined;
-              fgRef.current?.d3ReheatSimulation();
-            }
-            persistGraphPosition(node);
-          }}
+          onNodeDrag={handleNodeDrag}
+          onNodeDragEnd={handleNodeDragEnd}
         />
       </div>
     </>

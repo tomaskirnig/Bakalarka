@@ -430,7 +430,7 @@ export function TreeRenderCanvas({
       fgRef.current.d3Force('charge').strength(chargeStrength);
       fgRef.current.d3ReheatSimulation();
     }
-  }, [tree, mcvp, graphData, useTopDownLayout]); // Re-run if tree or graphData changes (new simulation)
+  }, [tree, mcvp, graphData, useTopDownLayout, lockNodeAfterDrag]); // Re-run if tree, graphData, layout or drag-lock setting changes
 
   // Focus Camera on Active Node
   useEffect(() => {
@@ -585,6 +585,32 @@ export function TreeRenderCanvas({
     requestStableFit,
   ]);
 
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+      persistNodePosition(node);
+    },
+    [lockNodeAfterDrag, isLocked, persistNodePosition]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+      persistNodePosition(node);
+    },
+    [lockNodeAfterDrag, isLocked, persistNodePosition]
+  );
+
   return (
     <div
       className={`GraphDiv ${isFlashing ? 'flashing' : ''}`}
@@ -631,24 +657,8 @@ export function TreeRenderCanvas({
         // Events
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
-        onNodeDrag={(node) => {
-          if (lockNodeAfterDrag || isLocked) {
-            node.fx = node.x;
-            node.fy = node.y;
-          }
-          persistNodePosition(node);
-        }}
-        onNodeDragEnd={(node) => {
-          if (lockNodeAfterDrag || isLocked) {
-            node.fx = node.x;
-            node.fy = node.y;
-          } else {
-            node.fx = undefined;
-            node.fy = undefined;
-            fgRef.current?.d3ReheatSimulation();
-          }
-          persistNodePosition(node);
-        }}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={handleNodeDragEnd}
         onBackgroundClick={() => {
           hoverNode.current = null;
         }}
