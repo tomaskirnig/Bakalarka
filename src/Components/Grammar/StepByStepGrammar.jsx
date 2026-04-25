@@ -83,6 +83,11 @@ export function StepByStepGrammar({ grammar }) {
   }
 
   const productiveSet = new Set(activeStep.productive);
+  const terminalSet = new Set(grammar.terminals || []);
+
+  const isSymSatisfied = (sym) => {
+    return terminalSet.has(sym) || sym === 'ε' || sym === 'epsilon' || productiveSet.has(sym);
+  };
 
   return (
     <div
@@ -105,19 +110,59 @@ export function StepByStepGrammar({ grammar }) {
                 const isCurrent = activeStep.currentRule === ruleStr;
                 const isLeftProductive = productiveSet.has(rule.left);
 
+                // Determine rule status for the badge
+                const allRhsSatisfied =
+                  rule.right.length === 0 || rule.right.every((sym) => isSymSatisfied(sym));
+
+                let statusBadge = null;
+                if (isCurrent && activeStep.type === 'NEW_PRODUCTIVE') {
+                  statusBadge = (
+                    <span className="badge bg-success">Nově zařazeno do množiny P</span>
+                  );
+                } else if (isLeftProductive) {
+                  statusBadge = (
+                    <span className="badge border text-success border-success bg-white">
+                      Již v množině P
+                    </span>
+                  );
+                } else if (isCurrent && !allRhsSatisfied) {
+                  const missing = rule.right.filter((s) => !isSymSatisfied(s));
+                  statusBadge = (
+                    <span className="badge bg-warning text-dark">
+                      Produktivita neověřena: {missing.join(', ')}
+                    </span>
+                  );
+                }
+
                 return (
                   <div
                     key={idx}
                     ref={isCurrent ? currentRuleRef : null}
-                    className={`p-2 mb-1 rounded step-rule-item ${isCurrent ? 'step-rule-current' : 'bg-light'}`}
+                    className={`p-2 mb-1 rounded step-rule-item ${isCurrent ? 'step-rule-current border-primary border' : 'bg-light'}`}
                   >
                     <div className="d-flex justify-content-between align-items-center">
-                      <code className="text-dark" style={{ fontSize: '1.1em' }}>
-                        {ruleStr}
-                      </code>
-                      {isLeftProductive && (
-                        <span className="badge bg-success ms-2">Produktivní</span>
-                      )}
+                      <div className="rule-text font-monospace" style={{ fontSize: '1.1em' }}>
+                        <span
+                          className={isLeftProductive ? 'text-success fw-bold' : 'text-secondary'}
+                        >
+                          {rule.left}
+                        </span>
+                        <span className="mx-2 text-dark">→</span>
+                        {rule.right.length === 0 ? (
+                          <span className="text-success fst-italic">ε</span>
+                        ) : (
+                          rule.right.map((sym, i) => (
+                            <span
+                              key={i}
+                              className={isSymSatisfied(sym) ? 'text-success' : 'text-muted'}
+                            >
+                              {sym}
+                              {i < rule.right.length - 1 ? ' ' : ''}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                      <div className="status-area">{statusBadge}</div>
                     </div>
                   </div>
                 );

@@ -111,5 +111,18 @@ export function parseGrammar(inputText) {
   if (!hasAtLeastOneRule) {
     throwMissingRulesError();
   }
+
+  // Validation: Check for non-terminals that are used but have no productions defined.
+  const undefinedNonTerminals = Object.entries(grammar.productions)
+    .filter(([, prods]) => prods.length === 0)
+    .map(([nt]) => nt);
+
+  if (undefinedNonTerminals.length > 0) {
+    const list = undefinedNonTerminals.join(', ');
+    throw new Error(
+      `Následující neterminály nemají definovaná žádná pravidla (chybí na levé straně): ${list}`
+    );
+  }
+
   return grammar;
 }

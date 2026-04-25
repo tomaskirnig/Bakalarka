@@ -79,4 +79,10 @@ describe('Grammar algorithms', () => {
       })
     ).toThrow();
   });
+
+  it('throws error for undefined non-terminals in parseGrammar', () => {
+    const input = 'S -> B\nA -> A b | b | C\nB -> a a A';
+    expect(() => parseGrammar(input)).toThrow(/nemají definovaná žádná pravidla/);
+    expect(() => parseGrammar(input)).toThrow(/C/);
+  });
 });

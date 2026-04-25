@@ -313,35 +313,38 @@ export function isEmptyLanguage(grammar) {
     );
   }
 
-  // 1) Seed the queue with any nonterminal that has a terminal-only (including ε) rule
-  const queue = [];
+  // 1) Initial Scan: identify NTs that produce terminals directly (or ε)
   for (const { left, right } of rules) {
     if (!productive.has(left) && rightIsProductive(right)) {
       productive.add(left);
       allWitnesses.set(left, [right]);
-      queue.push(left);
     } else if (productive.has(left) && rightIsProductive(right)) {
       // Add additional productive rules for already productive nonterminals
       allWitnesses.get(left).push(right);
     }
   }
 
-  // 2) Process the work-list: whenever a new NT becomes productive,
-  //    re-examine any rules whose right include that NT.
-  let queueIndex = 0;
-  while (queueIndex < queue.length) {
-    const newlyProd = queue[queueIndex++];
+  // 2) Iterative Phase: propagate productivity until no more changes occur
+  let changed = true;
+  while (changed) {
+    changed = false;
+    
+    // Optimization: if all non-terminals are already productive, we can stop
+    if (productive.size === nonTerminals.length) {
+      break;
+    }
 
     for (const { left, right } of rules) {
-      if (!productive.has(left) && right.includes(newlyProd) && rightIsProductive(right)) {
+      if (!productive.has(left) && rightIsProductive(right)) {
         productive.add(left);
         allWitnesses.set(left, [right]);
-        queue.push(left);
-      } else if (productive.has(left) && right.includes(newlyProd) && rightIsProductive(right)) {
-        // Add additional productive rules
+        changed = true;
+      } else if (productive.has(left) && rightIsProductive(right)) {
+        // Add additional productive rules if not already present
         const currentWitnesses = allWitnesses.get(left) || [];
         if (!currentWitnesses.some((w) => JSON.stringify(w) === JSON.stringify(right))) {
           currentWitnesses.push(right);
+          changed = true;
         }
       }
     }

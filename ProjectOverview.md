@@ -454,6 +454,7 @@ Parser behavior:
 - supports epsilon (`ε` or `epsilon`)
 - enforces non-terminal naming by uppercase-leading symbol (including Czech uppercase)
 - classifies all other tokens as terminals
+- validates that all non-terminals used in rules are also defined on the left-hand side of at least one rule (throws error on dangling non-terminals)
 
 ## 7.2 Generator
 

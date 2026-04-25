@@ -25,6 +25,8 @@
 
 
 ---- MCVP -> CG ----
+- unzoom the CG graph so the nodes are not generated on top of each other
+- use the node position from MCVP even if the option lock graph is not selected
 
 ---- MCVP -> Grammar----
 
@@ -37,7 +39,6 @@
 ---- Grammar ----
 
 ---- Global ----
-- Add autoscroll after selecting set or genererating and displaying some data 
 
 - Bonus - implemnt dynamic size of display component, user can resize the component manually (by pulling the edge or + / - buttons)
 

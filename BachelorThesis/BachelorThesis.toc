@@ -62,10 +62,9 @@
 \contentsline {subsection}{\numberline {4.3.8}Krokové vyhodnocení}{35}{subsection.4.3.8}%
 \contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{36}{section.4.4}%
 \contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{36}{subsection.4.4.1}%
-\contentsline {subsection}{\numberline {4.4.2}Implementační detaily}{36}{subsection.4.4.2}%
-\contentsline {subsection}{\numberline {4.4.3}Převod na bezkontextovou gramatiku}{37}{subsection.4.4.3}%
-\contentsline {subsection}{\numberline {4.4.4}Generování symbolů gramatiky}{37}{subsection.4.4.4}%
-\contentsline {subsection}{\numberline {4.4.5}Tvorba pravidel}{39}{subsection.4.4.5}%
+\contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{37}{subsection.4.4.2}%
+\contentsline {subsection}{\numberline {4.4.3}Generování symbolů gramatiky}{37}{subsection.4.4.3}%
+\contentsline {subsection}{\numberline {4.4.4}Tvorba pravidel}{39}{subsection.4.4.4}%
 \contentsline {chapter}{\numberline {5}Závěr}{41}{chapter.5}%
 \contentsline {section}{\numberline {5.1}Dosažené výsledky}{41}{section.5.1}%
 \contentsline {section}{\numberline {5.2}Vzdělávací přínos}{42}{section.5.2}%

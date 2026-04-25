@@ -21,10 +21,6 @@ export default function MCVPtoCombinatorialGameConverter({
   const [currentStep, setCurrentStep] = useState(0);
   const [fitTrigger, setFitTrigger] = useState(0);
   const [shouldFitCG, setShouldFitCG] = useState(false);
-  const [cgDimensions, setCgDimensions] = useState({ width: 400, height: 400 });
-  const [mcvpDimensions, setMcvpDimensions] = useState({ width: 400, height: 400 });
-  const cgContainerRef = useRef(null);
-  const mcvpContainerRef = useRef(null);
   const fitTimerRef = useRef(null);
 
   const scheduleCgFitReset = () => {
@@ -55,32 +51,6 @@ export default function MCVPtoCombinatorialGameConverter({
       scheduleCgFitReset();
     }
   }, [currentStep, steps.length]);
-
-  // Resize observer for CG graph
-  useEffect(() => {
-    if (!cgContainerRef.current) return;
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setCgDimensions({ width, height });
-      }
-    });
-    resizeObserver.observe(cgContainerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
-
-  // Resize observer for MCVP graph
-  useEffect(() => {
-    if (!mcvpContainerRef.current) return;
-    const resizeObserver = new ResizeObserver((entries) => {
-      for (const entry of entries) {
-        const { width, height } = entry.contentRect;
-        setMcvpDimensions({ width, height });
-      }
-    });
-    resizeObserver.observe(mcvpContainerRef.current);
-    return () => resizeObserver.disconnect();
-  }, []);
 
   const finalGraph = useMemo(() => {
     return steps.length > 0 ? steps[steps.length - 1].graph : null;
@@ -137,7 +107,6 @@ export default function MCVPtoCombinatorialGameConverter({
           <div className="col-md-6 d-flex flex-column" style={{ minHeight: 0 }}>
             <h4 className="text-center mb-1">MCVP</h4>
             <div
-              ref={mcvpContainerRef}
               className="bg-light"
               style={{
                 position: 'relative',
@@ -151,8 +120,6 @@ export default function MCVPtoCombinatorialGameConverter({
                 highlightedNode={step.highlightNode}
                 activeNode={step.highlightNode}
                 completedSteps={step.labels || []}
-                width={mcvpDimensions.width}
-                height={mcvpDimensions.height}
                 fitToScreen={false}
                 fitTrigger={fitTrigger}
                 disableAutoCenter={currentStep === steps.length - 1}
@@ -167,7 +134,6 @@ export default function MCVPtoCombinatorialGameConverter({
           <div className="col-md-6 d-flex flex-column" style={{ minHeight: 0 }}>
             <h4 className="text-center mb-1">Kombinatorická hra</h4>
             <div
-              ref={cgContainerRef}
               className="bg-light"
               style={{
                 position: 'relative',
@@ -178,8 +144,6 @@ export default function MCVPtoCombinatorialGameConverter({
             >
               <DisplayGraph
                 graph={step.graph}
-                width={cgDimensions.width}
-                height={cgDimensions.height}
                 fitToScreen={shouldFitCG}
                 fitTrigger={fitTrigger}
                 highlightedNode={highlightedCgNodeId}
