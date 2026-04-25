@@ -402,9 +402,9 @@ export default function MCVPtoGrammarConverter({
     setFitTrigger((prev) => prev + 1);
   }, [mcvpTree]);
 
-  // Trigger fit when reaching the last step
+  // Trigger fit when reaching the first or last step
   useEffect(() => {
-    if (currentStep === steps.length - 1 && steps.length > 0) {
+    if ((currentStep === 0 || currentStep === steps.length - 1) && steps.length > 0) {
       setFitTrigger((prev) => prev + 1);
     }
   }, [currentStep, steps.length]);

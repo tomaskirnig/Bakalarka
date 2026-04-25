@@ -42,12 +42,12 @@ export function StepByStepTree({
     }
   }, [tree, steps.length]);
 
-  // Trigger zoom-to-fit when reaching the final step
+  // Trigger zoom-to-fit when reaching the first or final step
   useEffect(() => {
-    if (currentStepData?.type === 'FINAL') {
+    if (currentStep === 0 || currentStepData?.type === 'FINAL') {
       setFitTrigger((prev) => prev + 1);
     }
-  }, [currentStepData]);
+  }, [currentStep, currentStepData?.type]);
 
   // Navigation functions
   const goToNextStep = useCallback(() => {
@@ -59,9 +59,9 @@ export function StepByStepTree({
   }, []);
 
   const getCurrentNodeValue = () => {
-    if (!currentStepData) return '';
-    if (currentStepData.type === 'FINAL') return 'Výstupní hradlo';
-    const val = currentStepData.node.value;
+    const node = currentStepData?.node || currentStepData?.rootNode;
+    if (!node) return '';
+    const val = node.value;
     if (val === 'A' || val === 'AND' || val === '∧') return 'AND';
     if (val === 'O' || val === 'OR' || val === '∨') return 'OR';
     return val;
@@ -114,7 +114,16 @@ export function StepByStepTree({
                       currentStepData?.type === 'FINAL' ? 'rgba(255, 255, 0, 0.2)' : undefined,
                   }}
                 >
-                  {currentStepData?.type === 'FINAL' ? (
+                  {currentStepData?.type === 'INITIAL' ? (
+                    <>
+                      <p className="mb-1">
+                        <strong>Typ:</strong> Zahájení
+                      </p>
+                      <p className="mb-0">
+                        <strong>Vysvětlení:</strong> {currentStepData.description}
+                      </p>
+                    </>
+                  ) : currentStepData?.type === 'FINAL' ? (
                     <>
                       <p className="mb-1">
                         <strong>Typ:</strong> Výsledek vyhodnocení

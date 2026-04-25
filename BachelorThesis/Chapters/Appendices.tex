@@ -1,0 +1,52 @@
+\chapter{Obsah přiloženého archivu}
+\label{chap:AppendixA}
+
+Součástí této bakalářské práce je ZIP archiv obsahující textovou část práce ve~formátu PDF a kompletní zdrojové kódy a sestavení aplikace.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{|l|p{10cm}|}
+        \hline
+        \textbf{Adresář / Soubor} & \textbf{Popis} \\ \hline
+        \texttt{BachelorThesis.pdf} & Textová část bakalářské práce v~digitální podobě. \\ \hline
+        \texttt{src/} & Zdrojové kódy aplikace v~jazyce JavaScript (React). \\ \hline
+        \texttt{public/} & Statické soubory aplikace (ikony, manifest). \\ \hline
+        \texttt{Sady/} & Knihovna ukázkových instancí problémů ve formátu JSON. \\ \hline
+        \texttt{dist/} & Sestavená verze aplikace připravená k~nasazení na webový server. \\ \hline
+        \texttt{package.json} & Konfigurační soubor Node.js obsahující seznam závislostí a skriptů. \\ \hline
+        \texttt{vite.config.js} & Konfigurace sestavovacího nástroje Vite. \\ \hline
+        \texttt{README.md} & Dokumentace se stručným návodem pro instalaci a spuštění. \\ \hline
+    \end{tabular}
+    \caption{Seznam hlavních adresářů a souborů odevzdaného archivu}
+    \label{tab:zip-contents}
+\end{table}
+
+\chapter{Technická příručka pro spuštění a nasazení}
+\label{chap:AppendixB}
+
+Tato příloha popisuje požadavky na prostředí a kroky potřebné pro lokální spuštění nebo produkční nasazení aplikace.
+
+\section{Systémové požadavky}
+Aplikace je implementována jako jednostránková webová aplikace (SPA) v~rámci ekosystému Node.js. Pro práci se zdrojovými kódy je vyžadováno:
+\begin{itemize}
+    \item \textbf{Node.js:} Doporučená verze 18.0.0 nebo novější.
+    \item \textbf{Správce balíčků:} \texttt{npm} (součást instalace Node.js).
+    \item \textbf{Moderní webový prohlížeč:} Podporující standardy ES6+ (Chrome, Firefox, Edge, Safari).
+\end{itemize}
+
+\section{Instalace a lokální spuštění}
+Pro zprovoznění vývojového prostředí postupujte následovně:
+\begin{enumerate}
+    \item Rozbalte obsah archivu do zvoleného adresáře.
+    \item V~terminálu přejděte do kořenového adresáře aplikace.
+    \item Nainstalujte potřebné knihovny příkazem: \\ \texttt{npm install}
+    \item Spusťte vývojový server příkazem: \\ \texttt{npm run dev}
+    \item Aplikace bude dostupná na adrese \texttt{http://localhost:5173/}.
+\end{enumerate}
+
+\section{Produkční nasazení}
+Jelikož se jedná o~čistě klientskou aplikaci bez vlastního backendu, lze ji hostovat na libovolném statickém webovém serveru.
+\begin{enumerate}
+    \item Vygenerujte produkční sestavení příkazem: \\ \texttt{npm run build}
+    \item Veškerý obsah vzniklého adresáře \texttt{dist/} nahrajte do kořenového adresáře vašeho webového serveru (např. Apache, Nginx) nebo využijte služby jako Vercel, Netlify či GitHub Pages.
+\end{enumerate}

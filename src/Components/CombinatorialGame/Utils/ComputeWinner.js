@@ -179,10 +179,11 @@ export function computeWinner(graph) {
     }
   }
 
-  // Add final summary step
+  // Add final summary step with no node highlighted so the whole graph can be seen
   steps.push({
     type: 'FINAL',
-    id: startId,
+    id: null,
+    startId: startId, // Keep reference for info display if needed
     hasWinningStrategy,
     explanation: `Analýza dokončena. Výsledek z počáteční pozice ${startId}: ${message}`,
   });

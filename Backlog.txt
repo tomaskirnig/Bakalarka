@@ -1,9 +1,9 @@
 ==== Thesis Submission TODO (from LastUpdate) ====
 
-- [ ] Zapracovat zbyvajici textove pripominky vedouciho (cca 15).
-- [ ] Projit celou praci a uzavrit vsechny otevrene komentare.
-- [ ] Provest strukturialni upravy: spojit sekce a smazat nadbytecne nadpisy.
-- [ ] Udelat drobne jazykove a stylisticke upravy textu.
+- [x] Zapracovat zbyvajici textove pripominky vedouciho (cca 15).
+- [x] Projit celou praci a uzavrit vsechny otevrene komentare.
+- [x] Provest strukturialni upravy: spojit sekce a smazat nadbytecne nadpisy.
+- [x] Udelat drobne jazykove a stylisticke upravy textu.
 
 - [ ] Vybrat vsechny zdrojove kody a soubory potrebne k nasazeni do elektronickych priloh.
 - [ ] Pripravit cistou testovaci slozku a vlozit do ni pouze soubory urcene do ZIPu.

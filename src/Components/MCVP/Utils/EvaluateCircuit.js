@@ -88,13 +88,23 @@ export function evaluateCircuitWithSteps(node) {
   }
 
   try {
+    // Add initial step where no node is highlighted
+    steps.push({
+      type: 'INITIAL',
+      description: 'Zahájení vyhodnocení obvodu.',
+      node: null,
+      childValues: [],
+      result: null,
+    });
+
     const finalResult = evaluate(node);
 
-    // Add final summary step
+    // Add final summary step with no node highlighted so the whole graph can be seen
     if (finalResult !== null) {
       steps.push({
         type: 'FINAL',
-        node: node,
+        node: null,
+        rootNode: node, // Keep reference for info display if needed
         childValues: [],
         result: finalResult,
         explanation: `Vyhodnocení dokončeno. Výsledná hodnota obvodu: ${finalResult}`,
