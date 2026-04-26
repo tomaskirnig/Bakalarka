@@ -223,10 +223,11 @@ export function Grammar({ initialData, autoScrollToGraph = true, lockNodeAfterDr
                   {analysisResult.derivedWord !== undefined &&
                   analysisResult.derivedWord !== null ? (
                     <p className="text-muted small">
-                      Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
-                      {analysisResult.witnessNodeCount > 0 && (
-                        <span className="ms-2">({analysisResult.witnessNodeCount} uzlů)</span>
-                      )}
+                      Odvozené slovo:{' '}
+                      <strong className="text-dark">{analysisResult.derivedWord || 'ε'}</strong>
+                      <span className="ms-2">
+                        (získáno čtením listových uzlů stromu zleva doprava)
+                      </span>
                     </p>
                   ) : (
                     <p className="text-muted small">

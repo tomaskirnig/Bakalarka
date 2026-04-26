@@ -38,34 +38,60 @@ export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag =
 
     const nodes = [];
     const links = [];
-    const visited = new Set();
 
-    function traverse(current, parent) {
-      if (!current) return;
+    // Calculate fixed positions (fx, fy) so that children are ordered from left to right as they appear in the tree.
 
-      if (visited.has(current.id)) return;
-      visited.add(current.id);
+    // Determine the "width" of each subtree to allocate space
+    const subtreeWidths = new Map();
+    function calculateWidth(node) {
+      if (!node.children || node.children.length === 0) {
+        subtreeWidths.set(node.id, 1);
+        return 1;
+      }
+      let width = 0;
+      node.children.forEach((child) => {
+        width += calculateWidth(child);
+      });
+      subtreeWidths.set(node.id, width);
+      return width;
+    }
+    calculateWidth(tree);
 
-      nodes.push(current);
+    // Traverse and assign positions based on allocated width
+    // Level distance and horizontal scale
+    const levelDist = grammarSettings.dagLevelDistance || 50;
+    const siblingDist = 40;
 
-      if (parent) {
-        links.push({
-          source: parent.id,
-          target: current.id,
-        });
+    function assignPositions(node, xOffset, depth, parentPos) {
+      const myWidth = subtreeWidths.get(node.id);
+
+      // Position this node in the middle of its allocated width
+      const x = xOffset + (myWidth * siblingDist) / 2;
+      const y = depth * levelDist;
+
+      // Assign fixed positions to prevent physics from shuffling order
+      node.fx = x;
+      node.fy = y;
+
+      nodes.push(node);
+
+      if (parentPos) {
+        links.push({ source: parentPos.id, target: node.id });
       }
 
-      if (current.children && Array.isArray(current.children)) {
-        current.children.forEach((child) => {
-          if (child) traverse(child, current);
+      if (node.children && node.children.length > 0) {
+        let currentX = xOffset;
+        node.children.forEach((child) => {
+          assignPositions(child, currentX, depth + 1, node);
+          currentX += subtreeWidths.get(child.id) * siblingDist;
         });
       }
     }
 
-    traverse(tree, null);
+    assignPositions(tree, 0, 0, null);
 
     return { nodes, links };
-  }, [tree]);
+  }, [tree, grammarSettings]);
 
   const handleFitToScreen = useCallback(() => {
     fgRef.current?.zoomToFit(400, 50);
@@ -94,7 +120,7 @@ export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag =
       fgRef.current.centerAt(0, 0, 0);
       fgRef.current.zoom(1, 0);
       fgRef.current.d3ReheatSimulation();
-      
+
       // Auto-fit on first valid dimensions if tree exists
       if (graphData.nodes.length > 0) {
         requestAnimationFrame(() => {
