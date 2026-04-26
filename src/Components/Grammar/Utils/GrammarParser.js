@@ -1,7 +1,6 @@
 import { Grammar } from '../Utils/Grammar';
 
 const throwMissingRulesError = () => {
-  console.warn('empty inputText.rules');
   throw new Error('Pravidla gramatiky nejsou definována.');
 };
 

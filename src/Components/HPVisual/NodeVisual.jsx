@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { useGraphColors } from '../../Hooks/useGraphColors';
 
@@ -73,7 +73,7 @@ const NetworkVisual = ({
   }
 
   // Initialize nodes
-  const initNodes = () => {
+  const initNodes = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -89,43 +89,49 @@ const NetworkVisual = ({
     }
 
     setNodes(newNodes);
-  };
+  }, [nodeCount]);
 
   // Resize handler
-  const handleResize = () => {
+  const handleResize = useCallback(() => {
     if (containerRef.current) {
       const { width, height } = containerRef.current.getBoundingClientRect();
       setDimensions({ width, height });
     }
-  };
+  }, []);
 
   // Draw all nodes
-  const drawAll = (ctx) => {
-    nodes.forEach((node) => node.draw(ctx, effectiveNodeColor));
-  };
+  const drawAll = useCallback(
+    (ctx) => {
+      nodes.forEach((node) => node.draw(ctx, effectiveNodeColor));
+    },
+    [nodes, effectiveNodeColor]
+  );
 
   // Draw edges between nodes
-  const drawEdges = (ctx) => {
-    for (let i = 0; i < nodes.length; i++) {
-      for (let ii = i + 1; ii < nodes.length; ii++) {
-        let dist = Math.sqrt(
-          Math.pow(nodes[i].x - nodes[ii].x, 2) + Math.pow(nodes[i].y - nodes[ii].y, 2)
-        );
+  const drawEdges = useCallback(
+    (ctx) => {
+      for (let i = 0; i < nodes.length; i++) {
+        for (let ii = i + 1; ii < nodes.length; ii++) {
+          let dist = Math.sqrt(
+            Math.pow(nodes[i].x - nodes[ii].x, 2) + Math.pow(nodes[i].y - nodes[ii].y, 2)
+          );
 
-        if (dist < connectDistance) {
-          ctx.beginPath();
-          ctx.moveTo(nodes[i].x, nodes[i].y);
-          ctx.lineTo(nodes[ii].x, nodes[ii].y);
-          ctx.strokeStyle = effectiveLinkColor;
-          ctx.lineWidth = 5 - (dist / connectDistance) * 4;
-          ctx.stroke();
+          if (dist < connectDistance) {
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(nodes[ii].x, nodes[ii].y);
+            ctx.strokeStyle = effectiveLinkColor;
+            ctx.lineWidth = 5 - (dist / connectDistance) * 4;
+            ctx.stroke();
+          }
         }
       }
-    }
-  };
+    },
+    [nodes, connectDistance, effectiveLinkColor]
+  );
 
   // Animation loop
-  const animate = () => {
+  const animate = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -136,7 +142,7 @@ const NetworkVisual = ({
     drawAll(ctx);
 
     animationRef.current = requestAnimationFrame(animate);
-  };
+  }, [drawEdges, drawAll]);
 
   // Animation frame reference for cleanup
   const animationRef = useRef();
@@ -153,7 +159,7 @@ const NetworkVisual = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, []);
+  }, [handleResize]);
 
   // Update canvas dimensions when container size changes
   useEffect(() => {
@@ -165,15 +171,13 @@ const NetworkVisual = ({
   }, [dimensions]);
 
   // Initialize nodes when canvas dimensions are set
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (dimensions.width > 0 && dimensions.height > 0 && nodes.length === 0) {
       initNodes();
     }
-  }, [dimensions]);
+  }, [dimensions, initNodes, nodes.length]);
 
   // Start animation when nodes are initialized
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (nodes.length > 0) {
       animationRef.current = requestAnimationFrame(animate);
@@ -183,7 +187,7 @@ const NetworkVisual = ({
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [nodes]);
+  }, [nodes.length, animate]);
 
   return (
     <div
