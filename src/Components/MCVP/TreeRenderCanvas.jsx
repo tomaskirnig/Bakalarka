@@ -568,6 +568,7 @@ export function TreeRenderCanvas({
       });
     }
 
+    /*
     // Ensure final settled layout is also centered/fitted when requested.
     const fitRequested = fitTrigger > lastEngineFitTrigger.current;
     if (fitToScreen || fitRequested) {
@@ -576,6 +577,7 @@ export function TreeRenderCanvas({
         lastEngineFitTrigger.current = fitTrigger;
       }
     }
+    */
   }, [
     graphData.nodes,
     isLocked,

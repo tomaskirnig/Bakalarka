@@ -59,9 +59,9 @@
 \contentsline {subsection}{\numberline {4.3.5}Identifikace produktivních neterminálů}{34}{subsection.4.3.5}%
 \contentsline {subsection}{\numberline {4.3.6}Rekonstrukce derivace}{36}{subsection.4.3.6}%
 \contentsline {subsection}{\numberline {4.3.7}Vizualizace derivačního stromu}{36}{subsection.4.3.7}%
-\contentsline {subsection}{\numberline {4.3.8}Krokové vyhodnocení}{36}{subsection.4.3.8}%
+\contentsline {subsection}{\numberline {4.3.8}Krokové vyhodnocení}{37}{subsection.4.3.8}%
 \contentsline {section}{\numberline {4.4}Implementace převodů mezi problémy}{37}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{37}{subsection.4.4.1}%
+\contentsline {subsection}{\numberline {4.4.1}Převod na kombinatorickou hru}{38}{subsection.4.4.1}%
 \contentsline {subsection}{\numberline {4.4.2}Převod na bezkontextovou gramatiku}{38}{subsection.4.4.2}%
 \contentsline {subsection}{\numberline {4.4.3}Generování symbolů gramatiky}{38}{subsection.4.4.3}%
 \contentsline {subsection}{\numberline {4.4.4}Tvorba pravidel}{40}{subsection.4.4.4}%

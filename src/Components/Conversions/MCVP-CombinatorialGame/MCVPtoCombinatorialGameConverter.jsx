@@ -176,8 +176,11 @@ export default function MCVPtoCombinatorialGameConverter({
           <li className="list-inline-item">
             <strong>AND</strong> &rarr; Hráč 2
           </li>
-          <li className="list-inline-item">
-            <strong>|</strong>
+          <li className="list-inline-item ms-2">
+            <span className="text-muted">|</span>
+          </li>
+          <li className="list-inline-item ms-2">
+            <strong>Koncové stavy:</strong>
           </li>
           <li className="list-inline-item">
             <strong>1</strong> &rarr; Hráč 2,

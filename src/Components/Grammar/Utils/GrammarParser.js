@@ -120,7 +120,7 @@ export function parseGrammar(inputText) {
   if (undefinedNonTerminals.length > 0) {
     const list = undefinedNonTerminals.join(', ');
     throw new Error(
-      `Následující neterminály nemají definovaná žádná pravidla (chybí na levé straně): ${list}`
+      `Následující neterminály nejsou definovány (chybí na levé straně jakéhokoliv pravidla): ${list}`
     );
   }
 

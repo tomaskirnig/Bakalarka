@@ -152,7 +152,7 @@ class MCVPToGrammarConverter {
 
   addInitializationStep() {
     this.steps.push({
-      description: 'Inicializace gramatiky',
+      description: 'Je zahájena inicializace gramatiky',
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
       visualNote:
@@ -163,11 +163,11 @@ class MCVPToGrammarConverter {
 
   addFinalStep() {
     this.steps.push({
-      description: 'Konverze dokončena',
+      description: 'Konverze je dokončena',
       mcvpHighlight: null,
       grammar: this.grammar.serialize(),
       visualNote:
-        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Uzly operací mají neterminály, proměnné s hodnotou 1 dávají terminál (včetně ε) a proměnné s hodnotou 0 dávají smyčku X -> X, která negeneruje žádné slovo. Teoreticky lze tento převod provést v logaritmické pracovní paměti. Tato vizualizace ale pro přehlednost ukládá mezikroky konverze, aby je bylo možné procházet krok za krokem.',
+        'MCVP byl úspěšně převeden na bezkontextovou gramatiku. Teoreticky lze tento převod provést v logaritmické pracovní paměti. Tato vizualizace ale pro přehlednost ukládá mezikroky konverze, aby je bylo možné procházet krok za krokem.',
       symbols: this.getVisualSymbols(),
     });
   }
@@ -223,13 +223,13 @@ class MCVPToGrammarConverter {
 
       if (isOperationNode) {
         this.addStep(
-          `Vytvořit neterminál ${nodeSymbol}`,
+          `Vytvoření neterminálu ${nodeSymbol}`,
           node,
           `Pro uzel ${nodeTypeDisplay} byl vytvořen neterminál ${nodeSymbol}.`
         );
       } else {
         this.addStep(
-          `Připravit proměnnou ${nodeSymbol}`,
+          `Příprava proměnné ${nodeSymbol}`,
           node,
           `Proměnná ${node.value} s hodnotou 0 je reprezentována neterminálem ${nodeSymbol}, který dostane cyklické pravidlo ${nodeSymbol} → ${nodeSymbol}.`
         );
@@ -238,7 +238,7 @@ class MCVPToGrammarConverter {
       const trueVarSymbols = this.getProductionSymbolsForTrueVariable(node);
       const rightSide = this.formatProductionSymbols(trueVarSymbols);
       this.addStep(
-        `Převést proměnnou ${node.value}`,
+        `Převod proměnné ${node.value}`,
         node,
         `Proměnná ${node.value} s hodnotou 1 je převedena na ${rightSide}.`
       );
@@ -273,7 +273,7 @@ class MCVPToGrammarConverter {
           const rootProduction = this.getProductionSymbolsForTrueVariable(node);
           this.grammar.setProductions(this.grammar.startSymbol, [rootProduction]);
           this.addStep(
-            `Pravidlo startu: ${this.grammar.startSymbol} → ${this.formatProductionSymbols(rootProduction)}`,
+            `Vytvořeno pravidlo startu: ${this.grammar.startSymbol} → ${this.formatProductionSymbols(rootProduction)}`,
             node,
             `Kořenová proměnná s hodnotou 1 je převedena přímo do startovního pravidla ${this.grammar.startSymbol}.`
           );
@@ -281,7 +281,7 @@ class MCVPToGrammarConverter {
       } else {
         this.grammar.setProductions(nodeSymbol, [[nodeSymbol]]);
         this.addStep(
-          `Cyklické pravidlo: ${nodeSymbol} → ${nodeSymbol}`,
+          `Vytvořeno cyklické pravidlo: ${nodeSymbol} → ${nodeSymbol}`,
           node,
           `Proměnná s hodnotou 0 dostane cyklické pravidlo ${nodeSymbol} → ${nodeSymbol}, takže neterminál ${nodeSymbol} není produktivní.`
         );
@@ -299,7 +299,7 @@ class MCVPToGrammarConverter {
       this.grammar.setProductions(nodeSymbol, [childSymbols]);
       const rightSide = this.formatProductionSymbols(childSymbols);
       this.addStep(
-        `Přidat AND pravidlo: ${nodeSymbol} → ${rightSide}`,
+        `Přidáno AND pravidlo: ${nodeSymbol} → ${rightSide}`,
         node,
         `AND uzel: zřetězení symbolů potomků.`
       );
@@ -315,7 +315,7 @@ class MCVPToGrammarConverter {
         .join(', ');
 
       this.addStep(
-        `Přidat OR pravidla: ${rules}`,
+        `Přidána OR pravidla: ${rules}`,
         node,
         `OR uzel: alternativní pravidla pro potomky.`
       );

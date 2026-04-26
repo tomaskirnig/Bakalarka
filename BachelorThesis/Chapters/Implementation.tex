@@ -413,12 +413,12 @@ Ve složce \texttt{Sady/Grammar} jsou uloženy předpřipravené příklady gram
 \label{sec:GrammarsAlgorithmImpl}
 \label{sec:GrammarsProductiveImpl}
 
-Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}. Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s~frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}. Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace využívá iterativní výpočet do ustálení (fixed-point iteration). Postup algoritmu:
 
 \begin{enumerate}
-    \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů a frontu pro zpracování. Všechna pravidla jsou zpočátku neoznačená.
+    \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů. Všechna pravidla jsou zpočátku neoznačená.
     
-    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní a vloženy do fronty. Pokud nebylo nalezeno žádné takové pravidlo, fronta zůstane prázdná a další krok iterativní propagace se neprovede vůbec (přeskočí se krok 3.).
+    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní. Pokud bylo v~tomto kroku označeno alespoň jedno nové pravidlo, nastaví se příznak změny na \texttt{true}, což indikuje potřebu dalšího průchodu.
     
     \item \textbf{Propagace produktivity:}
     \begin{itemize}
@@ -429,7 +429,7 @@ Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnoce
         \item Tento proces se opakuje, dokud se v~posledním průchodu podařilo označit alespoň jeden nový neterminál jako produktivní, nebo dokud nejsou všechny neterminály gramatiky označeny jako produktivní.
     \end{itemize}
     
-    \item \textbf{Ukončení:} Algoritmus končí, když je fronta prázdná. V tu chvíli jsou všechny produktivní neterminály nalezeny.
+    \item \textbf{Ukončení:} Algoritmus končí, jakmile v~průběhu celé iterace přes všechna pravidla nedojde k~označení žádného nového neterminálu jako produktivního (tj. dojde k~ustálení). V~tu chvíli jsou všechny produktivní neterminály nalezeny.
 \end{enumerate}
 
 Časová složitost je \( O(|P| \cdot |N|) \), kde \( |P| \) je počet pravidel gramatiky a \( |N| \) je počet neterminálů. V nejhorším případě je každé pravidlo kontrolováno jednou pro každý neterminál, který se stane produktivním.

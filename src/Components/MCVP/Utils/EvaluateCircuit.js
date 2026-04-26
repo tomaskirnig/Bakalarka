@@ -91,7 +91,7 @@ export function evaluateCircuitWithSteps(node) {
     // Add initial step where no node is highlighted
     steps.push({
       type: 'INITIAL',
-      description: 'Zahájení vyhodnocení obvodu.',
+      description: 'Je zahájeno vyhodnocení obvodu.',
       node: null,
       childValues: [],
       result: null,

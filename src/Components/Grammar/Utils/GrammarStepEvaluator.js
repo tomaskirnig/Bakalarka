@@ -124,7 +124,7 @@ export function generateGrammarSteps(grammar) {
 
     steps.push({
       type: 'ITERATION_START',
-      description: `Zahajuji ${iteration}. průchod pravidly. Hledám neterminály, které se nově staly produktivními.`,
+      description: `Probíhá ${iteration}. průchod pravidly. Vyhledávání neterminálů, které jsou nově produktivní.`,
       productive: [...productive],
       currentRule: null,
     });
@@ -147,7 +147,7 @@ export function generateGrammarSteps(grammar) {
         foundInThisIteration = true;
         steps.push({
           type: 'NEW_PRODUCTIVE',
-          description: `Pravidlo "${ruleStr}" je nově produktivní. Přidávám "${left}" do množiny produktivních symbolů.`,
+          description: `Pravidlo "${ruleStr}" je nově produktivní. Neterminál "${left}" byl přidán do množiny produktivních symbolů P.`,
           productive: [...productive],
           currentRule: ruleStr,
           highlight: 'success',

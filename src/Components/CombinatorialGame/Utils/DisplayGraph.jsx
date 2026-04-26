@@ -434,6 +434,7 @@ export function DisplayGraph({
 
     data.nodes.forEach(persistGraphPosition);
 
+    /* 
     // Ensure final settled layout is also centered/fitted when requested.
     const fitRequested = fitTrigger > lastEngineFitTrigger.current;
     if (fitToScreen || fitRequested) {
@@ -442,6 +443,7 @@ export function DisplayGraph({
         lastEngineFitTrigger.current = fitTrigger;
       }
     }
+    */
   }, [
     data.nodes,
     isGraphLocked,
