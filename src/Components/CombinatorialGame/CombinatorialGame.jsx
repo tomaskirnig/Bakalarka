@@ -55,6 +55,7 @@ export function CombinatorialGame({
   const [explain, setExplain] = useState(false); // Explain modal state (open/closed)
   const [graphFitTrigger, setGraphFitTrigger] = useState(0);
   const graphDisplaySectionRef = useRef(null);
+  const manualInputSectionRef = useRef(null);
 
   // Handle initial data if provided
   useEffect(() => {
@@ -114,10 +115,14 @@ export function CombinatorialGame({
   }, [graph, chosenOpt]);
 
   useEffect(() => {
-    if (!autoScrollToGraph || !graph || chosenOpt === 'manual') return;
+    if (!autoScrollToGraph || !graph) return;
 
     const frameId = requestAnimationFrame(() => {
-      graphDisplaySectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      const target =
+        chosenOpt === 'manual' ? manualInputSectionRef.current : graphDisplaySectionRef.current;
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     });
 
     return () => cancelAnimationFrame(frameId);
@@ -254,7 +259,7 @@ export function CombinatorialGame({
 
       <h1 className="display-4 mt-4 mb-lg-4">Kombinatorická hra</h1>
 
-      <div className="page-content">
+      <div className="page-content" ref={manualInputSectionRef}>
         <GenericInputMethodSelector
           selectedOption={chosenOpt}
           onOptionSelect={handleOptionChange}

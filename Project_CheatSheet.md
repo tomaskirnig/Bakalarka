@@ -1,7 +1,7 @@
 # Project Cheat Sheet
 
-Last verified: 2026-04-20  
-Commit baseline: 8f75d2f (working tree changes applied)
+Last verified: 2026-04-26  
+Commit baseline: 2c60481 (working tree changes applied)
 
 Purpose: quick implementation reference for algorithms, data flow, guardrails, and file locations.
 

@@ -25,13 +25,13 @@ export function HomePage() {
             jednoduchých kombinatorických hrách.
           </li>
           <li>
-            <strong>Bezkontextové gramatiky:</strong> Řešte problém neprázdnosti gramatik a
+            <strong>Bezkontextové gramatiky:</strong> Řešte problém neprázdnosti jazyků gramatik a
             analyzujte jejich derivační stromy.
           </li>
         </ul>
         <p className="lead">
-          Nástroj také umožňuje převádět problémy mezi těmito doménami a sledovat jednotlivé kroky
-          transformace.
+          Nástroj také umožňuje převádět problémy z MCVP na ostatní domény a sledovat jednotlivé
+          kroky transformace.
         </p>
       </div>
     </>

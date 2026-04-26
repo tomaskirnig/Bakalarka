@@ -170,9 +170,6 @@ Vizualizace monotónního obvodu je implementována v~komponentě \texttt{TreeRe
     \label{fig:tree-render-canvas-impl}
 \end{figure}
 
-\subsection{Hierarchické rozložení}
-\label{sec:MCVPLayoutImpl}
-
 Uzly jsou automaticky umístěny do vrstev podle jejich vzdálenosti od kořene díky režimu \texttt{dagMode="td"} (top-down neboli shora dolů). Rozložení kombinuje hierarchickou strukturu s~fyzikálními silami pro optimální vizuální uspořádání grafu.
 
 \section{Kombinatorická hra}
@@ -268,13 +265,11 @@ Vizualizace herního grafu využívá komponentu \texttt{DisplayGraph}. Graf zob
     \item \textbf{Hrany:} Možné tahy jsou zobrazeny jako směrované hrany. Hrany patřící do výherní strategie jsou zvýrazněny žlutou barvou.
 \end{itemize}
 
-\subsection{Algoritmus analýzy}
+\subsection{Algoritmus analýzy a vyhodnocení výherních pozic}
 \label{sec:GamesAlgorithmImpl}
+\label{sec:GamesRetrogradeImpl}
 
 Řešení problému kombinatorických her je implementováno v~modulu \texttt{ComputeWinner.js}. Algoritmus využívá retrográdní analýzu založenou na principech uvedených v~sekci \ref{sec:TheoryGames}.
-
-\subsection{Vyhodnocení výherních pozic}
-\label{sec:GamesRetrogradeImpl}
 
 Algoritmus určuje, zda je daná pozice pro hráče na tahu výherní, prohrávající, nebo remízová. Vyhodnocení probíhá následovně:
 
@@ -292,13 +287,11 @@ Algoritmus určuje, zda je daná pozice pro hráče na tahu výherní, prohráva
 
 Časová složitost je \( O(V + E) \), kde \( V \) je počet uzlů a \( E \) počet hran.
 
-\subsection{Optimální tahy}
-\label{sec:GamesOptimalMovesImpl}
-
-Funkce \texttt{getOptimalMoves()} identifikuje hrany, které jsou součástí výherní strategie \cite{sawa}. Hrana z~pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče~1. Tyto hrany jsou žlutě zvýrazněny ve vizualizaci.
-
 \subsection{Krokové vyhodnocení}
 \label{sec:GamesStepByStepImpl}
+\label{sec:GamesOptimalMovesImpl}
+
+Součástí analýzy je i funkce \texttt{getOptimalMoves()}, která identifikuje hrany patřící do výherní strategie \cite{sawa}. Hrana z~pozice \( u \) do pozice \( v \) je optimální, pokud obě pozice jsou výherní pro Hráče~1; takové hrany jsou ve vizualizaci zvýrazněny žlutě.
 
 Pro detailnější průchod grafem implementuje komponenta \texttt{StepByStepGame} krokovou analýzu (viz obrázek \ref{fig:step-by-step-game}). Retrográdní analýza je provedena pouze jednou a během tohoto běhu se průběžně ukládají i mezivýpočty (změny stavů uzlů při propagaci výsledků). Uživatel pak může těmito uloženými kroky procházet pomocí navigačních tlačítek. Pro každý krok analýzy je zobrazeno:
 
@@ -337,9 +330,9 @@ Všechny formy vstupu využívají stejnou komponentu pro zobrazení derivační
 \subsection{Manuální zadání gramatiky}
 \label{sec:GrammarsManualImpl}
 
-Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v~modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (symboly začínající velkým písmenem, včetně českých znaků) a terminály (ostatní symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
+Komponenta \texttt{ManualInput} poskytuje rozhraní ve formě textového okna pro přímé zadávání pravidel gramatiky ve formátu \texttt{LS -> PS}. Algoritmus v~modulu \texttt{GrammarParser.js} automaticky rozpoznává neterminály (řetězce začínající velkým písmenem, včetně českých znaků) a terminály (ostatní řetězce). Pravá strana pravidla se po normalizaci bílých znaků rozdělí podle mezer na jednotlivé tokeny (symboly). To umožňuje používat víceznakové neterminály jako \texttt{A1}, \texttt{Abc} nebo \texttt{A\_10}.
 
-Parser akceptuje jak zápis šipky \texttt{->} z~klávesnice, i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky.
+Parser akceptuje jak zápis šipky \texttt{->} složené ze dvou znaků jednoduše zadatelných z klávesnice, i jako symbol \texttt{→}. Obě varianty jsou interně sjednoceny na stejnou reprezentaci pravidla, což zjednodušuje ruční zadávání gramatiky. Parser také validuje, zda jsou všechny použité neterminály (symboly na pravých stranách) definovány alespoň jedním pravidlem (výskytem na levé straně); v~opačném případě uživatele upozorní chybovou hláškou.
 
 \subsection{Generování náhodných gramatik}
 \label{sec:GrammarsGenerationImpl}
@@ -416,31 +409,27 @@ Ve složce \texttt{Sady/Grammar} jsou uloženy předpřipravené příklady gram
     \label{fig:grammar-json-format}
 \end{figure}
 
-\subsection{Algoritmus vyhodnocení}
-\label{sec:GrammarsAlgorithmImpl}
-
-Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}.
-
 \subsection{Identifikace produktivních neterminálů}
+\label{sec:GrammarsAlgorithmImpl}
 \label{sec:GrammarsProductiveImpl}
 
-Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace používá optimalizovanou verzi s~frontou (work-list algorithm), což odpovídá principu BFS. Postup algoritmu:
+Modul \texttt{GrammarEvaluator.js} obsahuje implementaci algoritmu pro vyhodnocení problému neprázdnosti jazyka bezkontextové gramatiky založenou na teorii popsané v~sekci \ref{sec:TheoryGrammars}. Algoritmus pracuje iterativně a postupně označuje produktivní neterminály. Implementace využívá iterativní výpočet do ustálení (fixed-point iteration). Postup algoritmu:
 
 \begin{enumerate}
-    \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů a frontu pro zpracování. Všechna pravidla jsou zpočátku neoznačená.
+    \item \textbf{Inicializace:} Algoritmus vytvoří prázdnou množinu produktivních neterminálů. Všechna pravidla jsou zpočátku neoznačená.
     
-    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní a vloženy do fronty. Pokud nebylo nalezeno žádné takové pravidlo, fronta zůstane prázdná a další krok iterativní propagace se neprovede vůbec (přeskočí se krok 3.).
+    \item \textbf{Nalezení základních produktivních pravidel:} Projdou se všechna pravidla gramatiky a identifikují se ta, jejichž pravá strana obsahuje pouze terminály nebo je prázdná ($\varepsilon$). Neterminály na levé straně těchto pravidel jsou okamžitě označeny jako produktivní. Pokud bylo v~tomto kroku označeno alespoň jedno nové pravidlo, nastaví se příznak změny na \texttt{true}, což indikuje potřebu dalšího průchodu.
     
     \item \textbf{Propagace produktivity:}
     \begin{itemize}
-        \item Vyjme se neterminál z~fronty.
-        \item Projdou se všechna dosud neoznačená pravidla gramatiky.
-        \item Pro každé pravidlo se zkontroluje, zda jsou všechny symboly na pravé straně buď terminály, nebo již označené produktivní neterminály.
-        \item Pokud ano, neterminál na levé straně tohoto pravidla je označen jako produktivní, pravidlo se označí jako zpracované a neterminál je přidán do fronty (pokud tam ještě není).
-        \item Pokud ne (tedy pravá strana obsahuje alespoň jeden dosud neproduktivní neterminál), pravidlo zůstává neoznačené a bude znovu zkontrolováno v~dalších iteracích.
+        \item Algoritmus opakovaně prochází všechna pravidla gramatiky s~dosud neoznačeným neterminálem na levé straně.
+        \item Pro každé takové pravidlo se zkontroluje, zda jsou všechny symboly na pravé straně buď terminály, nebo již označené produktivní neterminály.
+        \item Pokud ano, neterminál na levé straně tohoto pravidla je označen jako produktivní a dojde k~nastavení příznaku změny na \texttt{true}.
+        \item Pokud ne (tedy pravá strana obsahuje alespoň jeden dosud neproduktivní neterminál), pravidlo zůstává nezměněno a bude znovu zkontrolováno v~dalším průchodu.
+        \item Tento proces se opakuje, dokud se v~posledním průchodu podařilo označit alespoň jeden nový neterminál jako produktivní, nebo dokud nejsou všechny neterminály gramatiky označeny jako produktivní.
     \end{itemize}
     
-    \item \textbf{Ukončení:} Algoritmus končí, když je fronta prázdná. V tu chvíli jsou všechny produktivní neterminály nalezeny.
+    \item \textbf{Ukončení:} Algoritmus končí, jakmile v~průběhu celé iterace přes všechna pravidla nedojde k~označení žádného nového neterminálu jako produktivního (tj. dojde k~ustálení). V~tu chvíli jsou všechny produktivní neterminály nalezeny.
 \end{enumerate}
 
 Časová složitost je \( O(|P| \cdot |N|) \), kde \( |P| \) je počet pravidel gramatiky a \( |N| \) je počet neterminálů. V nejhorším případě je každé pravidlo kontrolováno jednou pro každý neterminál, který se stane produktivním.
@@ -469,7 +458,7 @@ Pokud gramatika generuje neprázdný jazyk, aplikace vizuálně ukáže derivač
 \subsection{Krokové vyhodnocení}
 \label{sec:GrammarsStepByStepImpl}
 
-Komponenta \texttt{GrammarStepEvaluator.js} vypočítá jednotlivé kroky pro komponentu \\\texttt{StepByStepGrammar}, která je následně interaktivně zobrazí. Zobrazuje seznam pravidel s~barevným zvýrazněním aktuálního stavu a množinu dosud nalezených produktivních symbolů (viz obrázek \ref{fig:step-by-step-grammar}).
+Komponenta \texttt{GrammarStepEvaluator.js} vypočítá jednotlivé kroky pro komponentu \\\texttt{StepByStepGrammar}, která je následně interaktivně zobrazí. Zobrazuje seznam pravidel, přičemž barvou odlišuje jednotlivé symboly podle toho, zda jsou již považovány za produktivní. Aktuálně posuzované pravidlo je zvýrazněno rámečkem a doplněno o~stavový popisek (např. „Již v~množině P“, „Nově zařazeno do množiny P“ nebo výčet chybějících symbolů), což pomáhá uživateli pochopit logiku algoritmu na úrovni jednotlivých kroků. Pod seznamem pravidel je zobrazena i~množina všech dosud nalezených produktivních neterminálů (viz obrázek \ref{fig:step-by-step-grammar}).
 
 \begin{figure}[htbp]
     \centering
@@ -487,9 +476,6 @@ Pro ilustraci vzájemné převoditelnosti P-úplných problémů popsané v~sekc
 \label{sec:MCVPtoGameImplementationImpl}
 
 Třída \texttt{MCVPToGameStepGenerator} implementuje převod pomocí rekurzivního průchodu MCVP grafem. Pro každý uzel vytváří odpovídající pozici ve hře dle pravidel definovaných v~sekci \ref{sec:TheoryReductionToGame}.
-
-\subsection{Implementační detaily}
-\label{sec:MCVPtoGameDetailsImpl}
 
 Algoritmus využívá několik klíčových mechanismů:
 
@@ -541,9 +527,9 @@ Druhá fáze algoritmu prochází orientovaným acyklickým grafem (DAG) repreze
 \begin{enumerate}
     \item \textbf{Hradlo AND:} Vytvoří pravidlo ve formě \texttt{X → AB}, kde \texttt{X} je neterminál odpovídající hradlu a \texttt{A}, \texttt{B} jsou symboly odpovídající potomkům.
     
-    \item \textbf{Hradlo OR:} Vytvoří několik alternativních pravidel, vždy jedno pro každého potomka: \texttt{X → A}, \texttt{X → B} atd., kde \texttt{A}, \texttt{B} jsou symboly odpovídající potomkům.
+    \item \textbf{Hradlo OR:} Vytvoří několik alternativních pravidel pro neterminál hradla, vždy jedno pro každého potomka: \texttt{X → A}, \texttt{X → B}, kde \texttt{A} a \texttt{B} jsou symboly odpovídající potomkům.
     
-    \item \textbf{Proměnná s~hodnotou~1:} Vznikne pravidlo \texttt{X → a} pro terminál \texttt{a}, včetně možnosti pravidla \texttt{X → $\varepsilon$} s~pravděpodobností 15\%.
+    \item \textbf{Proměnná s~hodnotou~1:} Nevytváří samostatný neterminál, ale je v~pravidlech svých rodičů nahrazena přímo terminálem \texttt{a} (včetně možnosti $\varepsilon$ s~pravděpodobností 15\,\%). Pokud je tato proměnná kořenem obvodu, vznikne pravidlo \texttt{S → a} (případně \texttt{S → $\varepsilon$}).
 
     \item \textbf{Proměnná s~hodnotou~0:} Pro odpovídající neterminál \texttt{X} vznikne cyklické pravidlo \texttt{X → X}. Takový neterminál není produktivní, protože z~něj nelze odvodit řetězec složený pouze z~terminálů.
 \end{enumerate}

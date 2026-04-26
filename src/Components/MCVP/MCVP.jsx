@@ -232,6 +232,7 @@ export function MCVP({
           >
             <TreeRenderCanvas
               tree={tree}
+              highlightedNode={!useTopDownLayout && isTreeValid ? tree : null}
               useTopDownLayout={useTopDownLayout}
               fitTrigger={mainFitTrigger}
               defaultLocked={lockImportedLayout}

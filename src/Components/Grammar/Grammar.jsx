@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import PropTypes from 'prop-types';
 import { GenericInputMethodSelector } from '../Common/InputSystem/GenericInputMethodSelector';
 import { ManualInput } from './InputSelectionComponent/ManualInput';
@@ -24,10 +24,12 @@ const INPUT_OPTIONS = [
  * @param {Object} props - Component props.
  * @returns {JSX.Element} Grammar module UI.
  */
-export function Grammar({ initialData, lockNodeAfterDrag = true }) {
+export function Grammar({ initialData, autoScrollToGraph = true, lockNodeAfterDrag = true }) {
   const [chosenOpt, setChosenOpt] = useState('manual'); // Chosen input method
   const [grammar, setGrammar] = useState(null); // Current grammar
   const [showSteps, setShowSteps] = useState(false); // Toggle for step-by-step
+  const [mainFitTrigger, setMainFitTrigger] = useState(0);
+  const analysisSectionRef = useRef(null);
 
   // Handle initial data if provided
   useEffect(() => {
@@ -45,6 +47,22 @@ export function Grammar({ initialData, lockNodeAfterDrag = true }) {
     setGrammar(null);
     setShowSteps(false);
   };
+
+  // Refit once when a non-manual grammar is loaded/generated/imported.
+  useEffect(() => {
+    if (!grammar || chosenOpt === 'manual') return;
+    setMainFitTrigger((prev) => prev + 1);
+  }, [grammar, chosenOpt]);
+
+  useEffect(() => {
+    if (!autoScrollToGraph || !grammar || chosenOpt === 'manual') return;
+
+    const frameId = requestAnimationFrame(() => {
+      analysisSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+
+    return () => cancelAnimationFrame(frameId);
+  }, [autoScrollToGraph, grammar, chosenOpt]);
 
   const handleExport = () => {
     if (!grammar) return null;
@@ -153,7 +171,7 @@ export function Grammar({ initialData, lockNodeAfterDrag = true }) {
         />
 
         {grammar && analysisResult && (
-          <div className="mt-4 mb-4">
+          <div className="mt-4 mb-4" ref={analysisSectionRef}>
             <div
               className="card mb-3 text-center"
               style={{ maxWidth: '600px', margin: 'auto', marginBottom: '30px' }}
@@ -205,10 +223,11 @@ export function Grammar({ initialData, lockNodeAfterDrag = true }) {
                   {analysisResult.derivedWord !== undefined &&
                   analysisResult.derivedWord !== null ? (
                     <p className="text-muted small">
-                      Odvozené slovo: <strong>{analysisResult.derivedWord || 'ε'}</strong>
-                      {analysisResult.witnessNodeCount > 0 && (
-                        <span className="ms-2">({analysisResult.witnessNodeCount} uzlů)</span>
-                      )}
+                      Odvozené slovo:{' '}
+                      <strong className="text-dark">{analysisResult.derivedWord || 'ε'}</strong>
+                      <span className="ms-2">
+                        (získáno čtením listových uzlů stromu zleva doprava)
+                      </span>
                     </p>
                   ) : (
                     <p className="text-muted small">
@@ -217,6 +236,7 @@ export function Grammar({ initialData, lockNodeAfterDrag = true }) {
                   )}
                   <DerivationTreeVisual
                     tree={analysisResult.derivationTree}
+                    fitTrigger={mainFitTrigger}
                     lockNodeAfterDrag={lockNodeAfterDrag}
                   />
                 </div>
@@ -238,5 +258,6 @@ export function Grammar({ initialData, lockNodeAfterDrag = true }) {
 Grammar.propTypes = {
   onNavigate: PropTypes.func,
   initialData: PropTypes.object,
+  autoScrollToGraph: PropTypes.bool,
   lockNodeAfterDrag: PropTypes.bool,
 };

@@ -138,12 +138,12 @@ export function StepByStepGame({ graph, analysisSteps, lockNodeAfterDrag = true 
     [activeStep, graph]
   );
 
-  // Ensure final conclusion step shows the whole graph, not just the highlighted node.
+  // Trigger fit when reaching the first or final step
   useEffect(() => {
-    if (activeStep?.type === 'FINAL') {
+    if (currentStep === 0 || activeStep?.type === 'FINAL') {
       setFitTrigger((prev) => prev + 1);
     }
-  }, [activeStep]);
+  }, [currentStep, activeStep?.type]);
 
   return (
     <div
@@ -177,11 +177,9 @@ export function StepByStepGame({ graph, analysisSteps, lockNodeAfterDrag = true 
             <div className="row align-items-center">
               <div className="step-info col-md-7">
                 <div
-                  className={`card p-3 ${activeStep?.type === 'FINAL' ? '' : 'bg-light'}`}
+                  className={`card p-3 ${activeStep?.type === 'FINAL' ? 'bg-warning bg-opacity-25' : 'bg-light'}`}
                   style={{
                     minHeight: '140px',
-                    backgroundColor:
-                      activeStep?.type === 'FINAL' ? 'rgba(255, 255, 0, 0.2)' : undefined,
                   }}
                 >
                   <p className="mb-1">
@@ -202,10 +200,10 @@ export function StepByStepGame({ graph, analysisSteps, lockNodeAfterDrag = true 
                     </p>
                   )}
 
-                  {activeStep?.type === 'FINAL' && (
+                  {activeStep?.type === 'FINAL' && activeStep?.startId && (
                     <p className="mb-1">
-                      <strong>Počáteční pozice:</strong> {activeStep.id} (Hráč{' '}
-                      {graph.positions[activeStep.id]?.player})
+                      <strong>Počáteční pozice:</strong> {activeStep.startId} (Hráč{' '}
+                      {graph.positions[activeStep.startId]?.player})
                     </p>
                   )}
 

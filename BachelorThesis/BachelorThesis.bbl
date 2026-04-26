@@ -111,6 +111,37 @@
       \verb https://getbootstrap.com/
       \endverb
     \endentry
+    \entry{d3js2024}{misc}{}{}
+      \name{author}{1}{}{%
+        {{hash=3a56f801778dd81bf67b8f9cdccacb12}{%
+           family={Bostock},
+           familyi={B\bibinitperiod},
+           given={Mike},
+           giveni={M\bibinitperiod}}}%
+      }
+      \strng{namehash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{fullhash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{fullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{bibnamehash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{authorbibnamehash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{authornamehash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{authorfullhash}{3a56f801778dd81bf67b8f9cdccacb12}
+      \strng{authorfullhashraw}{3a56f801778dd81bf67b8f9cdccacb12}
+      \field{sortinit}{B}
+      \field{sortinithash}{d7095fff47cda75ca2589920aae98399}
+      \field{labelnamesource}{author}
+      \field{labeltitlesource}{title}
+      \field{howpublished}{Observable Inc.}
+      \field{note}{Verze 7.9.0. [cit. 2026-02-03]}
+      \field{title}{D3.js: Data-Driven Documents [online]}
+      \field{year}{2024}
+      \verb{urlraw}
+      \verb https://d3js.org/
+      \endverb
+      \verb{url}
+      \verb https://d3js.org/
+      \endverb
+    \endentry
     \entry{react2024}{misc}{}{}
       \name{author}{1}{}{%
         {{hash=350a86b0327152e3a50596538f38a5db}{%

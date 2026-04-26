@@ -79,9 +79,9 @@ export function DisplayGraph({
     if (!fgRef.current) return;
 
     requestAnimationFrame(() => {
-      fgRef.current?.zoomToFit(ms, 50);
+      fgRef.current?.zoomToFit(ms, 100);
       requestAnimationFrame(() => {
-        fgRef.current?.zoomToFit(ms, 50);
+        fgRef.current?.zoomToFit(ms, 100);
       });
     });
   }, []);
@@ -434,6 +434,7 @@ export function DisplayGraph({
 
     data.nodes.forEach(persistGraphPosition);
 
+    /* 
     // Ensure final settled layout is also centered/fitted when requested.
     const fitRequested = fitTrigger > lastEngineFitTrigger.current;
     if (fitToScreen || fitRequested) {
@@ -442,6 +443,7 @@ export function DisplayGraph({
         lastEngineFitTrigger.current = fitTrigger;
       }
     }
+    */
   }, [
     data.nodes,
     isGraphLocked,
@@ -451,6 +453,32 @@ export function DisplayGraph({
     fitTrigger,
     requestStableFit,
   ]);
+
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isGraphLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+      persistGraphPosition(node);
+    },
+    [lockNodeAfterDrag, isGraphLocked, persistGraphPosition]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isGraphLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+      persistGraphPosition(node);
+    },
+    [lockNodeAfterDrag, isGraphLocked, persistGraphPosition]
+  );
 
   // Center camera on highlighted node when tracking is enabled
   useEffect(() => {
@@ -537,24 +565,8 @@ export function DisplayGraph({
           onLinkHover={handleLinkHover}
           onEngineTick={handleEngineTick}
           onEngineStop={handleEngineStop}
-          onNodeDrag={(node) => {
-            if (lockNodeAfterDrag || isGraphLocked) {
-              node.fx = node.x;
-              node.fy = node.y;
-            }
-            persistGraphPosition(node);
-          }}
-          onNodeDragEnd={(node) => {
-            if (lockNodeAfterDrag || isGraphLocked) {
-              node.fx = node.x;
-              node.fy = node.y;
-            } else {
-              node.fx = undefined;
-              node.fy = undefined;
-              fgRef.current?.d3ReheatSimulation();
-            }
-            persistGraphPosition(node);
-          }}
+          onNodeDrag={handleNodeDrag}
+          onNodeDragEnd={handleNodeDragEnd}
         />
       </div>
     </>

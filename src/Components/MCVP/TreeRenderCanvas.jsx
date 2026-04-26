@@ -290,6 +290,7 @@ export function TreeRenderCanvas({
       const isNeighbor = highlightNodes.current.has(node) && !isHovered;
       const isExternalHighlight = highlightedNode && node.id === highlightedNode.id;
       const isActive = activeNode && node.id === activeNode.id;
+      const isRoot = !node.parents || node.parents.length === 0;
 
       const Highlighted = isHovered || isNeighbor || isExternalHighlight || isActive;
 
@@ -303,9 +304,11 @@ export function TreeRenderCanvas({
       } else if (isHovered) {
         ctx.fillStyle = colors.accentYellow;
       } else if (isExternalHighlight) {
-        ctx.fillStyle = colors.highlightNode;
+        ctx.fillStyle = isRoot ? colors.accentRed : colors.highlightNode;
       } else if (isNeighbor) {
         ctx.fillStyle = colors.highlightNode;
+      } else if (isRoot) {
+        ctx.fillStyle = colors.accentRed;
       } else {
         ctx.fillStyle = colors.defaultNode;
       }
@@ -427,7 +430,7 @@ export function TreeRenderCanvas({
       fgRef.current.d3Force('charge').strength(chargeStrength);
       fgRef.current.d3ReheatSimulation();
     }
-  }, [tree, mcvp, graphData, useTopDownLayout]); // Re-run if tree or graphData changes (new simulation)
+  }, [tree, mcvp, graphData, useTopDownLayout, lockNodeAfterDrag]); // Re-run if tree, graphData, layout or drag-lock setting changes
 
   // Focus Camera on Active Node
   useEffect(() => {
@@ -565,6 +568,7 @@ export function TreeRenderCanvas({
       });
     }
 
+    /*
     // Ensure final settled layout is also centered/fitted when requested.
     const fitRequested = fitTrigger > lastEngineFitTrigger.current;
     if (fitToScreen || fitRequested) {
@@ -573,6 +577,7 @@ export function TreeRenderCanvas({
         lastEngineFitTrigger.current = fitTrigger;
       }
     }
+    */
   }, [
     graphData.nodes,
     isLocked,
@@ -581,6 +586,32 @@ export function TreeRenderCanvas({
     fitTrigger,
     requestStableFit,
   ]);
+
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+      persistNodePosition(node);
+    },
+    [lockNodeAfterDrag, isLocked, persistNodePosition]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag || isLocked) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+      persistNodePosition(node);
+    },
+    [lockNodeAfterDrag, isLocked, persistNodePosition]
+  );
 
   return (
     <div
@@ -628,24 +659,8 @@ export function TreeRenderCanvas({
         // Events
         onNodeHover={handleNodeHover}
         onLinkHover={handleLinkHover}
-        onNodeDrag={(node) => {
-          if (lockNodeAfterDrag || isLocked) {
-            node.fx = node.x;
-            node.fy = node.y;
-          }
-          persistNodePosition(node);
-        }}
-        onNodeDragEnd={(node) => {
-          if (lockNodeAfterDrag || isLocked) {
-            node.fx = node.x;
-            node.fy = node.y;
-          } else {
-            node.fx = undefined;
-            node.fy = undefined;
-            fgRef.current?.d3ReheatSimulation();
-          }
-          persistNodePosition(node);
-        }}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={handleNodeDragEnd}
         onBackgroundClick={() => {
           hoverNode.current = null;
         }}

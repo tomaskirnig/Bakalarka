@@ -16,12 +16,13 @@ const MODE_AFTER = () => 'after';
  * @param {Object} props - The component props
  * @param {Object} props.tree - The derivation tree structure
  */
-export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
+export function DerivationTreeVisual({ tree, fitTrigger = 0, lockNodeAfterDrag = true }) {
   const fgRef = useRef();
   const containerRef = useRef(); // Ref for the container div
 
   // Dimensions State
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const dimensionsWereZeroRef = useRef(true);
   const [isFlashing, setIsFlashing] = useState(false);
 
   // Interaction State
@@ -31,9 +32,103 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
   const settings = useGraphSettings();
   const { grammar: grammarSettings } = settings;
 
+  // 1. Prepare Graph Data
+  const graphData = useMemo(() => {
+    if (!tree) return { nodes: [], links: [] };
+
+    const nodes = [];
+    const links = [];
+
+    // Calculate fixed positions (fx, fy) so that children are ordered from left to right as they appear in the tree.
+
+    // Determine the "width" of each subtree to allocate space
+    const subtreeWidths = new Map();
+    function calculateWidth(node) {
+      if (!node.children || node.children.length === 0) {
+        subtreeWidths.set(node.id, 1);
+        return 1;
+      }
+      let width = 0;
+      node.children.forEach((child) => {
+        width += calculateWidth(child);
+      });
+      subtreeWidths.set(node.id, width);
+      return width;
+    }
+    calculateWidth(tree);
+
+    // Traverse and assign positions based on allocated width
+    // Level distance and horizontal scale
+    const levelDist = grammarSettings.dagLevelDistance || 50;
+    const siblingDist = 40;
+
+    function assignPositions(node, xOffset, depth, parentPos) {
+      const myWidth = subtreeWidths.get(node.id);
+
+      // Position this node in the middle of its allocated width
+      const x = xOffset + (myWidth * siblingDist) / 2;
+      const y = depth * levelDist;
+
+      // Assign fixed positions to prevent physics from shuffling order
+      node.fx = x;
+      node.fy = y;
+
+      nodes.push(node);
+
+      if (parentPos) {
+        links.push({ source: parentPos.id, target: node.id });
+      }
+
+      if (node.children && node.children.length > 0) {
+        let currentX = xOffset;
+        node.children.forEach((child) => {
+          assignPositions(child, currentX, depth + 1, node);
+          currentX += subtreeWidths.get(child.id) * siblingDist;
+        });
+      }
+    }
+
+    assignPositions(tree, 0, 0, null);
+
+    return { nodes, links };
+  }, [tree, grammarSettings]);
+
   const handleFitToScreen = useCallback(() => {
     fgRef.current?.zoomToFit(400, 50);
   }, []);
+
+  // Fit to screen when fitTrigger changes
+  const lastFitTrigger = useRef(-1);
+  useEffect(() => {
+    if (fitTrigger > lastFitTrigger.current && fgRef.current && dimensions.width > 0) {
+      // Small delay to allow engine to settle before fitting
+      requestAnimationFrame(() => {
+        fgRef.current?.zoomToFit(400, 50);
+      });
+      lastFitTrigger.current = fitTrigger;
+    }
+  }, [fitTrigger, dimensions.width]);
+
+  // Recover from initial 0x0 canvas mounts by recentering and reheating once dimensions are ready.
+  useEffect(() => {
+    if (!dimensionsWereZeroRef.current) return;
+    if (dimensions.width <= 0 || dimensions.height <= 0) return;
+
+    dimensionsWereZeroRef.current = false;
+
+    if (fgRef.current) {
+      fgRef.current.centerAt(0, 0, 0);
+      fgRef.current.zoom(1, 0);
+      fgRef.current.d3ReheatSimulation();
+
+      // Auto-fit on first valid dimensions if tree exists
+      if (graphData.nodes.length > 0) {
+        requestAnimationFrame(() => {
+          fgRef.current?.zoomToFit(400, 50);
+        });
+      }
+    }
+  }, [dimensions.width, dimensions.height, graphData.nodes.length]);
 
   // Flash border when tree changes
   useEffect(() => {
@@ -65,41 +160,6 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
       resizeObserver.disconnect();
     };
   }, []);
-
-  // 1. Prepare Graph Data
-  const graphData = useMemo(() => {
-    if (!tree) return { nodes: [], links: [] };
-
-    const nodes = [];
-    const links = [];
-    const visited = new Set();
-
-    function traverse(current, parent) {
-      if (!current) return;
-
-      if (visited.has(current.id)) return;
-      visited.add(current.id);
-
-      nodes.push(current);
-
-      if (parent) {
-        links.push({
-          source: parent.id,
-          target: current.id,
-        });
-      }
-
-      if (current.children && Array.isArray(current.children)) {
-        current.children.forEach((child) => {
-          if (child) traverse(child, current);
-        });
-      }
-    }
-
-    traverse(tree, null);
-
-    return { nodes, links };
-  }, [tree]);
 
   // 2. Interaction Handlers
   const handleNodeHover = useCallback((node) => {
@@ -200,8 +260,33 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
       fgRef.current.d3Force('center', null);
       fgRef.current.d3Force('link').distance(grammarSettings.linkDistance);
       fgRef.current.d3Force('charge').strength(grammarSettings.chargeStrength);
+      fgRef.current.d3ReheatSimulation();
     }
-  }, [tree, grammarSettings]);
+  }, [tree, grammarSettings, lockNodeAfterDrag]);
+
+  const handleNodeDrag = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag) {
+        node.fx = node.x;
+        node.fy = node.y;
+      }
+    },
+    [lockNodeAfterDrag]
+  );
+
+  const handleNodeDragEnd = useCallback(
+    (node) => {
+      if (lockNodeAfterDrag) {
+        node.fx = node.x;
+        node.fy = node.y;
+      } else {
+        node.fx = undefined;
+        node.fy = undefined;
+        fgRef.current?.d3ReheatSimulation();
+      }
+    },
+    [lockNodeAfterDrag]
+  );
 
   return (
     <div
@@ -247,22 +332,8 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
         nodeCanvasObject={paintNode}
         // Events
         onNodeHover={handleNodeHover}
-        onNodeDrag={(node) => {
-          if (lockNodeAfterDrag) {
-            node.fx = node.x;
-            node.fy = node.y;
-          }
-        }}
-        onNodeDragEnd={(node) => {
-          if (lockNodeAfterDrag) {
-            node.fx = node.x;
-            node.fy = node.y;
-          } else {
-            node.fx = undefined;
-            node.fy = undefined;
-            fgRef.current?.d3ReheatSimulation();
-          }
-        }}
+        onNodeDrag={handleNodeDrag}
+        onNodeDragEnd={handleNodeDragEnd}
       />
     </div>
   );
@@ -270,5 +341,6 @@ export function DerivationTreeVisual({ tree, lockNodeAfterDrag = true }) {
 
 DerivationTreeVisual.propTypes = {
   tree: PropTypes.object,
+  fitTrigger: PropTypes.number,
   lockNodeAfterDrag: PropTypes.bool,
 };

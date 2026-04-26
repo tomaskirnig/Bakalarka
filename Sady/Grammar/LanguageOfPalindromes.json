@@ -1,0 +1,8 @@
+{
+  "name": "Jazyk palindromů",
+  "nonTerminals": ["S"],
+  "terminals": ["a", "b", "c"],
+  "productions": {
+    "S": [["a", "S", "a"], ["b", "S", "b"], ["c", "S", "c"], ["a"], ["b"], ["c"], []]
+  }
+}

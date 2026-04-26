@@ -1,9 +1,31 @@
+==== Thesis Submission TODO (from LastUpdate) ====
+
+- [x] Zapracovat zbyvajici textove pripominky vedouciho (cca 15).
+- [x] Projit celou praci a uzavrit vsechny otevrene komentare.
+- [x] Provest strukturialni upravy: spojit sekce a smazat nadbytecne nadpisy.
+- [x] Udelat drobne jazykove a stylisticke upravy textu.
+
+- [ ] Vybrat vsechny zdrojove kody a soubory potrebne k nasazeni do elektronickych priloh.
+- [ ] Pripravit cistou testovaci slozku a vlozit do ni pouze soubory urcene do ZIPu.
+- [ ] Otestovat "na ciste vode", ze aplikaci lze z teto slozky znovu zprovoznit.
+- [ ] Vytvorit finalni ZIP archiv elektronickych priloh.
+- [ ] Nahrat finalni ZIP do systemu Edison.
+
+- [x] Vytvorit Prilohu A se seznamem elektronickych priloh.
+- [x] U kazde polozky v Priloze A doplnit kratky popisek (cca 1 veta).
+- [x] Dopsat sekci o nasazeni aplikace (inspirace sekci 5.8 u Kopidola).
+- [x] Popsat postup spusteni aplikace z dodanych zdrojovych kodu.
+- [x] Uvest pozadavky na server a informace o knihovnach (pribalene vs. automaticky stahovane).
+- [x] Dopsat odkaz na demo aplikace: https://bakalarka-eight.vercel.app/ (sekce nasazeni, uvod nebo zaver).
+
+
 ---- MCVP ----
-- Optimize - the nodes are still overlaping, when there are more children - find a way to idealy place all the nodes at the begining
 - Optimize (interactive) - make highlight style of nodes and edges same as TreeRenderCanvas
 
 
 ---- MCVP -> CG ----
+- unzoom the CG graph so the nodes are not generated on top of each other
+- use the node position from MCVP even if the option lock graph is not selected
 
 ---- MCVP -> Grammar----
 
@@ -16,7 +38,6 @@
 ---- Grammar ----
 
 ---- Global ----
-- Add autoscroll after selecting set or genererating and displaying some data 
 
 - Bonus - implemnt dynamic size of display component, user can resize the component manually (by pulling the edge or + / - buttons)
 

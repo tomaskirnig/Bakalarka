@@ -2,12 +2,17 @@ Seznam souborů a složek k odstranění před odevzdáním projektu:
 
 ### 🤖 Soubory související s AI/Gemini
 - GEMINI.md
-- OdstranitGeminiFile-predOdevzdanim.txt
 - Odstranit_pred_odevzdanim.txt (tento soubor)
 
 ### 📝 Poznámky a pracovní soubory
 - Backlog.txt
-- BachelorThesis - pozn.pdf
+- Kirnig BachelorThesis - pozn.pdf
+- LOGSPACE_REFACTOR_PLAN.md
+- Project_code_review.txt
+- Project_CheatSheet.md
+- ProjectOverview.md
+- TEMP_TODO_FROM_COMMENTS.md
+- LastUpdate
 
 ### ⚙️ Prostředí a verzování (pokud odevzdáváte ZIP)
 - .git/

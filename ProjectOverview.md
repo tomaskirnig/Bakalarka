@@ -1,7 +1,7 @@
 # Project Overview
 
-Last verified: 2026-04-20  
-Commit baseline: 8f75d2f (working tree changes applied)
+Last verified: 2026-04-26  
+Commit baseline: 2c60481 (working tree changes applied)
 
 This document is the implementation-level map of the app.  
 It focuses on what actually exists in `src`, which symbols are used, how data moves, and where guardrails are implemented.
@@ -454,6 +454,7 @@ Parser behavior:
 - supports epsilon (`ε` or `epsilon`)
 - enforces non-terminal naming by uppercase-leading symbol (including Czech uppercase)
 - classifies all other tokens as terminals
+- validates that all non-terminals used in rules are also defined on the left-hand side of at least one rule (throws error on dangling non-terminals)
 
 ## 7.2 Generator
 
@@ -496,7 +497,7 @@ Entry:
 Phase 1: productive-set fixed point
 
 - seed productive non-terminals from terminal-only/epsilon derivations
-- queue-based propagation until no new productive non-terminals
+- fixed-point iteration over all rules until no new productive non-terminals
 
 Phase 2: witness (only if non-empty)
 

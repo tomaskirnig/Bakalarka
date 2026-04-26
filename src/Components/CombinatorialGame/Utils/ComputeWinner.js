@@ -50,8 +50,8 @@ export function computeWinner(graph) {
       const player = graph.positions[id].player;
       const explanation =
         player === 1
-          ? `Pozice ${id} je koncová (bez tahů). Hráč 1 zde prohrává.`
-          : `Pozice ${id} je koncová (bez tahů). Hráč 1 zde vyhrává (soupeř nemá tah).`;
+          ? `Pozice ${id} je koncová (bez následných tahů). Hráč 1 v této pozici prohrává.`
+          : `Pozice ${id} je koncová (bez následných tahů). Hráč 1 v této pozici vyhrává (soupeř nemá k dispozici žádný platný tah).`;
       steps.push({
         type: 'TERMINAL',
         id: id,
@@ -82,8 +82,8 @@ export function computeWinner(graph) {
           queue.push(p);
           const p1perspective =
             playerP === 1
-              ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do prohrávající pozice soupeře ${u}).`
-              : `Hráč 1 prohrává z pozice ${p} (soupeř může táhnout do prohrávající pozice Hráče 1 ${u}).`;
+              ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do pozice ${u}, která je pro soupeře prohrávající).`
+              : `Hráč 1 v pozici ${p} prohrává (soupeř může táhnout do pozice ${u}, která je pro Hráče 1 prohrávající).`;
           steps.push({
             type: 'UPDATE',
             id: p,
@@ -98,8 +98,8 @@ export function computeWinner(graph) {
             queue.push(p);
             const p1perspective =
               playerP === 1
-                ? `Hráč 1 prohrává z pozice ${p} (všechny tahy vedou do prohrávajících pozic).`
-                : `Hráč 1 vyhrává z pozice ${p} (soupeř nemá vyhrávající tah).`;
+                ? `Hráč 1 prohrává z pozice ${p} (všechny dostupné tahy vedou do prohrávajících pozic).`
+                : `Hráč 1 vyhrává z pozice ${p} (soupeř v této pozici nemá žádný vyhrávající tah).`;
             steps.push({
               type: 'UPDATE',
               id: p,
@@ -115,7 +115,7 @@ export function computeWinner(graph) {
           queue.push(p);
           const p1perspective =
             playerP === 1
-              ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do své vyhrávající pozice ${u}).`
+              ? `Hráč 1 vyhrává z pozice ${p} (lze táhnout do vlastní vyhrávající pozice ${u}).`
               : `Hráč 1 prohrává z pozice ${p} (soupeř může táhnout do své vyhrávající pozice ${u}).`;
           steps.push({
             type: 'UPDATE',
@@ -131,8 +131,8 @@ export function computeWinner(graph) {
             queue.push(p);
             const p1perspective =
               playerP === 1
-                ? `Hráč 1 prohrává z pozice ${p} (všechny tahy vedou do vyhrávajících pozic soupeře).`
-                : `Hráč 1 vyhrává z pozice ${p} (všechny tahy soupeře vedou do vítězných pozic Hráče 1).`;
+                ? `Hráč 1 v pozici ${p} prohrává (všechny dostupné tahy vedou do vyhrávajících pozic soupeře).`
+                : `Hráč 1 vyhrává z pozice ${p} (všechny dostupné tahy soupeře vedou do vítězných pozic Hráče 1).`;
             steps.push({
               type: 'UPDATE',
               id: p,
@@ -179,10 +179,11 @@ export function computeWinner(graph) {
     }
   }
 
-  // Add final summary step
+  // Add final summary step with no node highlighted so the whole graph can be seen
   steps.push({
     type: 'FINAL',
-    id: startId,
+    id: null,
+    startId: startId, // Keep reference for info display if needed
     hasWinningStrategy,
     explanation: `Analýza dokončena. Výsledek z počáteční pozice ${startId}: ${message}`,
   });

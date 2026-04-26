@@ -64,14 +64,19 @@ export class MCVPToGameStepGenerator {
     if (!this.tree) return [];
 
     // Initial step
-    this.addStep('Zahájení konverze', null, 'Graf je prázdný');
+    this.addStep('Je zahájena konverze', null, 'Graf je prázdný');
 
     // Start traversal
     this.traverse(this.tree);
 
     // Final step
     const startId = this.getUniqueId(this.tree);
-    this.addStep('Konverze dokončena', null, 'Výsledný graf hry', { id: startId });
+    this.addStep(
+      'Konverze je dokončena',
+      null,
+      'Výsledný graf hry. Teoreticky lze tento převod provést v logaritmické pracovní paměti. Tato vizualizace ale pro přehlednost ukládá mezikroky konverze, aby je bylo možné procházet krok za krokem.',
+      { id: startId }
+    );
 
     return this.steps;
   }
@@ -123,24 +128,24 @@ export class MCVPToGameStepGenerator {
       if (node.varValue === 1) {
         player = 2; // P2 loses -> P1 wins
         typeDesc = 'Variable [1]';
-        description = `Uzel "${node.value}" má hodnotu 1. Vytvoříme pozici pro Hráče 2 bez možných tahů (Hráč 2 prohrává).`;
+        description = `Uzel "${node.value}" má hodnotu 1. Je vytvořena pozice pro Hráče 2 bez možných tahů (Hráč 2 prohrává).`;
       } else {
         player = 1; // P1 loses
         typeDesc = 'Variable [0]';
-        description = `Uzel "${node.value}" má hodnotu 0. Vytvoříme pozici pro Hráče 1 bez možných tahů (Hráč 1 prohrává).`;
+        description = `Uzel "${node.value}" má hodnotu 0. Je vytvořena pozice pro Hráče 1 bez možných tahů (Hráč 1 prohrává).`;
       }
     } else {
       if (OR_NODE_VALUES.has(node.value)) {
         player = 1;
         typeDesc = 'OR Gate';
-        description = `Uzel "${node.value}" je OR. Vytvoříme pozici pro Hráče 1 (volí tah).`;
+        description = `Uzel "${node.value}" je typu OR. Je vytvořena pozice pro Hráče 1 (volí tah).`;
       } else if (AND_NODE_VALUES.has(node.value)) {
         player = 2;
         typeDesc = 'AND Gate';
-        description = `Uzel "${node.value}" je AND. Vytvoříme pozici pro Hráče 2 (volí tah).`;
+        description = `Uzel "${node.value}" je typu AND. Je vytvořena pozice pro Hráče 2 (volí tah).`;
       } else {
         player = 1; // Fallback
-        description = `Neznámý uzel "${node.value}", fallback na Hráče 1.`;
+        description = `Neznámý uzel "${node.value}", fallback na vytvoření pozice pro Hráče 1.`;
       }
     }
 

@@ -7,26 +7,26 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces Třídní diagram pro hlavní třídy MCVP}}{16}{figure.caption.4}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces Třídní diagram pro hlavní třídy kombinatorické hry}}{17}{figure.caption.5}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces Třídní diagram pro hlavní třídu bezkontextové gramatiky}}{17}{figure.caption.6}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces Ovládací panel s~navigací a výběrem vstupu}}{18}{figure.caption.7}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces Interaktivní plátno pro vizualizaci a editaci grafů}}{18}{figure.caption.8}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces Informační panel zobrazující výsledek analýzy}}{18}{figure.caption.9}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces Třídní diagram pro hlavní třídy MCVP}}{17}{figure.caption.4}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces Třídní diagram pro hlavní třídy kombinatorické hry}}{18}{figure.caption.5}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces Třídní diagram pro hlavní třídu bezkontextové gramatiky}}{18}{figure.caption.6}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces Ovládací panel s~navigací a výběrem vstupu}}{19}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces Interaktivní plátno pro vizualizaci a editaci grafů}}{19}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces Informační panel zobrazující výsledek analýzy}}{19}{figure.caption.9}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces Výběr způsobu zadání vstupu pro MCVP}}{19}{figure.caption.10}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces Interaktivní editor pro tvorbu a úpravu monotónních obvodů}}{23}{figure.caption.11}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces Ukázka JSON formátu pro uložení MCVP obvodu}}{24}{figure.caption.12}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{25}{figure.caption.13}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka předpřipravených herních grafů ve formátu JSON}}{27}{figure.caption.14}%
-\contentsline {figure}{\numberline {4.6}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{27}{figure.caption.15}%
-\contentsline {figure}{\numberline {4.7}{\ignorespaces Kroková analýza kombinatorické hry}}{29}{figure.caption.16}%
-\contentsline {figure}{\numberline {4.8}{\ignorespaces Rozhraní pro nastavení parametrů generování bezkontextových gramatik}}{32}{figure.caption.17}%
-\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{34}{figure.caption.18}%
-\contentsline {figure}{\numberline {4.10}{\ignorespaces Vizualizace derivačního stromu pro neprázdnou gramatiku}}{35}{figure.caption.19}%
-\contentsline {figure}{\numberline {4.11}{\ignorespaces Kroková analýza bezkontextové gramatiky}}{36}{figure.caption.20}%
-\contentsline {figure}{\numberline {4.12}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{38}{figure.caption.21}%
-\contentsline {figure}{\numberline {4.13}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{40}{figure.caption.22}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces Výběr způsobu zadání vstupu pro MCVP}}{20}{figure.caption.10}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces Interaktivní editor pro tvorbu a úpravu monotónních obvodů}}{24}{figure.caption.11}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces Ukázka JSON formátu pro uložení MCVP obvodu}}{25}{figure.caption.12}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces Vizualizace MCVP obvodu pomocí TreeRenderCanvas}}{26}{figure.caption.13}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces Ukázka předpřipravených herních grafů ve formátu JSON}}{28}{figure.caption.14}%
+\contentsline {figure}{\numberline {4.6}{\ignorespaces Ovládací prvky pro import a export herních grafů}}{28}{figure.caption.15}%
+\contentsline {figure}{\numberline {4.7}{\ignorespaces Kroková analýza kombinatorické hry}}{30}{figure.caption.16}%
+\contentsline {figure}{\numberline {4.8}{\ignorespaces Rozhraní pro nastavení parametrů generování bezkontextových gramatik}}{33}{figure.caption.17}%
+\contentsline {figure}{\numberline {4.9}{\ignorespaces Ukázka formátu JSON pro uložení bezkontextové gramatiky}}{35}{figure.caption.18}%
+\contentsline {figure}{\numberline {4.10}{\ignorespaces Vizualizace derivačního stromu pro neprázdnou gramatiku}}{36}{figure.caption.19}%
+\contentsline {figure}{\numberline {4.11}{\ignorespaces Kroková analýza bezkontextové gramatiky}}{37}{figure.caption.20}%
+\contentsline {figure}{\numberline {4.12}{\ignorespaces Ukázka převodu MCVP obvodu na kombinatorickou hru}}{39}{figure.caption.21}%
+\contentsline {figure}{\numberline {4.13}{\ignorespaces Ukázka převodu MCVP obvodu na bezkontextovou gramatiku}}{41}{figure.caption.22}%
 \addvspace {10\p@ }
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
@@ -48,3 +48,7 @@
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
 \babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\babel@toc {czech}{}\relax 
+\addvspace {10\p@ }
+\addvspace {10\p@ }

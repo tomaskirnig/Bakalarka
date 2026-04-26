@@ -109,72 +109,61 @@ export function generateGrammarSteps(grammar) {
     return steps;
   }
 
-  // 2. Queue Processing
-  if (queue.length > 0) {
+  // 2. Iterative Fixed-Point Phase
+  let changed = true;
+  let iteration = 1;
+
+  while (changed) {
+    changed = false;
+    let foundInThisIteration = false;
+
+    // Optimization: if all non-terminals are already productive, we can stop early
+    if (productive.size === nonTerminals.length) {
+      break;
+    }
+
     steps.push({
-      type: 'QUEUE_PROCESS_START',
-      description: `Zahajuji iterativní proces. Ve frontě nových produktivních symbolů jsou: { ${queue.join(', ')} }`,
+      type: 'ITERATION_START',
+      description: `Probíhá ${iteration}. průchod pravidly. Vyhledávání neterminálů, které jsou nově produktivní.`,
       productive: [...productive],
       currentRule: null,
     });
-  }
 
-  let queueIndex = 0;
-  while (queueIndex < queue.length) {
-    const newlyProd = queue[queueIndex++];
-
-    steps.push({
-      type: 'QUEUE_POP',
-      description: `Zpracovávám nově produktivní neterminál: "${newlyProd}". Hledám pravidla, která ho využívají.`,
-      productive: [...productive],
-      currentRule: null,
-    });
-
-    // Scan rules that reference this symbol.
     for (const rule of rules) {
       const { left, right } = rule;
-      // Skip unrelated rules.
-      if (right.includes(newlyProd)) {
-        const ruleStr = formatRule(left, right);
+      if (productive.has(left)) continue; // Already productive, skip
 
-        // Check if this rule is NOW fully productive
-        const isProductive =
-          right.length === 0 ||
-          (right.length === 1 && right[0] === 'ε') ||
-          right.every((sym) => terminalSet.has(sym) || productive.has(sym));
+      const ruleStr = formatRule(left, right);
 
-        if (isProductive) {
-          if (!productive.has(left)) {
-            productive.add(left);
-            queue.push(left);
-            steps.push({
-              type: 'NEW_PRODUCTIVE',
-              description: `Pravidlo "${ruleStr}" se stalo produktivním díky "${newlyProd}". "${left}" přidán mezi produktivní.`,
-              productive: [...productive],
-              currentRule: ruleStr,
-              highlight: 'success',
-            });
-          } else {
-            steps.push({
-              type: 'CHECK_RULE_AGAIN',
-              description: `Pravidlo "${ruleStr}" je nyní plně produktivní ("${left}" již byl označen).`,
-              productive: [...productive],
-              currentRule: ruleStr,
-              highlight: 'neutral',
-            });
-          }
-        } else {
-          // Find what's missing
-          const missing = right.filter((sym) => !terminalSet.has(sym) && !productive.has(sym));
-          steps.push({
-            type: 'CHECK_RULE_WAIT',
-            description: `Pravidlo "${ruleStr}" obsahuje "${newlyProd}", ale stále čeká na: { ${missing.join(', ')} }.`,
-            productive: [...productive],
-            currentRule: ruleStr,
-            highlight: 'warning',
-          });
-        }
+      // Check if this rule is NOW fully productive
+      const isProductive =
+        right.length === 0 ||
+        (right.length === 1 && right[0] === 'ε') ||
+        right.every((sym) => terminalSet.has(sym) || productive.has(sym));
+
+      if (isProductive) {
+        productive.add(left);
+        changed = true;
+        foundInThisIteration = true;
+        steps.push({
+          type: 'NEW_PRODUCTIVE',
+          description: `Pravidlo "${ruleStr}" je nově produktivní. Neterminál "${left}" byl přidán do množiny produktivních symbolů P.`,
+          productive: [...productive],
+          currentRule: ruleStr,
+          highlight: 'success',
+        });
       }
+    }
+
+    if (!foundInThisIteration && changed === false) {
+      steps.push({
+        type: 'ITERATION_END',
+        description: `V tomto průchodu nebyl nalezen žádný nový produktivní neterminál. Algoritmus končí.`,
+        productive: [...productive],
+        currentRule: null,
+      });
+    } else {
+      iteration++;
     }
   }
 
