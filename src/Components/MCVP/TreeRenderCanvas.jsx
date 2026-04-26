@@ -523,7 +523,6 @@ export function TreeRenderCanvas({
 
   // Immediate fit when explicitly requested.
   const lastEffectFitTrigger = useRef(-1);
-  const lastEngineFitTrigger = useRef(-1);
 
   useEffect(() => {
     const fitRequested = fitTrigger > lastEffectFitTrigger.current;
@@ -578,14 +577,7 @@ export function TreeRenderCanvas({
       }
     }
     */
-  }, [
-    graphData.nodes,
-    isLocked,
-    persistNodePosition,
-    fitToScreen,
-    fitTrigger,
-    requestStableFit,
-  ]);
+  }, [graphData.nodes, isLocked, persistNodePosition]);
 
   const handleNodeDrag = useCallback(
     (node) => {

@@ -17,6 +17,8 @@ export function evaluateCircuitWithSteps(node) {
   const memo = new Map(); // Cache results
   const visiting = new Set();
 
+  if (!node) return { result: null, steps: [] };
+
   function evaluate(currentNode) {
     if (!currentNode) return null;
 

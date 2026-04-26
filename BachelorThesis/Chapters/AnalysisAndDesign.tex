@@ -24,7 +24,7 @@ Kód je strukturován tak, aby logika byla oddělena od vizualizace. Každý mod
 \begin{itemize}
     \item \textbf{Hlavní komponenta:} Funguje jako kontejner, který spravuje lokální stav a propojuje vstupní data s~algoritmy a vizualizací.
     \item \textbf{Adresář Utils:} Zde jsou soustředěny čisté algoritmy – parsery pro zpracování vstupu, generátory náhodných instancí a evaluátory pro výpočet řešení.
-    \item \textbf{Vizualizační komponenty:} Starají se o vykreslení grafů a stromů pomocí knihovny \emph{react-force-graph}.
+    \item \textbf{Vizualizační komponenty:} Starají se o vykreslení grafů a stromů pomocí knihovny \emph{react-force-graph-2d}.
 \end{itemize}
 
 \section{Návrh datových struktur}
@@ -99,4 +99,4 @@ Rozhraní je navrženo tak, aby student nebyl zahlcen informacemi a mohl se sous
     \label{fig:ui-info-panel}
 \end{figure}
 
-Pro vizualizaci byla použita knihovna \emph{react-force-graph} \cite{reactforcegraph2024}, která k~výpočtu fyzikální simulace pro automatické rozmísťování uzlů a hran využívá engine \emph{D3.js} \cite{d3js2024}. Stylování je realizováno frameworkem \emph{Bootstrap 5} \cite{bootstrap2024}, který zajišťuje jednotný vzhled.
+Pro vizualizaci byla použita knihovna \emph{react-force-graph-2d} \cite{reactforcegraph2024}, která k~výpočtu fyzikální simulace pro automatické rozmísťování uzlů a hran využívá engine \emph{D3.js} \cite{d3js2024}. Stylování je realizováno frameworkem \emph{Bootstrap 5} \cite{bootstrap2024}, který zajišťuje jednotný vzhled.

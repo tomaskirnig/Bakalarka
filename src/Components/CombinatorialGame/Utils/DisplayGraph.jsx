@@ -390,7 +390,6 @@ export function DisplayGraph({
 
   // Immediate fit when explicitly requested.
   const lastEffectFitTrigger = useRef(-1);
-  const lastEngineFitTrigger = useRef(-1);
 
   useEffect(() => {
     const fitRequested = fitTrigger > lastEffectFitTrigger.current;
@@ -444,15 +443,7 @@ export function DisplayGraph({
       }
     }
     */
-  }, [
-    data.nodes,
-    isGraphLocked,
-    pinNodePosition,
-    persistGraphPosition,
-    fitToScreen,
-    fitTrigger,
-    requestStableFit,
-  ]);
+  }, [data.nodes, isGraphLocked, pinNodePosition, persistGraphPosition]);
 
   const handleNodeDrag = useCallback(
     (node) => {
