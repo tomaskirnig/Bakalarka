@@ -181,12 +181,17 @@ export function MCVP({
             Problém hodnoty monotónního obvodu (MCVP) se zabývá vyhodnocením booleovského obvodu,
             který obsahuje pouze hradla AND a OR (bez negací).
           </p>
-          <ul className="ps-3">
+          <hr />
+          <h6 className="mb-2">Struktura obvodu</h6>
+          <ul className="ps-3 mb-2">
             <li>
-              <strong>Vstupy:</strong> Logické hodnoty 0 nebo 1.
+              <strong>Vstupy (listy):</strong> Logické hodnoty 0 nebo 1.
             </li>
             <li>
               <strong>Hradla:</strong> AND (logický součin) a OR (logický součet).
+            </li>
+            <li>
+              <strong>Pravidla:</strong> Každé hradlo může mít maximálně 2 vstupy.
             </li>
             <li>
               <strong>Cíl:</strong> Určit výstupní hodnotu celého obvodu (kořenového uzlu).
