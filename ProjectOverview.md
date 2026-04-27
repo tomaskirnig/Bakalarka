@@ -1,700 +1,110 @@
-# Project Overview
+# Project Overview & Architectural Guide
 
-Last verified: 2026-04-26  
+Last verified: 2026-04-27  
 Commit baseline: 2c60481 (working tree changes applied)
 
-This document is the implementation-level map of the app.  
-It focuses on what actually exists in `src`, which symbols are used, how data moves, and where guardrails are implemented.
+This document is the implementation-level map of the project. It details the technical logic, core algorithms, and data contracts used to solve theoretical informatics problems.
 
 ---
 
-## 1. What This Project Is
+## 1. Core Architectural Pillars
 
-This is a React + Vite SPA for three theoretical-informatics domains:
+### Pattern A: "Compute Once, Replay by Index" (Explanations)
+Walkthroughs (e.g., `StepByStepTree`) do not re-run algorithms on every click. 
+- **The Flow:** When a graph/grammar is loaded, a "Step Evaluator" runs once. It produces an array of `step` objects.
+- **The Data:** Each `step` object contains a snapshot of what changed (e.g., `nodeId: "5", newValue: 1`).
+- **The UI:** The UI component simply maintains a `currentIndex`. Renders show the model state up to that index. This ensures the UI remains snappy even with thousands of nodes.
 
-1. MCVP (Monotone Circuit Value Problem)
-2. Combinatorial Game analysis on directed graphs
-3. Context-free grammar emptiness analysis
-
-It also provides two conversion pipelines from MCVP:
-
-1. MCVP -> Combinatorial Game
-2. MCVP -> Grammar
-
-Core stack:
-
-- React 18
-- Vite
-- `react-force-graph-2d` + D3 forces
-- Bootstrap 5
-- `react-toastify`
-- Vitest
+### Pattern B: "Visual Persistence" (D3 <-> React Sync)
+The app uses `react-force-graph-2d` (D3). D3 mutates `x, y` coordinates outside React's state for performance.
+- **The Problem:** If you re-render the page, D3 restarts the simulation, and your nodes "jump".
+- **The Solution:** 
+  1. **Syncing:** On `onNodeDragEnd`, coordinates are written directly into the source data objects.
+  2. **Snapshotting:** During Export, a `positionSnapshotGetter` pulls the exact pixel coordinates from the D3 engine.
+  3. **Locking:** We use `fx/fy` properties. When a node has `fx`, D3 treats it as "pinned".
 
 ---
 
-## 2. Runtime Shell and Navigation
+## 2. MCVP (Monotone Circuit Value Problem)
 
-## 2.1 App Entry and Page Routing
+### Logical Data Flow
+`Expression String` → `Parser (Recursive Descent)` → `Recursive DAG (Nodes/Children)` → `DFS Evaluator` → `Result State`
 
-Main entry:
+### Internal Model: Recursive DAG
+Unlike a simple tree, nodes in MCVP are shared. If `x1` is used in three gates, all three point to the **same object memory reference**. This is why we call it a **Directed Acyclic Graph (DAG)**.
 
-- `src/main.jsx`
-- `src/App.jsx`
+### Core Algorithm: DFS with Memoization
+- **File:** `src/Components/MCVP/Utils/EvaluateCircuit.js`
+- **Logic:** 
+  1. **Base Case:** If node is a variable, return its value (0 or 1).
+  2. **Memo Check:** If we already computed this node's value, return it immediately.
+  3. **Recursive Step:**
+     - For **AND**: Evaluate children. Result is `1` only if *both* are `1`.
+     - For **OR**: Evaluate children. Result is `1` if *at least one* is `1`.
+  4. **Cycle Guard:** We maintain a `visiting` set. if we hit a node already in the current recursion stack, the circuit is invalid (contains a cycle).
 
-`App.jsx` keeps top-level state:
+---
 
-- `currentPage`
-- `pageData` (cross-page payload, mainly used by conversion redirects)
-- `graphUiSettings`
+## 3. Combinatorial Games on Graphs
 
-Pages rendered by `App`:
+### Logical Data Flow
+`Manual/Generated Graph` → `Adjacency Map (positions)` → `Retrograde Analysis` → `Winning/Losing Statuses`
 
-- `HomePage`
-- `MCVP`
-- `CombinatorialGame`
-- `Grammar`
-
-`handleNavSelection(option, data)` updates page and optional payload.
-
-## 2.2 Global Graph UI Settings
-
-`App.jsx` defines:
-
-```js
-const DEFAULT_GRAPH_UI_SETTINGS = {
-  useTopDownLayout: true,
-  autoScrollToGraph: true,
-  lockNodeAfterDrag: true,
-};
+### Internal Model: Adjacency Map
+To allow $O(1)$ lookup, the graph is stored as an object where keys are IDs:
+```json
+{ "pos5": { "id": "5", "player": 1, "children": ["pos2", "pos8"], "parents": ["pos1"] } }
 ```
 
-These are managed in `Navigation.jsx` settings modal and passed down to page components.
-
-Notes:
-
-- `useTopDownLayout` is primarily relevant to MCVP visualizations/conversions.
-- `autoScrollToGraph` is used in MCVP and Combinatorial Game pages.
-- `lockNodeAfterDrag` is used by all graph renderers/editors.
-
-## 2.3 Error and Notification Infrastructure
-
-- Global toasts: `ToastContainer` in `App.jsx`
-- Page-level safety: `ErrorBoundary` wraps selected page and uses `key={currentPage}` reset behavior
-- Fallback UI: `Common/ErrorPage.jsx`
-
-## 2.4 Dev Server Defaults
-
-- `vite.config.js` sets `server.port` to `5174`
-- default local dev URL: `http://localhost:5174/`
+### Core Algorithm: Retrograde Analysis (Queue-based)
+This algorithm solves the game by working backward from the end (terminal positions).
+- **File:** `src/Components/CombinatorialGame/Utils/ComputeWinner.js`
+- **Steps:**
+  1. **Seed:** Find all nodes with 0 outgoing edges. These are **LOSE** for the player at that node.
+  2. **Propagate:** Put them in a queue. For each node `u` popped:
+     - Check its **Parents** (nodes that can move to `u`).
+     - If a parent can move to a **LOSE** node, that parent is **WIN**.
+     - If a parent's *every* possible move leads to a **WIN** node, that parent is **LOSE**.
+  3. **Cycles:** Any node that never gets resolved by this backward propagation is a **DRAW** (you can play forever).
 
 ---
 
-## 3. Shared Building Blocks
+## 4. Grammar Emptiness Problem
 
-## 3.1 UI Components
+### Logical Data Flow
+`Grammar Text` → `Parser` → `Productive Set (Fixed-point)` → `Heuristic Tree Builder` → `Witness Word`
 
-- `Common/InputSystem/GenericInputMethodSelector.jsx`
-  - standard Manual / Generate / Sets (and MCVP Interactive) selector
-- `Common/Modal.jsx`
-  - reusable modal with close animation
-- `Common/ConversionModal.jsx`
-  - large conversion walkthrough modal
-- `Common/FileTransferControls.jsx`
-  - JSON import/export with drag-drop + optional position-export toggle
-- `Common/InfoButton.jsx`
-  - hover help popover
-- `Common/GraphControls/GraphLockButton.jsx`
-  - lock/unlock graph node pinning UI
+### Core Algorithm 1: Fixed-Point Iteration (Emptiness)
+Determines if the grammar generates *anything* at all.
+- **Logic:**
+  1. Initialize `ProductiveSet` with all **Terminals**.
+  2. **Loop:** Scan every production (e.g., `A → B c`). 
+  3. If *every* symbol on the right-hand side (`B` and `c`) is already in the `ProductiveSet`, then the left-hand side (`A`) becomes **Productive**.
+  4. Repeat until no more non-terminals can be added.
+  5. **Result:** If the **Start Symbol** is in the set, the language is non-empty.
 
-## 3.2 Hooks
-
-- `Hooks/useGraphSettings.js`
-  - central graph rendering constants per domain (`mcvp`, `game`, `grammar`)
-- `Hooks/useGraphColors.js`
-  - resolves CSS variables into a stable graph color palette
-
-## 3.3 Cross-Cutting Patterns
-
-### Pattern A: Compute Once, Replay by Index
-
-All three domains use the same architecture for explanations:
-
-1. compute analysis once -> `steps[]`
-2. open modal -> step component tracks `currentStep`
-3. UI only changes index, never reruns algorithm on next/prev
-
-Concrete files:
-
-- MCVP: `evaluateCircuitWithSteps` + `StepByStepTree.jsx`
-- Game: `computeWinner` + `StepByStepGame.jsx`
-- Grammar: `generateGrammarSteps` + `StepByStepGrammar.jsx`
-
-### Pattern B: Graph Position Persistence
-
-Force-graph coordinates are persisted back into model data to preserve layout consistency across rerenders/import/export.
-
-Concrete behavior:
-
-- MCVP tree rendering persists `x/y` into source nodes
-- MCVP export can capture live engine positions via snapshot getter
-- Combinatorial game renderers/editors persist `x/y` into internal graph data
-- MCVP interactive editor syncs engine-stop positions only when layout changes are pending, using a small coordinate tolerance to avoid periodic twitch loops
-
-### Pattern C: Locking Strategy
-
-Graph lock state is represented with `fx/fy` pinning semantics.
-
-- Lock: set `fx/fy` to current `x/y`
-- Unlock: clear `fx/fy` and optionally reheat simulation
+### Core Algorithm 2: Heuristic Witness Construction
+If the language is non-empty, we need to show a "witness" (a derivation tree).
+- **The Challenge:** A grammar can have infinite derivations.
+- **The Solution:** We track the "cost" (shortest path) to terminals for every non-terminal during the emptiness check. The tree builder always picks the production with the **lowest cost** to guarantee a finite, small tree.
 
 ---
 
-## 4. Module Deep Dive: Home
+## 5. Data Contracts & Standardization
 
-Files:
+### JSON Position Key: `nodePositions`
+To keep import/export consistent across all graph-based modules:
+- **Standard:** `{ "nodes": [...], "links": [...], "nodePositions": { "id": { "x": 0, "y": 0 } } }`.
+- **Logic:** The `handleImport` functions in `MCVP.jsx` and `CombinatorialGame.jsx` are designed to detect both the new `nodePositions` and the legacy `positions` key to ensure old files still work.
 
-- `Components/HomePage.jsx`
-- `Components/HPVisual/NodeVisual.jsx`
-
-`HomePage` renders intro content and background animation component `NetworkVisual`.
-
-`NodeVisual.jsx` implements a canvas particle system:
-
-- node position update + boundary bounce
-- pairwise distance checks and line drawing when under threshold
-- per-frame complexity approximately `O(N^2)` for link checks
+### Validity Gating
+The UI uses "Analysis Gating". Buttons like "Explain" or "Convert" only become active when the current structure passes validation:
+- **MCVP:** Must have exactly one root and no cycles.
+- **Game:** Must have a designated starting position.
+- **Grammar:** All non-terminals used must be defined.
 
 ---
 
-## 5. Module Deep Dive: MCVP
-
-Primary container:
-
-- `Components/MCVP/MCVP.jsx`
-
-Primary concern: represent and evaluate monotone circuits as DAG-like node graphs.
-
-## 5.1 Data Model and Invariants
-
-File:
-
-- `Components/MCVP/Utils/NodeClass.js`
-
-Node shape:
-
-- `id` (string)
-- `type` (`operation` or `variable`)
-- `value` (`A/O` or variable name like `x1`)
-- `varValue` for variable nodes (`0/1`)
-- `children`, `parents`
-
-Terminology note:
-
-- Many UI labels say "tree", but structure is often a DAG because repeated variables are shared by reference.
-
-## 5.2 Input Flows
-
-### Manual text
-
-Files:
-
-- `InputSelectionComponents/ManualInput.jsx`
-- `Utils/Parser.js`
-
-Parser details:
-
-- tokenizer supports `(`, `)`, `A`, `O`, and `xN[0|1]`
-- recursive-descent precedence:
-  - `parseOrExpr` over `parseAndExpr`
-  - `AND` binds tighter than `OR`
-- variable identity map enforces consistency:
-  - same variable name must not appear with different values
-- variable nodes are reused, enabling DAG sharing
-
-### Generated
-
-Files:
-
-- `InputSelectionComponents/GenerateInput.jsx`
-- `Utils/Generator.js`
-
-Generator behavior:
-
-- creates variable nodes
-- iteratively adds operation nodes with exactly 2 children
-- maintains root candidate set and ensures exactly one final root
-- feasibility check: `numVariables <= numGates + 1`
-- throws + toast on invalid config
-
-### Prepared sets
-
-File:
-
-- `InputSelectionComponents/PreparedSetsInput.jsx`
-
-Loads `Sady/MCVP/*.json` via `import.meta.glob` and converts with:
-
-- `Utils/GraphToTree.js` -> `graphToTree(graphData, options)`
-
-Used options require binary operation nodes and throw on invalid set shape.
-
-### Interactive editor
-
-Files:
-
-- `InputSelectionComponents/Interactive/InteractiveInput.jsx`
-- `InteractiveInput.helpers.js`
-- `InteractiveInput.renderers.js`
-- `InteractiveSelectedNodeControls.jsx`
-
-Editor behavior:
-
-- add AND/OR/variable nodes
-- add/delete edges (operation nodes max 2 outgoing)
-- update node type/value
-- graph continuously converted to internal Node graph via `graphDataToNodeClass`
-- background click clears current selection (or cancels edge-adding mode)
-- includes geometric fallback picking for background events to mitigate browser canvas color-picking quirks
-
-Interactive mode intentionally allows temporarily incomplete structures while user edits.
-
-## 5.3 Evaluation Algorithm
-
-File:
-
-- `Utils/EvaluateCircuit.js`
-
-Entry:
-
-- `evaluateCircuitWithSteps(root)`
-
-Mechanics:
-
-1. DFS evaluate children first
-2. cache completed node values in `memo`
-3. detect cycles by tracking active recursion path in `visiting`
-4. append step objects `{ node, childValues, result }`
-5. append final summary step `{ type: 'FINAL', ... }`
-
-Guardrails:
-
-- null/incomplete operation nodes return `null` instead of hard crash
-- cycle throws an error, caught by wrapper, toast shown, returns `{ result: null, steps: [] }`
-
-## 5.4 Visualization
-
-File:
-
-- `TreeRenderCanvas.jsx`
-
-Key details:
-
-- `react-force-graph-2d` with optional DAG mode (`td`)
-- custom node and link canvas painters
-- supports highlighted/active nodes and completed-step result labels
-- includes graph controls: fit + lock
-- persists coordinates back to source nodes
-
-Arrow nuance:
-
-- visual arrowheads are intentionally reversed using `Utils/drawReversedArrowhead.js`
-- logical data direction remains parent -> child
-
-## 5.5 Import/Export and Validity Gating
-
-Files:
-
-- `Utils/Serialization.js`
-- `Utils/GraphToTree.js`
-
-`treeToFlatGraph` supports optional live position snapshot so exported layout matches visible layout.
-
-`MCVP.jsx` enables Explain/Conversion buttons only when tree is evaluable (`evaluation.result !== null`).
-
----
-
-## 6. Module Deep Dive: Combinatorial Game
-
-Primary container:
-
-- `Components/CombinatorialGame/CombinatorialGame.jsx`
-
-Internal game representation:
-
-- `positions` map, each with `id`, `player`, `children`, `parents`, optional coordinates
-- `startingPosition` object with `id`
-
-## 6.1 Input Flows
-
-### Manual editor
-
-Files:
-
-- `InputSelectionComponents/ManualInput/ManualInput.jsx`
-- `ManualInput.helpers.js`
-- `ManualInput.renderers.js`
-- `ManualInputPanels.jsx`
-
-Manual editor maintains graph as `{ nodes, links }`, then converts to analysis format with `toFormattedGraph(graph, startingNodeId)`.
-
-### Generated
-
-Files:
-
-- `InputSelectionComponents/GenerateInput.jsx`
-- `Utils/Generator.js`
-
-`generateGraph(numFields, edgeProbability)`:
-
-1. create nodes with random player ownership
-2. build spanning backbone from node `0` (reachability guarantee)
-3. add random extra edges (cycles possible)
-
-### Prepared sets
-
-File:
-
-- `InputSelectionComponents/PreparedSetsInput.jsx`
-
-Loads `Sady/CombinatorialGame/*.json`, creates internal `positions` graph, and can override starting-node player via radio controls.
-
-## 6.2 Winner Algorithm (Retrograde Analysis)
-
-File:
-
-- `Utils/ComputeWinner.js`
-
-Entry:
-
-- `computeWinner(graph)`
-
-Outputs:
-
-- `hasWinningStrategy`
-- `winningPositions` (winner id per node: `0`, `1`, `2`)
-- `nodeStatusRaw` (`WIN/LOSE/DRAW` relative to player-to-move at that node)
-- `message`
-- `steps`
-
-Algorithm outline:
-
-1. initialize all nodes as `DRAW`, track unresolved outgoing degree
-2. seed queue with terminal nodes (`LOSE`)
-3. process queue and propagate to parents with player-aware branch logic
-4. unresolved nodes after propagation stay `DRAW`
-5. convert start node status to Player 1 perspective
-
-Complexity:
-
-- approximately `O(V + E)`
-
-Optimal-move extraction:
-
-- `getOptimalMoves(graph, result)` returns edge keys `source-target`
-- selects edges from Player 1 winning nodes to Player 1 winning child states
-
-## 6.3 Visualization and Replay
-
-Files:
-
-- `Utils/DisplayGraph.jsx`
-- `StepByStepGame.jsx`
-- `Utils/GameAnalysisDisplay.jsx`
-
-`DisplayGraph` supports:
-
-- node highlighting and hover context
-- dynamic link distance by graph density
-- optimal edge highlighting (gold)
-- winner labels above nodes (when provided)
-- optional lock control and lock-on-first-tick behavior
-- position persistence back into graph model
-
-`StepByStepGame` reconstructs partial status map by replaying steps up to current index.
-
-## 6.4 Export/Import Details
-
-`CombinatorialGame.jsx` export supports:
-
-- flat format (`nodes`, `edges`, `startingPosition`)
-- internal format conversion from `positions`
-- optional `nodePositions` for layout
-
-Import accepts flat, internal, and legacy collection-like payloads.
-
----
-
-## 7. Module Deep Dive: Grammar
-
-Primary container:
-
-- `Components/Grammar/Grammar.jsx`
-
-Core workflow:
-
-1. load grammar (manual/generate/sets/import)
-2. run `isEmptyLanguage(grammar)`
-3. show result + optional witness derivation tree
-4. open step-by-step explanation modal when requested
-
-## 7.1 Model and Parser
-
-Model file:
-
-- `Utils/Grammar.js`
-
-Parser file:
-
-- `Utils/GrammarParser.js`
-
-Parser behavior:
-
-- supports `->` and `→`
-- supports alternatives (`|`)
-- supports epsilon (`ε` or `epsilon`)
-- enforces non-terminal naming by uppercase-leading symbol (including Czech uppercase)
-- classifies all other tokens as terminals
-- validates that all non-terminals used in rules are also defined on the left-hand side of at least one rule (throws error on dangling non-terminals)
-
-## 7.2 Generator
-
-File:
-
-- `Utils/GrammarGenerator.js`
-
-Entry:
-
-- `generateGrammar(config)`
-
-Highlights:
-
-- generates non-terminals with `S` first
-- generates terminals from lowercase symbols
-- configurable recursion and epsilon modes
-- validates configuration ranges
-- ensures reachability of all non-terminals from start symbol
-- in `epsilonMode='always'` ensures at least one epsilon production exists
-
-UI complexity estimation is in:
-
-- `InputSelectionComponent/GenerateInput.jsx`
-
-Thresholds:
-
-- warn at `>= 240`
-- block at `>= 420`
-
-## 7.3 Emptiness Evaluator and Witness Tree
-
-File:
-
-- `Utils/GrammarEvaluator.js`
-
-Entry:
-
-- `isEmptyLanguage(grammar)`
-
-Phase 1: productive-set fixed point
-
-- seed productive non-terminals from terminal-only/epsilon derivations
-- fixed-point iteration over all rules until no new productive non-terminals
-
-Phase 2: witness (only if non-empty)
-
-- builds compact derivation tree iteratively
-- uses shortest-derivation heuristic to reduce recursion risk
-- returns derived terminal word from leaves
-
-Safety guardrails:
-
-- max nodes: `1200`
-- max depth: `80`
-- max non-terminal repeats per path: `4`
-- truncation reason surfaced to UI
-
-## 7.4 Step-by-Step Grammar Explanation
-
-Files:
-
-- `Utils/GrammarStepEvaluator.js`
-- `StepByStepGrammar.jsx`
-
-`generateGrammarSteps` produces a pedagogical timeline of productive-set growth, not the witness-tree construction itself.
-
-## 7.5 Derivation Tree Rendering
-
-File:
-
-- `DerivationTreeVisual.jsx`
-
-Features:
-
-- DAG top-down layout
-- custom node coloring by symbol type (`non-terminal`, `terminal`, `epsilon`)
-- drag support with optional lock-after-drag behavior
-
----
-
-## 8. Conversion Pipelines
-
-## 8.1 MCVP -> Combinatorial Game
-
-Files:
-
-- `Conversions/MCVP-CombinatorialGame/ConversionCombinatorialGame.js`
-- `Conversions/MCVP-CombinatorialGame/MCVPtoCombinatorialGameConverter.jsx`
-
-Rule mapping:
-
-- OR -> Player 1 node
-- AND -> Player 2 node
-- variable `1` -> Player 2 terminal node
-- variable `0` -> Player 1 terminal node
-
-Mechanics:
-
-- `MCVPToGameStepGenerator` traverses DAG once with visited set
-- assigns stable labels `V0`, `V1`, ...
-- records step snapshots including partial graph and visual labels
-
-UI converter:
-
-- side-by-side MCVP + Game visualizations
-- step navigation
-- final redirect button uses `onNavigate('CombinatorialGame', finalGraph)`
-
-## 8.2 MCVP -> Grammar
-
-Files:
-
-- `Conversions/MCVP-Grammar/ConversionGrammar.js`
-- `Conversions/MCVP-Grammar/MCVPtoGrammarConverter.jsx`
-
-Core conversion object:
-
-- internal class `MCVPToGrammarConverter` (inside file)
-
-Symbol strategies:
-
-- non-terminals generated by `NonTerminalGenerator` (`S` reserved for root)
-- terminals generated by `TerminalGenerator`
-
-Production mapping:
-
-- AND node -> one concatenation production
-- OR node -> multiple alternatives
-- variable `1` -> terminal or epsilon (15% chance)
-- variable `0` -> non-productive loop `X -> X`
-
-Process is split into:
-
-1. node symbol assignment
-2. production construction
-
-UI converter:
-
-- side-by-side MCVP + grammar text view
-- step navigation and final redirect to Grammar page
-
----
-
-## 9. Data Contract Summary (Practical)
-
-## 9.1 MCVP Import
-
-Accepted keys:
-
-- required: `nodes` + (`edges` or `links`)
-- optional: `positions` map or per-node `x/y`
-
-Normalization entry points:
-
-- `graphToTree(...)`
-- `flatGraphToTree(...)`
-
-## 9.2 Combinatorial Game Import
-
-Accepted:
-
-1. flat format (`nodes`, `edges/links`, `startingPosition`)
-2. internal format (`positions`, `startingPosition`)
-
-Optional layout field in flat format:
-
-- `nodePositions`
-
-## 9.3 Grammar Import
-
-Accepted:
-
-- single grammar object
-- array of grammar objects (first one used)
-
-Validation checks ensure `nonTerminals`, `terminals`, and `productions` exist.
-
----
-
-## 10. Tests and What They Cover
-
-Test files:
-
-- `tests/mcvp.test.js`
-- `tests/mcvp.completeness.test.js`
-- `tests/combinatorial-game.test.js`
-- `tests/combinatorial-game.completeness.test.js`
-- `tests/grammar.test.js`
-- `tests/grammar.completeness.test.js`
-
-Coverage highlights:
-
-- MCVP:
-  - parser correctness
-  - variable reuse + conflict detection
-  - evaluator truth-table behavior and cycle handling
-  - generator feasibility guard
-- Combinatorial Game:
-  - winner analysis and draw detection
-  - optimal move extraction
-  - exhaustive 2-node behavior matrix
-  - generator connectivity and self-loop avoidance
-- Grammar:
-  - parser syntax/validation
-  - emptiness detection behavior
-  - generator config validation
-  - epsilon and rule length constraints
-
-Current gap class (high level):
-
-- UI component behavior is mostly not unit-tested; tests target algorithms/utilities.
-
----
-
-## 11. Practical Extension Guide
-
-When adding/changing functionality:
-
-1. Update utility algorithm first (and tests).
-2. Update page container orchestration.
-3. Update step replay component if explanation flow changes.
-4. Update import/export shape if data contract changed.
-5. Update both docs:
-   - `Project_CheatSheet.md` (quick facts)
-   - `ProjectOverview.md` (deep details)
-
-Recommended commands:
-
-- `npm run dev` (local default: `http://localhost:5174/`)
-- `npm run test`
-- `npm run lint`
-- `npm run build`
-
-Useful searches:
-
-- `rg "evaluateCircuitWithSteps|computeWinner|isEmptyLanguage|generateGrammarSteps" src`
-- `rg "onGraphUpdate|onTreeUpdate|onGrammar|onNavigate" src/Components`
-
----
-
-## 12. Known Naming Mismatch
-
-The codebase sometimes says "tree" for MCVP structures, but implementation intentionally allows DAG behavior via shared nodes.
+## 6. Maintenance & Testing
+- **Algorithms:** Always verify logic changes in `tests/*.test.js` using `npm run test`.
+- **Visuals:** If a new graph renderer is added, it MUST implement Pattern B (coordinate persistence) to feel consistent with the rest of the app.
