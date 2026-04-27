@@ -236,18 +236,20 @@ export function CombinatorialGame({
             Jedná se o hru pro dva hráče hranou na konečném orientovaném grafu (který může obsahovat
             cykly).
           </p>
-          <ul className="ps-3 text-start">
+          <hr />
+          <h6 className="mb-2">Pravidla hry</h6>
+          <ul className="ps-3 text-start mb-2">
             <li>
               <strong>Pravidla:</strong> Každý vrchol je označen I (Hráč 1) nebo II (Hráč 2), podle
-              tohoto označení se určuje, který hráč má v daném vrcholu provést tah. V každém tahu se
-              hráč, který je na tahu, přesune z aktuálního vrcholu do jednoho z jeho následníků.
+              tohoto, který hráč je v daném vrcholu na tahu. Hráč na tahu se přesune z aktuálního
+              vrcholu do jednoho z jeho následníků.
             </li>
             <li>
               <strong>Konec hry:</strong> Prohrává hráč, který má provést tah ve vrcholu, ze kterého
               nevedou žádné hrany.
             </li>
             <li>
-              <strong>Cíl:</strong> Určit, zda má začínající hráč vyhrávající strategii (tj. dokáže
+              <strong>Cíl:</strong> Určit, zda má začínající hráč vyhrávající strategii (dokáže
               vynutit výhru bez ohledu na tahy soupeře).
             </li>
             <li>
