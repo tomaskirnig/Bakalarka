@@ -1,5 +1,6 @@
 :root {
-  --root-background-color: #f0edee;
+  --root-background-color: #f0f0f0;
+  --canvas-background-color: #f0f0f0;
   --color1: #438c96;
   --color2: #2c666e;
   --color3: #07393c;
@@ -22,6 +23,11 @@
 .no-border {
   border: none !important;
   box-shadow: none !important;
+}
+
+body {
+  background-color: var(--root-background-color);
+  margin: 0;
 }
 
 /* Control Buttons */
@@ -754,6 +760,7 @@ select {
   max-height: 1000px; */
   width: 100%;
   height: 100%;
+  background-color: var(--canvas-background-color);
   border: 2px solid #eee;
   border-radius: 4px;
   position: relative;

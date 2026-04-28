@@ -14,13 +14,13 @@ const DEFAULT_GRAPH_COLORS = {
   nodeText: '#fff',
   outerCircle: '#07393C',
 
-  text: '#F0EDEE',
+  text: '#f0f0f0',
   instructionText: '#666',
 
   linkColor: '#ece5f0',
   nodeColor: '#2C666E',
-  backgroundColor: '#F0EDEE',
-  canvasBackgroundColor: 'white',
+  backgroundColor: '#f0f0f0',
+  canvasBackgroundColor: '#f0f0f0',
 };
 
 const getVar = (styles, name, fallback) => styles.getPropertyValue(name).trim() || fallback;
